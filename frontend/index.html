@@ -3,12 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0d12">
   <title>JPBET</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>JPBET</h1>
-  <p>Plataforma de jogos</p>
-
+  <header class="topbar">
+    <div class="logo">JP<span>BET</span></div>
+    <button class="login-button" onclick="abrirLogin()">
+      Entrar
+    </button>
+  </header>
+  <main class="hero">
+    <div class="hero-content">
+      <div class="badge">PLATAFORMA JPBET</div>
+      <h1>Jogue.<br><span>Divirta-se.</span></h1>
+      <p>
+        Uma experiência de jogos moderna, rápida e pensada
+        para dispositivos móveis.
+      </p>
+      <button class="primary-button" onclick="abrirLogin()">
+        ENTRAR NA PLATAFORMA
+      </button>
+    </div>
+  </main>
+  <section class="features">
+    <div class="feature-card">
+      <strong>🎰</strong>
+      <h3>Jogos</h3>
+      <p>Experimente os jogos disponíveis na plataforma.</p>
+    </div>
+    <div class="feature-card">
+      <strong>🏆</strong>
+      <h3>Prêmios</h3>
+      <p>Resultados e prêmios registrados no seu histórico.</p>
+    </div>
+    <div class="feature-card">
+      <strong>⚡</strong>
+      <h3>Rápido</h3>
+      <p>Interface otimizada para celular.</p>
+    </div>
+  </section>
+  <div id="loginModal" class="modal">
+    <div class="modal-box">
+      <button class="close-button" onclick="fecharLogin()">×</button>
+      <h2>Entrar</h2>
+      <p>Acesse sua conta JPBET</p>
+      <input
+        type="text"
+        id="username"
+        placeholder="Usuário"
+        autocomplete="username"
+      >
+      <input
+        type="password"
+        id="password"
+        placeholder="Senha"
+        autocomplete="current-password"
+      >
+      <button class="primary-button" onclick="entrar()">
+        ENTRAR
+      </button>
+      <p id="loginMessage" class="login-message"></p>
+    </div>
+  </div>
+  <footer>
+    <p>© 2026 JPBET — Plataforma de demonstração.</p>
+  </footer>
+  <script src="app.js"></script>
 </body>
 </html>
