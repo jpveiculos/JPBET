@@ -210,7 +210,8 @@ footer {
   .hero h1 {
     letter-spacing: -2px;
   }
-}.dashboard {
+}
+.dashboard {
   max-width: 1100px;
   margin: 0 auto;
   padding: 35px 20px 60px;
