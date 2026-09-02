@@ -21,3 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount NUMERIC(12,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO users (username, password_hash, balance)
+VALUES ('admin', '123456', 1000.00)
+ON CONFLICT (username) DO NOTHING;
