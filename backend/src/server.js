@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import authRouter from "./auth.js";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.get("/", (req, res) => {
     message: "JPBET backend funcionando!"
   });
 });
+
+app.use("/api/auth", authRouter);
 
 const PORT = Number(process.env.PORT || 3000);
 
