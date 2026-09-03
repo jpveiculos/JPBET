@@ -3,7 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import authRouter from "./auth.js";
+import settingsRouter from "./settings.js";
 
 dotenv.config();
 
@@ -23,10 +25,33 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
+
+/* =========================
+   API DE AUTENTICAÇÃO
+========================= */
+
 app.use("/api/auth", authRouter);
 
-const PORT = Number(process.env.PORT || 3000);
+
+/* =========================
+   API DE CONFIGURAÇÕES
+========================= */
+
+app.use("/api/settings", settingsRouter);
+
+
+/* =========================
+   SERVIDOR
+========================= */
+
+const PORT = Number(
+  process.env.PORT || 3000
+);
 
 app.listen(PORT, () => {
-  console.log(`JPBET rodando na porta ${PORT}`);
+
+  console.log(
+    `JPBET rodando na porta ${PORT}`
+  );
+
 });
