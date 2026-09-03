@@ -130,6 +130,38 @@
       color: white;
     }
 
+    .admin-button {
+      background: #252b36;
+      color: white;
+      margin-top: 4px;
+    }
+
+    .admin-button:hover {
+      background: #303744;
+    }
+
+    .admin-note {
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: 0.6;
+      line-height: 1.5;
+    }
+
+    .admin-message {
+      min-height: 20px;
+      margin-top: 14px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .admin-success {
+      color: #8cff9a;
+    }
+
+    .admin-error {
+      color: #ff8c8c;
+    }
+
     button {
       width: 100%;
       padding: 14px;
@@ -448,6 +480,65 @@
     </div>
 
 
+    <!-- ADICIONAR NOVO ADMINISTRADOR -->
+
+    <div class="card">
+
+      <h2>👤 Adicionar novo administrador</h2>
+
+      <div class="admin-note">
+        Cadastre um novo usuário com acesso à administração do JPBET.
+      </div>
+
+      <div class="field" style="margin-top: 18px;">
+
+        <label for="new_admin_username">
+          Usuário do administrador
+        </label>
+
+        <input
+          type="text"
+          id="new_admin_username"
+          placeholder="Digite o usuário"
+          autocomplete="off"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label for="new_admin_password">
+          Senha do administrador
+        </label>
+
+        <input
+          type="password"
+          id="new_admin_password"
+          placeholder="Digite a senha"
+          autocomplete="new-password"
+        >
+
+      </div>
+
+
+      <button
+        type="button"
+        class="admin-button"
+        onclick="criarNovoAdministrador()"
+      >
+        👤 CRIAR ADMINISTRADOR
+      </button>
+
+
+      <div
+        id="admin_message"
+        class="admin-message"
+      ></div>
+
+    </div>
+
+
     <div
       id="message"
       class="message"
@@ -718,6 +809,158 @@
           "error"
         );
       }
+    }
+
+
+    /* =========================
+       CRIAR NOVO ADMINISTRADOR
+    ========================= */
+
+    async function criarNovoAdministrador() {
+
+      const username =
+        document
+          .getElementById(
+            "new_admin_username"
+          )
+          .value
+          .trim();
+
+      const password =
+        document.getElementById(
+          "new_admin_password"
+        ).value;
+
+      const message =
+        document.getElementById(
+          "admin_message"
+        );
+
+
+      message.textContent = "";
+      message.className =
+        "admin-message";
+
+
+      if (!username || !password) {
+
+        message.textContent =
+          "Informe o usuário e a senha.";
+
+        message.classList.add(
+          "admin-error"
+        );
+
+        return;
+      }
+
+
+      if (username.length < 3) {
+
+        message.textContent =
+          "O usuário deve ter pelo menos 3 caracteres.";
+
+        message.classList.add(
+          "admin-error"
+        );
+
+        return;
+      }
+
+
+      if (password.length < 4) {
+
+        message.textContent =
+          "A senha deve ter pelo menos 4 caracteres.";
+
+        message.classList.add(
+          "admin-error"
+        );
+
+        return;
+      }
+
+
+      message.textContent =
+        "Criando administrador...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/auth/admin-register`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              credentials:
+                "same-origin",
+
+              body:
+                JSON.stringify({
+                  username,
+                  password
+                })
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          if (response.status === 401) {
+
+            window.location.href =
+              "admin.html";
+
+            return;
+          }
+
+          throw new Error(
+            data.message ||
+            "Não foi possível criar o administrador."
+          );
+        }
+
+
+        message.textContent =
+          "Administrador criado com sucesso!";
+
+        message.className =
+          "admin-message admin-success";
+
+
+        document.getElementById(
+          "new_admin_username"
+        ).value = "";
+
+
+        document.getElementById(
+          "new_admin_password"
+        ).value = "";
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+          error.message ||
+          "Erro de conexão com o servidor.";
+
+        message.className =
+          "admin-message admin-error";
+
+      }
+
     }
 
 
