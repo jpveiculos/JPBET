@@ -62,6 +62,7 @@
 
   </section>
 
+  <!-- LOGIN / CADASTRO -->
   <div id="loginModal" class="modal">
 
     <div class="modal-box">
@@ -70,29 +71,86 @@
         ×
       </button>
 
-      <h2>Entrar</h2>
+      <!-- LOGIN -->
+      <div id="loginForm">
 
-      <p>Acesse sua conta JPBET</p>
+        <h2>Entrar</h2>
 
-      <input
-        type="text"
-        id="username"
-        placeholder="Usuário"
-        autocomplete="username"
-      >
+        <p>Acesse sua conta JPBET</p>
 
-      <input
-        type="password"
-        id="password"
-        placeholder="Senha"
-        autocomplete="current-password"
-      >
+        <input
+          type="text"
+          id="username"
+          placeholder="Usuário"
+          autocomplete="username"
+        >
 
-      <button class="primary-button" onclick="entrar()">
-        ENTRAR
-      </button>
+        <input
+          type="password"
+          id="password"
+          placeholder="Senha"
+          autocomplete="current-password"
+        >
 
-      <p id="loginMessage" class="login-message"></p>
+        <button class="primary-button" onclick="entrar()">
+          ENTRAR
+        </button>
+
+        <p id="loginMessage" class="login-message"></p>
+
+        <button
+          type="button"
+          class="primary-button"
+          onclick="mostrarCadastro()"
+        >
+          CRIAR CONTA
+        </button>
+
+      </div>
+
+      <!-- CADASTRO -->
+      <div id="registerForm" style="display: none;">
+
+        <h2>Criar conta</h2>
+
+        <p>Crie sua conta JPBET</p>
+
+        <input
+          type="text"
+          id="registerUsername"
+          placeholder="Escolha um usuário"
+          autocomplete="username"
+        >
+
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Crie uma senha"
+          autocomplete="new-password"
+        >
+
+        <input
+          type="password"
+          id="registerPasswordConfirm"
+          placeholder="Confirme sua senha"
+          autocomplete="new-password"
+        >
+
+        <button class="primary-button" onclick="cadastrar()">
+          CRIAR CONTA
+        </button>
+
+        <p id="registerMessage" class="login-message"></p>
+
+        <button
+          type="button"
+          class="primary-button"
+          onclick="mostrarLogin()"
+        >
+          JÁ TENHO UMA CONTA
+        </button>
+
+      </div>
 
     </div>
 
