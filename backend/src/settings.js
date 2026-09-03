@@ -1,10 +1,40 @@
 import express from "express";
 import { pool } from "./db.js";
+import { validarSessaoAdmin } from "./adminSession.js";
 
 const router = express.Router();
 
 /* =========================
-   CRIAR TABELA DE CONFIGURAÇÕES
+   VERIFICAR ADMIN
+========================= */
+
+function exigirAdmin(req, res, next) {
+  const cookies = req.headers.cookie || "";
+
+  const match =
+    cookies.match(
+      /(?:^|;\s*)jpbet_admin_session=([^;]+)/
+    );
+
+  const token = match ? match[1] : null;
+
+  const sessao =
+    validarSessaoAdmin(token);
+
+  if (!sessao) {
+    return res.status(401).json({
+      ok: false,
+      message: "Acesso administrativo necessário."
+    });
+  }
+
+  req.admin = sessao;
+
+  next();
+}
+
+/* =========================
+   CRIAR TABELA
 ========================= */
 
 async function inicializarConfiguracoes() {
@@ -20,22 +50,46 @@ async function inicializarConfiguracoes() {
 
     const configuracoes = [
       ["site_name", "JPBET"],
-      ["site_title", "JPBET - Plataforma de Jogos"],
-      ["site_description", "Uma experiência de jogos moderna, rápida e pensada para dispositivos móveis."],
-      ["footer_text", "© 2026 JPBET — Plataforma de demonstração."],
+      [
+        "site_title",
+        "JPBET - Plataforma de Jogos"
+      ],
+      [
+        "site_description",
+        "Uma experiência de jogos moderna, rápida e pensada para dispositivos móveis."
+      ],
+      [
+        "footer_text",
+        "© 2026 JPBET — Plataforma de demonstração."
+      ],
 
       ["roulette_enabled", "true"],
       ["roulette_min_bet", "1"],
       ["roulette_max_bet", "100"],
       ["roulette_rtp", "95"],
 
-      ["primary_button_text", "ENTRAR NA PLATAFORMA"],
-      ["login_button_text", "ENTRAR"],
-      ["register_button_text", "CRIAR CONTA"],
-      ["roulette_button_text", "🎰 JOGAR NA ROLETA"],
+      [
+        "primary_button_text",
+        "ENTRAR NA PLATAFORMA"
+      ],
+      [
+        "login_button_text",
+        "ENTRAR"
+      ],
+      [
+        "register_button_text",
+        "CRIAR CONTA"
+      ],
+      [
+        "roulette_button_text",
+        "🎰 JOGAR NA ROLETA"
+      ],
 
       ["maintenance_mode", "false"],
-      ["maintenance_message", "Plataforma temporariamente em manutenção."]
+      [
+        "maintenance_message",
+        "Plataforma temporariamente em manutenção."
+      ]
     ];
 
     for (const [key, value] of configuracoes) {
@@ -55,7 +109,6 @@ async function inicializarConfiguracoes() {
     );
 
   } catch (error) {
-
     console.error(
       "Erro ao inicializar configurações:",
       error
@@ -65,187 +118,226 @@ async function inicializarConfiguracoes() {
 
 inicializarConfiguracoes();
 
-
 /* =========================
    LISTAR CONFIGURAÇÕES
+   SOMENTE ADMIN
 ========================= */
 
-router.get("/", async (req, res) => {
+router.get(
+  "/",
+  exigirAdmin,
+  async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT
+          setting_key,
+          setting_value,
+          updated_at
+        FROM site_settings
+        ORDER BY setting_key
+      `);
 
-  try {
+      res.json({
+        ok: true,
+        settings: result.rows
+      });
 
-    const result = await pool.query(`
-      SELECT setting_key, setting_value, updated_at
-      FROM site_settings
-      ORDER BY setting_key
-    `);
+    } catch (error) {
+      console.error(error);
 
-    res.json({
-      ok: true,
-      settings: result.rows
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Erro ao carregar configurações."
-    });
+      res.status(500).json({
+        message:
+          "Erro ao carregar configurações."
+      });
+    }
   }
-});
-
+);
 
 /* =========================
    BUSCAR UMA CONFIGURAÇÃO
+   SOMENTE ADMIN
 ========================= */
 
-router.get("/:key", async (req, res) => {
+router.get(
+  "/:key",
+  exigirAdmin,
+  async (req, res) => {
+    try {
+      const { key } = req.params;
 
-  try {
+      const result = await pool.query(
+        `
+        SELECT
+          setting_key,
+          setting_value
+        FROM site_settings
+        WHERE setting_key = $1
+        LIMIT 1
+        `,
+        [key]
+      );
 
-    const { key } = req.params;
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message:
+            "Configuração não encontrada."
+        });
+      }
 
-    const result = await pool.query(
-      `
-      SELECT setting_key, setting_value
-      FROM site_settings
-      WHERE setting_key = $1
-      LIMIT 1
-      `,
-      [key]
-    );
+      res.json({
+        ok: true,
+        setting: result.rows[0]
+      });
 
-    if (result.rows.length === 0) {
+    } catch (error) {
+      console.error(error);
 
-      return res.status(404).json({
-        message: "Configuração não encontrada."
+      res.status(500).json({
+        message:
+          "Erro ao buscar configuração."
       });
     }
-
-    res.json({
-      ok: true,
-      setting: result.rows[0]
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Erro ao buscar configuração."
-    });
   }
-});
-
+);
 
 /* =========================
    ALTERAR CONFIGURAÇÃO
+   SOMENTE ADMIN
 ========================= */
 
-router.put("/:key", async (req, res) => {
+router.put(
+  "/:key",
+  exigirAdmin,
+  async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { value } = req.body;
 
-  try {
-
-    const { key } = req.params;
-    const { value } = req.body;
-
-    if (value === undefined || value === null) {
-
-      return res.status(400).json({
-        message: "Informe o novo valor."
-      });
-    }
-
-    const result = await pool.query(
-      `
-      INSERT INTO site_settings
-      (setting_key, setting_value, updated_at)
-      VALUES ($1, $2, CURRENT_TIMESTAMP)
-
-      ON CONFLICT (setting_key)
-      DO UPDATE SET
-        setting_value = EXCLUDED.setting_value,
-        updated_at = CURRENT_TIMESTAMP
-
-      RETURNING setting_key, setting_value, updated_at
-      `,
-      [key, String(value)]
-    );
-
-    res.json({
-      ok: true,
-      message: "Configuração atualizada com sucesso.",
-      setting: result.rows[0]
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Erro ao atualizar configuração."
-    });
-  }
-});
-
-
-/* =========================
-   ALTERAR VÁRIAS CONFIGURAÇÕES
-========================= */
-
-router.put("/", async (req, res) => {
-
-  try {
-
-    const settings = req.body;
-
-    if (
-      !settings ||
-      typeof settings !== "object" ||
-      Array.isArray(settings)
-    ) {
-
-      return res.status(400).json({
-        message: "Formato de configurações inválido."
-      });
-    }
-
-    for (const [key, value] of Object.entries(settings)) {
-
-      if (value === undefined || value === null) {
-        continue;
+      if (
+        value === undefined ||
+        value === null
+      ) {
+        return res.status(400).json({
+          message:
+            "Informe o novo valor."
+        });
       }
 
-      await pool.query(
+      const result = await pool.query(
         `
         INSERT INTO site_settings
-        (setting_key, setting_value, updated_at)
-        VALUES ($1, $2, CURRENT_TIMESTAMP)
+        (
+          setting_key,
+          setting_value,
+          updated_at
+        )
+        VALUES
+        ($1, $2, CURRENT_TIMESTAMP)
 
         ON CONFLICT (setting_key)
         DO UPDATE SET
-          setting_value = EXCLUDED.setting_value,
-          updated_at = CURRENT_TIMESTAMP
+          setting_value =
+            EXCLUDED.setting_value,
+          updated_at =
+            CURRENT_TIMESTAMP
+
+        RETURNING
+          setting_key,
+          setting_value,
+          updated_at
         `,
         [key, String(value)]
       );
+
+      res.json({
+        ok: true,
+        message:
+          "Configuração atualizada com sucesso.",
+        setting: result.rows[0]
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        message:
+          "Erro ao atualizar configuração."
+      });
     }
-
-    res.json({
-      ok: true,
-      message: "Configurações atualizadas com sucesso."
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Erro ao atualizar configurações."
-    });
   }
-});
+);
 
+/* =========================
+   ALTERAR VÁRIAS
+   SOMENTE ADMIN
+========================= */
+
+router.put(
+  "/",
+  exigirAdmin,
+  async (req, res) => {
+    try {
+      const settings = req.body;
+
+      if (
+        !settings ||
+        typeof settings !== "object" ||
+        Array.isArray(settings)
+      ) {
+        return res.status(400).json({
+          message:
+            "Formato de configurações inválido."
+        });
+      }
+
+      for (
+        const [key, value]
+        of Object.entries(settings)
+      ) {
+        if (
+          value === undefined ||
+          value === null
+        ) {
+          continue;
+        }
+
+        await pool.query(
+          `
+          INSERT INTO site_settings
+          (
+            setting_key,
+            setting_value,
+            updated_at
+          )
+          VALUES
+          ($1, $2, CURRENT_TIMESTAMP)
+
+          ON CONFLICT (setting_key)
+          DO UPDATE SET
+            setting_value =
+              EXCLUDED.setting_value,
+            updated_at =
+              CURRENT_TIMESTAMP
+          `,
+          [key, String(value)]
+        );
+      }
+
+      res.json({
+        ok: true,
+        message:
+          "Configurações atualizadas com sucesso."
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        message:
+          "Erro ao atualizar configurações."
+      });
+    }
+  }
+);
 
 export default router;
