@@ -4,28 +4,35 @@ import { validarSessaoAdmin } from "./adminSession.js";
 
 const router = express.Router();
 
+
 /* =========================
    VERIFICAR ADMIN
 ========================= */
 
 function exigirAdmin(req, res, next) {
-  const cookies = req.headers.cookie || "";
+
+  const cookies =
+    req.headers.cookie || "";
 
   const match =
     cookies.match(
       /(?:^|;\s*)jpbet_admin_session=([^;]+)/
     );
 
-  const token = match ? match[1] : null;
+  const token =
+    match ? match[1] : null;
 
   const sessao =
     validarSessaoAdmin(token);
 
   if (!sessao) {
+
     return res.status(401).json({
       ok: false,
-      message: "Acesso administrativo necessário."
+      message:
+        "Acesso administrativo necessário."
     });
+
   }
 
   req.admin = sessao;
@@ -33,12 +40,161 @@ function exigirAdmin(req, res, next) {
   next();
 }
 
+
+/* =========================
+   CONFIGURAÇÕES PADRÃO
+========================= */
+
+const configuracoesPadrao = [
+
+  /* IDENTIDADE */
+
+  [
+    "site_name",
+    "JPBET"
+  ],
+
+  [
+    "site_title",
+    "JPBET - Plataforma de Jogos"
+  ],
+
+  [
+    "site_description",
+    "Uma experiência de jogos moderna, rápida e pensada para dispositivos móveis."
+  ],
+
+  [
+    "footer_text",
+    "© 2026 JPBET — Plataforma de demonstração."
+  ],
+
+
+  /* ROLETA */
+
+  [
+    "roulette_enabled",
+    "true"
+  ],
+
+  [
+    "roulette_min_bet",
+    "1"
+  ],
+
+  [
+    "roulette_max_bet",
+    "100"
+  ],
+
+  [
+    "roulette_rtp",
+    "95"
+  ],
+
+
+  /* BOTÕES */
+
+  [
+    "primary_button_text",
+    "ENTRAR NA PLATAFORMA"
+  ],
+
+  [
+    "login_button_text",
+    "ENTRAR"
+  ],
+
+  [
+    "register_button_text",
+    "CRIAR CONTA"
+  ],
+
+  [
+    "roulette_button_text",
+    "🎰 JOGAR NA ROLETA"
+  ],
+
+
+  /* MANUTENÇÃO */
+
+  [
+    "maintenance_mode",
+    "false"
+  ],
+
+  [
+    "maintenance_message",
+    "Plataforma temporariamente em manutenção."
+  ],
+
+
+  /* TEXTOS DO DASHBOARD */
+
+  [
+    "dashboard_welcome_text",
+    "Bem-vindo à plataforma JPBET."
+  ],
+
+  [
+    "balance_title",
+    "Seu saldo"
+  ],
+
+  [
+    "account_title",
+    "Minha conta"
+  ],
+
+  [
+    "logout_button_text",
+    "SAIR DA CONTA"
+  ],
+
+  [
+    "deposit_button_text",
+    "💰 DEPOSITAR"
+  ],
+
+  [
+    "withdraw_button_text",
+    "💸 SACAR"
+  ],
+
+  [
+    "history_button_text",
+    "📋 HISTÓRICO"
+  ],
+
+
+  /* CRÉDITOS VIRTUAIS */
+
+  [
+    "virtual_credits_mode",
+    "true"
+  ],
+
+  [
+    "virtual_credits_text",
+    "Esta plataforma utiliza créditos virtuais para demonstração."
+  ],
+
+  [
+    "virtual_credits_disclaimer",
+    "Os créditos desta versão não representam dinheiro real."
+  ]
+
+];
+
+
 /* =========================
    CRIAR TABELA
 ========================= */
 
 async function inicializarConfiguracoes() {
+
   try {
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS site_settings (
         id SERIAL PRIMARY KEY,
@@ -48,75 +204,113 @@ async function inicializarConfiguracoes() {
       );
     `);
 
-    const configuracoes = [
-      ["site_name", "JPBET"],
-      [
-        "site_title",
-        "JPBET - Plataforma de Jogos"
-      ],
-      [
-        "site_description",
-        "Uma experiência de jogos moderna, rápida e pensada para dispositivos móveis."
-      ],
-      [
-        "footer_text",
-        "© 2026 JPBET — Plataforma de demonstração."
-      ],
 
-      ["roulette_enabled", "true"],
-      ["roulette_min_bet", "1"],
-      ["roulette_max_bet", "100"],
-      ["roulette_rtp", "95"],
+    for (
+      const [key, value]
+      of configuracoesPadrao
+    ) {
 
-      [
-        "primary_button_text",
-        "ENTRAR NA PLATAFORMA"
-      ],
-      [
-        "login_button_text",
-        "ENTRAR"
-      ],
-      [
-        "register_button_text",
-        "CRIAR CONTA"
-      ],
-      [
-        "roulette_button_text",
-        "🎰 JOGAR NA ROLETA"
-      ],
-
-      ["maintenance_mode", "false"],
-      [
-        "maintenance_message",
-        "Plataforma temporariamente em manutenção."
-      ]
-    ];
-
-    for (const [key, value] of configuracoes) {
       await pool.query(
         `
         INSERT INTO site_settings
-        (setting_key, setting_value)
-        VALUES ($1, $2)
-        ON CONFLICT (setting_key) DO NOTHING
+        (
+          setting_key,
+          setting_value
+        )
+        VALUES
+        ($1, $2)
+
+        ON CONFLICT (setting_key)
+        DO NOTHING
         `,
         [key, value]
       );
+
     }
+
 
     console.log(
       "Configurações do JPBET inicializadas com sucesso."
     );
 
+
   } catch (error) {
+
     console.error(
       "Erro ao inicializar configurações:",
       error
     );
+
   }
 }
 
+
 inicializarConfiguracoes();
+
+
+/* =========================
+   CONFIGURAÇÕES PÚBLICAS
+========================= */
+
+/*
+  O site pode consultar essas configurações
+  sem ter acesso à alteração delas.
+
+  A alteração continua protegida
+  exclusivamente pelo login administrativo.
+*/
+
+router.get(
+  "/public",
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await pool.query(`
+          SELECT
+            setting_key,
+            setting_value
+          FROM site_settings
+          ORDER BY setting_key
+        `);
+
+
+      const settings = {};
+
+
+      for (
+        const row
+        of result.rows
+      ) {
+
+        settings[row.setting_key] =
+          row.setting_value;
+
+      }
+
+
+      res.json({
+        ok: true,
+        settings
+      });
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+        ok: false,
+        message:
+          "Erro ao carregar configurações públicas."
+      });
+
+    }
+
+  }
+);
+
 
 /* =========================
    LISTAR CONFIGURAÇÕES
@@ -127,31 +321,41 @@ router.get(
   "/",
   exigirAdmin,
   async (req, res) => {
+
     try {
-      const result = await pool.query(`
-        SELECT
-          setting_key,
-          setting_value,
-          updated_at
-        FROM site_settings
-        ORDER BY setting_key
-      `);
+
+      const result =
+        await pool.query(`
+          SELECT
+            setting_key,
+            setting_value,
+            updated_at
+          FROM site_settings
+          ORDER BY setting_key
+        `);
+
 
       res.json({
         ok: true,
         settings: result.rows
       });
 
+
     } catch (error) {
+
       console.error(error);
 
       res.status(500).json({
+        ok: false,
         message:
           "Erro ao carregar configurações."
       });
+
     }
+
   }
 );
+
 
 /* =========================
    BUSCAR UMA CONFIGURAÇÃO
@@ -162,43 +366,63 @@ router.get(
   "/:key",
   exigirAdmin,
   async (req, res) => {
+
     try {
-      const { key } = req.params;
 
-      const result = await pool.query(
-        `
-        SELECT
-          setting_key,
-          setting_value
-        FROM site_settings
-        WHERE setting_key = $1
-        LIMIT 1
-        `,
-        [key]
-      );
+      const { key } =
+        req.params;
 
-      if (result.rows.length === 0) {
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            setting_key,
+            setting_value,
+            updated_at
+          FROM site_settings
+          WHERE setting_key = $1
+          LIMIT 1
+          `,
+          [key]
+        );
+
+
+      if (
+        result.rows.length === 0
+      ) {
+
         return res.status(404).json({
+          ok: false,
           message:
             "Configuração não encontrada."
         });
+
       }
+
 
       res.json({
         ok: true,
-        setting: result.rows[0]
+        setting:
+          result.rows[0]
       });
 
+
     } catch (error) {
+
       console.error(error);
 
       res.status(500).json({
+        ok: false,
         message:
           "Erro ao buscar configuração."
       });
+
     }
+
   }
 );
+
 
 /* =========================
    ALTERAR CONFIGURAÇÃO
@@ -209,63 +433,105 @@ router.put(
   "/:key",
   exigirAdmin,
   async (req, res) => {
+
     try {
-      const { key } = req.params;
-      const { value } = req.body;
+
+      const { key } =
+        req.params;
+
+      const { value } =
+        req.body;
+
+
+      if (
+        !key ||
+        key.length > 100
+      ) {
+
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Chave de configuração inválida."
+        });
+
+      }
+
 
       if (
         value === undefined ||
         value === null
       ) {
+
         return res.status(400).json({
+          ok: false,
           message:
             "Informe o novo valor."
         });
+
       }
 
-      const result = await pool.query(
-        `
-        INSERT INTO site_settings
-        (
-          setting_key,
-          setting_value,
-          updated_at
-        )
-        VALUES
-        ($1, $2, CURRENT_TIMESTAMP)
 
-        ON CONFLICT (setting_key)
-        DO UPDATE SET
-          setting_value =
-            EXCLUDED.setting_value,
-          updated_at =
+      const result =
+        await pool.query(
+          `
+          INSERT INTO site_settings
+          (
+            setting_key,
+            setting_value,
+            updated_at
+          )
+          VALUES
+          (
+            $1,
+            $2,
             CURRENT_TIMESTAMP
+          )
 
-        RETURNING
-          setting_key,
-          setting_value,
-          updated_at
-        `,
-        [key, String(value)]
-      );
+          ON CONFLICT (setting_key)
+          DO UPDATE SET
+
+            setting_value =
+              EXCLUDED.setting_value,
+
+            updated_at =
+              CURRENT_TIMESTAMP
+
+          RETURNING
+            setting_key,
+            setting_value,
+            updated_at
+          `,
+          [
+            key,
+            String(value)
+          ]
+        );
+
 
       res.json({
         ok: true,
         message:
           "Configuração atualizada com sucesso.",
-        setting: result.rows[0]
+        setting:
+          result.rows[0]
       });
 
+
     } catch (error) {
+
       console.error(error);
 
       res.status(500).json({
+        ok: false,
         message:
           "Erro ao atualizar configuração."
       });
+
     }
+
   }
 );
+
 
 /* =========================
    ALTERAR VÁRIAS
@@ -276,30 +542,65 @@ router.put(
   "/",
   exigirAdmin,
   async (req, res) => {
+
     try {
-      const settings = req.body;
+
+      const settings =
+        req.body;
+
 
       if (
         !settings ||
         typeof settings !== "object" ||
         Array.isArray(settings)
       ) {
+
         return res.status(400).json({
+          ok: false,
           message:
             "Formato de configurações inválido."
         });
+
       }
+
+
+      const entradas =
+        Object.entries(settings);
+
+
+      if (
+        entradas.length === 0
+      ) {
+
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Nenhuma configuração foi enviada."
+        });
+
+      }
+
 
       for (
         const [key, value]
-        of Object.entries(settings)
+        of entradas
       ) {
+
+        if (
+          !key ||
+          key.length > 100
+        ) {
+          continue;
+        }
+
+
         if (
           value === undefined ||
           value === null
         ) {
           continue;
         }
+
 
         await pool.query(
           `
@@ -310,18 +611,29 @@ router.put(
             updated_at
           )
           VALUES
-          ($1, $2, CURRENT_TIMESTAMP)
+          (
+            $1,
+            $2,
+            CURRENT_TIMESTAMP
+          )
 
           ON CONFLICT (setting_key)
           DO UPDATE SET
+
             setting_value =
               EXCLUDED.setting_value,
+
             updated_at =
               CURRENT_TIMESTAMP
           `,
-          [key, String(value)]
+          [
+            key,
+            String(value)
+          ]
         );
+
       }
+
 
       res.json({
         ok: true,
@@ -329,15 +641,21 @@ router.put(
           "Configurações atualizadas com sucesso."
       });
 
+
     } catch (error) {
+
       console.error(error);
 
       res.status(500).json({
+        ok: false,
         message:
           "Erro ao atualizar configurações."
       });
+
     }
+
   }
 );
+
 
 export default router;
