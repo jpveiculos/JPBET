@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -32,6 +31,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 25px;
+      gap: 15px;
     }
 
     .logo {
@@ -46,6 +46,7 @@
     .user {
       font-size: 14px;
       opacity: 0.8;
+      text-align: right;
     }
 
     .balance {
@@ -84,6 +85,10 @@
       cursor: pointer;
     }
 
+    button:active {
+      transform: scale(0.98);
+    }
+
     .primary {
       background: white;
       color: #111;
@@ -116,9 +121,101 @@
       color: white;
     }
 
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 500px;
+      background: #181c24;
+      border-radius: 16px;
+      padding: 25px;
+      position: relative;
+    }
+
+    .modal-box h2 {
+      margin-top: 0;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 50%;
+      background: #0b0d12;
+      color: white;
+      font-size: 24px;
+    }
+
+    .modal-box input {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 12px;
+      border: 1px solid #303541;
+      border-radius: 8px;
+      background: #0b0d12;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .modal-box input:focus {
+      border-color: white;
+    }
+
+    .modal-box button:not(.close-button) {
+      margin-top: 5px;
+    }
+
+    .modal-message {
+      min-height: 20px;
+      margin: 10px 0;
+      opacity: 0.85;
+    }
+
+    .history-list {
+      margin-top: 15px;
+    }
+
+    .history-item {
+      background: #0b0d12;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .empty {
+      opacity: 0.6;
+    }
+
     @media (max-width: 600px) {
+
+      .container {
+        padding: 15px;
+      }
+
+      header {
+        align-items: flex-start;
+      }
+
       .buttons {
         grid-template-columns: 1fr;
+      }
+
+      .balance-value {
+        font-size: 30px;
       }
     }
   </style>
@@ -135,12 +232,17 @@
         JP<span>BET</span>
       </div>
 
-      <div class="user" id="userName">
+      <div
+        class="user"
+        id="userName"
+      >
         Usuário
       </div>
 
     </header>
 
+
+    <!-- SALDO -->
 
     <div class="balance">
 
@@ -148,12 +250,17 @@
         Seu saldo
       </div>
 
-      <div class="balance-value" id="balance">
+      <div
+        class="balance-value"
+        id="balance"
+      >
         R$ 0,00
       </div>
 
     </div>
 
+
+    <!-- AÇÕES PRINCIPAIS -->
 
     <div class="buttons">
 
@@ -188,6 +295,8 @@
     </div>
 
 
+    <!-- CONTA -->
+
     <div class="card">
 
       <h2>Minha conta</h2>
@@ -204,6 +313,8 @@
     </div>
 
 
+    <!-- SAIR -->
+
     <button
       class="logout"
       onclick="sair()"
@@ -214,7 +325,44 @@
   </div>
 
 
+  <!-- MODAL DE AÇÃO -->
+
+  <div
+    id="actionModal"
+    class="modal"
+  >
+
+    <div class="modal-box">
+
+      <button
+        class="close-button"
+        onclick="fecharModal()"
+      >
+        ×
+      </button>
+
+      <h2 id="modalTitle">
+        JPBET
+      </h2>
+
+      <div
+        id="modalContent"
+        class="modal-message"
+      ></div>
+
+    </div>
+
+  </div>
+
+
   <script>
+
+    /* =========================
+       USUÁRIO
+    ========================= */
+
+    let usuarioAtual = null;
+
 
     function carregarUsuario() {
 
@@ -222,7 +370,10 @@
         localStorage.getItem("jpbet_user");
 
       if (!savedUser) {
-        window.location.href = "index.html";
+
+        window.location.href =
+          "index.html";
+
         return;
       }
 
@@ -231,21 +382,16 @@
         const user =
           JSON.parse(savedUser);
 
+        usuarioAtual = user;
+
         document.getElementById(
           "userName"
         ).textContent =
           user.username || "Usuário";
 
-        const balance =
-          Number(user.balance || 0);
-
-        document.getElementById(
-          "balance"
-        ).textContent =
-          "R$ " +
-          balance
-            .toFixed(2)
-            .replace(".", ",");
+        atualizarSaldo(
+          user.balance
+        );
 
       } catch (error) {
 
@@ -255,47 +401,189 @@
           "jpbet_user"
         );
 
+        localStorage.removeItem(
+          "jpbet_token"
+        );
+
         window.location.href =
           "index.html";
       }
     }
 
 
-    function abrirRoleta() {
+    /* =========================
+       SALDO
+    ========================= */
+
+    function atualizarSaldo(valor) {
+
+      const balance =
+        Number(valor || 0);
 
       document.getElementById(
-        "message"
+        "balance"
       ).textContent =
-        "A roleta será integrada aqui.";
+        "R$ " +
+        balance
+          .toFixed(2)
+          .replace(".", ",");
     }
 
+
+    /* =========================
+       MODAL
+    ========================= */
+
+    function abrirModal(
+      titulo,
+      conteudo
+    ) {
+
+      document.getElementById(
+        "modalTitle"
+      ).textContent = titulo;
+
+      document.getElementById(
+        "modalContent"
+      ).innerHTML = conteudo;
+
+      document.getElementById(
+        "actionModal"
+      ).style.display = "flex";
+    }
+
+
+    function fecharModal() {
+
+      document.getElementById(
+        "actionModal"
+      ).style.display = "none";
+    }
+
+
+    /* =========================
+       ROLETA
+    ========================= */
+
+    function abrirRoleta() {
+
+      abrirModal(
+        "🎰 Roleta",
+        `
+          <p>
+            A roleta será disponibilizada
+            nesta área.
+          </p>
+
+          <p>
+            O jogo utilizará créditos virtuais
+            e as regras configuradas pelo
+            administrador.
+          </p>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            CONTINUAR
+          </button>
+        `
+      );
+    }
+
+
+    /* =========================
+       DEPÓSITO
+    ========================= */
 
     function depositar() {
 
-      document.getElementById(
-        "message"
-      ).textContent =
-        "Área de depósito será adicionada.";
+      abrirModal(
+        "💰 Depósito",
+        `
+          <p>
+            A área de depósito está sendo
+            preparada.
+          </p>
+
+          <p>
+            Nesta versão, a plataforma
+            trabalha com créditos virtuais.
+          </p>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            FECHAR
+          </button>
+        `
+      );
     }
 
+
+    /* =========================
+       SAQUE
+    ========================= */
 
     function sacar() {
 
-      document.getElementById(
-        "message"
-      ).textContent =
-        "Área de saque será adicionada.";
+      abrirModal(
+        "💸 Saque",
+        `
+          <p>
+            A área de saque está sendo
+            preparada.
+          </p>
+
+          <p>
+            As operações financeiras reais
+            não estão habilitadas nesta versão.
+          </p>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            FECHAR
+          </button>
+        `
+      );
     }
 
+
+    /* =========================
+       HISTÓRICO
+    ========================= */
 
     function historico() {
 
-      document.getElementById(
-        "message"
-      ).textContent =
-        "O histórico será adicionado.";
+      abrirModal(
+        "📋 Histórico",
+        `
+          <div class="history-list">
+
+            <div class="history-item empty">
+              Nenhuma atividade registrada
+              ainda.
+            </div>
+
+          </div>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            FECHAR
+          </button>
+        `
+      );
     }
 
+
+    /* =========================
+       SAIR
+    ========================= */
 
     function sair() {
 
@@ -311,6 +599,30 @@
         "index.html";
     }
 
+
+    /* =========================
+       FECHAR MODAL AO CLICAR FORA
+    ========================= */
+
+    document
+      .getElementById("actionModal")
+      .addEventListener(
+        "click",
+        function (event) {
+
+          if (
+            event.target === this
+          ) {
+            fecharModal();
+          }
+
+        }
+      );
+
+
+    /* =========================
+       INICIALIZAÇÃO
+    ========================= */
 
     carregarUsuario();
 
