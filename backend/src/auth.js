@@ -61,6 +61,7 @@ router.post("/login", async (req, res) => {
         balance: user.balance
       }
     });
+
   } catch (error) {
     console.error(error);
 
