@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPBet - Administração</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .card {
+      background: #1d1d1d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      margin-top: 0;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #111;
+      color: #fff;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 8px;
+      background: #fff;
+      color: #111;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .message {
+      margin-top: 10px;
+      min-height: 20px;
+    }
+    .admin-info {
+      padding: 12px;
+      background: #292929;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .danger {
+      background: #8b0000;
+      color: #fff;
+    }
+    .logout {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>JPBet — Administração</h1>
+    <button class="logout" onclick="sairAdmin()">
+      Sair
+    </button>
+    <!-- LOGIN ADMINISTRATIVO -->
+    <div class="card" id="adminLoginCard">
+      <h2>Login administrativo</h2>
+      <input
+        id="adminUsername"
+        type="text"
+        placeholder="Usuário administrador"
+      >
+      <input
+        id="adminPassword"
+        type="password"
+        placeholder="Senha"
+      >
+      <button onclick="loginAdmin()">
+        Entrar
+      </button>
+      <div
+        id="adminLoginMessage"
+        class="message"
+      ></div>
+    </div>
+    <!-- PAINEL -->
+    <div id="adminPanel" style="display:none;">
+      <!-- CADASTRAR ADMIN -->
+      <div class="card">
+        <h2>Cadastrar administrador</h2>
+        <input
+          id="newAdminUsername"
+          type="text"
+          placeholder="Novo usuário"
+        >
+        <input
+          id="newAdminPassword"
+          type="password"
+          placeholder="Nova senha"
+        >
+        <button onclick="cadastrarAdmin()">
+          Cadastrar administrador
+        </button>
+        <div
+          id="adminRegisterMessage"
+          class="message"
+        ></div>
+      </div>
+      <!-- INFORMAÇÕES -->
+      <div class="card">
+        <h2>Status</h2>
+        <div class="admin-info">
+          Sistema administrativo JPBet
+        </div>
+        <div class="admin-info">
+          Cadastro de usuários: disponível
+        </div>
+        <div class="admin-info">
+          Cadastro de administradores: disponível
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const API_URL = "/api";
+    /* =========================
+       LOGIN ADMIN
+    ========================= */
+    async function loginAdmin() {
+      const username =
+        document
+          .getElementById("adminUsername")
+          .value
+          .trim();
+      const password =
+        document
+          .getElementById("adminPassword")
+          .value;
+      const message =
+        document.getElementById(
+          "adminLoginMessage"
+        );
+      if (!username || !password) {
+        message.textContent =
+          "Digite usuário e senha.";
+        return;
+      }
+      message.textContent =
+        "Entrando...";
+      try {
+        const response =
+          await fetch(
+            `${API_URL}/auth/admin-login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                username,
+                password
+              })
+            }
+          );
+        const data =
+          await response
+            .json()
+            .catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+            "Credenciais inválidas."
+          );
+        }
+        localStorage.setItem(
+          "jpbet_admin",
+          JSON.stringify({
+            username:
+              data.username
+          })
+        );
+        message.textContent =
+          "Login administrativo realizado!";
+        mostrarPainel();
+      } catch (error) {
+        console.error(error);
+        message.textContent =
+          error.message ||
+          "Erro ao entrar.";
+      }
+    }
+    /* =========================
+       MOSTRAR PAINEL
+    ========================= */
+    function mostrarPainel() {
+      document
+        .getElementById(
+          "adminLoginCard"
+        )
+        .style.display = "none";
+      document
+        .getElementById(
+          "adminPanel"
+        )
+        .style.display = "block";
+    }
+    /* =========================
+       CADASTRAR ADMIN
+    ========================= */
+    async function cadastrarAdmin() {
+      const username =
+        document
+          .getElementById(
+            "newAdminUsername"
+          )
+          .value
+          .trim();
+      const password =
+        document
+          .getElementById(
+            "newAdminPassword"
+          )
+          .value;
+      const message =
+        document.getElementById(
+          "adminRegisterMessage"
+        );
+      if (!username || !password) {
+        message.textContent =
+          "Preencha todos os campos.";
+        return;
+      }
+      if (username.length < 3) {
+        message.textContent =
+          "O usuário deve ter pelo menos 3 caracteres.";
+        return;
+      }
+      if (password.length < 4) {
+        message.textContent =
+          "A senha deve ter pelo menos 4 caracteres.";
+        return;
+      }
+      message.textContent =
+        "Cadastrando...";
+      try {
+        const response =
+          await fetch(
+            `${API_URL}/auth/admin-register`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                username,
+                password
+              })
+            }
+          );
+        const data =
+          await response
+            .json()
+            .catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+            "Não foi possível cadastrar."
+          );
+        }
+        message.textContent =
+          "Administrador cadastrado com sucesso!";
+        document
+          .getElementById(
+            "newAdminUsername"
+          )
+          .value = "";
+        document
+          .getElementById(
+            "newAdminPassword"
+          )
+          .value = "";
+      } catch (error) {
+        console.error(error);
+        message.textContent =
+          error.message ||
+          "Erro ao cadastrar administrador.";
+      }
+    }
+    /* =========================
+       SAIR
+    ========================= */
+    function sairAdmin() {
+      localStorage.removeItem(
+        "jpbet_admin"
+      );
+      window.location.href =
+        "index.html";
+    }
+    /* =========================
+       VERIFICAR LOGIN
+    ========================= */
+    window.addEventListener(
+      "load",
+      () => {
+        const admin =
+          localStorage.getItem(
+            "jpbet_admin"
+          );
+        if (admin) {
+          mostrarPainel();
+        }
+      }
+    );
+  </script>
+</body>
+</html>
