@@ -1,5 +1,9 @@
 import express from "express";
 import { pool } from "./db.js";
+import {
+  criarSessaoAdmin,
+  removerSessaoAdmin
+} from "./adminSession.js";
 
 const router = express.Router();
 
@@ -26,12 +30,14 @@ async function inicializarAdmins() {
 
     console.log("Tabela admins inicializada com sucesso.");
   } catch (error) {
-    console.error("Erro ao inicializar tabela admins:", error);
+    console.error(
+      "Erro ao inicializar tabela admins:",
+      error
+    );
   }
 }
 
 inicializarAdmins();
-
 
 /* =========================
    VERIFICAÇÃO DO BANCO
@@ -45,9 +51,7 @@ router.get("/health", async (req, res) => {
       ok: true,
       database: "connected"
     });
-
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
@@ -57,15 +61,12 @@ router.get("/health", async (req, res) => {
   }
 });
 
-
 /* =========================
    CADASTRO DE USUÁRIO
 ========================= */
 
 router.post("/register", async (req, res) => {
-
   try {
-
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -76,21 +77,25 @@ router.post("/register", async (req, res) => {
 
     if (username.length < 3) {
       return res.status(400).json({
-        message: "O usuário deve ter pelo menos 3 caracteres."
+        message:
+          "O usuário deve ter pelo menos 3 caracteres."
       });
     }
 
     if (password.length < 4) {
       return res.status(400).json({
-        message: "A senha deve ter pelo menos 4 caracteres."
+        message:
+          "A senha deve ter pelo menos 4 caracteres."
       });
     }
 
     const existingUser = await pool.query(
-      `SELECT id
-       FROM users
-       WHERE username = $1
-       LIMIT 1`,
+      `
+      SELECT id
+      FROM users
+      WHERE username = $1
+      LIMIT 1
+      `,
       [username]
     );
 
@@ -101,10 +106,12 @@ router.post("/register", async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO users
-       (username, password_hash, balance)
-       VALUES ($1, $2, 0)
-       RETURNING id, username, balance`,
+      `
+      INSERT INTO users
+      (username, password_hash, balance)
+      VALUES ($1, $2, 0)
+      RETURNING id, username, balance
+      `,
       [username, password]
     );
 
@@ -115,7 +122,6 @@ router.post("/register", async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
@@ -124,15 +130,12 @@ router.post("/register", async (req, res) => {
   }
 });
 
-
 /* =========================
    LOGIN DE USUÁRIO
 ========================= */
 
 router.post("/login", async (req, res) => {
-
   try {
-
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -142,10 +145,12 @@ router.post("/login", async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT id, username, password_hash, balance
-       FROM users
-       WHERE username = $1
-       LIMIT 1`,
+      `
+      SELECT id, username, password_hash, balance
+      FROM users
+      WHERE username = $1
+      LIMIT 1
+      `,
       [username]
     );
 
@@ -173,7 +178,6 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
@@ -182,30 +186,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
 /* =========================
    LOGIN ADMINISTRATIVO
 ========================= */
 
 router.post("/admin-login", async (req, res) => {
-
   try {
-
     const { username, password } = req.body;
 
     const result = await pool.query(
-      `SELECT id, username, password_hash
-       FROM admins
-       WHERE username = $1
-       LIMIT 1`,
+      `
+      SELECT id, username, password_hash
+      FROM admins
+      WHERE username = $1
+      LIMIT 1
+      `,
       [username]
     );
 
     if (result.rows.length > 0) {
-
       const admin = result.rows[0];
 
       if (admin.password_hash === password) {
+        const token =
+          criarSessaoAdmin(admin.username);
+
+        res.setHeader(
+          "Set-Cookie",
+          `jpbet_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
+        );
 
         return res.json({
           ok: true,
@@ -228,6 +237,13 @@ router.post("/admin-login", async (req, res) => {
       username === adminUser &&
       password === adminPassword
     ) {
+      const token =
+        criarSessaoAdmin(adminUser);
+
+      res.setHeader(
+        "Set-Cookie",
+        `jpbet_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
+      );
 
       return res.json({
         ok: true,
@@ -237,28 +253,61 @@ router.post("/admin-login", async (req, res) => {
     }
 
     return res.status(401).json({
-      message: "Credenciais administrativas inválidas."
+      message:
+        "Credenciais administrativas inválidas."
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
-      message: "Erro interno do servidor."
+      message: "Erro ao realizar login administrativo."
     });
   }
 });
 
+/* =========================
+   LOGOUT ADMINISTRATIVO
+========================= */
+
+router.post("/admin-logout", async (req, res) => {
+  try {
+    const cookies = req.headers.cookie || "";
+
+    const match =
+      cookies.match(
+        /(?:^|;\s*)jpbet_admin_session=([^;]+)/
+      );
+
+    if (match) {
+      removerSessaoAdmin(match[1]);
+    }
+
+    res.setHeader(
+      "Set-Cookie",
+      "jpbet_admin_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; Secure"
+    );
+
+    res.json({
+      ok: true,
+      message: "Sessão administrativa encerrada."
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Erro ao sair."
+    });
+  }
+});
 
 /* =========================
    CADASTRAR ADMINISTRADOR
 ========================= */
 
 router.post("/admin-register", async (req, res) => {
-
   try {
-
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -269,21 +318,25 @@ router.post("/admin-register", async (req, res) => {
 
     if (username.length < 3) {
       return res.status(400).json({
-        message: "O usuário deve ter pelo menos 3 caracteres."
+        message:
+          "O usuário deve ter pelo menos 3 caracteres."
       });
     }
 
     if (password.length < 4) {
       return res.status(400).json({
-        message: "A senha deve ter pelo menos 4 caracteres."
+        message:
+          "A senha deve ter pelo menos 4 caracteres."
       });
     }
 
     const existingAdmin = await pool.query(
-      `SELECT id
-       FROM admins
-       WHERE username = $1
-       LIMIT 1`,
+      `
+      SELECT id
+      FROM admins
+      WHERE username = $1
+      LIMIT 1
+      `,
       [username]
     );
 
@@ -294,28 +347,30 @@ router.post("/admin-register", async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO admins
-       (username, password_hash)
-       VALUES ($1, $2)
-       RETURNING id, username, created_at`,
+      `
+      INSERT INTO admins
+      (username, password_hash)
+      VALUES ($1, $2)
+      RETURNING id, username, created_at
+      `,
       [username, password]
     );
 
     res.status(201).json({
       ok: true,
-      message: "Administrador criado com sucesso.",
+      message:
+        "Administrador criado com sucesso.",
       admin: result.rows[0]
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
-      message: "Erro interno do servidor."
+      message:
+        "Erro interno do servidor."
     });
   }
 });
-
 
 export default router;
