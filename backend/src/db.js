@@ -36,9 +36,7 @@ async function inicializarBanco() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
-      INSERT INTO users (username, password_hash, balance)
-      VALUES ('admin', '123456', 1000.00)
-      ON CONFLICT (username) DO NOTHING;
+  
     `);
 
     console.log("Banco inicializado com sucesso.");
