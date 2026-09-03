@@ -3,11 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>JPBET - Configurações</title>
 
@@ -20,31 +16,34 @@
       margin: 0;
       font-family: Arial, sans-serif;
       background: #0b0d12;
-      color: #fff;
+      color: white;
     }
 
     .container {
       width: 100%;
       max-width: 900px;
-      margin: 0 auto;
+      margin: auto;
       padding: 20px;
     }
 
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
       margin-bottom: 25px;
     }
 
     h1 {
-      margin: 0;
+      margin: 0 0 5px;
+      font-size: 28px;
     }
 
     .subtitle {
-      opacity: 0.7;
-      margin-top: 6px;
+      margin: 0;
+      opacity: 0.65;
+    }
+
+    .back-button {
+      margin-bottom: 20px;
+      background: #181c24;
+      color: white;
     }
 
     .card {
@@ -56,28 +55,35 @@
 
     .card h2 {
       margin-top: 0;
+      margin-bottom: 18px;
     }
 
     .field {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
     }
 
     label {
       display: block;
       margin-bottom: 7px;
-      font-weight: bold;
+      font-size: 14px;
+      opacity: 0.85;
     }
 
     input,
     textarea,
     select {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #444;
-      border-radius: 8px;
+      padding: 13px;
+      border: 1px solid #303541;
+      border-radius: 9px;
       background: #0b0d12;
-      color: #fff;
+      color: white;
       font-size: 16px;
+      outline: none;
     }
 
     textarea {
@@ -85,60 +91,81 @@
       resize: vertical;
     }
 
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: white;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-row input {
+      width: 20px;
+      height: 20px;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+    }
+
+    .note {
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: 0.6;
+      line-height: 1.5;
+    }
+
+    .save-button {
+      background: white;
+      color: #111;
+      margin-bottom: 12px;
+    }
+
+    .logout {
+      background: #8b0000;
+      color: white;
+    }
+
     button {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       border: 0;
-      border-radius: 9px;
-      margin-top: 8px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .primary {
-      background: #fff;
-      color: #111;
-    }
-
-    .secondary {
-      background: #292e38;
-      color: #fff;
-    }
-
-    .danger {
-      background: #8b0000;
-      color: #fff;
+    button:active {
+      transform: scale(0.98);
     }
 
     .message {
-      min-height: 22px;
-      margin-top: 12px;
-      opacity: 0.9;
-    }
-
-    .back {
-      margin-bottom: 20px;
-    }
-
-    .info {
-      padding: 12px;
-      border-radius: 8px;
-      background: #222733;
-      margin-bottom: 15px;
-      font-size: 14px;
+      min-height: 20px;
+      margin: 5px 0 20px;
+      text-align: center;
       opacity: 0.85;
     }
 
-    @media (max-width: 600px) {
+    .success {
+      color: #8cff9a;
+    }
 
+    .error {
+      color: #ff8c8c;
+    }
+
+    @media (max-width: 600px) {
       .container {
         padding: 15px;
       }
 
-      header {
-        flex-direction: column;
-        align-items: stretch;
+      h1 {
+        font-size: 24px;
       }
     }
   </style>
@@ -151,32 +178,27 @@
 
     <header>
 
-      <div>
+      <button
+        class="back-button"
+        onclick="voltar()"
+      >
+        ← VOLTAR PARA ADMINISTRAÇÃO
+      </button>
 
-        <h1>JPBET</h1>
+      <h1>JPBET</h1>
 
-        <div class="subtitle">
-          Painel de configurações
-        </div>
-
-      </div>
+      <p class="subtitle">
+        Painel de configurações
+      </p>
 
     </header>
-
-
-    <button
-      class="secondary back"
-      onclick="voltarAdmin()"
-    >
-      ← VOLTAR PARA ADMINISTRAÇÃO
-    </button>
 
 
     <!-- CONFIGURAÇÕES GERAIS -->
 
     <div class="card">
 
-      <h2>⚙️ Configurações gerais</h2>
+      <h2>Configurações gerais</h2>
 
       <div class="field">
 
@@ -185,8 +207,9 @@
         </label>
 
         <input
-          id="site_name"
           type="text"
+          id="site_name"
+          placeholder="JPBET"
         >
 
       </div>
@@ -195,12 +218,13 @@
       <div class="field">
 
         <label for="site_title">
-          Título do site
+          Título da plataforma
         </label>
 
         <input
-          id="site_title"
           type="text"
+          id="site_title"
+          placeholder="JPBET - Plataforma de Jogos"
         >
 
       </div>
@@ -214,6 +238,7 @@
 
         <textarea
           id="site_description"
+          placeholder="Descrição da plataforma"
         ></textarea>
 
       </div>
@@ -226,8 +251,9 @@
         </label>
 
         <input
-          id="footer_text"
           type="text"
+          id="footer_text"
+          placeholder="© 2026 JPBET"
         >
 
       </div>
@@ -239,31 +265,22 @@
 
     <div class="card">
 
-      <h2>🎰 Configurações da roleta</h2>
-
-      <div class="info">
-        Estas configurações serão utilizadas pela
-        versão de créditos virtuais da roleta.
-      </div>
-
+      <h2>Configurações da roleta</h2>
 
       <div class="field">
 
-        <label for="roulette_enabled">
-          Roleta ativa
-        </label>
+        <div class="checkbox-row">
 
-        <select id="roulette_enabled">
+          <input
+            type="checkbox"
+            id="roulette_enabled"
+          >
 
-          <option value="true">
-            Sim
-          </option>
+          <label for="roulette_enabled">
+            Ativar roleta
+          </label>
 
-          <option value="false">
-            Não
-          </option>
-
-        </select>
+        </div>
 
       </div>
 
@@ -275,8 +292,8 @@
         </label>
 
         <input
-          id="roulette_min_bet"
           type="number"
+          id="roulette_min_bet"
           min="0"
           step="0.01"
         >
@@ -291,8 +308,8 @@
         </label>
 
         <input
-          id="roulette_max_bet"
           type="number"
+          id="roulette_max_bet"
           min="0"
           step="0.01"
         >
@@ -307,24 +324,31 @@
         </label>
 
         <input
-          id="roulette_rtp"
           type="number"
+          id="roulette_rtp"
           min="0"
           max="100"
-          step="0.1"
+          step="0.01"
         >
+
+        <div class="note">
+          Percentual configurável para a versão
+          de créditos virtuais. O funcionamento
+          do jogo deverá permanecer transparente
+          e baseado em regras gerais, sem
+          manipulação individual de resultados.
+        </div>
 
       </div>
 
     </div>
 
 
-    <!-- TEXTOS -->
+    <!-- TEXTOS DOS BOTÕES -->
 
     <div class="card">
 
-      <h2>✏️ Textos dos botões</h2>
-
+      <h2>Textos dos botões</h2>
 
       <div class="field">
 
@@ -333,8 +357,8 @@
         </label>
 
         <input
-          id="primary_button_text"
           type="text"
+          id="primary_button_text"
         >
 
       </div>
@@ -343,12 +367,12 @@
       <div class="field">
 
         <label for="login_button_text">
-          Botão de login
+          Botão Entrar
         </label>
 
         <input
-          id="login_button_text"
           type="text"
+          id="login_button_text"
         >
 
       </div>
@@ -357,12 +381,12 @@
       <div class="field">
 
         <label for="register_button_text">
-          Botão de cadastro
+          Botão Criar conta
         </label>
 
         <input
-          id="register_button_text"
           type="text"
+          id="register_button_text"
         >
 
       </div>
@@ -375,8 +399,8 @@
         </label>
 
         <input
-          id="roulette_button_text"
           type="text"
+          id="roulette_button_text"
         >
 
       </div>
@@ -388,25 +412,22 @@
 
     <div class="card">
 
-      <h2>🔧 Manutenção</h2>
+      <h2>Modo de manutenção</h2>
 
       <div class="field">
 
-        <label for="maintenance_mode">
-          Modo manutenção
-        </label>
+        <div class="checkbox-row">
 
-        <select id="maintenance_mode">
+          <input
+            type="checkbox"
+            id="maintenance_mode"
+          >
 
-          <option value="false">
-            Desativado
-          </option>
+          <label for="maintenance_mode">
+            Ativar modo de manutenção
+          </label>
 
-          <option value="true">
-            Ativado
-          </option>
-
-        </select>
+        </div>
 
       </div>
 
@@ -419,6 +440,7 @@
 
         <textarea
           id="maintenance_message"
+          placeholder="Plataforma temporariamente em manutenção."
         ></textarea>
 
       </div>
@@ -426,8 +448,14 @@
     </div>
 
 
+    <div
+      id="message"
+      class="message"
+    ></div>
+
+
     <button
-      class="primary"
+      class="save-button"
       onclick="salvarConfiguracoes()"
     >
       💾 SALVAR CONFIGURAÇÕES
@@ -435,17 +463,11 @@
 
 
     <button
-      class="danger"
-      onclick="voltarAdmin()"
+      class="logout"
+      onclick="sair()"
     >
       SAIR
     </button>
-
-
-    <div
-      id="message"
-      class="message"
-    ></div>
 
   </div>
 
@@ -455,34 +477,80 @@
     const API_URL = "/api";
 
 
+    const campos = [
+      "site_name",
+      "site_title",
+      "site_description",
+      "footer_text",
+
+      "roulette_enabled",
+      "roulette_min_bet",
+      "roulette_max_bet",
+      "roulette_rtp",
+
+      "primary_button_text",
+      "login_button_text",
+      "register_button_text",
+      "roulette_button_text",
+
+      "maintenance_mode",
+      "maintenance_message"
+    ];
+
+
+    /* =========================
+       MENSAGEM
+    ========================= */
+
+    function mostrarMensagem(
+      texto,
+      tipo = ""
+    ) {
+
+      const message =
+        document.getElementById("message");
+
+      message.textContent = texto;
+
+      message.className =
+        "message " + tipo;
+
+    }
+
+
     /* =========================
        CARREGAR CONFIGURAÇÕES
     ========================= */
 
     async function carregarConfiguracoes() {
 
-      const message =
-        document.getElementById("message");
-
-      message.textContent =
-        "Carregando configurações...";
-
-
       try {
+
+        mostrarMensagem(
+          "Carregando configurações..."
+        );
 
         const response =
           await fetch(
-            `${API_URL}/settings`
+            `${API_URL}/settings`,
+            {
+              method: "GET",
+              credentials: "same-origin"
+            }
           );
 
-
         const data =
-          await response
-            .json()
-            .catch(() => ({}));
-
+          await response.json();
 
         if (!response.ok) {
+
+          if (response.status === 401) {
+
+            window.location.href =
+              "admin.html";
+
+            return;
+          }
 
           throw new Error(
             data.message ||
@@ -495,33 +563,49 @@
           data.settings || [];
 
 
-        settings.forEach(setting => {
+        settings.forEach(
+          (setting) => {
 
-          const element =
-            document.getElementById(
-              setting.setting_key
-            );
+            const campo =
+              document.getElementById(
+                setting.setting_key
+              );
+
+            if (!campo) {
+              return;
+            }
 
 
-          if (element) {
+            if (
+              campo.type === "checkbox"
+            ) {
 
-            element.value =
-              setting.setting_value;
+              campo.checked =
+                setting.setting_value ===
+                "true";
+
+            } else {
+
+              campo.value =
+                setting.setting_value || "";
+
+            }
+
           }
+        );
 
-        });
 
-
-        message.textContent =
-          "Configurações carregadas.";
+        mostrarMensagem("");
 
       } catch (error) {
 
         console.error(error);
 
-        message.textContent =
+        mostrarMensagem(
           error.message ||
-          "Erro ao carregar configurações.";
+          "Erro ao carregar configurações.",
+          "error"
+        );
       }
     }
 
@@ -532,89 +616,48 @@
 
     async function salvarConfiguracoes() {
 
-      const message =
-        document.getElementById("message");
-
-
-      const settings = {
-
-        site_name:
-          document.getElementById(
-            "site_name"
-          ).value,
-
-        site_title:
-          document.getElementById(
-            "site_title"
-          ).value,
-
-        site_description:
-          document.getElementById(
-            "site_description"
-          ).value,
-
-        footer_text:
-          document.getElementById(
-            "footer_text"
-          ).value,
-
-        roulette_enabled:
-          document.getElementById(
-            "roulette_enabled"
-          ).value,
-
-        roulette_min_bet:
-          document.getElementById(
-            "roulette_min_bet"
-          ).value,
-
-        roulette_max_bet:
-          document.getElementById(
-            "roulette_max_bet"
-          ).value,
-
-        roulette_rtp:
-          document.getElementById(
-            "roulette_rtp"
-          ).value,
-
-        primary_button_text:
-          document.getElementById(
-            "primary_button_text"
-          ).value,
-
-        login_button_text:
-          document.getElementById(
-            "login_button_text"
-          ).value,
-
-        register_button_text:
-          document.getElementById(
-            "register_button_text"
-          ).value,
-
-        roulette_button_text:
-          document.getElementById(
-            "roulette_button_text"
-          ).value,
-
-        maintenance_mode:
-          document.getElementById(
-            "maintenance_mode"
-          ).value,
-
-        maintenance_message:
-          document.getElementById(
-            "maintenance_message"
-          ).value
-      };
-
-
-      message.textContent =
-        "Salvando...";
-
-
       try {
+
+        mostrarMensagem(
+          "Salvando configurações..."
+        );
+
+
+        const configuracoes = {};
+
+
+        campos.forEach(
+          (campoId) => {
+
+            const campo =
+              document.getElementById(
+                campoId
+              );
+
+            if (!campo) {
+              return;
+            }
+
+
+            if (
+              campo.type === "checkbox"
+            ) {
+
+              configuracoes[campoId] =
+                campo.checked
+                  ? "true"
+                  : "false";
+
+            } else {
+
+              configuracoes[campoId] =
+                campo.value;
+
+            }
+
+          }
+        );
+
 
         const response =
           await fetch(
@@ -627,19 +670,30 @@
                   "application/json"
               },
 
+              credentials:
+                "same-origin",
+
               body:
-                JSON.stringify(settings)
+                JSON.stringify(
+                  configuracoes
+                )
             }
           );
 
 
         const data =
-          await response
-            .json()
-            .catch(() => ({}));
+          await response.json();
 
 
         if (!response.ok) {
+
+          if (response.status === 401) {
+
+            window.location.href =
+              "admin.html";
+
+            return;
+          }
 
           throw new Error(
             data.message ||
@@ -648,16 +702,21 @@
         }
 
 
-        message.textContent =
-          "Configurações salvas com sucesso!";
+        mostrarMensagem(
+          "Configurações salvas com sucesso.",
+          "success"
+        );
+
 
       } catch (error) {
 
         console.error(error);
 
-        message.textContent =
+        mostrarMensagem(
           error.message ||
-          "Erro ao salvar configurações.";
+          "Erro ao salvar configurações.",
+          "error"
+        );
       }
     }
 
@@ -666,10 +725,39 @@
        VOLTAR
     ========================= */
 
-    function voltarAdmin() {
+    function voltar() {
 
       window.location.href =
         "admin.html";
+    }
+
+
+    /* =========================
+       SAIR
+    ========================= */
+
+    async function sair() {
+
+      try {
+
+        await fetch(
+          `${API_URL}/auth/admin-logout`,
+          {
+            method: "POST",
+            credentials: "same-origin"
+          }
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+      } finally {
+
+        window.location.href =
+          "admin.html";
+
+      }
     }
 
 
