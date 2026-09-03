@@ -1,1 +1,321 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>JPBET - Dashboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0d12;
+      color: white;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .logo span {
+      opacity: 0.6;
+    }
+
+    .user {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .balance {
+      background: #181c24;
+      border-radius: 14px;
+      padding: 25px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .balance-title {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .balance-value {
+      font-size: 34px;
+      font-weight: bold;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: white;
+      color: #111;
+    }
+
+    .secondary {
+      background: #181c24;
+      color: white;
+    }
+
+    .card {
+      background: #181c24;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+    }
+
+    .message {
+      min-height: 20px;
+      margin-top: 12px;
+      opacity: 0.8;
+    }
+
+    .logout {
+      background: #8b0000;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+
+      <div class="logo">
+        JP<span>BET</span>
+      </div>
+
+      <div class="user" id="userName">
+        Usuário
+      </div>
+
+    </header>
+
+
+    <div class="balance">
+
+      <div class="balance-title">
+        Seu saldo
+      </div>
+
+      <div class="balance-value" id="balance">
+        R$ 0,00
+      </div>
+
+    </div>
+
+
+    <div class="buttons">
+
+      <button
+        class="primary"
+        onclick="abrirRoleta()"
+      >
+        🎰 JOGAR NA ROLETA
+      </button>
+
+      <button
+        class="secondary"
+        onclick="depositar()"
+      >
+        💰 DEPOSITAR
+      </button>
+
+      <button
+        class="secondary"
+        onclick="sacar()"
+      >
+        💸 SACAR
+      </button>
+
+      <button
+        class="secondary"
+        onclick="historico()"
+      >
+        📋 HISTÓRICO
+      </button>
+
+    </div>
+
+
+    <div class="card">
+
+      <h2>Minha conta</h2>
+
+      <p>
+        Bem-vindo à plataforma JPBET.
+      </p>
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+    </div>
+
+
+    <button
+      class="logout"
+      onclick="sair()"
+    >
+      SAIR DA CONTA
+    </button>
+
+  </div>
+
+
+  <script>
+
+    function carregarUsuario() {
+
+      const savedUser =
+        localStorage.getItem("jpbet_user");
+
+      if (!savedUser) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      try {
+
+        const user =
+          JSON.parse(savedUser);
+
+        document.getElementById(
+          "userName"
+        ).textContent =
+          user.username || "Usuário";
+
+        const balance =
+          Number(user.balance || 0);
+
+        document.getElementById(
+          "balance"
+        ).textContent =
+          "R$ " +
+          balance
+            .toFixed(2)
+            .replace(".", ",");
+
+      } catch (error) {
+
+        console.error(error);
+
+        localStorage.removeItem(
+          "jpbet_user"
+        );
+
+        window.location.href =
+          "index.html";
+      }
+    }
+
+
+    function abrirRoleta() {
+
+      document.getElementById(
+        "message"
+      ).textContent =
+        "A roleta será integrada aqui.";
+    }
+
+
+    function depositar() {
+
+      document.getElementById(
+        "message"
+      ).textContent =
+        "Área de depósito será adicionada.";
+    }
+
+
+    function sacar() {
+
+      document.getElementById(
+        "message"
+      ).textContent =
+        "Área de saque será adicionada.";
+    }
+
+
+    function historico() {
+
+      document.getElementById(
+        "message"
+      ).textContent =
+        "O histórico será adicionado.";
+    }
+
+
+    function sair() {
+
+      localStorage.removeItem(
+        "jpbet_user"
+      );
+
+      localStorage.removeItem(
+        "jpbet_token"
+      );
+
+      window.location.href =
+        "index.html";
+    }
+
+
+    carregarUsuario();
+
+  </script>
+
+</body>
+
+</html>
