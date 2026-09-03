@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     balance NUMERIC(12,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS spins (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
@@ -13,7 +12,6 @@ CREATE TABLE IF NOT EXISTS spins (
     amount NUMERIC(12,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
@@ -21,7 +19,15 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount NUMERIC(12,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
+CREATE TABLE IF NOT EXISTS admins (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 INSERT INTO users (username, password_hash, balance)
 VALUES ('admin', '123456', 1000.00)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO admins (username, password_hash)
+VALUES ('admin', '123456')
 ON CONFLICT (username) DO NOTHING;
