@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-
 import authRouter from "./auth.js";
 import settingsRouter from "./settings.js";
 import { pool } from "./db.js";
@@ -11,49 +10,26 @@ import { validarSessaoAdmin } from "./adminSession.js";
 import {
   registrarAuditoria as registrarAuditoriaSistema
 } from "./audit.js";
-
 dotenv.config();
-
 const app = express();
-
 app.use(cors());
 app.use(express.json());
-
 /* =========================================================
    INICIALIZAÇÃO / MIGRAÇÃO AUTOMÁTICA DO BANCO
 ========================================================= */
-
 async function inicializarBanco() {
   try {
-    /*
-      Garante que usuários existentes
-      tenham a coluna de saldo reservado.
-    */
-
     await pool.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS
       reserved_balance NUMERIC(12,2)
       DEFAULT 0;
     `);
-
-    /*
-      Corrige registros antigos que
-      eventualmente estejam NULL.
-    */
-
     await pool.query(`
       UPDATE users
       SET reserved_balance = 0
       WHERE reserved_balance IS NULL;
     `);
-
-    /*
-      Garante que as tabelas financeiras
-      necessárias existam caso o schema
-      ainda não tenha sido aplicado no banco.
-    */
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS deposits (
         id SERIAL PRIMARY KEY,
@@ -71,7 +47,6 @@ async function inicializarBanco() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS withdrawals (
         id SERIAL PRIMARY KEY,
@@ -95,7 +70,6 @@ async function inicializarBanco() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admin_audit_logs (
         id SERIAL PRIMARY KEY,
@@ -108,78 +82,62 @@ async function inicializarBanco() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
     await pool.query(`
       CREATE INDEX IF NOT EXISTS
       idx_deposits_user_id
       ON deposits(user_id);
     `);
-
     await pool.query(`
       CREATE INDEX IF NOT EXISTS
       idx_deposits_status
       ON deposits(status);
     `);
-
     await pool.query(`
       CREATE INDEX IF NOT EXISTS
       idx_withdrawals_user_id
       ON withdrawals(user_id);
     `);
-
     await pool.query(`
       CREATE INDEX IF NOT EXISTS
       idx_withdrawals_status
       ON withdrawals(status);
     `);
-
     await pool.query(`
       CREATE INDEX IF NOT EXISTS
       idx_admin_audit_logs_admin_id
       ON admin_audit_logs(admin_id);
     `);
-
     await pool.query(`
       CREATE INDEX IF NOT EXISTS
       idx_admin_audit_logs_created_at
       ON admin_audit_logs(created_at);
     `);
-
     console.log(
       "Banco JPBET inicializado com sucesso."
     );
-
   } catch (error) {
-
     console.error(
       "Erro ao inicializar banco:",
       error
     );
-
     throw error;
   }
 }
-
 /* =========================================================
    FRONTEND
 ========================================================= */
-
 const __filename =
   fileURLToPath(import.meta.url);
-
 const __dirname =
   path.dirname(__filename);
-
 const frontendPath =
   path.join(
     __dirname,
     "../frontend"
   );
-
 app.use(
   express.static(frontendPath)
 );
-
 app.get(
   "/",
   (req, res) => {
@@ -191,13 +149,10 @@ app.get(
     );
   }
 );
-
 /* =========================================================
    AUXILIARES
 ========================================================= */
-
 function obterCookie(req, nome) {
-
   const cookies =
     String(
       req.headers.cookie || ""
@@ -207,7 +162,6 @@ function obterCookie(req, nome) {
         item =>
           item.trim()
       );
-
   const cookie =
     cookies.find(
       item =>
@@ -215,55 +169,44 @@ function obterCookie(req, nome) {
           `${nome}=`
         )
     );
-
   if (!cookie) {
     return null;
   }
-
   return decodeURIComponent(
     cookie.substring(
       nome.length + 1
     )
   );
 }
-
 function exigirAdmin(
   req,
   res,
   next
 ) {
-
   const token =
     obterCookie(
       req,
       "jpbet_admin_session"
     );
-
   const sessao =
     validarSessaoAdmin(
       token
     );
-
   if (!sessao) {
-
     return res.status(401).json({
       ok: false,
       message:
         "Sessão administrativa inválida ou expirada."
     });
   }
-
   req.admin =
     sessao;
-
   next();
 }
-
 async function obterAdminId(
   client,
   username
 ) {
-
   const result =
     await client.query(
       `
@@ -274,12 +217,10 @@ async function obterAdminId(
       `,
       [username]
     );
-
   return result.rows.length
     ? result.rows[0].id
     : null;
 }
-
 async function registrarAuditoria(
   client,
   adminUsername,
@@ -289,13 +230,11 @@ async function registrarAuditoria(
   description,
   metadata = null
 ) {
-
   const adminId =
     await obterAdminId(
       client,
       adminUsername
     );
-
   await client.query(
     `
     INSERT INTO admin_audit_logs
@@ -324,85 +263,255 @@ async function registrarAuditoria(
       targetId,
       description,
       metadata
-        ? JSON.stringify(
-            metadata
-          )
+        ? JSON.stringify(metadata)
         : null
     ]
   );
 }
-
 /* =========================================================
    API DE AUTENTICAÇÃO
 ========================================================= */
-
 app.use(
   "/api/auth",
   authRouter
 );
-
 /* =========================================================
    API DE CONFIGURAÇÕES
 ========================================================= */
-
 app.use(
   "/api/settings",
   settingsRouter
 );
-
 /* =========================================================
    API DA ROLETA
-   CRÉDITOS VIRTUAIS
+   ROLETAS PERSONALIZADAS
 ========================================================= */
-
+/*
+  As opções precisam permanecer iguais às existentes
+  no dashboard.html.
+  O jogador escolhe uma fatia primeiro.
+  Depois o servidor sorteia a fatia vencedora.
+  O resultado só paga se a fatia sorteada
+  for a fatia escolhida pelo jogador.
+*/
+const ROLETAS = {
+  sorte: [
+    "1000",
+    "500",
+    "200",
+    "x2",
+    "50",
+    "NOVAMENTE",
+    "100",
+    "x3",
+    "250",
+    "SORTE"
+  ],
+  turbo: [
+    "x0",
+    "x1",
+    "x2",
+    "x3",
+    "x5",
+    "x10",
+    "+10",
+    "+25",
+    "NOVAMENTE"
+  ],
+  diamante: [
+    "PRATA",
+    "OURO",
+    "PLATINA",
+    "DIAMANTE",
+    "SUPER",
+    "NOVAMENTE",
+    "OURO",
+    "PRATA"
+  ]
+};
+function calcularPremioRoleta(
+  rouletteId,
+  resultado,
+  bet
+) {
+  const valor =
+    String(
+      resultado || ""
+    )
+      .trim()
+      .toUpperCase();
+  if (
+    rouletteId === "sorte"
+  ) {
+    if (
+      valor === "1000"
+    ) {
+      return bet * 1000;
+    }
+    if (
+      valor === "500"
+    ) {
+      return bet * 500;
+    }
+    if (
+      valor === "200"
+    ) {
+      return bet * 200;
+    }
+    if (
+      valor === "50"
+    ) {
+      return bet * 50;
+    }
+    if (
+      valor === "100"
+    ) {
+      return bet * 100;
+    }
+    if (
+      valor === "250"
+    ) {
+      return bet * 250;
+    }
+    if (
+      valor === "x2"
+    ) {
+      return bet * 2;
+    }
+    if (
+      valor === "x3"
+    ) {
+      return bet * 3;
+    }
+    return 0;
+  }
+  if (
+    rouletteId === "turbo"
+  ) {
+    if (
+      valor === "x0"
+    ) {
+      return 0;
+    }
+    if (
+      valor === "x1"
+    ) {
+      return bet;
+    }
+    if (
+      valor === "x2"
+    ) {
+      return bet * 2;
+    }
+    if (
+      valor === "x3"
+    ) {
+      return bet * 3;
+    }
+    if (
+      valor === "x5"
+    ) {
+      return bet * 5;
+    }
+    if (
+      valor === "x10"
+    ) {
+      return bet * 10;
+    }
+    if (
+      valor === "+10"
+    ) {
+      return 10;
+    }
+    if (
+      valor === "+25"
+    ) {
+      return 25;
+    }
+    return 0;
+  }
+  if (
+    rouletteId === "diamante"
+  ) {
+    if (
+      valor === "PRATA"
+    ) {
+      return bet * 2;
+    }
+    if (
+      valor === "OURO"
+    ) {
+      return bet * 5;
+    }
+    if (
+      valor === "PLATINA"
+    ) {
+      return bet * 8;
+    }
+    if (
+      valor === "DIAMANTE"
+    ) {
+      return bet * 10;
+    }
+    if (
+      valor === "SUPER"
+    ) {
+      return bet * 15;
+    }
+    return 0;
+  }
+  return 0;
+}
 app.post(
   "/api/roulette/spin",
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const {
         userId,
         betAmount,
         betType,
-        betValue
+        betValue,
+        rouletteId,
+        selectedIndex
       } = req.body;
-
       const userIdNumber =
         Number(userId);
-
       const bet =
         Number(betAmount);
-
+      /*
+        -----------------------------------------------------
+        VALIDAÇÕES BÁSICAS
+        -----------------------------------------------------
+      */
       if (
         !Number.isInteger(
           userIdNumber
         ) ||
         userIdNumber <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       if (
         !Number.isFinite(bet) ||
         bet <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Valor da aposta inválido."
         });
       }
-
+      /*
+        -----------------------------------------------------
+        CONFIGURAÇÕES DO ADMIN
+        -----------------------------------------------------
+      */
       const settingsResult =
         await pool.query(
           `
@@ -418,125 +527,132 @@ app.post(
           )
           `
         );
-
       const settings = {};
-
       for (
         const row
         of settingsResult.rows
       ) {
-
         settings[
           row.setting_key
         ] =
           row.setting_value;
       }
-
       const rouletteEnabled =
         String(
           settings.roulette_enabled
         ).toLowerCase() !==
         "false";
-
       const virtualCreditsMode =
         String(
           settings.virtual_credits_mode
         ).toLowerCase() !==
         "false";
-
       const minBet =
         Number(
           settings.roulette_min_bet ||
           1
         );
-
       const maxBet =
         Number(
           settings.roulette_max_bet ||
           100
         );
-
       if (!rouletteEnabled) {
-
         return res.status(403).json({
           ok: false,
           message:
             "A roleta está desativada."
         });
       }
-
       if (!virtualCreditsMode) {
-
         return res.status(403).json({
           ok: false,
           message:
             "A roleta está configurada apenas para créditos virtuais."
         });
       }
-
       if (
         bet < minBet ||
         bet > maxBet
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
         });
       }
-
-      const tiposPermitidos = [
-        "red",
-        "black",
-        "number"
-      ];
-
+      /*
+        -----------------------------------------------------
+        NOVA VALIDAÇÃO DA ROLETA PERSONALIZADA
+        -----------------------------------------------------
+        Antes o backend aceitava somente:
+          red
+          black
+          number
+        Por isso o dashboard enviava "roulette"
+        e recebia "Tipo de aposta inválido."
+        Agora "roulette" é aceito para as três
+        roletas personalizadas.
+      */
+      const tipoRoleta =
+        String(
+          betType || ""
+        ).toLowerCase();
       if (
-        !tiposPermitidos.includes(
-          betType
-        )
+        tipoRoleta !== "roulette"
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
-            "Tipo de aposta inválido."
+            "Tipo de roleta inválido."
         });
       }
-
-      let numeroApostado =
-        null;
-
+      const idRoleta =
+        String(
+          rouletteId || ""
+        ).toLowerCase();
       if (
-        betType === "number"
+        !Object.prototype.hasOwnProperty.call(
+          ROLETAS,
+          idRoleta
+        )
       ) {
-
-        numeroApostado =
-          Number(
-            betValue
-          );
-
-        if (
-          !Number.isInteger(
-            numeroApostado
-          ) ||
-          numeroApostado < 0 ||
-          numeroApostado > 36
-        ) {
-
-          return res.status(400).json({
-            ok: false,
-            message:
-              "Número da roleta inválido."
-          });
-        }
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Roleta inválida."
+        });
       }
-
+      /*
+        selectedIndex precisa ser informado
+        pelo jogador antes de girar.
+      */
+      const indiceEscolhido =
+        Number(
+          selectedIndex
+        );
+      if (
+        !Number.isInteger(
+          indiceEscolhido
+        ) ||
+        indiceEscolhido < 0 ||
+        indiceEscolhido >=
+          ROLETAS[idRoleta].length
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Opção da roleta inválida."
+        });
+      }
+      /*
+        -----------------------------------------------------
+        TRANSAÇÃO
+        -----------------------------------------------------
+      */
       await client.query(
         "BEGIN"
       );
-
       const userResult =
         await client.query(
           `
@@ -551,43 +667,40 @@ app.post(
           `,
           [userIdNumber]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const saldoAtual =
         Number(
           user.balance || 0
         );
-
       const saldoReservado =
         Number(
           user.reserved_balance || 0
         );
-
+      /*
+        O saldo reservado NUNCA é utilizado
+        para apostar.
+        Somente o saldo disponível pode
+        financiar a rodada.
+      */
       if (
         saldoAtual < bet
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
@@ -598,80 +711,55 @@ app.post(
             saldoReservado
         });
       }
-
-      const numero =
+      /*
+        -----------------------------------------------------
+        SORTEIO DO RESULTADO
+        -----------------------------------------------------
+      */
+      const segmentos =
+        ROLETAS[idRoleta];
+      const indiceResultado =
         Math.floor(
-          Math.random() * 37
+          Math.random() *
+          segmentos.length
         );
-
-      let cor =
-        "green";
-
-      if (
-        numero !== 0
-      ) {
-
-        const numerosVermelhos = [
-          1, 3, 5, 7, 9,
-          12, 14, 16, 18,
-          19, 21, 23, 25,
-          27, 30, 32, 34, 36
+      const resultado =
+        segmentos[
+          indiceResultado
         ];
-
-        cor =
-          numerosVermelhos.includes(
-            numero
-          )
-            ? "red"
-            : "black";
+      const escolhido =
+        segmentos[
+          indiceEscolhido
+        ];
+      /*
+        O jogador só ganha quando
+        a fatia sorteada é exatamente
+        a fatia que ele escolheu.
+      */
+      const ganhou =
+        indiceResultado ===
+        indiceEscolhido;
+      let premio = 0;
+      if (ganhou) {
+        premio =
+          calcularPremioRoleta(
+            idRoleta,
+            resultado,
+            bet
+          );
       }
-
-      let ganhou =
-        false;
-
-      let premio =
-        0;
-
-      if (
-        betType === "number"
-      ) {
-
-        if (
-          numero ===
-          numeroApostado
-        ) {
-
-          ganhou =
-            true;
-
-          premio =
-            bet * 36;
-        }
-      }
-
-      if (
-        betType === "red" ||
-        betType === "black"
-      ) {
-
-        if (
-          numero !== 0 &&
-          cor === betType
-        ) {
-
-          ganhou =
-            true;
-
-          premio =
-            bet * 2;
-        }
-      }
-
+      /*
+        -----------------------------------------------------
+        ATUALIZAÇÃO DO SALDO
+        -----------------------------------------------------
+        Primeiro desconta a aposta.
+        Depois acrescenta o prêmio.
+        O saldo reservado permanece exatamente igual.
+      */
       const novoSaldo =
         saldoAtual -
         bet +
         premio;
-
       await client.query(
         `
         UPDATE users
@@ -683,10 +771,13 @@ app.post(
           userIdNumber
         ]
       );
-
+      /*
+        -----------------------------------------------------
+        REGISTRO DA RODADA
+        -----------------------------------------------------
+      */
       const resultadoTexto =
-        `${numero}:${cor}:${betType}`;
-
+        `${idRoleta}:${indiceResultado}:${resultado}:escolhido:${indiceEscolhido}:${escolhido}`;
       const spinResult =
         await client.query(
           `
@@ -712,7 +803,11 @@ app.post(
             premio
           ]
         );
-
+      /*
+        -----------------------------------------------------
+        TRANSAÇÃO FINANCEIRA
+        -----------------------------------------------------
+      */
       await client.query(
         `
         INSERT INTO transactions
@@ -738,109 +833,94 @@ app.post(
             : -bet
         ]
       );
-
       await client.query(
         "COMMIT"
       );
-
+      /*
+        -----------------------------------------------------
+        RESPOSTA
+        -----------------------------------------------------
+      */
       return res.json({
-
         ok: true,
-
         spin: {
           id:
             spinResult.rows[0].id,
-
-          number:
-            numero,
-
-          color:
-            cor,
-
-          betType,
-
+          rouletteId:
+            idRoleta,
+          index:
+            indiceResultado,
+          result:
+            resultado,
+          selectedIndex:
+            indiceEscolhido,
+          selected:
+            escolhido,
+          betType:
+            "roulette",
           betAmount:
             bet,
-
           won:
             ganhou,
-
           prize:
             premio
         },
-
         user: {
           id:
             user.id,
-
           username:
             user.username,
-
           balance:
             Number(
               novoSaldo
             ),
-
           reservedBalance:
             saldoReservado
         }
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro na roleta:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao executar a roleta."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    CONSULTAR SALDO
 ========================================================= */
-
 app.get(
   "/api/account/:userId",
   async (req, res) => {
-
     try {
-
       const userId =
         Number(
           req.params.userId
         );
-
       if (
         !Number.isInteger(
           userId
         ) ||
         userId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       const result =
         await pool.query(
           `
@@ -859,57 +939,45 @@ app.get(
           `,
           [userId]
         );
-
       if (
         result.rows.length === 0
       ) {
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário não encontrado."
         });
       }
-
       const user =
         result.rows[0];
-
       return res.json({
         ok: true,
         user: {
           id:
             user.id,
-
           username:
             user.username,
-
           balance:
             Number(
               user.balance || 0
             ),
-
           reservedBalance:
             Number(
               user.reserved_balance || 0
             ),
-
           totalBalance:
             Number(
               user.total_balance || 0
             ),
-
           createdAt:
             user.created_at
         }
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao consultar conta:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
@@ -918,58 +986,46 @@ app.get(
     }
   }
 );
-
 /* =========================================================
    SOLICITAR DEPÓSITO
 ========================================================= */
-
 app.post(
   "/api/deposits",
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const {
         userId,
         amount,
         playerNote
       } = req.body;
-
       const userIdNumber =
         Number(userId);
-
       const valor =
         Number(amount);
-
       if (
         !Number.isInteger(
           userIdNumber
         ) ||
         userIdNumber <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       if (
         !Number.isFinite(valor) ||
         valor <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Valor do depósito inválido."
         });
       }
-
       const userResult =
         await client.query(
           `
@@ -979,18 +1035,15 @@ app.post(
           `,
           [userIdNumber]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário não encontrado."
         });
       }
-
       const result =
         await client.query(
           `
@@ -1023,7 +1076,6 @@ app.post(
             playerNote || null
           ]
         );
-
       return res.status(201).json({
         ok: true,
         message:
@@ -1031,107 +1083,76 @@ app.post(
         deposit:
           result.rows[0]
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao criar depósito:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao criar depósito."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    SOLICITAR SAQUE
 ========================================================= */
-
 app.post(
   "/api/withdrawals",
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const {
         userId,
         amount,
         pixKey,
         playerNote
       } = req.body;
-
       const userIdNumber =
         Number(userId);
-
       const valor =
         Number(amount);
-
       if (
         !Number.isInteger(
           userIdNumber
         ) ||
         userIdNumber <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       if (
         !Number.isFinite(valor) ||
         valor <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Valor do saque inválido."
         });
       }
-
-      /*
-        A chave Pix é obrigatória em TODA
-        solicitação de saque.
-
-        Ela não é salva no perfil do usuário.
-        Fica somente vinculada ao saque.
-      */
-
       const chavePix =
         String(
           pixKey || ""
         ).trim();
-
-      if (
-        !chavePix
-      ) {
-
+      if (!chavePix) {
         return res.status(400).json({
           ok: false,
           message:
             "Informe a chave Pix."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const userResult =
         await client.query(
           `
@@ -1146,43 +1167,34 @@ app.post(
           `,
           [userIdNumber]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const saldoDisponivel =
         Number(
           user.balance || 0
         );
-
       const saldoReservado =
         Number(
           user.reserved_balance || 0
         );
-
       if (
         saldoDisponivel < valor
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
@@ -1193,21 +1205,12 @@ app.post(
             saldoReservado
         });
       }
-
       const novoSaldo =
         saldoDisponivel -
         valor;
-
       const novaReserva =
         saldoReservado +
         valor;
-
-      /*
-        O valor é retirado do saldo disponível
-        e colocado em saldo reservado enquanto
-        o administrador analisa o saque.
-      */
-
       await client.query(
         `
         UPDATE users
@@ -1222,14 +1225,6 @@ app.post(
           userIdNumber
         ]
       );
-
-      /*
-        A chave Pix fica somente nesta
-        solicitação de saque.
-
-        NÃO é adicionada à tabela users.
-      */
-
       const withdrawalResult =
         await client.query(
           `
@@ -1268,7 +1263,6 @@ app.post(
             playerNote || null
           ]
         );
-
       await client.query(
         `
         INSERT INTO transactions
@@ -1289,145 +1283,103 @@ app.post(
           -valor
         ]
       );
-
-      /*
-        Auditoria do sistema.
-
-        A chave Pix NÃO é colocada no log de auditoria
-        para evitar duplicação desnecessária de dado
-        sensível.
-      */
-
       await registrarAuditoriaSistema({
         userId:
           userIdNumber,
-
         action:
           "SAQUE_SOLICITADO",
-
         module:
           "withdrawals",
-
         targetType:
           "withdrawal",
-
         targetId:
           withdrawalResult.rows[0].id,
-
         newValue: {
           amount:
             valor,
-
           status:
             "pending",
-
           withdrawalMethod:
             "pix"
         },
-
         details:
           "Jogador solicitou um saque via Pix.",
-
         result:
           "SUCCESS",
-
         ipAddress:
           req.headers["x-forwarded-for"] ||
           req.socket.remoteAddress ||
           null,
-
         userAgent:
           req.headers["user-agent"] ||
           null
       });
-
       await client.query(
         "COMMIT"
       );
-
       return res.status(201).json({
         ok: true,
-
         message:
           "Saque solicitado. O valor foi reservado e está aguardando análise.",
-
         withdrawal:
           withdrawalResult.rows[0],
-
         user: {
           id:
             user.id,
-
           username:
             user.username,
-
           balance:
             novoSaldo,
-
           reservedBalance:
             novaReserva,
-
           totalBalance:
             novoSaldo +
             novaReserva
         }
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao solicitar saque:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao solicitar saque."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    HISTÓRICO FINANCEIRO
 ========================================================= */
-
 app.get(
   "/api/transactions/:userId",
   async (req, res) => {
-
     try {
-
       const userId =
         Number(
           req.params.userId
         );
-
       if (
         !Number.isInteger(
           userId
         ) ||
         userId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       const result =
         await pool.query(
           `
@@ -1444,20 +1396,16 @@ app.get(
           `,
           [userId]
         );
-
       return res.json({
         ok: true,
         transactions:
           result.rows
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao consultar transações:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
@@ -1466,77 +1414,62 @@ app.get(
     }
   }
 );
-
 /* =========================================================
    ADMIN - ADICIONAR CRÉDITOS
 ========================================================= */
-
 app.post(
   "/api/admin/users/:id/add-credits",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const userId =
         Number(
           req.params.id
         );
-
       const valor =
         Number(
           req.body.amount
         );
-
       const reason =
         String(
           req.body.reason || ""
         ).trim();
-
       if (
         !Number.isInteger(
           userId
         ) ||
         userId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       if (
         !Number.isFinite(
           valor
         ) ||
         valor <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Informe um valor de créditos válido."
         });
       }
-
       if (!reason) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Informe o motivo da alteração."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const userResult =
         await client.query(
           `
@@ -1551,39 +1484,31 @@ app.post(
           `,
           [userId]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const saldoAntes =
         Number(
           user.balance || 0
         );
-
       const saldoReservado =
         Number(
           user.reserved_balance || 0
         );
-
       const saldoDepois =
         saldoAntes +
         valor;
-
       await client.query(
         `
         UPDATE users
@@ -1595,7 +1520,6 @@ app.post(
           userId
         ]
       );
-
       await client.query(
         `
         INSERT INTO transactions
@@ -1616,7 +1540,6 @@ app.post(
           valor
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -1638,11 +1561,9 @@ app.post(
           reason
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
@@ -1661,103 +1582,82 @@ app.post(
             saldoReservado
         }
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao adicionar créditos:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao adicionar créditos."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - REMOVER CRÉDITOS
 ========================================================= */
-
 app.post(
   "/api/admin/users/:id/remove-credits",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const userId =
         Number(
           req.params.id
         );
-
       const valor =
         Number(
           req.body.amount
         );
-
       const reason =
         String(
           req.body.reason || ""
         ).trim();
-
       if (
         !Number.isInteger(
           userId
         ) ||
         userId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Usuário inválido."
         });
       }
-
       if (
         !Number.isFinite(
           valor
         ) ||
         valor <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Informe um valor de créditos válido."
         });
       }
-
       if (!reason) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Informe o motivo da alteração."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const userResult =
         await client.query(
           `
@@ -1772,43 +1672,34 @@ app.post(
           `,
           [userId]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const saldoAntes =
         Number(
           user.balance || 0
         );
-
       const saldoReservado =
         Number(
           user.reserved_balance || 0
         );
-
       if (
         saldoAntes < valor
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
@@ -1819,11 +1710,9 @@ app.post(
             saldoReservado
         });
       }
-
       const saldoDepois =
         saldoAntes -
         valor;
-
       await client.query(
         `
         UPDATE users
@@ -1835,7 +1724,6 @@ app.post(
           userId
         ]
       );
-
       await client.query(
         `
         INSERT INTO transactions
@@ -1856,7 +1744,6 @@ app.post(
           -valor
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -1878,11 +1765,9 @@ app.post(
           reason
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
@@ -1901,44 +1786,34 @@ app.post(
             saldoReservado
         }
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao remover créditos:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao remover créditos."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - LISTAR SAQUES
 ========================================================= */
-
 app.get(
   "/api/admin/withdrawals",
   exigirAdmin,
   async (req, res) => {
-
     try {
-
       const result =
         await pool.query(
           `
@@ -1971,20 +1846,16 @@ app.get(
             w.id DESC
           `
         );
-
       return res.json({
         ok: true,
         withdrawals:
           result.rows
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao listar saques:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
@@ -1993,44 +1864,35 @@ app.get(
     }
   }
 );
-
 /* =========================================================
    ADMIN - APROVAR SAQUE
 ========================================================= */
-
 app.post(
   "/api/admin/withdrawals/:id/approve",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const withdrawalId =
         Number(
           req.params.id
         );
-
       if (
         !Number.isInteger(
           withdrawalId
         ) ||
         withdrawalId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Saque inválido."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const result =
         await client.query(
           `
@@ -2045,47 +1907,38 @@ app.post(
           `,
           [withdrawalId]
         );
-
       if (
         result.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Saque não encontrado."
         });
       }
-
       const withdrawal =
         result.rows[0];
-
       if (
         withdrawal.status !==
         "pending"
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
             `Este saque não está pendente. Status atual: ${withdrawal.status}.`
         });
       }
-
       const adminId =
         await obterAdminId(
           client,
           req.admin.username
         );
-
       await client.query(
         `
         UPDATE withdrawals
@@ -2101,7 +1954,6 @@ app.post(
           withdrawalId
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -2118,85 +1970,67 @@ app.post(
             withdrawal.user_id
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
           "Saque aprovado. O valor continua reservado até a baixa/conclusão do pagamento."
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao aprovar saque:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao aprovar saque."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - REJEITAR SAQUE
 ========================================================= */
-
 app.post(
   "/api/admin/withdrawals/:id/reject",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const withdrawalId =
         Number(
           req.params.id
         );
-
       const reason =
         String(
           req.body.reason || ""
         ).trim();
-
       if (
         !Number.isInteger(
           withdrawalId
         ) ||
         withdrawalId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Saque inválido."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const withdrawalResult =
         await client.query(
           `
@@ -2211,41 +2045,33 @@ app.post(
           `,
           [withdrawalId]
         );
-
       if (
         withdrawalResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Saque não encontrado."
         });
       }
-
       const withdrawal =
         withdrawalResult.rows[0];
-
       if (
         withdrawal.status !==
         "pending"
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
             `Este saque não pode ser rejeitado. Status atual: ${withdrawal.status}.`
         });
       }
-
       const userResult =
         await client.query(
           `
@@ -2259,69 +2085,55 @@ app.post(
           `,
           [withdrawal.user_id]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário do saque não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const valor =
         Number(
           withdrawal.amount
         );
-
       const saldoAtual =
         Number(
           user.balance || 0
         );
-
       const reservadoAtual =
         Number(
           user.reserved_balance || 0
         );
-
       if (
         reservadoAtual < valor
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(409).json({
           ok: false,
           message:
             "A reserva desse saque não possui saldo suficiente para devolução."
         });
       }
-
       const novoSaldo =
         saldoAtual +
         valor;
-
       const novaReserva =
         reservadoAtual -
         valor;
-
       const adminId =
         await obterAdminId(
           client,
           req.admin.username
         );
-
       await client.query(
         `
         UPDATE users
@@ -2336,7 +2148,6 @@ app.post(
           withdrawal.user_id
         ]
       );
-
       await client.query(
         `
         UPDATE withdrawals
@@ -2357,7 +2168,6 @@ app.post(
           withdrawalId
         ]
       );
-
       await client.query(
         `
         INSERT INTO transactions
@@ -2378,7 +2188,6 @@ app.post(
           valor
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -2404,11 +2213,9 @@ app.post(
             novaReserva
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
@@ -2423,70 +2230,55 @@ app.post(
             novaReserva
         }
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao rejeitar saque:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao rejeitar saque."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - DAR BAIXA / CONCLUIR SAQUE
 ========================================================= */
-
 app.post(
   "/api/admin/withdrawals/:id/complete",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const withdrawalId =
         Number(
           req.params.id
         );
-
       if (
         !Number.isInteger(
           withdrawalId
         ) ||
         withdrawalId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Saque inválido."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const withdrawalResult =
         await client.query(
           `
@@ -2501,41 +2293,33 @@ app.post(
           `,
           [withdrawalId]
         );
-
       if (
         withdrawalResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Saque não encontrado."
         });
       }
-
       const withdrawal =
         withdrawalResult.rows[0];
-
       if (
         withdrawal.status !==
         "approved"
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
             "Somente saques aprovados podem receber baixa."
         });
       }
-
       const userResult =
         await client.query(
           `
@@ -2549,65 +2333,52 @@ app.post(
           `,
           [withdrawal.user_id]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário do saque não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const valor =
         Number(
           withdrawal.amount
         );
-
       const saldoAtual =
         Number(
           user.balance || 0
         );
-
       const reservadoAtual =
         Number(
           user.reserved_balance || 0
         );
-
       if (
         reservadoAtual < valor
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(409).json({
           ok: false,
           message:
             "O valor reservado não é suficiente para concluir este saque."
         });
       }
-
       const novaReserva =
         reservadoAtual -
         valor;
-
       const adminId =
         await obterAdminId(
           client,
           req.admin.username
         );
-
       await client.query(
         `
         UPDATE users
@@ -2620,7 +2391,6 @@ app.post(
           withdrawal.user_id
         ]
       );
-
       await client.query(
         `
         UPDATE withdrawals
@@ -2636,7 +2406,6 @@ app.post(
           withdrawalId
         ]
       );
-
       await client.query(
         `
         INSERT INTO transactions
@@ -2657,7 +2426,6 @@ app.post(
           -valor
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -2678,11 +2446,9 @@ app.post(
             novaReserva
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
@@ -2697,44 +2463,34 @@ app.post(
             novaReserva
         }
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao concluir saque:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao concluir saque."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - LISTAR DEPÓSITOS
 ========================================================= */
-
 app.get(
   "/api/admin/deposits",
   exigirAdmin,
   async (req, res) => {
-
     try {
-
       const result =
         await pool.query(
           `
@@ -2761,20 +2517,16 @@ app.get(
             d.id DESC
           `
         );
-
       return res.json({
         ok: true,
         deposits:
           result.rows
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao listar depósitos:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
@@ -2783,44 +2535,35 @@ app.get(
     }
   }
 );
-
 /* =========================================================
    ADMIN - APROVAR DEPÓSITO
 ========================================================= */
-
 app.post(
   "/api/admin/deposits/:id/approve",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const depositId =
         Number(
           req.params.id
         );
-
       if (
         !Number.isInteger(
           depositId
         ) ||
         depositId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Depósito inválido."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const depositResult =
         await client.query(
           `
@@ -2835,41 +2578,33 @@ app.post(
           `,
           [depositId]
         );
-
       if (
         depositResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Depósito não encontrado."
         });
       }
-
       const deposit =
         depositResult.rows[0];
-
       if (
         deposit.status !==
         "pending"
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
             `Este depósito não está pendente. Status atual: ${deposit.status}.`
         });
       }
-
       const userResult =
         await client.query(
           `
@@ -2883,45 +2618,36 @@ app.post(
           `,
           [deposit.user_id]
         );
-
       if (
         userResult.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Usuário do depósito não encontrado."
         });
       }
-
       const user =
         userResult.rows[0];
-
       const saldoAtual =
         Number(
           user.balance || 0
         );
-
       const valor =
         Number(
           deposit.amount
         );
-
       const novoSaldo =
         saldoAtual +
         valor;
-
       const adminId =
         await obterAdminId(
           client,
           req.admin.username
         );
-
       await client.query(
         `
         UPDATE users
@@ -2933,7 +2659,6 @@ app.post(
           deposit.user_id
         ]
       );
-
       await client.query(
         `
         UPDATE deposits
@@ -2949,7 +2674,6 @@ app.post(
           depositId
         ]
       );
-
       await client.query(
         `
         INSERT INTO transactions
@@ -2970,7 +2694,6 @@ app.post(
           valor
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -2989,11 +2712,9 @@ app.post(
             novoSaldo
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
@@ -3001,75 +2722,59 @@ app.post(
         balance:
           novoSaldo
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao aprovar depósito:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao aprovar depósito."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - REJEITAR DEPÓSITO
 ========================================================= */
-
 app.post(
   "/api/admin/deposits/:id/reject",
   exigirAdmin,
   async (req, res) => {
-
     const client =
       await pool.connect();
-
     try {
-
       const depositId =
         Number(
           req.params.id
         );
-
       const reason =
         String(
           req.body.reason || ""
         ).trim();
-
       if (
         !Number.isInteger(
           depositId
         ) ||
         depositId <= 0
       ) {
-
         return res.status(400).json({
           ok: false,
           message:
             "Depósito inválido."
         });
       }
-
       await client.query(
         "BEGIN"
       );
-
       const result =
         await client.query(
           `
@@ -3084,47 +2789,38 @@ app.post(
           `,
           [depositId]
         );
-
       if (
         result.rows.length === 0
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(404).json({
           ok: false,
           message:
             "Depósito não encontrado."
         });
       }
-
       const deposit =
         result.rows[0];
-
       if (
         deposit.status !==
         "pending"
       ) {
-
         await client.query(
           "ROLLBACK"
         );
-
         return res.status(400).json({
           ok: false,
           message:
             `Este depósito não está pendente. Status atual: ${deposit.status}.`
         });
       }
-
       const adminId =
         await obterAdminId(
           client,
           req.admin.username
         );
-
       await client.query(
         `
         UPDATE deposits
@@ -3143,7 +2839,6 @@ app.post(
           depositId
         ]
       );
-
       await registrarAuditoria(
         client,
         req.admin.username,
@@ -3163,54 +2858,42 @@ app.post(
             "Depósito rejeitado."
         }
       );
-
       await client.query(
         "COMMIT"
       );
-
       return res.json({
         ok: true,
         message:
           "Depósito rejeitado."
       });
-
     } catch (error) {
-
       try {
         await client.query(
           "ROLLBACK"
         );
       } catch (_) {}
-
       console.error(
         "Erro ao rejeitar depósito:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
           "Erro interno ao rejeitar depósito."
       });
-
     } finally {
-
       client.release();
     }
   }
 );
-
 /* =========================================================
    ADMIN - LISTAR USUÁRIOS
 ========================================================= */
-
 app.get(
   "/api/admin/users",
   exigirAdmin,
   async (req, res) => {
-
     try {
-
       const result =
         await pool.query(
           `
@@ -3230,20 +2913,16 @@ app.get(
             id DESC
           `
         );
-
       return res.json({
         ok: true,
         users:
           result.rows
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao listar usuários:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
@@ -3252,18 +2931,14 @@ app.get(
     }
   }
 );
-
 /* =========================================================
    ADMIN - CONSULTAR AUDITORIA
 ========================================================= */
-
 app.get(
   "/api/admin/audit-logs",
   exigirAdmin,
   async (req, res) => {
-
     try {
-
       const result =
         await pool.query(
           `
@@ -3286,20 +2961,16 @@ app.get(
           LIMIT 500
           `
         );
-
       return res.json({
         ok: true,
         logs:
           result.rows
       });
-
     } catch (error) {
-
       console.error(
         "Erro ao consultar auditoria:",
         error
       );
-
       return res.status(500).json({
         ok: false,
         message:
@@ -3308,37 +2979,28 @@ app.get(
     }
   }
 );
-
 /* =========================================================
    SERVIDOR
 ========================================================= */
-
 const PORT =
   Number(
     process.env.PORT || 3000
   );
-
 inicializarBanco()
   .then(() => {
-
     app.listen(
       PORT,
       () => {
-
         console.log(
           `JPBET rodando na porta ${PORT}`
         );
-
       }
     );
-
   })
   .catch(error => {
-
     console.error(
       "JPBET não pôde iniciar:",
       error
     );
-
     process.exit(1);
   });
