@@ -1,53 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<meta
+name=“viewport”
+content=“width=device-width, initial-scale=1.0”
 
   <title>Administração</title>
-
   <style>
-
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #111;
       color: #fff;
     }
-
     .container {
       width: 100%;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 25px;
     }
-
     .card {
       background: #1d1d1d;
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 20px;
     }
-
     .card h2 {
       margin-top: 0;
     }
-
     input {
       width: 100%;
       padding: 12px;
@@ -58,7 +47,6 @@
       color: #fff;
       font-size: 16px;
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -71,32 +59,26 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     button:hover {
       opacity: 0.9;
     }
-
     .message {
       margin-top: 10px;
       min-height: 20px;
     }
-
     .admin-info {
       padding: 12px;
       background: #292929;
       border-radius: 8px;
       margin-bottom: 8px;
     }
-
     .danger {
       background: #8b0000;
       color: #fff;
     }
-
     .logout {
       margin-bottom: 20px;
     }
-
     .admin-connected {
       background: #292929;
       border-radius: 10px;
@@ -104,207 +86,293 @@
       margin-bottom: 20px;
       text-align: center;
     }
-
     .admin-connected strong {
       display: block;
       margin-bottom: 5px;
     }
-
+    .users-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .user-card {
+      background: #292929;
+      border: 1px solid #3a3a3a;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .user-name {
+      font-size: 19px;
+      font-weight: bold;
+      word-break: break-word;
+    }
+    .user-id {
+      color: #aaa;
+      font-size: 13px;
+    }
+    .balance-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .balance-box {
+      background: #181818;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .balance-label {
+      display: block;
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .balance-value {
+      display: block;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .user-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .user-actions button {
+      margin-top: 0;
+    }
+    .add-button {
+      background: #198754;
+      color: #fff;
+    }
+    .remove-button {
+      background: #dc3545;
+      color: #fff;
+    }
+    .refresh-button {
+      background: #444;
+      color: #fff;
+    }
+    .loading {
+      text-align: center;
+      color: #aaa;
+      padding: 20px;
+    }
+    .empty {
+      text-align: center;
+      color: #aaa;
+      padding: 20px;
+    }
+    .search-box {
+      margin-bottom: 15px;
+    }
+    .operation-box {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: #181818;
+      border-radius: 10px;
+    }
+    .operation-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .operation-box button {
+      margin-top: 5px;
+    }
+    .cancel-button {
+      background: #555;
+      color: #fff;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 12px;
+      }
+      .card {
+        padding: 15px;
+      }
+      .balance-grid {
+        grid-template-columns: 1fr;
+      }
+      .user-actions {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
-
 </head>
-
 <body>
-
   <div class="container">
-
-    <h1>Administração</h1>
-
-    <!-- BOTÃO SAIR -->
-
-    <button
-      id="logoutButton"
-      class="logout danger"
-      onclick="sairAdmin()"
-      style="display:none;"
-    >
-      🚪 SAIR DA ADMINISTRAÇÃO
-    </button>
-
-
-    <!-- LOGIN ADMINISTRATIVO -->
-
-    <div
-      class="card"
-      id="adminLoginCard"
-    >
-
-      <h2>Login administrativo</h2>
-
-      <input
-        id="adminUsername"
-        type="text"
-        placeholder="Usuário administrador"
-        autocomplete="username"
-      >
-
-      <input
-        id="adminPassword"
-        type="password"
-        placeholder="Senha"
-        autocomplete="current-password"
-      >
-
-      <button onclick="loginAdmin()">
-        ENTRAR
-      </button>
-
-      <div
-        id="adminLoginMessage"
-        class="message"
-      ></div>
-
-    </div>
-
-
-    <!-- PAINEL ADMINISTRATIVO -->
-
-    <div
-      id="adminPanel"
-      style="display:none;"
-    >
-
-      <div class="admin-connected">
-
-        <strong>✅ Administrador conectado</strong>
-
-        <span id="connectedAdmin">
-          Painel administrativo ativo
-        </span>
-
-      </div>
-
-
-      <!-- CONFIGURAÇÕES -->
-
-      <div class="card">
-
-        <h2>⚙️ Configurações</h2>
-
-        <div class="admin-info">
-          Edite textos, valores, roleta e configurações
-          da plataforma.
-        </div>
-
-        <button onclick="abrirConfiguracoes()">
-          ⚙️ ABRIR CONFIGURAÇÕES
-        </button>
-
-      </div>
-
-
-      <!-- STATUS -->
-
-      <div class="card">
-
-        <h2>Status</h2>
-
-        <div class="admin-info">
-          Sistema administrativo JPBET
-        </div>
-
-        <div class="admin-info">
-          Cadastro de usuários: disponível
-        </div>
-
-        <div class="admin-info">
-          Configurações da plataforma: disponível
-        </div>
-
-        <div class="admin-info">
-          Cadastro de administradores:
-          disponível em Configurações
-        </div>
-
-      </div>
-
-    </div>
-
+<h1>Administração</h1>
+<!-- BOTÃO SAIR -->
+<button
+  id="logoutButton"
+  class="logout danger"
+  onclick="sairAdmin()"
+  style="display:none;"
+>
+  🚪 SAIR DA ADMINISTRAÇÃO
+</button>
+<!-- LOGIN ADMINISTRATIVO -->
+<div
+  class="card"
+  id="adminLoginCard"
+>
+  <h2>Login administrativo</h2>
+  <input
+    id="adminUsername"
+    type="text"
+    placeholder="Usuário administrador"
+    autocomplete="username"
+  >
+  <input
+    id="adminPassword"
+    type="password"
+    placeholder="Senha"
+    autocomplete="current-password"
+  >
+  <button onclick="loginAdmin()">
+    ENTRAR
+  </button>
+  <div
+    id="adminLoginMessage"
+    class="message"
+  ></div>
+</div>
+<!-- PAINEL ADMINISTRATIVO -->
+<div
+  id="adminPanel"
+  style="display:none;"
+>
+  <div class="admin-connected">
+    <strong>✅ Administrador conectado</strong>
+    <span id="connectedAdmin">
+      Painel administrativo ativo
+    </span>
   </div>
-
-
+  <!-- CONFIGURAÇÕES -->
+  <div class="card">
+    <h2>⚙️ Configurações</h2>
+    <div class="admin-info">
+      Edite textos, valores, roleta e configurações
+      da plataforma.
+    </div>
+    <button onclick="abrirConfiguracoes()">
+      ⚙️ ABRIR CONFIGURAÇÕES
+    </button>
+  </div>
+  <!-- USUÁRIOS E CRÉDITOS -->
+  <div class="card">
+    <h2>👥 Usuários e créditos</h2>
+    <div class="admin-info">
+      Consulte os saldos e gerencie créditos disponíveis.
+      O saldo reservado para saques não pode ser removido
+      por esta função.
+    </div>
+    <input
+      id="userSearch"
+      class="search-box"
+      type="search"
+      placeholder="🔎 Pesquisar usuário..."
+      oninput="filtrarUsuarios()"
+    >
+    <button
+      class="refresh-button"
+      onclick="carregarUsuarios()"
+    >
+      🔄 ATUALIZAR USUÁRIOS
+    </button>
+    <div
+      id="usersMessage"
+      class="message"
+    ></div>
+    <div
+      id="usersList"
+      class="users-list"
+    >
+      <div class="loading">
+        Carregando usuários...
+      </div>
+    </div>
+  </div>
+  <!-- STATUS -->
+  <div class="card">
+    <h2>Status</h2>
+    <div class="admin-info">
+      Sistema administrativo JPBET
+    </div>
+    <div class="admin-info">
+      Cadastro de usuários: disponível
+    </div>
+    <div class="admin-info">
+      Configurações da plataforma: disponível
+    </div>
+    <div class="admin-info">
+      Cadastro de administradores:
+      disponível em Configurações
+    </div>
+  </div>
+</div>
+  </div>
   <script>
-
     const API_URL = "/api";
-
-
+    let usuarios = [];
     /* =========================
        LOGIN ADMINISTRATIVO
     ========================= */
-
     async function loginAdmin() {
-
       const username =
         document
           .getElementById("adminUsername")
           .value
           .trim();
-
       const password =
         document
           .getElementById("adminPassword")
           .value;
-
       const message =
         document.getElementById(
           "adminLoginMessage"
         );
-
       if (!username || !password) {
-
         message.textContent =
           "Digite usuário e senha.";
-
         return;
       }
-
       message.textContent =
         "Entrando...";
-
       try {
-
         const response =
           await fetch(
             `${API_URL}/auth/admin-login`,
             {
               method: "POST",
-
               headers: {
                 "Content-Type":
                   "application/json"
               },
-
               body: JSON.stringify({
                 username,
                 password
               })
             }
           );
-
         const data =
           await response
             .json()
             .catch(() => ({}));
-
         if (!response.ok) {
-
           throw new Error(
             data.message ||
             "Credenciais inválidas."
           );
         }
-
-
         localStorage.setItem(
           "jpbet_admin",
           JSON.stringify({
@@ -312,281 +380,503 @@
               data.username
           })
         );
-
-
         mostrarPainel(
           data.username
         );
-
-
       } catch (error) {
-
         console.error(error);
-
         message.textContent =
           error.message ||
           "Erro ao entrar.";
-
       }
-
     }
-
-
     /* =========================
        MOSTRAR PAINEL
     ========================= */
-
     function mostrarPainel(username) {
-
       document
         .getElementById(
           "adminLoginCard"
         )
         .style.display = "none";
-
-
       document
         .getElementById(
           "adminPanel"
         )
         .style.display = "block";
-
-
       document
         .getElementById(
           "logoutButton"
         )
         .style.display = "block";
-
-
       if (username) {
-
         document
           .getElementById(
             "connectedAdmin"
           )
           .textContent =
           `Administrador: ${username}`;
-
       }
-
+      carregarUsuarios();
     }
-
-
     /* =========================
-       CADASTRAR ADMINISTRADOR
-       USADO NAS CONFIGURAÇÕES
+       CARREGAR USUÁRIOS
     ========================= */
-
-    async function cadastrarAdmin() {
-
-      const username =
-        document
-          .getElementById(
-            "newAdminUsername"
-          )
-          .value
-          .trim();
-
-      const password =
-        document
-          .getElementById(
-            "newAdminPassword"
-          )
-          .value;
-
+    async function carregarUsuarios() {
+      const list =
+        document.getElementById(
+          "usersList"
+        );
       const message =
         document.getElementById(
-          "adminRegisterMessage"
+          "usersMessage"
         );
-
-
-      if (!username || !password) {
-
-        message.textContent =
-          "Preencha todos os campos.";
-
-        return;
-      }
-
-
-      if (username.length < 3) {
-
-        message.textContent =
-          "O usuário deve ter pelo menos 3 caracteres.";
-
-        return;
-      }
-
-
-      if (password.length < 4) {
-
-        message.textContent =
-          "A senha deve ter pelo menos 4 caracteres.";
-
-        return;
-      }
-
-
-      message.textContent =
-        "Cadastrando...";
-
-
+      list.innerHTML =
+        `<div class="loading">
+          Carregando usuários...
+        </div>`;
+      message.textContent = "";
       try {
-
         const response =
           await fetch(
-            `${API_URL}/auth/admin-register`,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body: JSON.stringify({
-                username,
-                password
-              })
-            }
+            `${API_URL}/admin/users`
           );
-
-
         const data =
           await response
             .json()
             .catch(() => ({}));
-
-
         if (!response.ok) {
-
           throw new Error(
             data.message ||
-            "Não foi possível cadastrar."
+            "Não foi possível carregar os usuários."
           );
-
         }
-
-
-        message.textContent =
-          "Administrador cadastrado com sucesso!";
-
-
-        document
-          .getElementById(
-            "newAdminUsername"
-          )
-          .value = "";
-
-
-        document
-          .getElementById(
-            "newAdminPassword"
-          )
-          .value = "";
-
-
+        usuarios =
+          Array.isArray(data)
+            ? data
+            : (data.users || []);
+        renderizarUsuarios(
+          usuarios
+        );
       } catch (error) {
-
         console.error(error);
-
+        list.innerHTML =
+          `<div class="empty">
+            Não foi possível carregar os usuários.
+          </div>`;
         message.textContent =
           error.message ||
-          "Erro ao cadastrar administrador.";
-
+          "Erro ao carregar usuários.";
       }
-
     }
-
-
+    /* =========================
+       RENDERIZAR USUÁRIOS
+    ========================= */
+    function renderizarUsuarios(lista) {
+      const list =
+        document.getElementById(
+          "usersList"
+        );
+      if (!lista.length) {
+        list.innerHTML =
+          `<div class="empty">
+            Nenhum usuário encontrado.
+          </div>`;
+        return;
+      }
+      list.innerHTML =
+        lista
+          .map(usuario => {
+            const balance =
+              Number(usuario.balance || 0);
+            const reserved =
+              Number(
+                usuario.reserved_balance || 0
+              );
+            const total =
+              balance + reserved;
+            return `
+              <div
+                class="user-card"
+                data-user-id="${usuario.id}"
+              >
+                <div class="user-header">
+                  <div>
+                    <div class="user-name">
+                      👤 ${esc(usuario.username)}
+                    </div>
+                    <div class="user-id">
+                      ID: ${usuario.id}
+                    </div>
+                  </div>
+                </div>
+                <div class="balance-grid">
+                  <div class="balance-box">
+                    <span class="balance-label">
+                      DISPONÍVEL
+                    </span>
+                    <span class="balance-value">
+                      ${formatarMoeda(balance)}
+                    </span>
+                  </div>
+                  <div class="balance-box">
+                    <span class="balance-label">
+                      RESERVADO
+                    </span>
+                    <span class="balance-value">
+                      ${formatarMoeda(reserved)}
+                    </span>
+                  </div>
+                  <div class="balance-box">
+                    <span class="balance-label">
+                      TOTAL
+                    </span>
+                    <span class="balance-value">
+                      ${formatarMoeda(total)}
+                    </span>
+                  </div>
+                </div>
+                <div class="user-actions">
+                  <button
+                    class="add-button"
+                    onclick="abrirOperacao(${usuario.id}, 'add')"
+                  >
+                    ➕ ADICIONAR CRÉDITOS
+                  </button>
+                  <button
+                    class="remove-button"
+                    onclick="abrirOperacao(${usuario.id}, 'remove')"
+                  >
+                    ➖ REMOVER CRÉDITOS
+                  </button>
+                </div>
+                <div
+                  id="operation-${usuario.id}"
+                  class="operation-box"
+                >
+                  <div
+                    id="operation-title-${usuario.id}"
+                    class="operation-title"
+                  >
+                    Operação
+                  </div>
+                  <input
+                    id="amount-${usuario.id}"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="Valor"
+                  >
+                  <input
+                    id="reason-${usuario.id}"
+                    type="text"
+                    maxlength="250"
+                    placeholder="Motivo obrigatório"
+                  >
+                  <button
+                    onclick="confirmarOperacao(${usuario.id})"
+                  >
+                    ✅ CONFIRMAR
+                  </button>
+                  <button
+                    class="cancel-button"
+                    onclick="fecharOperacao(${usuario.id})"
+                  >
+                    CANCELAR
+                  </button>
+                  <div
+                    id="operation-message-${usuario.id}"
+                    class="message"
+                  ></div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+    }
+    /* =========================
+       FILTRAR USUÁRIOS
+    ========================= */
+    function filtrarUsuarios() {
+      const termo =
+        document
+          .getElementById(
+            "userSearch"
+          )
+          .value
+          .trim()
+          .toLowerCase();
+      const filtrados =
+        usuarios.filter(
+          usuario =>
+            String(
+              usuario.username || ""
+            )
+              .toLowerCase()
+              .includes(termo)
+        );
+      renderizarUsuarios(
+        filtrados
+      );
+    }
+    /* =========================
+       ABRIR OPERAÇÃO
+    ========================= */
+    function abrirOperacao(
+      userId,
+      tipo
+    ) {
+      document
+        .querySelectorAll(
+          ".operation-box"
+        )
+        .forEach(box => {
+          box.style.display =
+            "none";
+        });
+      const box =
+        document.getElementById(
+          `operation-${userId}`
+        );
+      const title =
+        document.getElementById(
+          `operation-title-${userId}`
+        );
+      const amount =
+        document.getElementById(
+          `amount-${userId}`
+        );
+      const reason =
+        document.getElementById(
+          `reason-${userId}`
+        );
+      const message =
+        document.getElementById(
+          `operation-message-${userId}`
+        );
+      box.dataset.type =
+        tipo;
+      title.textContent =
+        tipo === "add"
+          ? "➕ Adicionar créditos"
+          : "➖ Remover créditos";
+      amount.value = "";
+      reason.value = "";
+      message.textContent = "";
+      box.style.display =
+        "block";
+      amount.focus();
+    }
+    /* =========================
+       FECHAR OPERAÇÃO
+    ========================= */
+    function fecharOperacao(
+      userId
+    ) {
+      const box =
+        document.getElementById(
+          `operation-${userId}`
+        );
+      if (box) {
+        box.style.display =
+          "none";
+      }
+    }
+    /* =========================
+       CONFIRMAR OPERAÇÃO
+    ========================= */
+    async function confirmarOperacao(
+      userId
+    ) {
+      const box =
+        document.getElementById(
+          `operation-${userId}`
+        );
+      const tipo =
+        box.dataset.type;
+      const amount =
+        Number(
+          document
+            .getElementById(
+              `amount-${userId}`
+            )
+            .value
+        );
+      const reason =
+        document
+          .getElementById(
+            `reason-${userId}`
+          )
+          .value
+          .trim();
+      const message =
+        document.getElementById(
+          `operation-message-${userId}`
+        );
+      if (
+        !tipo ||
+        !["add", "remove"].includes(tipo)
+      ) {
+        message.textContent =
+          "Selecione uma operação.";
+        return;
+      }
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
+        message.textContent =
+          "Digite um valor válido.";
+        return;
+      }
+      if (!reason) {
+        message.textContent =
+          "O motivo é obrigatório.";
+        return;
+      }
+      message.textContent =
+        "Processando...";
+      try {
+        const endpoint =
+          tipo === "add"
+            ? `${API_URL}/admin/users/${userId}/add-credits`
+            : `${API_URL}/admin/users/${userId}/remove-credits`;
+        const response =
+          await fetch(
+            endpoint,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                amount,
+                reason
+              })
+            }
+          );
+        const data =
+          await response
+            .json()
+            .catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+            "Não foi possível realizar a operação."
+          );
+        }
+        message.textContent =
+          tipo === "add"
+            ? "Créditos adicionados com sucesso!"
+            : "Créditos removidos com sucesso!";
+        await carregarUsuarios();
+      } catch (error) {
+        console.error(error);
+        message.textContent =
+          error.message ||
+          "Erro ao realizar operação.";
+      }
+    }
+    /* =========================
+       FORMATAR MOEDA
+    ========================= */
+    function formatarMoeda(
+      valor
+    ) {
+      return Number(
+        valor || 0
+      ).toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
+    }
+    /* =========================
+       ESCAPAR HTML
+    ========================= */
+    function esc(
+      valor
+    ) {
+      return String(
+        valor ?? ""
+      )
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+    }
     /* =========================
        ABRIR CONFIGURAÇÕES
     ========================= */
-
     function abrirConfiguracoes() {
-
       window.location.href =
         "admin-settings.html";
-
     }
-
-
     /* =========================
        SAIR
     ========================= */
-
     async function sairAdmin() {
-
       try {
-
         await fetch(
           `${API_URL}/auth/admin-logout`,
           {
             method: "POST"
           }
         );
-
       } catch (error) {
-
         console.error(error);
-
       }
-
-
       localStorage.removeItem(
         "jpbet_admin"
       );
-
-
       window.location.href =
         "admin.html";
-
     }
-
-
     /* =========================
        VERIFICAR LOGIN SALVO
     ========================= */
-
     window.addEventListener(
       "load",
       () => {
-
         const admin =
           localStorage.getItem(
             "jpbet_admin"
           );
-
-
         if (admin) {
-
           try {
-
             const data =
               JSON.parse(admin);
-
             mostrarPainel(
               data.username
             );
-
           } catch (error) {
-
             console.error(error);
-
             localStorage.removeItem(
               "jpbet_admin"
             );
-
           }
-
         }
-
       }
     );
-
   </script>
-
 </body>
-
 </html>
