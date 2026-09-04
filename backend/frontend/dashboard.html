@@ -8,75 +8,112 @@
     * {
       box-sizing: border-box;
     }
+    html,
     body {
       margin: 0;
+      padding: 0;
+      min-height: 100%;
+    }
+    body {
       font-family: Arial, sans-serif;
-      background: #0b0d12;
+      background:
+        radial-gradient(
+          circle at top,
+          #191d27 0%,
+          #0b0d12 48%,
+          #07080b 100%
+        );
       color: white;
     }
-    .container {
-      width: 100%;
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-      gap: 15px;
-    }
-    .logo {
-      font-size: 28px;
-      font-weight: bold;
-    }
-    .logo span {
-      opacity: 0.6;
-    }
-    .user {
-      font-size: 14px;
-      opacity: 0.8;
-      text-align: right;
-    }
-    .balance {
-      background: #181c24;
-      border-radius: 14px;
-      padding: 25px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .balance-title {
-      font-size: 14px;
-      opacity: 0.7;
-      margin-bottom: 8px;
-    }
-    .balance-value {
-      font-size: 34px;
-      font-weight: bold;
-    }
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
+    button,
+    input {
+      font-family: inherit;
     }
     button {
-      width: 100%;
-      padding: 14px;
-      border: 0;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
       cursor: pointer;
     }
     button:active {
       transform: scale(0.98);
     }
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.55;
       cursor: not-allowed;
       transform: none;
+    }
+    .container {
+      width: 100%;
+      max-width: 760px;
+      margin: auto;
+      padding: 14px;
+    }
+    /* =========================
+       CABEÇALHO
+    ========================= */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .logo {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .logo span {
+      opacity: 0.55;
+    }
+    .user {
+      font-size: 13px;
+      opacity: 0.7;
+      text-align: right;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    /* =========================
+       SALDO
+    ========================= */
+    .balance {
+      background: linear-gradient(
+        145deg,
+        #1a1e27,
+        #12151c
+      );
+      border: 1px solid #272c36;
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 12px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+    .balance-title {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+    .balance-value {
+      font-size: 28px;
+      font-weight: 900;
+    }
+    /* =========================
+       BOTÕES PRINCIPAIS
+    ========================= */
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
     }
     .primary {
       background: white;
@@ -85,151 +122,256 @@
     .secondary {
       background: #181c24;
       color: white;
-    }
-    .card {
-      background: #181c24;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .card h2 {
-      margin-top: 0;
-    }
-    .message {
-      min-height: 20px;
-      margin-top: 12px;
-      opacity: 0.8;
+      border: 1px solid #292e39;
     }
     .logout {
-      background: #8b0000;
+      background: #761d25;
       color: white;
+      margin-top: 4px;
     }
+    /* =========================
+       CONTA
+    ========================= */
+    .card {
+      background: #151820;
+      border: 1px solid #272c36;
+      border-radius: 14px;
+      padding: 15px;
+      margin-bottom: 12px;
+    }
+    .card h2 {
+      margin: 0 0 7px;
+      font-size: 17px;
+    }
+    .card p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.65;
+    }
+    .message {
+      min-height: 18px;
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.75;
+    }
+    /* =========================
+       MODAL
+    ========================= */
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 15px;
+      background: rgba(0, 0, 0, 0.82);
+      padding: 10px;
       align-items: center;
       justify-content: center;
-      overflow-y: auto;
     }
     .modal-box {
       width: 100%;
-      max-width: 520px;
-      background: #181c24;
-      border-radius: 16px;
-      padding: 22px;
-      position: relative;
-      max-height: 95vh;
+      max-width: 460px;
+      max-height: calc(100vh - 20px);
       overflow-y: auto;
+      background:
+        linear-gradient(
+          180deg,
+          #171a22,
+          #101219
+        );
+      border: 1px solid #292e39;
+      border-radius: 18px;
+      padding: 15px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     }
     .modal-box h2 {
-      margin-top: 0;
-      padding-right: 45px;
+      margin: 0 0 10px;
+      padding-right: 42px;
+      font-size: 19px;
     }
     .close-button {
       position: absolute;
-      right: 15px;
-      top: 15px;
-      width: 40px;
-      height: 40px;
+      right: 10px;
+      top: 10px;
+      width: 36px;
+      height: 36px;
       padding: 0;
       border-radius: 50%;
       background: #0b0d12;
-      color: white;
-      font-size: 24px;
-    }
-    .modal-box input {
-      width: 100%;
-      padding: 13px;
-      margin-bottom: 12px;
       border: 1px solid #303541;
-      border-radius: 8px;
-      background: #0b0d12;
       color: white;
-      font-size: 16px;
-      outline: none;
-    }
-    .modal-box input:focus {
-      border-color: white;
+      font-size: 22px;
     }
     .modal-message {
       min-height: 20px;
-      margin: 10px 0;
-      opacity: 0.85;
+      margin: 0;
     }
     /* =========================
        ROLETA
     ========================= */
-    .roulette-result {
-      text-align: center;
-      margin: 10px 0 20px;
+    .roulette-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .roulette-balance {
+      font-size: 12px;
+      opacity: 0.65;
+    }
+    .roulette-stage {
+      width: 100%;
+      height: 155px;
+      border-radius: 15px;
+      background:
+        radial-gradient(
+          circle at center,
+          #202631 0%,
+          #11141b 58%,
+          #0a0c10 100%
+        );
+      border: 1px solid #2a303b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 11px;
+      position: relative;
+      overflow: hidden;
+    }
+    .roulette-stage::before {
+      content: "";
+      position: absolute;
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      border: 1px solid #363c48;
+      opacity: 0.7;
     }
     .result-number {
-      width: 90px;
-      height: 90px;
-      margin: 0 auto 10px;
+      width: 86px;
+      height: 86px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 38px;
-      font-weight: bold;
-      background: #0b0d12;
-      border: 4px solid #303541;
+      font-size: 34px;
+      font-weight: 900;
+      background: #0a0c10;
+      border: 4px solid #3a404c;
+      position: relative;
+      z-index: 2;
+      box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.45);
     }
     .result-red {
-      background: #a50000;
-      border-color: #ff4d4d;
+      background: #9d111b;
+      border-color: #e94b56;
     }
     .result-black {
       background: #050505;
-      border-color: #777;
+      border-color: #727782;
     }
     .result-green {
-      background: #087f23;
-      border-color: #45d96b;
+      background: #08752a;
+      border-color: #43d86d;
     }
     .result-label {
-      font-size: 15px;
-      opacity: 0.8;
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: -4px;
+      margin-bottom: 10px;
     }
+    /* =========================
+       APOSTA
+    ========================= */
     .bet-title {
-      font-weight: bold;
-      margin: 18px 0 10px;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: 0.65;
+      margin: 9px 0 6px;
     }
+    .bet-amount {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      background: #090b10;
+      border: 1px solid #303541;
+      border-radius: 10px;
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+    }
+    .bet-amount:focus {
+      border-color: white;
+    }
+    .quick-values {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .quick-value {
+      padding: 8px 4px;
+      font-size: 12px;
+      background: #0b0d12;
+      color: #dfe3eb;
+      border: 1px solid #303541;
+    }
+    /* =========================
+       CORES
+    ========================= */
     .bet-types {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 15px;
+      gap: 8px;
     }
     .bet-type {
       background: #0b0d12;
       color: white;
       border: 2px solid #303541;
+      padding: 11px;
     }
     .bet-type.selected {
       border-color: white;
-      background: #252b36;
+      background: #252a34;
     }
-    .red-button {
-      border-color: #8b0000;
+    .red-button.selected {
+      border-color: #ef5962;
+      background: #48151a;
     }
-    .black-button {
-      border-color: #555;
+    .black-button.selected {
+      border-color: #999;
+      background: #252525;
+    }
+    /* =========================
+       NÚMERO
+    ========================= */
+    .number-section {
+      margin-top: 9px;
+    }
+    .number-toggle {
+      background: #0b0d12;
+      color: #cfd4df;
+      border: 1px solid #303541;
+      padding: 9px;
+      font-size: 12px;
     }
     .number-grid {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      margin-bottom: 15px;
+      gap: 5px;
+      margin-top: 7px;
+    }
+    .number-grid.visible {
+      display: grid;
     }
     .number-button {
-      padding: 9px 4px;
-      font-size: 13px;
+      padding: 8px 2px;
+      font-size: 12px;
       background: #0b0d12;
       color: white;
       border: 1px solid #303541;
@@ -240,18 +382,22 @@
       border-color: white;
     }
     .number-button.zero {
-      grid-column: span 6;
-      background: #087f23;
+      background: #08752a;
+      color: white;
     }
     .number-button.zero.selected {
-      background: #45d96b;
+      background: #43d86d;
       color: #111;
     }
+    /* =========================
+       MENSAGEM E GIRAR
+    ========================= */
     .roulette-message {
       min-height: 25px;
       text-align: center;
-      margin: 12px 0;
-      font-weight: bold;
+      margin: 8px 0;
+      font-size: 13px;
+      font-weight: 800;
     }
     .win-message {
       color: #55e878;
@@ -259,52 +405,121 @@
     .lose-message {
       color: #ff7070;
     }
+    .spin-button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      margin-top: 2px;
+    }
     .roulette-info {
       text-align: center;
-      font-size: 12px;
-      opacity: 0.6;
-      margin-top: 12px;
+      font-size: 10px;
+      opacity: 0.45;
+      margin-top: 7px;
     }
+    /* =========================
+       HISTÓRICO
+    ========================= */
     .history-list {
-      margin-top: 15px;
+      margin-top: 8px;
     }
     .history-item {
       background: #0b0d12;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 8px;
-      font-size: 14px;
+      border: 1px solid #242933;
+      border-radius: 9px;
+      padding: 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
     }
     .empty {
       opacity: 0.6;
     }
+    /* =========================
+       CELULAR
+    ========================= */
     @media (max-width: 600px) {
       .container {
-        padding: 15px;
+        padding: 10px;
       }
       header {
-        align-items: flex-start;
+        margin-bottom: 10px;
       }
-      .buttons {
-        grid-template-columns: 1fr;
+      .logo {
+        font-size: 22px;
+      }
+      .user {
+        font-size: 12px;
+      }
+      .balance {
+        padding: 12px;
+        margin-bottom: 9px;
       }
       .balance-value {
-        font-size: 30px;
+        font-size: 26px;
+      }
+      .buttons {
+        gap: 7px;
+        margin-bottom: 9px;
+      }
+      .buttons button {
+        padding: 11px 8px;
+        font-size: 13px;
+      }
+      .modal {
+        padding: 7px;
       }
       .modal-box {
-        padding: 18px;
+        max-height: calc(100vh - 14px);
+        padding: 12px;
+        border-radius: 15px;
       }
-      .number-grid {
-        grid-template-columns: repeat(6, 1fr);
+      .roulette-stage {
+        height: 135px;
       }
-      .number-button {
-        padding: 8px 2px;
+      .result-number {
+        width: 76px;
+        height: 76px;
+        font-size: 30px;
+      }
+      .roulette-stage::before {
+        width: 105px;
+        height: 105px;
+      }
+      .bet-amount {
+        height: 42px;
+      }
+      .spin-button {
+        padding: 13px;
+      }
+    }
+    @media (max-height: 700px) {
+      .roulette-stage {
+        height: 110px;
+      }
+      .result-number {
+        width: 68px;
+        height: 68px;
+        font-size: 27px;
+      }
+      .roulette-stage::before {
+        width: 92px;
+        height: 92px;
+      }
+      .bet-title {
+        margin-top: 6px;
+      }
+      .quick-values {
+        margin-top: 4px;
+      }
+      .number-section {
+        margin-top: 6px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- CABEÇALHO -->
     <header>
       <div class="logo">
         JP<span>BET</span>
@@ -328,13 +543,13 @@
         R$ 0,00
       </div>
     </div>
-    <!-- AÇÕES PRINCIPAIS -->
+    <!-- AÇÕES -->
     <div class="buttons">
       <button
         class="primary"
         onclick="abrirRoleta()"
       >
-        🎰 JOGAR NA ROLETA
+        🎰 JOGAR
       </button>
       <button
         class="secondary"
@@ -357,7 +572,9 @@
     </div>
     <!-- CONTA -->
     <div class="card">
-      <h2>Minha conta</h2>
+      <h2>
+        Minha conta
+      </h2>
       <p>
         Bem-vindo à plataforma JPBET.
       </p>
@@ -408,9 +625,14 @@
     let valorAposta = 1;
     let numeroAposta = null;
     let rodadaEmAndamento = false;
+    /* =========================
+       CARREGAR USUÁRIO
+    ========================= */
     function carregarUsuario() {
       const savedUser =
-        localStorage.getItem("jpbet_user");
+        localStorage.getItem(
+          "jpbet_user"
+        );
       if (!savedUser) {
         window.location.href =
           "index.html";
@@ -423,7 +645,8 @@
         document.getElementById(
           "userName"
         ).textContent =
-          user.username || "Usuário";
+          user.username ||
+          "Usuário";
         atualizarSaldo(
           user.balance
         );
@@ -453,10 +676,13 @@
           .toFixed(2)
           .replace(".", ",");
       if (usuarioAtual) {
-        usuarioAtual.balance = balance;
+        usuarioAtual.balance =
+          balance;
         localStorage.setItem(
           "jpbet_user",
-          JSON.stringify(usuarioAtual)
+          JSON.stringify(
+            usuarioAtual
+          )
         );
       }
     }
@@ -469,19 +695,24 @@
     ) {
       document.getElementById(
         "modalTitle"
-      ).textContent = titulo;
+      ).textContent =
+        titulo;
       document.getElementById(
         "modalContent"
-      ).innerHTML = conteudo;
+      ).innerHTML =
+        conteudo;
       document.getElementById(
         "actionModal"
-      ).style.display = "flex";
+      ).style.display =
+        "flex";
     }
     function fecharModal() {
       document.getElementById(
         "actionModal"
-      ).style.display = "none";
-      rodadaEmAndamento = false;
+      ).style.display =
+        "none";
+      rodadaEmAndamento =
+        false;
     }
     /* =========================
        ROLETA
@@ -492,62 +723,101 @@
       valorAposta = 1;
       const numeros =
         Array.from(
-          { length: 37 },
-          (_, index) => index
+          {
+            length: 37
+          },
+          (_, index) =>
+            index
         );
       let numeroHtml = "";
-      numeros.forEach(numero => {
-        if (numero === 0) {
+      numeros.forEach(
+        numero => {
           numeroHtml += `
             <button
-              class="number-button zero"
-              onclick="selecionarNumero(0)"
-              id="numero-0"
+              class="number-button ${
+                numero === 0
+                  ? "zero"
+                  : ""
+              }"
+              onclick="selecionarNumero(${numero})"
+              id="numero-${numero}"
             >
-              0
+              ${numero}
             </button>
           `;
-          return;
         }
-        numeroHtml += `
-          <button
-            class="number-button"
-            onclick="selecionarNumero(${numero})"
-            id="numero-${numero}"
-          >
-            ${numero}
-          </button>
-        `;
-      });
+      );
       abrirModal(
         "🎰 Roleta JPBET",
         `
-          <div class="roulette-result">
+          <div class="roulette-top">
+            <strong>
+              Roleta
+            </strong>
+            <span
+              class="roulette-balance"
+            >
+              Saldo:
+              ${formatarSaldo(
+                usuarioAtual
+                  ? usuarioAtual.balance
+                  : 0
+              )}
+            </span>
+          </div>
+          <div class="roulette-stage">
             <div
               id="resultNumber"
               class="result-number"
             >
               ?
             </div>
-            <div
-              id="resultLabel"
-              class="result-label"
-            >
-              Escolha sua aposta
-            </div>
+          </div>
+          <div
+            id="resultLabel"
+            class="result-label"
+          >
+            Escolha sua aposta
           </div>
           <div class="bet-title">
             Valor da aposta
           </div>
           <input
             id="betAmount"
+            class="bet-amount"
             type="number"
             min="1"
             max="100"
             step="1"
             value="1"
-            placeholder="Digite o valor"
-          />
+            inputmode="numeric"
+          >
+          <div class="quick-values">
+            <button
+              class="quick-value"
+              onclick="definirValor(1)"
+            >
+              1
+            </button>
+            <button
+              class="quick-value"
+              onclick="definirValor(5)"
+            >
+              5
+            </button>
+            <button
+              class="quick-value"
+              onclick="definirValor(10)"
+            >
+              10
+            </button>
+            <button
+              class="quick-value"
+              onclick="definirValor(25)"
+            >
+              25
+            </button>
+          </div>
           <div class="bet-title">
             Escolha uma cor
           </div>
@@ -567,18 +837,27 @@
               ⚫ PRETO
             </button>
           </div>
-          <div class="bet-title">
-            Ou escolha um número
-          </div>
-          <div class="number-grid">
-            ${numeroHtml}
+          <div class="number-section">
+            <button
+              class="number-toggle"
+              onclick="mostrarNumeros()"
+            >
+              🔢 Escolher número
+            </button>
+            <div
+              id="numberGrid"
+              class="number-grid"
+            >
+              ${numeroHtml}
+            </div>
           </div>
           <div
             id="rouletteMessage"
             class="roulette-message"
-          ></div>
+          >
+          </div>
           <button
-            class="primary"
+            class="primary spin-button"
             id="spinButton"
             onclick="girarRoleta()"
           >
@@ -591,27 +870,80 @@
       );
     }
     /* =========================
+       FORMATAR SALDO
+    ========================= */
+    function formatarSaldo(valor) {
+      return (
+        "R$ " +
+        Number(valor || 0)
+          .toFixed(2)
+          .replace(".", ",")
+      );
+    }
+    /* =========================
+       VALOR RÁPIDO
+    ========================= */
+    function definirValor(valor) {
+      const input =
+        document.getElementById(
+          "betAmount"
+        );
+      if (!input) {
+        return;
+      }
+      input.value = valor;
+    }
+    /* =========================
+       MOSTRAR NÚMEROS
+    ========================= */
+    function mostrarNumeros() {
+      const grid =
+        document.getElementById(
+          "numberGrid"
+        );
+      if (!grid) {
+        return;
+      }
+      grid.classList.toggle(
+        "visible"
+      );
+    }
+    /* =========================
        SELECIONAR COR
     ========================= */
     function selecionarCor(cor) {
       tipoAposta = cor;
       numeroAposta = null;
       document
-        .querySelectorAll(".bet-type")
-        .forEach(button => {
-          button.classList.remove("selected");
-        });
+        .querySelectorAll(
+          ".bet-type"
+        )
+        .forEach(
+          button => {
+            button.classList.remove(
+              "selected"
+            );
+          }
+        );
       document
-        .querySelectorAll(".number-button")
-        .forEach(button => {
-          button.classList.remove("selected");
-        });
+        .querySelectorAll(
+          ".number-button"
+        )
+        .forEach(
+          button => {
+            button.classList.remove(
+              "selected"
+            );
+          }
+        );
       const button =
         document.getElementById(
           `bet-${cor}`
         );
       if (button) {
-        button.classList.add("selected");
+        button.classList.add(
+          "selected"
+        );
       }
       mostrarMensagem(
         cor === "red"
@@ -623,25 +955,43 @@
     /* =========================
        SELECIONAR NÚMERO
     ========================= */
-    function selecionarNumero(numero) {
-      tipoAposta = "number";
-      numeroAposta = numero;
+    function selecionarNumero(
+      numero
+    ) {
+      tipoAposta =
+        "number";
+      numeroAposta =
+        numero;
       document
-        .querySelectorAll(".bet-type")
-        .forEach(button => {
-          button.classList.remove("selected");
-        });
+        .querySelectorAll(
+          ".bet-type"
+        )
+        .forEach(
+          button => {
+            button.classList.remove(
+              "selected"
+            );
+          }
+        );
       document
-        .querySelectorAll(".number-button")
-        .forEach(button => {
-          button.classList.remove("selected");
-        });
+        .querySelectorAll(
+          ".number-button"
+        )
+        .forEach(
+          button => {
+            button.classList.remove(
+              "selected"
+            );
+          }
+        );
       const button =
         document.getElementById(
           `numero-${numero}`
         );
       if (button) {
-        button.classList.add("selected");
+        button.classList.add(
+          "selected"
+        );
       }
       mostrarMensagem(
         `Aposta selecionada: número ${numero}.`,
@@ -662,7 +1012,8 @@
       if (!elemento) {
         return;
       }
-      elemento.textContent = texto;
+      elemento.textContent =
+        texto;
       elemento.className =
         "roulette-message " +
         (classe || "");
@@ -717,7 +1068,8 @@
       }
       const saldo =
         Number(
-          usuarioAtual.balance || 0
+          usuarioAtual.balance ||
+          0
         );
       if (saldo < bet) {
         mostrarMensagem(
@@ -726,13 +1078,15 @@
         );
         return;
       }
-      rodadaEmAndamento = true;
+      rodadaEmAndamento =
+        true;
       const spinButton =
         document.getElementById(
           "spinButton"
         );
       if (spinButton) {
-        spinButton.disabled = true;
+        spinButton.disabled =
+          true;
         spinButton.textContent =
           "🎰 GIRANDO...";
       }
@@ -759,26 +1113,31 @@
           await fetch(
             `${API_URL}/roulette/spin`,
             {
-              method: "POST",
+              method:
+                "POST",
               headers: {
                 "Content-Type":
                   "application/json"
               },
-              body: JSON.stringify({
-                userId:
-                  usuarioAtual.id,
-                betAmount:
-                  bet,
-                betType:
-                  tipoAposta,
-                betValue:
-                  numeroAposta
-              })
+              body:
+                JSON.stringify({
+                  userId:
+                    usuarioAtual.id,
+                  betAmount:
+                    bet,
+                  betType:
+                    tipoAposta,
+                  betValue:
+                    numeroAposta
+                })
             }
           );
         const data =
           await response.json();
-        if (!response.ok || !data.ok) {
+        if (
+          !response.ok ||
+          !data.ok
+        ) {
           throw new Error(
             data.message ||
             "Não foi possível realizar a rodada."
@@ -795,7 +1154,7 @@
             data.spin.prize || 0
           );
         /* =========================
-           MOSTRAR RESULTADO
+           RESULTADO
         ========================= */
         if (resultNumber) {
           resultNumber.textContent =
@@ -812,7 +1171,7 @@
                 ? "⚫ Preto"
                 : "🟢 Verde";
           resultLabel.textContent =
-            `${nomeCor}`;
+            nomeCor;
         }
         /* =========================
            ATUALIZAR SALDO
@@ -822,7 +1181,9 @@
         );
         if (ganhou) {
           mostrarMensagem(
-            `🎉 VOCÊ GANHOU ${premio.toFixed(2).replace(".", ",")} CRÉDITOS!`,
+            `🎉 VOCÊ GANHOU ${premio
+              .toFixed(2)
+              .replace(".", ",")} CRÉDITOS!`,
             "win-message"
           );
         } else {
@@ -832,11 +1193,13 @@
           );
         }
         if (spinButton) {
-          spinButton.disabled = false;
+          spinButton.disabled =
+            false;
           spinButton.textContent =
             "🎰 GIRAR NOVAMENTE";
         }
-        rodadaEmAndamento = false;
+        rodadaEmAndamento =
+          false;
       } catch (error) {
         console.error(error);
         mostrarMensagem(
@@ -845,11 +1208,13 @@
           "lose-message"
         );
         if (spinButton) {
-          spinButton.disabled = false;
+          spinButton.disabled =
+            false;
           spinButton.textContent =
             "🎰 TENTAR NOVAMENTE";
         }
-        rodadaEmAndamento = false;
+        rodadaEmAndamento =
+          false;
       }
     }
     /* =========================
@@ -860,13 +1225,10 @@
         "💰 Depósito",
         `
           <p>
-            A área de depósito está sendo
-            preparada.
+            A área de depósito está sendo preparada.
           </p>
           <p>
-            Nesta versão, a plataforma
-            trabalha somente com créditos
-            virtuais.
+            Nesta versão, a plataforma trabalha somente com créditos virtuais.
           </p>
           <button
             class="primary"
@@ -885,12 +1247,10 @@
         "💸 Saque",
         `
           <p>
-            A área de saque está sendo
-            preparada.
+            A área de saque está sendo preparada.
           </p>
           <p>
-            As operações financeiras reais
-            não estão habilitadas nesta versão.
+            As operações financeiras reais não estão habilitadas nesta versão.
           </p>
           <button
             class="primary"
@@ -910,9 +1270,7 @@
         `
           <div class="history-list">
             <div class="history-item empty">
-              O histórico detalhado será
-              conectado à tabela de rodadas
-              na próxima etapa.
+              O histórico detalhado será conectado à tabela de rodadas na próxima etapa.
             </div>
           </div>
           <button
@@ -938,13 +1296,15 @@
         "index.html";
     }
     /* =========================
-       FECHAR MODAL AO CLICAR FORA
+       CLICAR FORA
     ========================= */
     document
-      .getElementById("actionModal")
+      .getElementById(
+        "actionModal"
+      )
       .addEventListener(
         "click",
-        function (event) {
+        function(event) {
           if (
             event.target === this
           ) {
