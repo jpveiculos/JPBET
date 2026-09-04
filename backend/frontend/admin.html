@@ -185,38 +185,6 @@
       </div>
 
 
-      <!-- CADASTRAR ADMINISTRADOR -->
-
-      <div class="card">
-
-        <h2>Cadastrar administrador</h2>
-
-        <input
-          id="newAdminUsername"
-          type="text"
-          placeholder="Novo usuário"
-          autocomplete="off"
-        >
-
-        <input
-          id="newAdminPassword"
-          type="password"
-          placeholder="Nova senha"
-          autocomplete="new-password"
-        >
-
-        <button onclick="cadastrarAdmin()">
-          Cadastrar administrador
-        </button>
-
-        <div
-          id="adminRegisterMessage"
-          class="message"
-        ></div>
-
-      </div>
-
-
       <!-- CONFIGURAÇÕES -->
 
       <div class="card">
@@ -250,11 +218,12 @@
         </div>
 
         <div class="admin-info">
-          Cadastro de administradores: disponível
+          Configurações da plataforma: disponível
         </div>
 
         <div class="admin-info">
-          Configurações da plataforma: disponível
+          Cadastro de administradores:
+          disponível em Configurações
         </div>
 
       </div>
@@ -349,6 +318,7 @@
           data.username
         );
 
+
       } catch (error) {
 
         console.error(error);
@@ -405,6 +375,7 @@
 
     /* =========================
        CADASTRAR ADMINISTRADOR
+       USADO NAS CONFIGURAÇÕES
     ========================= */
 
     async function cadastrarAdmin() {
