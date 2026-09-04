@@ -1,31 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>JPBET - Dashboard</title>
-
   <style>
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #0b0d12;
       color: white;
     }
-
     .container {
       width: 100%;
       max-width: 900px;
       margin: auto;
       padding: 20px;
     }
-
     header {
       display: flex;
       justify-content: space-between;
@@ -33,22 +27,18 @@
       margin-bottom: 25px;
       gap: 15px;
     }
-
     .logo {
       font-size: 28px;
       font-weight: bold;
     }
-
     .logo span {
       opacity: 0.6;
     }
-
     .user {
       font-size: 14px;
       opacity: 0.8;
       text-align: right;
     }
-
     .balance {
       background: #181c24;
       border-radius: 14px;
@@ -56,25 +46,21 @@
       margin-bottom: 20px;
       text-align: center;
     }
-
     .balance-title {
       font-size: 14px;
       opacity: 0.7;
       margin-bottom: 8px;
     }
-
     .balance-value {
       font-size: 34px;
       font-weight: bold;
     }
-
     .buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       margin-bottom: 20px;
     }
-
     button {
       width: 100%;
       padding: 14px;
@@ -84,67 +70,65 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     button:active {
       transform: scale(0.98);
     }
-
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
     .primary {
       background: white;
       color: #111;
     }
-
     .secondary {
       background: #181c24;
       color: white;
     }
-
     .card {
       background: #181c24;
       border-radius: 14px;
       padding: 20px;
       margin-bottom: 20px;
     }
-
     .card h2 {
       margin-top: 0;
     }
-
     .message {
       min-height: 20px;
       margin-top: 12px;
       opacity: 0.8;
     }
-
     .logout {
       background: #8b0000;
       color: white;
     }
-
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 15px;
       align-items: center;
       justify-content: center;
+      overflow-y: auto;
     }
-
     .modal-box {
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       background: #181c24;
       border-radius: 16px;
-      padding: 25px;
+      padding: 22px;
       position: relative;
+      max-height: 95vh;
+      overflow-y: auto;
     }
-
     .modal-box h2 {
       margin-top: 0;
+      padding-right: 45px;
     }
-
     .close-button {
       position: absolute;
       right: 15px;
@@ -157,7 +141,6 @@
       color: white;
       font-size: 24px;
     }
-
     .modal-box input {
       width: 100%;
       padding: 13px;
@@ -169,25 +152,122 @@
       font-size: 16px;
       outline: none;
     }
-
     .modal-box input:focus {
       border-color: white;
     }
-
-    .modal-box button:not(.close-button) {
-      margin-top: 5px;
-    }
-
     .modal-message {
       min-height: 20px;
       margin: 10px 0;
       opacity: 0.85;
     }
-
+    /* =========================
+       ROLETA
+    ========================= */
+    .roulette-result {
+      text-align: center;
+      margin: 10px 0 20px;
+    }
+    .result-number {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      font-weight: bold;
+      background: #0b0d12;
+      border: 4px solid #303541;
+    }
+    .result-red {
+      background: #a50000;
+      border-color: #ff4d4d;
+    }
+    .result-black {
+      background: #050505;
+      border-color: #777;
+    }
+    .result-green {
+      background: #087f23;
+      border-color: #45d96b;
+    }
+    .result-label {
+      font-size: 15px;
+      opacity: 0.8;
+    }
+    .bet-title {
+      font-weight: bold;
+      margin: 18px 0 10px;
+    }
+    .bet-types {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .bet-type {
+      background: #0b0d12;
+      color: white;
+      border: 2px solid #303541;
+    }
+    .bet-type.selected {
+      border-color: white;
+      background: #252b36;
+    }
+    .red-button {
+      border-color: #8b0000;
+    }
+    .black-button {
+      border-color: #555;
+    }
+    .number-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+    .number-button {
+      padding: 9px 4px;
+      font-size: 13px;
+      background: #0b0d12;
+      color: white;
+      border: 1px solid #303541;
+    }
+    .number-button.selected {
+      background: white;
+      color: #111;
+      border-color: white;
+    }
+    .number-button.zero {
+      grid-column: span 6;
+      background: #087f23;
+    }
+    .number-button.zero.selected {
+      background: #45d96b;
+      color: #111;
+    }
+    .roulette-message {
+      min-height: 25px;
+      text-align: center;
+      margin: 12px 0;
+      font-weight: bold;
+    }
+    .win-message {
+      color: #55e878;
+    }
+    .lose-message {
+      color: #ff7070;
+    }
+    .roulette-info {
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.6;
+      margin-top: 12px;
+    }
     .history-list {
       margin-top: 15px;
     }
-
     .history-item {
       background: #0b0d12;
       border-radius: 10px;
@@ -195,231 +275,176 @@
       margin-bottom: 8px;
       font-size: 14px;
     }
-
     .empty {
       opacity: 0.6;
     }
-
     @media (max-width: 600px) {
-
       .container {
         padding: 15px;
       }
-
       header {
         align-items: flex-start;
       }
-
       .buttons {
         grid-template-columns: 1fr;
       }
-
       .balance-value {
         font-size: 30px;
       }
+      .modal-box {
+        padding: 18px;
+      }
+      .number-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .number-button {
+        padding: 8px 2px;
+      }
     }
   </style>
-
 </head>
-
 <body>
-
   <div class="container">
-
     <header>
-
       <div class="logo">
         JP<span>BET</span>
       </div>
-
       <div
         class="user"
         id="userName"
       >
         Usuário
       </div>
-
     </header>
-
-
     <!-- SALDO -->
-
     <div class="balance">
-
       <div class="balance-title">
         Seu saldo
       </div>
-
       <div
         class="balance-value"
         id="balance"
       >
         R$ 0,00
       </div>
-
     </div>
-
-
     <!-- AÇÕES PRINCIPAIS -->
-
     <div class="buttons">
-
       <button
         class="primary"
         onclick="abrirRoleta()"
       >
         🎰 JOGAR NA ROLETA
       </button>
-
       <button
         class="secondary"
         onclick="depositar()"
       >
         💰 DEPOSITAR
       </button>
-
       <button
         class="secondary"
         onclick="sacar()"
       >
         💸 SACAR
       </button>
-
       <button
         class="secondary"
         onclick="historico()"
       >
         📋 HISTÓRICO
       </button>
-
     </div>
-
-
     <!-- CONTA -->
-
     <div class="card">
-
       <h2>Minha conta</h2>
-
       <p>
         Bem-vindo à plataforma JPBET.
       </p>
-
       <div
         id="message"
         class="message"
       ></div>
-
     </div>
-
-
     <!-- SAIR -->
-
     <button
       class="logout"
       onclick="sair()"
     >
       SAIR DA CONTA
     </button>
-
   </div>
-
-
-  <!-- MODAL DE AÇÃO -->
-
+  <!-- MODAL -->
   <div
     id="actionModal"
     class="modal"
   >
-
     <div class="modal-box">
-
       <button
         class="close-button"
         onclick="fecharModal()"
       >
         ×
       </button>
-
       <h2 id="modalTitle">
         JPBET
       </h2>
-
       <div
         id="modalContent"
         class="modal-message"
       ></div>
-
     </div>
-
   </div>
-
-
   <script>
-
+    /* =========================
+       CONFIGURAÇÃO
+    ========================= */
+    const API_URL = "/api";
     /* =========================
        USUÁRIO
     ========================= */
-
     let usuarioAtual = null;
-
-
+    let tipoAposta = null;
+    let valorAposta = 1;
+    let numeroAposta = null;
+    let rodadaEmAndamento = false;
     function carregarUsuario() {
-
       const savedUser =
         localStorage.getItem("jpbet_user");
-
       if (!savedUser) {
-
         window.location.href =
           "index.html";
-
         return;
       }
-
       try {
-
         const user =
           JSON.parse(savedUser);
-
         usuarioAtual = user;
-
         document.getElementById(
           "userName"
         ).textContent =
           user.username || "Usuário";
-
         atualizarSaldo(
           user.balance
         );
-
       } catch (error) {
-
         console.error(error);
-
         localStorage.removeItem(
           "jpbet_user"
         );
-
         localStorage.removeItem(
           "jpbet_token"
         );
-
         window.location.href =
           "index.html";
       }
     }
-
-
     /* =========================
        SALDO
     ========================= */
-
     function atualizarSaldo(valor) {
-
       const balance =
         Number(valor || 0);
-
       document.getElementById(
         "balance"
       ).textContent =
@@ -427,77 +452,410 @@
         balance
           .toFixed(2)
           .replace(".", ",");
+      if (usuarioAtual) {
+        usuarioAtual.balance = balance;
+        localStorage.setItem(
+          "jpbet_user",
+          JSON.stringify(usuarioAtual)
+        );
+      }
     }
-
-
     /* =========================
        MODAL
     ========================= */
-
     function abrirModal(
       titulo,
       conteudo
     ) {
-
       document.getElementById(
         "modalTitle"
       ).textContent = titulo;
-
       document.getElementById(
         "modalContent"
       ).innerHTML = conteudo;
-
       document.getElementById(
         "actionModal"
       ).style.display = "flex";
     }
-
-
     function fecharModal() {
-
       document.getElementById(
         "actionModal"
       ).style.display = "none";
+      rodadaEmAndamento = false;
     }
-
-
     /* =========================
        ROLETA
     ========================= */
-
     function abrirRoleta() {
-
+      tipoAposta = null;
+      numeroAposta = null;
+      valorAposta = 1;
+      const numeros =
+        Array.from(
+          { length: 37 },
+          (_, index) => index
+        );
+      let numeroHtml = "";
+      numeros.forEach(numero => {
+        if (numero === 0) {
+          numeroHtml += `
+            <button
+              class="number-button zero"
+              onclick="selecionarNumero(0)"
+              id="numero-0"
+            >
+              0
+            </button>
+          `;
+          return;
+        }
+        numeroHtml += `
+          <button
+            class="number-button"
+            onclick="selecionarNumero(${numero})"
+            id="numero-${numero}"
+          >
+            ${numero}
+          </button>
+        `;
+      });
       abrirModal(
-        "🎰 Roleta",
+        "🎰 Roleta JPBET",
         `
-          <p>
-            A roleta será disponibilizada
-            nesta área.
-          </p>
-
-          <p>
-            O jogo utilizará créditos virtuais
-            e as regras configuradas pelo
-            administrador.
-          </p>
-
+          <div class="roulette-result">
+            <div
+              id="resultNumber"
+              class="result-number"
+            >
+              ?
+            </div>
+            <div
+              id="resultLabel"
+              class="result-label"
+            >
+              Escolha sua aposta
+            </div>
+          </div>
+          <div class="bet-title">
+            Valor da aposta
+          </div>
+          <input
+            id="betAmount"
+            type="number"
+            min="1"
+            max="100"
+            step="1"
+            value="1"
+            placeholder="Digite o valor"
+          />
+          <div class="bet-title">
+            Escolha uma cor
+          </div>
+          <div class="bet-types">
+            <button
+              class="bet-type red-button"
+              id="bet-red"
+              onclick="selecionarCor('red')"
+            >
+              🔴 VERMELHO
+            </button>
+            <button
+              class="bet-type black-button"
+              id="bet-black"
+              onclick="selecionarCor('black')"
+            >
+              ⚫ PRETO
+            </button>
+          </div>
+          <div class="bet-title">
+            Ou escolha um número
+          </div>
+          <div class="number-grid">
+            ${numeroHtml}
+          </div>
+          <div
+            id="rouletteMessage"
+            class="roulette-message"
+          ></div>
           <button
             class="primary"
-            onclick="fecharModal()"
+            id="spinButton"
+            onclick="girarRoleta()"
           >
-            CONTINUAR
+            🎰 GIRAR ROLETA
           </button>
+          <div class="roulette-info">
+            Créditos virtuais • Apostas de 1 a 100
+          </div>
         `
       );
     }
-
-
+    /* =========================
+       SELECIONAR COR
+    ========================= */
+    function selecionarCor(cor) {
+      tipoAposta = cor;
+      numeroAposta = null;
+      document
+        .querySelectorAll(".bet-type")
+        .forEach(button => {
+          button.classList.remove("selected");
+        });
+      document
+        .querySelectorAll(".number-button")
+        .forEach(button => {
+          button.classList.remove("selected");
+        });
+      const button =
+        document.getElementById(
+          `bet-${cor}`
+        );
+      if (button) {
+        button.classList.add("selected");
+      }
+      mostrarMensagem(
+        cor === "red"
+          ? "Aposta selecionada: vermelho."
+          : "Aposta selecionada: preto.",
+        ""
+      );
+    }
+    /* =========================
+       SELECIONAR NÚMERO
+    ========================= */
+    function selecionarNumero(numero) {
+      tipoAposta = "number";
+      numeroAposta = numero;
+      document
+        .querySelectorAll(".bet-type")
+        .forEach(button => {
+          button.classList.remove("selected");
+        });
+      document
+        .querySelectorAll(".number-button")
+        .forEach(button => {
+          button.classList.remove("selected");
+        });
+      const button =
+        document.getElementById(
+          `numero-${numero}`
+        );
+      if (button) {
+        button.classList.add("selected");
+      }
+      mostrarMensagem(
+        `Aposta selecionada: número ${numero}.`,
+        ""
+      );
+    }
+    /* =========================
+       MENSAGEM
+    ========================= */
+    function mostrarMensagem(
+      texto,
+      classe
+    ) {
+      const elemento =
+        document.getElementById(
+          "rouletteMessage"
+        );
+      if (!elemento) {
+        return;
+      }
+      elemento.textContent = texto;
+      elemento.className =
+        "roulette-message " +
+        (classe || "");
+    }
+    /* =========================
+       GIRAR ROLETA
+    ========================= */
+    async function girarRoleta() {
+      if (rodadaEmAndamento) {
+        return;
+      }
+      if (!usuarioAtual) {
+        mostrarMensagem(
+          "Usuário não encontrado.",
+          "lose-message"
+        );
+        return;
+      }
+      const input =
+        document.getElementById(
+          "betAmount"
+        );
+      const bet =
+        Number(input.value);
+      if (
+        !Number.isFinite(bet) ||
+        bet < 1 ||
+        bet > 100
+      ) {
+        mostrarMensagem(
+          "A aposta deve estar entre 1 e 100 créditos.",
+          "lose-message"
+        );
+        return;
+      }
+      if (!tipoAposta) {
+        mostrarMensagem(
+          "Escolha vermelho, preto ou um número.",
+          "lose-message"
+        );
+        return;
+      }
+      if (
+        tipoAposta === "number" &&
+        numeroAposta === null
+      ) {
+        mostrarMensagem(
+          "Escolha um número da roleta.",
+          "lose-message"
+        );
+        return;
+      }
+      const saldo =
+        Number(
+          usuarioAtual.balance || 0
+        );
+      if (saldo < bet) {
+        mostrarMensagem(
+          "Saldo insuficiente.",
+          "lose-message"
+        );
+        return;
+      }
+      rodadaEmAndamento = true;
+      const spinButton =
+        document.getElementById(
+          "spinButton"
+        );
+      if (spinButton) {
+        spinButton.disabled = true;
+        spinButton.textContent =
+          "🎰 GIRANDO...";
+      }
+      mostrarMensagem(
+        "A roleta está girando...",
+        ""
+      );
+      const resultNumber =
+        document.getElementById(
+          "resultNumber"
+        );
+      const resultLabel =
+        document.getElementById(
+          "resultLabel"
+        );
+      if (resultNumber) {
+        resultNumber.className =
+          "result-number";
+        resultNumber.textContent =
+          "…";
+      }
+      try {
+        const response =
+          await fetch(
+            `${API_URL}/roulette/spin`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                userId:
+                  usuarioAtual.id,
+                betAmount:
+                  bet,
+                betType:
+                  tipoAposta,
+                betValue:
+                  numeroAposta
+              })
+            }
+          );
+        const data =
+          await response.json();
+        if (!response.ok || !data.ok) {
+          throw new Error(
+            data.message ||
+            "Não foi possível realizar a rodada."
+          );
+        }
+        const numero =
+          data.spin.number;
+        const cor =
+          data.spin.color;
+        const ganhou =
+          data.spin.won;
+        const premio =
+          Number(
+            data.spin.prize || 0
+          );
+        /* =========================
+           MOSTRAR RESULTADO
+        ========================= */
+        if (resultNumber) {
+          resultNumber.textContent =
+            numero;
+          resultNumber.className =
+            "result-number " +
+            `result-${cor}`;
+        }
+        if (resultLabel) {
+          const nomeCor =
+            cor === "red"
+              ? "🔴 Vermelho"
+              : cor === "black"
+                ? "⚫ Preto"
+                : "🟢 Verde";
+          resultLabel.textContent =
+            `${nomeCor}`;
+        }
+        /* =========================
+           ATUALIZAR SALDO
+        ========================= */
+        atualizarSaldo(
+          data.user.balance
+        );
+        if (ganhou) {
+          mostrarMensagem(
+            `🎉 VOCÊ GANHOU ${premio.toFixed(2).replace(".", ",")} CRÉDITOS!`,
+            "win-message"
+          );
+        } else {
+          mostrarMensagem(
+            `Resultado: ${numero}. Você não ganhou nesta rodada.`,
+            "lose-message"
+          );
+        }
+        if (spinButton) {
+          spinButton.disabled = false;
+          spinButton.textContent =
+            "🎰 GIRAR NOVAMENTE";
+        }
+        rodadaEmAndamento = false;
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem(
+          error.message ||
+          "Erro ao executar a roleta.",
+          "lose-message"
+        );
+        if (spinButton) {
+          spinButton.disabled = false;
+          spinButton.textContent =
+            "🎰 TENTAR NOVAMENTE";
+        }
+        rodadaEmAndamento = false;
+      }
+    }
     /* =========================
        DEPÓSITO
     ========================= */
-
     function depositar() {
-
       abrirModal(
         "💰 Depósito",
         `
@@ -505,12 +863,11 @@
             A área de depósito está sendo
             preparada.
           </p>
-
           <p>
             Nesta versão, a plataforma
-            trabalha com créditos virtuais.
+            trabalha somente com créditos
+            virtuais.
           </p>
-
           <button
             class="primary"
             onclick="fecharModal()"
@@ -520,14 +877,10 @@
         `
       );
     }
-
-
     /* =========================
        SAQUE
     ========================= */
-
     function sacar() {
-
       abrirModal(
         "💸 Saque",
         `
@@ -535,12 +888,10 @@
             A área de saque está sendo
             preparada.
           </p>
-
           <p>
             As operações financeiras reais
             não estão habilitadas nesta versão.
           </p>
-
           <button
             class="primary"
             onclick="fecharModal()"
@@ -550,26 +901,20 @@
         `
       );
     }
-
-
     /* =========================
        HISTÓRICO
     ========================= */
-
     function historico() {
-
       abrirModal(
         "📋 Histórico",
         `
           <div class="history-list">
-
             <div class="history-item empty">
-              Nenhuma atividade registrada
-              ainda.
+              O histórico detalhado será
+              conectado à tabela de rodadas
+              na próxima etapa.
             </div>
-
           </div>
-
           <button
             class="primary"
             onclick="fecharModal()"
@@ -579,55 +924,38 @@
         `
       );
     }
-
-
     /* =========================
        SAIR
     ========================= */
-
     function sair() {
-
       localStorage.removeItem(
         "jpbet_user"
       );
-
       localStorage.removeItem(
         "jpbet_token"
       );
-
       window.location.href =
         "index.html";
     }
-
-
     /* =========================
        FECHAR MODAL AO CLICAR FORA
     ========================= */
-
     document
       .getElementById("actionModal")
       .addEventListener(
         "click",
         function (event) {
-
           if (
             event.target === this
           ) {
             fecharModal();
           }
-
         }
       );
-
-
     /* =========================
        INICIALIZAÇÃO
     ========================= */
-
     carregarUsuario();
-
   </script>
-
 </body>
-
 </html>
