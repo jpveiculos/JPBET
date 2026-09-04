@@ -188,6 +188,25 @@
       font-size: 13px;
       line-height: 1.5;
     }
+    .pix-note {
+      background: #eef7ff;
+      border: 1px solid #b8dcff;
+      border-radius: 10px;
+      padding: 13px;
+      margin-top: 12px;
+      color: #174b73;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .pix-key-preview {
+      background: #f5f5f5;
+      border-radius: 9px;
+      padding: 12px;
+      margin-top: 8px;
+      font-size: 13px;
+      word-break: break-all;
+      color: #555;
+    }
     @media (max-width: 600px) {
       .container {
         padding: 15px;
@@ -203,389 +222,518 @@
 </head>
 <body>
   <div class="container">
-<header>
-  <button
-    class="back-button"
-    onclick="voltar()"
-  >
-    ← VOLTAR PARA ADMINISTRAÇÃO
-  </button>
-  <h1>JPBET</h1>
-  <p class="subtitle">
-    Painel de configurações
-  </p>
-</header>
-<!-- CONFIGURAÇÕES GERAIS -->
-<div class="card">
-  <h2>⚙️ Configurações gerais</h2>
-  <div class="field">
-    <label for="site_name">
-      Nome da plataforma
-    </label>
-    <input
-      type="text"
-      id="site_name"
-      placeholder="JPBET"
-    >
-  </div>
-  <div class="field">
-    <label for="site_title">
-      Título da plataforma
-    </label>
-    <input
-      type="text"
-      id="site_title"
-      placeholder="JPBET - Plataforma de Jogos"
-    >
-  </div>
-  <div class="field">
-    <label for="site_description">
-      Descrição
-    </label>
-    <textarea
-      id="site_description"
-      placeholder="Descrição da plataforma"
-    ></textarea>
-  </div>
-  <div class="field">
-    <label for="footer_text">
-      Texto do rodapé
-    </label>
-    <input
-      type="text"
-      id="footer_text"
-      placeholder="© 2026 JPBET"
-    >
-  </div>
-</div>
-<!-- ROLETA -->
-<div class="card">
-  <h2>🎰 Configurações da roleta</h2>
-  <p class="section-note">
-    Controle aqui o funcionamento e a aparência da roleta.
-  </p>
-  <div class="field">
-    <div class="checkbox-row">
-      <input
-        type="checkbox"
-        id="roulette_enabled"
+    <header>
+      <button
+        class="back-button"
+        onclick="voltar()"
       >
-      <label for="roulette_enabled">
-        Ativar roleta
-      </label>
+        ← VOLTAR PARA ADMINISTRAÇÃO
+      </button>
+      <h1>JPBET</h1>
+      <p class="subtitle">
+        Painel de configurações
+      </p>
+    </header>
+    <!-- CONFIGURAÇÕES GERAIS -->
+    <div class="card">
+      <h2>⚙️ Configurações gerais</h2>
+      <div class="field">
+        <label for="site_name">
+          Nome da plataforma
+        </label>
+        <input
+          type="text"
+          id="site_name"
+          placeholder="JPBET"
+        >
+      </div>
+      <div class="field">
+        <label for="site_title">
+          Título da plataforma
+        </label>
+        <input
+          type="text"
+          id="site_title"
+          placeholder="JPBET - Plataforma de Jogos"
+        >
+      </div>
+      <div class="field">
+        <label for="site_description">
+          Descrição
+        </label>
+        <textarea
+          id="site_description"
+          placeholder="Descrição da plataforma"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label for="footer_text">
+          Texto do rodapé
+        </label>
+        <input
+          type="text"
+          id="footer_text"
+          placeholder="© 2026 JPBET"
+        >
+      </div>
     </div>
-  </div>
-  <div class="field">
-    <label for="roulette_min_bet">
-      Aposta mínima
-    </label>
-    <input
-      type="number"
-      id="roulette_min_bet"
-      min="0"
-      step="0.01"
-    >
-  </div>
-  <div class="field">
-    <label for="roulette_max_bet">
-      Aposta máxima
-    </label>
-    <input
-      type="number"
-      id="roulette_max_bet"
-      min="0"
-      step="0.01"
-    >
-  </div>
-  <div class="field">
-    <label for="roulette_rtp">
-      RTP (%)
-    </label>
-    <input
-      type="number"
-      id="roulette_rtp"
-      min="0"
-      max="100"
-      step="0.01"
-    >
-    <div class="note">
-      Configuração destinada à versão de créditos virtuais.
+    <!-- PIX -->
+    <div class="card">
+      <h2>💠 Configurações do Pix</h2>
+      <p class="section-note">
+        Configure aqui os dados utilizados para gerar automaticamente
+        o QR Code Pix exibido ao jogador na área de depósito.
+      </p>
+      <div class="field">
+        <div class="checkbox-row">
+          <input
+            type="checkbox"
+            id="pix_enabled"
+          >
+          <label for="pix_enabled">
+            Ativar depósitos via Pix
+          </label>
+        </div>
+        <div class="note">
+          Quando desativado, o depósito via Pix poderá ser bloqueado
+          na área do jogador.
+        </div>
+      </div>
+      <div class="field">
+        <label for="pix_key_type">
+          Tipo da chave Pix
+        </label>
+        <select id="pix_key_type">
+          <option value="aleatoria">
+            Chave aleatória
+          </option>
+          <option value="cpf">
+            CPF
+          </option>
+          <option value="cnpj">
+            CNPJ
+          </option>
+          <option value="email">
+            E-mail
+          </option>
+          <option value="telefone">
+            Telefone
+          </option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="pix_key">
+          Chave Pix
+        </label>
+        <input
+          type="text"
+          id="pix_key"
+          placeholder="Digite a chave Pix"
+          autocomplete="off"
+        >
+        <div
+          id="pix_key_preview"
+          class="pix-key-preview"
+        >
+          Nenhuma chave carregada.
+        </div>
+      </div>
+      <div class="field">
+        <label for="pix_receiver_name">
+          Nome do recebedor
+        </label>
+        <input
+          type="text"
+          id="pix_receiver_name"
+          maxlength="25"
+          placeholder="Nome do recebedor"
+        >
+        <div class="note">
+          Nome utilizado na identificação do recebedor no código Pix.
+        </div>
+      </div>
+      <div class="field">
+        <label for="pix_city">
+          Cidade do recebedor
+        </label>
+        <input
+          type="text"
+          id="pix_city"
+          maxlength="15"
+          placeholder="Cidade"
+        >
+        <div class="note">
+          Informe somente a cidade, sem estado.
+        </div>
+      </div>
+      <div class="field">
+        <label for="pix_description">
+          Descrição do Pix
+        </label>
+        <input
+          type="text"
+          id="pix_description"
+          maxlength="50"
+          placeholder="JPBET"
+        >
+      </div>
+      <div class="field">
+        <label for="pix_instructions">
+          Instruções para o jogador
+        </label>
+        <textarea
+          id="pix_instructions"
+          placeholder="Instruções exibidas durante o depósito"
+        ></textarea>
+      </div>
+      <div class="pix-note">
+        💠 O QR Code será gerado automaticamente pelo sistema
+        utilizando os dados configurados aqui. Não é necessário
+        enviar uma imagem de QR Code.
+      </div>
     </div>
-  </div>
-  <div class="field">
-    <div class="checkbox-row">
-      <input
-        type="checkbox"
-        id="roulette_sound_enabled"
+    <!-- ROLETA -->
+    <div class="card">
+      <h2>🎰 Configurações da roleta</h2>
+      <p class="section-note">
+        Controle aqui o funcionamento e a aparência da roleta.
+      </p>
+      <div class="field">
+        <div class="checkbox-row">
+          <input
+            type="checkbox"
+            id="roulette_enabled"
+          >
+          <label for="roulette_enabled">
+            Ativar roleta
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_min_bet">
+          Aposta mínima
+        </label>
+        <input
+          type="number"
+          id="roulette_min_bet"
+          min="0"
+          step="0.01"
+        >
+      </div>
+      <div class="field">
+        <label for="roulette_max_bet">
+          Aposta máxima
+        </label>
+        <input
+          type="number"
+          id="roulette_max_bet"
+          min="0"
+          step="0.01"
+        >
+      </div>
+      <div class="field">
+        <label for="roulette_rtp">
+          RTP (%)
+        </label>
+        <input
+          type="number"
+          id="roulette_rtp"
+          min="0"
+          max="100"
+          step="0.01"
+        >
+        <div class="note">
+          Configuração destinada à versão de créditos virtuais.
+        </div>
+      </div>
+      <div class="field">
+        <div class="checkbox-row">
+          <input
+            type="checkbox"
+            id="roulette_sound_enabled"
+          >
+          <label for="roulette_sound_enabled">
+            Ativar sons da roleta
+          </label>
+        </div>
+        <div class="note">
+          Controla os sons de início, giro, cliques e resultado.
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_animation_ms">
+          Duração da animação da roleta (ms)
+        </label>
+        <input
+          type="number"
+          id="roulette_animation_ms"
+          min="1000"
+          max="15000"
+          step="100"
+        >
+        <div class="note">
+          Exemplo: 4800 = aproximadamente 4,8 segundos.
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_red_color">
+          Cor dos números vermelhos
+        </label>
+        <input
+          type="color"
+          id="roulette_red_color"
+        >
+        <div class="color-preview">
+          Cor usada nos espaços vermelhos da roleta.
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_black_color">
+          Cor dos números pretos
+        </label>
+        <input
+          type="color"
+          id="roulette_black_color"
+        >
+        <div class="color-preview">
+          Cor usada nos espaços pretos da roleta.
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_green_color">
+          Cor do zero
+        </label>
+        <input
+          type="color"
+          id="roulette_green_color"
+        >
+        <div class="color-preview">
+          Cor usada no número zero.
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_accent_color">
+          Cor de destaque da roleta
+        </label>
+        <input
+          type="color"
+          id="roulette_accent_color"
+        >
+        <div class="color-preview">
+          Usada em detalhes, bordas e elementos de destaque.
+        </div>
+      </div>
+      <div class="field">
+        <label for="roulette_background_color">
+          Fundo da área da roleta
+        </label>
+        <input
+          type="color"
+          id="roulette_background_color"
+        >
+      </div>
+      <div class="virtual-note">
+        🎮 Esta versão utiliza exclusivamente créditos virtuais
+        para demonstração. Os créditos não representam dinheiro real.
+      </div>
+    </div>
+    <!-- APARÊNCIA -->
+    <div class="card">
+      <h2>🎨 Aparência do dashboard</h2>
+      <p class="section-note">
+        Essas opções permitem alterar as cores principais da área
+        do jogador sem precisar editar o código.
+      </p>
+      <div class="field">
+        <label for="dashboard_background">
+          Cor de fundo do dashboard
+        </label>
+        <input
+          type="color"
+          id="dashboard_background"
+        >
+      </div>
+      <div class="field">
+        <label for="dashboard_card_color">
+          Cor dos cartões
+        </label>
+        <input
+          type="color"
+          id="dashboard_card_color"
+        >
+      </div>
+      <div class="field">
+        <label for="dashboard_primary_color">
+          Cor principal
+        </label>
+        <input
+          type="color"
+          id="dashboard_primary_color"
+        >
+      </div>
+      <div class="field">
+        <label for="dashboard_secondary_color">
+          Cor secundária
+        </label>
+        <input
+          type="color"
+          id="dashboard_secondary_color"
+        >
+      </div>
+      <div class="field">
+        <label for="dashboard_text_color">
+          Cor dos textos
+        </label>
+        <input
+          type="color"
+          id="dashboard_text_color"
+        >
+      </div>
+    </div>
+    <!-- TEXTOS DOS BOTÕES -->
+    <div class="card">
+      <h2>🔘 Textos dos botões</h2>
+      <div class="field">
+        <label for="primary_button_text">
+          Botão principal
+        </label>
+        <input
+          type="text"
+          id="primary_button_text"
+        >
+      </div>
+      <div class="field">
+        <label for="login_button_text">
+          Botão Entrar
+        </label>
+        <input
+          type="text"
+          id="login_button_text"
+        >
+      </div>
+      <div class="field">
+        <label for="register_button_text">
+          Botão Criar conta
+        </label>
+        <input
+          type="text"
+          id="register_button_text"
+        >
+      </div>
+      <div class="field">
+        <label for="roulette_button_text">
+          Botão da roleta
+        </label>
+        <input
+          type="text"
+          id="roulette_button_text"
+        >
+      </div>
+    </div>
+    <!-- MANUTENÇÃO -->
+    <div class="card">
+      <h2>🛠️ Modo de manutenção</h2>
+      <div class="field">
+        <div class="checkbox-row">
+          <input
+            type="checkbox"
+            id="maintenance_mode"
+          >
+          <label for="maintenance_mode">
+            Ativar modo de manutenção
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="maintenance_message">
+          Mensagem de manutenção
+        </label>
+        <textarea
+          id="maintenance_message"
+          placeholder="Plataforma temporariamente em manutenção."
+        ></textarea>
+      </div>
+    </div>
+    <!-- ADMINISTRADORES -->
+    <div class="card">
+      <h2>👤 Adicionar novo administrador</h2>
+      <div class="admin-note">
+        Cadastre um novo usuário com acesso à administração do JPBET.
+      </div>
+      <div
+        class="field"
+        style="margin-top: 18px;"
       >
-      <label for="roulette_sound_enabled">
-        Ativar sons da roleta
-      </label>
-    </div>
-    <div class="note">
-      Controla os sons de início, giro, cliques e resultado.
-    </div>
-  </div>
-  <div class="field">
-    <label for="roulette_animation_ms">
-      Duração da animação da roleta (ms)
-    </label>
-    <input
-      type="number"
-      id="roulette_animation_ms"
-      min="1000"
-      max="15000"
-      step="100"
-    >
-    <div class="note">
-      Exemplo: 4800 = aproximadamente 4,8 segundos.
-    </div>
-  </div>
-  <div class="field">
-    <label for="roulette_red_color">
-      Cor dos números vermelhos
-    </label>
-    <input
-      type="color"
-      id="roulette_red_color"
-    >
-    <div class="color-preview">
-      Cor usada nos espaços vermelhos da roleta.
-    </div>
-  </div>
-  <div class="field">
-    <label for="roulette_black_color">
-      Cor dos números pretos
-    </label>
-    <input
-      type="color"
-      id="roulette_black_color"
-    >
-    <div class="color-preview">
-      Cor usada nos espaços pretos da roleta.
-    </div>
-  </div>
-  <div class="field">
-    <label for="roulette_green_color">
-      Cor do zero
-    </label>
-    <input
-      type="color"
-      id="roulette_green_color"
-    >
-    <div class="color-preview">
-      Cor usada no número zero.
-    </div>
-  </div>
-  <div class="field">
-    <label for="roulette_accent_color">
-      Cor de destaque da roleta
-    </label>
-    <input
-      type="color"
-      id="roulette_accent_color"
-    >
-    <div class="color-preview">
-      Usada em detalhes, bordas e elementos de destaque.
-    </div>
-  </div>
-  <div class="field">
-    <label for="roulette_background_color">
-      Fundo da área da roleta
-    </label>
-    <input
-      type="color"
-      id="roulette_background_color"
-    >
-  </div>
-  <div class="virtual-note">
-    🎮 Esta versão utiliza exclusivamente créditos virtuais para demonstração.
-    Os créditos não representam dinheiro real.
-  </div>
-</div>
-<!-- APARÊNCIA DO DASHBOARD -->
-<div class="card">
-  <h2>🎨 Aparência do dashboard</h2>
-  <p class="section-note">
-    Essas opções permitem alterar as cores principais da área do jogador sem precisar editar o código.
-  </p>
-  <div class="field">
-    <label for="dashboard_background">
-      Cor de fundo do dashboard
-    </label>
-    <input
-      type="color"
-      id="dashboard_background"
-    >
-  </div>
-  <div class="field">
-    <label for="dashboard_card_color">
-      Cor dos cartões
-    </label>
-    <input
-      type="color"
-      id="dashboard_card_color"
-    >
-  </div>
-  <div class="field">
-    <label for="dashboard_primary_color">
-      Cor principal
-    </label>
-    <input
-      type="color"
-      id="dashboard_primary_color"
-    >
-  </div>
-  <div class="field">
-    <label for="dashboard_secondary_color">
-      Cor secundária
-    </label>
-    <input
-      type="color"
-      id="dashboard_secondary_color"
-    >
-  </div>
-  <div class="field">
-    <label for="dashboard_text_color">
-      Cor dos textos
-    </label>
-    <input
-      type="color"
-      id="dashboard_text_color"
-    >
-  </div>
-</div>
-<!-- TEXTOS DOS BOTÕES -->
-<div class="card">
-  <h2>🔘 Textos dos botões</h2>
-  <div class="field">
-    <label for="primary_button_text">
-      Botão principal
-    </label>
-    <input
-      type="text"
-      id="primary_button_text"
-    >
-  </div>
-  <div class="field">
-    <label for="login_button_text">
-      Botão Entrar
-    </label>
-    <input
-      type="text"
-      id="login_button_text"
-    >
-  </div>
-  <div class="field">
-    <label for="register_button_text">
-      Botão Criar conta
-    </label>
-    <input
-      type="text"
-      id="register_button_text"
-    >
-  </div>
-  <div class="field">
-    <label for="roulette_button_text">
-      Botão da roleta
-    </label>
-    <input
-      type="text"
-      id="roulette_button_text"
-    >
-  </div>
-</div>
-<!-- MANUTENÇÃO -->
-<div class="card">
-  <h2>🛠️ Modo de manutenção</h2>
-  <div class="field">
-    <div class="checkbox-row">
-      <input
-        type="checkbox"
-        id="maintenance_mode"
+        <label for="new_admin_username">
+          Usuário do administrador
+        </label>
+        <input
+          type="text"
+          id="new_admin_username"
+          placeholder="Digite o usuário"
+          autocomplete="off"
+        >
+      </div>
+      <div class="field">
+        <label for="new_admin_password">
+          Senha do administrador
+        </label>
+        <input
+          type="password"
+          id="new_admin_password"
+          placeholder="Digite a senha"
+          autocomplete="new-password"
+        >
+      </div>
+      <button
+        type="button"
+        class="admin-button"
+        onclick="criarNovoAdministrador()"
       >
-      <label for="maintenance_mode">
-        Ativar modo de manutenção
-      </label>
+        👤 CRIAR ADMINISTRADOR
+      </button>
+      <div
+        id="admin_message"
+        class="admin-message"
+      ></div>
     </div>
-  </div>
-  <div class="field">
-    <label for="maintenance_message">
-      Mensagem de manutenção
-    </label>
-    <textarea
-      id="maintenance_message"
-      placeholder="Plataforma temporariamente em manutenção."
-    ></textarea>
-  </div>
-</div>
-<!-- ADICIONAR NOVO ADMINISTRADOR -->
-<div class="card">
-  <h2>👤 Adicionar novo administrador</h2>
-  <div class="admin-note">
-    Cadastre um novo usuário com acesso à administração do JPBET.
-  </div>
-  <div
-    class="field"
-    style="margin-top: 18px;"
-  >
-    <label for="new_admin_username">
-      Usuário do administrador
-    </label>
-    <input
-      type="text"
-      id="new_admin_username"
-      placeholder="Digite o usuário"
-      autocomplete="off"
+    <div
+      id="message"
+      class="message"
+    ></div>
+    <button
+      class="save-button"
+      onclick="salvarConfiguracoes()"
     >
-  </div>
-  <div class="field">
-    <label for="new_admin_password">
-      Senha do administrador
-    </label>
-    <input
-      type="password"
-      id="new_admin_password"
-      placeholder="Digite a senha"
-      autocomplete="new-password"
+      💾 SALVAR CONFIGURAÇÕES
+    </button>
+    <button
+      class="logout"
+      onclick="sair()"
     >
-  </div>
-  <button
-    type="button"
-    class="admin-button"
-    onclick="criarNovoAdministrador()"
-  >
-    👤 CRIAR ADMINISTRADOR
-  </button>
-  <div
-    id="admin_message"
-    class="admin-message"
-  ></div>
-</div>
-<div
-  id="message"
-  class="message"
-></div>
-<button
-  class="save-button"
-  onclick="salvarConfiguracoes()"
->
-  💾 SALVAR CONFIGURAÇÕES
-</button>
-<button
-  class="logout"
-  onclick="sair()"
->
-  SAIR
-</button>
+      SAIR
+    </button>
   </div>
   <script>
     const API_URL = "/api";
+    /* =========================
+       CAMPOS
+    ========================= */
     const campos = [
+      /* GERAIS */
       "site_name",
       "site_title",
       "site_description",
       "footer_text",
+      /* PIX */
+      "pix_enabled",
+      "pix_key",
+      "pix_key_type",
+      "pix_receiver_name",
+      "pix_city",
+      "pix_description",
+      "pix_instructions",
+      /* ROLETA */
       "roulette_enabled",
       "roulette_min_bet",
       "roulette_max_bet",
@@ -597,15 +745,18 @@
       "roulette_green_color",
       "roulette_accent_color",
       "roulette_background_color",
+      /* DASHBOARD */
       "dashboard_background",
       "dashboard_card_color",
       "dashboard_primary_color",
       "dashboard_secondary_color",
       "dashboard_text_color",
+      /* BOTÕES */
       "primary_button_text",
       "login_button_text",
       "register_button_text",
       "roulette_button_text",
+      /* MANUTENÇÃO */
       "maintenance_mode",
       "maintenance_message"
     ];
@@ -621,6 +772,27 @@
       message.textContent = texto;
       message.className =
         "message " + tipo;
+    }
+    /* =========================
+       ATUALIZAR PREVIEW DA CHAVE
+    ========================= */
+    function atualizarPreviewPix() {
+      const campo =
+        document.getElementById("pix_key");
+      const preview =
+        document.getElementById("pix_key_preview");
+      if (!campo || !preview) {
+        return;
+      }
+      const chave =
+        campo.value.trim();
+      if (!chave) {
+        preview.textContent =
+          "Nenhuma chave carregada.";
+        return;
+      }
+      preview.textContent =
+        "Chave configurada: " + chave;
     }
     /* =========================
        CARREGAR CONFIGURAÇÕES
@@ -675,6 +847,7 @@
             }
           }
         );
+        atualizarPreviewPix();
         mostrarMensagem("");
       } catch (error) {
         console.error(error);
@@ -716,6 +889,129 @@
             }
           }
         );
+        /* =========================
+           VALIDAÇÕES PIX
+        ========================= */
+        const pixEnabled =
+          configuracoes.pix_enabled === "true";
+        const pixKey =
+          String(
+            configuracoes.pix_key || ""
+          ).trim();
+        const pixName =
+          String(
+            configuracoes.pix_receiver_name || ""
+          ).trim();
+        const pixCity =
+          String(
+            configuracoes.pix_city || ""
+          ).trim();
+        if (pixEnabled && !pixKey) {
+          mostrarMensagem(
+            "Informe a chave Pix ou desative o Pix.",
+            "error"
+          );
+          document
+            .getElementById("pix_key")
+            .focus();
+          return;
+        }
+        if (pixEnabled && !pixName) {
+          mostrarMensagem(
+            "Informe o nome do recebedor.",
+            "error"
+          );
+          document
+            .getElementById("pix_receiver_name")
+            .focus();
+          return;
+        }
+        if (pixEnabled && !pixCity) {
+          mostrarMensagem(
+            "Informe a cidade do recebedor.",
+            "error"
+          );
+          document
+            .getElementById("pix_city")
+            .focus();
+          return;
+        }
+        if (
+          pixName.length > 25
+        ) {
+          mostrarMensagem(
+            "O nome do recebedor deve ter no máximo 25 caracteres.",
+            "error"
+          );
+          return;
+        }
+        if (
+          pixCity.length > 15
+        ) {
+          mostrarMensagem(
+            "A cidade deve ter no máximo 15 caracteres.",
+            "error"
+          );
+          return;
+        }
+        /* =========================
+           VALIDAÇÕES ROLETA
+        ========================= */
+        const minBet =
+          Number(
+            configuracoes.roulette_min_bet
+          );
+        const maxBet =
+          Number(
+            configuracoes.roulette_max_bet
+          );
+        const rtp =
+          Number(
+            configuracoes.roulette_rtp
+          );
+        if (
+          !Number.isFinite(minBet) ||
+          minBet < 0
+        ) {
+          mostrarMensagem(
+            "A aposta mínima da roleta é inválida.",
+            "error"
+          );
+          return;
+        }
+        if (
+          !Number.isFinite(maxBet) ||
+          maxBet < 0
+        ) {
+          mostrarMensagem(
+            "A aposta máxima da roleta é inválida.",
+            "error"
+          );
+          return;
+        }
+        if (
+          minBet > maxBet
+        ) {
+          mostrarMensagem(
+            "A aposta mínima não pode ser maior que a máxima.",
+            "error"
+          );
+          return;
+        }
+        if (
+          !Number.isFinite(rtp) ||
+          rtp < 0 ||
+          rtp > 100
+        ) {
+          mostrarMensagem(
+            "O RTP deve estar entre 0 e 100.",
+            "error"
+          );
+          return;
+        }
+        /* =========================
+           ENVIO
+        ========================= */
         const response =
           await fetch(
             `${API_URL}/settings`,
@@ -746,6 +1042,7 @@
             "Erro ao salvar configurações."
           );
         }
+        atualizarPreviewPix();
         mostrarMensagem(
           "Configurações salvas com sucesso.",
           "success"
@@ -781,7 +1078,10 @@
       message.textContent = "";
       message.className =
         "admin-message";
-      if (!username || !password) {
+      if (
+        !username ||
+        !password
+      ) {
         message.textContent =
           "Informe o usuário e a senha.";
         message.classList.add(
@@ -789,7 +1089,9 @@
         );
         return;
       }
-      if (username.length < 3) {
+      if (
+        username.length < 3
+      ) {
         message.textContent =
           "O usuário deve ter pelo menos 3 caracteres.";
         message.classList.add(
@@ -797,7 +1099,9 @@
         );
         return;
       }
-      if (password.length < 4) {
+      if (
+        password.length < 4
+      ) {
         message.textContent =
           "A senha deve ter pelo menos 4 caracteres.";
         message.classList.add(
@@ -829,7 +1133,9 @@
         const data =
           await response.json();
         if (!response.ok) {
-          if (response.status === 401) {
+          if (
+            response.status === 401
+          ) {
             window.location.href =
               "admin.html";
             return;
@@ -884,6 +1190,15 @@
           "admin.html";
       }
     }
+    /* =========================
+       EVENTOS
+    ========================= */
+    document
+      .getElementById("pix_key")
+      .addEventListener(
+        "input",
+        atualizarPreviewPix
+      );
     /* =========================
        INICIAR
     ========================= */
