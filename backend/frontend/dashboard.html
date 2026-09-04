@@ -1,3006 +1,3662 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import authRouter from "./auth.js";
-import settingsRouter from "./settings.js";
-import { pool } from "./db.js";
-import { validarSessaoAdmin } from "./adminSession.js";
-import {
-  registrarAuditoria as registrarAuditoriaSistema
-} from "./audit.js";
-dotenv.config();
-const app = express();
-app.use(cors());
-app.use(express.json());
-/* =========================================================
-   INICIALIZAÇÃO / MIGRAÇÃO AUTOMÁTICA DO BANCO
-========================================================= */
-async function inicializarBanco() {
-  try {
-    await pool.query(`
-      ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS
-      reserved_balance NUMERIC(12,2)
-      DEFAULT 0;
-    `);
-    await pool.query(`
-      UPDATE users
-      SET reserved_balance = 0
-      WHERE reserved_balance IS NULL;
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS deposits (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
-        amount NUMERIC(12,2) NOT NULL,
-        status VARCHAR(20) NOT NULL DEFAULT 'pending',
-        payment_method VARCHAR(30) DEFAULT 'pix',
-        player_note TEXT,
-        admin_note TEXT,
-        approved_by INTEGER REFERENCES admins(id),
-        approved_at TIMESTAMP,
-        rejected_by INTEGER REFERENCES admins(id),
-        rejected_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS withdrawals (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
-        amount NUMERIC(12,2) NOT NULL,
-        status VARCHAR(20) NOT NULL DEFAULT 'pending',
-        withdrawal_method VARCHAR(30) DEFAULT 'pix',
-        pix_key TEXT,
-        player_note TEXT,
-        admin_note TEXT,
-        rejection_reason TEXT,
-        approved_by INTEGER REFERENCES admins(id),
-        approved_at TIMESTAMP,
-        paid_by INTEGER REFERENCES admins(id),
-        paid_at TIMESTAMP,
-        rejected_by INTEGER REFERENCES admins(id),
-        rejected_at TIMESTAMP,
-        refunded_by INTEGER REFERENCES admins(id),
-        refunded_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS admin_audit_logs (
-        id SERIAL PRIMARY KEY,
-        admin_id INTEGER REFERENCES admins(id),
-        action VARCHAR(100) NOT NULL,
-        target_type VARCHAR(50),
-        target_id INTEGER,
-        description TEXT,
-        metadata TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS
-      idx_deposits_user_id
-      ON deposits(user_id);
-    `);
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS
-      idx_deposits_status
-      ON deposits(status);
-    `);
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS
-      idx_withdrawals_user_id
-      ON withdrawals(user_id);
-    `);
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS
-      idx_withdrawals_status
-      ON withdrawals(status);
-    `);
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS
-      idx_admin_audit_logs_admin_id
-      ON admin_audit_logs(admin_id);
-    `);
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS
-      idx_admin_audit_logs_created_at
-      ON admin_audit_logs(created_at);
-    `);
-    console.log(
-      "Banco JPBET inicializado com sucesso."
-    );
-  } catch (error) {
-    console.error(
-      "Erro ao inicializar banco:",
-      error
-    );
-    throw error;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>JPBET - Dashboard</title>
+
+  <style>
+    :root{
+      --bg:#08090d;
+      --panel:#11141b;
+      --panel2:#171b24;
+      --border:rgba(255,255,255,.09);
+      --text:#fff;
+      --muted:#9da5b5;
+      --gold:#ffd43b;
+      --gold2:#d99b00;
+      --green:#19d67a;
+      --red:#ef4052;
+      --blue:#328cff;
+      --purple:#9a5cff;
+      --cyan:#20d9ff;
+      --shadow:0 18px 50px rgba(0,0,0,.45);
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at 50% -10%,rgba(103,60,255,.18),transparent 35%),
+        radial-gradient(circle at 0% 80%,rgba(0,174,255,.08),transparent 30%),
+        var(--bg);
+      color:var(--text);
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    body{
+      overflow-x:hidden;
+    }
+
+    button,
+    input{
+      font:inherit;
+    }
+
+    button{
+      cursor:pointer;
+    }
+
+    .app{
+      min-height:100vh;
+      padding-bottom:30px;
+    }
+
+    /* ================= HEADER ================= */
+
+    .header{
+      position:sticky;
+      top:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      background:rgba(8,9,13,.94);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(16px);
+    }
+
+    .brand{
+      font-size:23px;
+      font-weight:1000;
+      letter-spacing:1px;
+    }
+
+    .brand span{
+      color:var(--gold);
+    }
+
+    .user-area{
+      display:flex;
+      align-items:center;
+      gap:9px;
+    }
+
+    .balance-mini{
+      padding:9px 12px;
+      border-radius:12px;
+      background:linear-gradient(145deg,#1c2029,#101218);
+      border:1px solid rgba(255,212,59,.28);
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .balance-mini small{
+      display:block;
+      color:var(--muted);
+      font-size:9px;
+      margin-bottom:2px;
+    }
+
+    .menu-btn{
+      width:40px;
+      height:40px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#171a22;
+      color:white;
+      font-size:20px;
+    }
+
+    /* ================= MAIN ================= */
+
+    .container{
+      width:min(1100px,100%);
+      margin:auto;
+      padding:18px 14px;
+    }
+
+    .welcome{
+      margin-bottom:16px;
+    }
+
+    .welcome h1{
+      margin:0;
+      font-size:26px;
+      font-weight:1000;
+    }
+
+    .welcome p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* ================= BALANCE ================= */
+
+    .balance-card{
+      position:relative;
+      overflow:hidden;
+      padding:20px;
+      margin-bottom:18px;
+      border-radius:22px;
+      border:1px solid rgba(255,212,59,.22);
+      background:
+        radial-gradient(circle at 85% 15%,rgba(255,212,59,.14),transparent 35%),
+        linear-gradient(145deg,#181b24,#0e1016);
+      box-shadow:var(--shadow);
+    }
+
+    .balance-card:after{
+      content:"";
+      position:absolute;
+      width:180px;
+      height:180px;
+      right:-80px;
+      bottom:-100px;
+      border-radius:50%;
+      background:rgba(255,212,59,.08);
+    }
+
+    .balance-label{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+    }
+
+    .balance-value{
+      margin-top:4px;
+      font-size:36px;
+      font-weight:1000;
+      color:var(--gold);
+    }
+
+    .balance-sub{
+      margin-top:4px;
+      color:#c7ccd5;
+      font-size:12px;
+    }
+
+    /* ================= CREDITO BLOQUEADO ================= */
+
+    .reserved-balance-box{
+      display:none;
+      position:relative;
+      z-index:2;
+      margin-top:12px;
+      padding:12px 14px;
+      border:1px solid rgba(255,210,60,.35);
+      border-radius:12px;
+      background:rgba(255,210,60,.06);
+    }
+
+    .reserved-balance-title{
+      font-size:13px;
+      font-weight:700;
+      color:#c8cbd5;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .reserved-balance-value{
+      margin-top:3px;
+      font-size:20px;
+      font-weight:800;
+      color:#ffe95b;
+    }
+
+    .reserved-balance-description{
+      margin-top:3px;
+      font-size:12px;
+      color:#9da2b0;
+    }
+
+    .balance-actions{
+      position:relative;
+      z-index:2;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    .action-btn{
+      border:0;
+      border-radius:13px;
+      padding:13px;
+      font-weight:1000;
+    }
+
+    .action-deposit{
+      background:linear-gradient(145deg,#22df85,#0aa95b);
+      color:#04140c;
+    }
+
+    .action-withdraw{
+      background:linear-gradient(145deg,#242934,#151820);
+      color:#fff;
+      border:1px solid var(--border);
+    }
+
+    /* ================= SECTION ================= */
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:24px 0 12px;
+    }
+
+    .section-title h2{
+      margin:0;
+      font-size:20px;
+    }
+
+    .section-title span{
+      color:var(--muted);
+      font-size:11px;
+    }
+
+    /* ================= GAME CARDS ================= */
+
+    .games{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+    }
+
+    .game-card{
+      position:relative;
+      overflow:hidden;
+      min-height:270px;
+      padding:18px;
+      border-radius:22px;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .game-card.gold{
+      background:
+        radial-gradient(circle at 50% 0%,rgba(255,212,59,.22),transparent 45%),
+        linear-gradient(145deg,#17120a,#090a0e);
+    }
+
+    .game-card.turbo{
+      background:
+        radial-gradient(circle at 90% 10%,rgba(32,217,255,.2),transparent 40%),
+        linear-gradient(145deg,#08151d,#090b12);
+    }
+
+    .game-card.diamond{
+      background:
+        radial-gradient(circle at 50% 0%,rgba(154,92,255,.2),transparent 45%),
+        linear-gradient(145deg,#0d0b1a,#090a0e);
+    }
+
+    .game-icon{
+      width:58px;
+      height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:18px;
+      font-size:30px;
+      margin-bottom:12px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+    }
+
+    .game-card h3{
+      margin:0;
+      font-size:21px;
+    }
+
+    .game-card p{
+      color:#adb4c1;
+      line-height:1.45;
+      font-size:12px;
+      margin:7px 0 15px;
+    }
+
+    .game-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+      margin-bottom:15px;
+    }
+
+    .game-tag{
+      padding:5px 8px;
+      border-radius:8px;
+      background:rgba(255,255,255,.07);
+      color:#dce0e7;
+      font-size:10px;
+      font-weight:800;
+    }
+
+    .play-btn{
+      width:100%;
+      padding:13px;
+      border:0;
+      border-radius:13px;
+      font-weight:1000;
+      color:#08090d;
+    }
+
+    .gold .play-btn{
+      background:linear-gradient(145deg,#fff08b,#e1a500);
+    }
+
+    .turbo .play-btn{
+      background:linear-gradient(145deg,#72edff,#159bc2);
+    }
+
+    .diamond .play-btn{
+      background:linear-gradient(145deg,#d4bcff,#7947e8);
+      color:white;
+    }
+
+    /* ================= INFO ================= */
+
+    .info-box{
+      padding:16px;
+      border-radius:18px;
+      background:#10131a;
+      border:1px solid var(--border);
+      color:#bdc4cf;
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .virtual-note{
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      background:rgba(255,212,59,.07);
+      border:1px solid rgba(255,212,59,.18);
+      color:#f6df83;
+      font-size:11px;
+      line-height:1.5;
+    }
+
+    /* ================= MODAL ================= */
+
+    .modal{
+      position:fixed;
+      inset:0;
+      z-index:500;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+      background:rgba(0,0,0,.82);
+      backdrop-filter:blur(8px);
+    }
+
+    .modal.open{
+      display:flex;
+    }
+
+    .modal-box{
+      position:relative;
+      width:min(700px,100%);
+      max-height:96vh;
+      overflow:auto;
+      border-radius:25px;
+      background:
+        radial-gradient(circle at 50% -20%,rgba(255,212,59,.1),transparent 40%),
+        #0d1016;
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 30px 100px rgba(0,0,0,.75);
+    }
+
+    .modal-header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:15px 17px;
+      background:rgba(13,16,22,.95);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(12px);
+    }
+
+    .modal-title{
+      font-size:19px;
+      font-weight:1000;
+    }
+
+    .modal-subtitle{
+      color:var(--muted);
+      font-size:10px;
+      margin-top:3px;
+    }
+
+    .close-btn{
+      width:38px;
+      height:38px;
+      border-radius:11px;
+      border:1px solid var(--border);
+      background:#171a21;
+      color:#fff;
+      font-size:20px;
+    }
+
+    .modal-content{
+      padding:15px;
+    }
+
+    /* ================= RULES ================= */
+
+    .rules{
+      margin-bottom:15px;
+      border-radius:17px;
+      border:1px solid var(--border);
+      background:#11141b;
+      overflow:hidden;
+    }
+
+    .rules-header{
+      padding:12px 14px;
+      font-weight:1000;
+      border-bottom:1px solid var(--border);
+    }
+
+    .rules-body{
+      padding:13px 14px;
+      color:#c0c7d1;
+      font-size:11px;
+      line-height:1.55;
+    }
+
+    .rules-body strong{
+      color:white;
+    }
+
+    .prize-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:7px;
+      margin-top:10px;
+    }
+
+    .prize-item{
+      padding:9px 5px;
+      border-radius:10px;
+      text-align:center;
+      background:#181c24;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .prize-item b{
+      display:block;
+      font-size:14px;
+      color:var(--gold);
+    }
+
+    .prize-item small{
+      color:#8f98a8;
+      font-size:9px;
+    }
+
+    /* ================= ROULETTE ================= */
+
+    .roulette-area{
+      position:relative;
+      width:100%;
+      min-height:315px;
+      height:min(330px,78vw);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      overflow:hidden;
+      margin-bottom:12px;
+      border-radius:21px;
+      background:
+        radial-gradient(circle at center,#5030a0 0%,#24114f 44%,#10091c 100%);
+      border:2px solid #d8ad25;
+    }
+
+    .roulette-area.turbo-area{
+      background:
+        radial-gradient(circle at center,#073c51 0%,#08202c 45%,#050b11 100%);
+      border-color:#20d9ff;
+    }
+
+    .roulette-area.diamond-area{
+      background:
+        radial-gradient(circle at center,#31206b 0%,#11142e 45%,#070912 100%);
+      border-color:#a981ff;
+    }
+
+    .pointer{
+      position:absolute;
+      top:3px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:50;
+      width:0;
+      height:0;
+      border-left:15px solid transparent;
+      border-right:15px solid transparent;
+      border-top:34px solid var(--gold);
+      filter:drop-shadow(0 2px 3px #000);
+    }
+
+    .turbo-area .pointer{
+      border-top-color:#20d9ff;
+    }
+
+    .diamond-area .pointer{
+      border-top-color:#cbb8ff;
+    }
+
+    .wheel{
+      position:relative;
+      width:min(285px,74vw);
+      height:min(285px,74vw);
+      max-width:285px;
+      max-height:285px;
+      border-radius:50%;
+      padding:10px;
+      background:
+        radial-gradient(circle,#fff7bf 0%,#d7a920 48%,#fff1a0 51%,#9b6c00 59%,#f3d34e 67%,#7d5700 75%,#d7a920 84%,#5b3c00 100%);
+      box-shadow:0 15px 35px rgba(0,0,0,.65);
+      transition:transform 4.8s cubic-bezier(.12,.72,.12,1);
+    }
+
+    .turbo-area .wheel{
+      background:
+        radial-gradient(circle,#b9f8ff 0%,#2ac9ed 45%,#075d78 58%,#021e29 75%,#032d3b 100%);
+    }
+
+    .diamond-area .wheel{
+      background:
+        radial-gradient(circle,#fff 0%,#d8cbff 42%,#7951d8 58%,#28194e 75%,#130c28 100%);
+    }
+
+    .wheel-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      overflow:hidden;
+      border:5px solid #f3d34e;
+      background:
+        conic-gradient(
+          #151515 0deg 36deg,
+          #d92339 36deg 72deg,
+          #129b50 72deg 108deg,
+          #702bd1 108deg 144deg,
+          #1f5fc8 144deg 180deg,
+          #d9a900 180deg 216deg,
+          #d92339 216deg 252deg,
+          #129b50 252deg 288deg,
+          #1f5fc8 288deg 324deg,
+          #702bd1 324deg 360deg
+        );
+    }
+
+    .turbo-area .wheel-inner{
+      border-color:#65eaff;
+      background:
+        conic-gradient(
+          #082d3a 0deg 40deg,
+          #0aa6cc 40deg 80deg,
+          #06313e 80deg 120deg,
+          #12cce9 120deg 160deg,
+          #06313e 160deg 200deg,
+          #0aa6cc 200deg 240deg,
+          #06313e 240deg 280deg,
+          #12cce9 280deg 320deg,
+          #06313e 320deg 360deg
+        );
+    }
+
+    .diamond-area .wheel-inner{
+      border-color:#d3c5ff;
+      background:
+        conic-gradient(
+          #f1f1ff 0deg 45deg,
+          #46308e 45deg 90deg,
+          #b9a6ff 90deg 135deg,
+          #17152b 135deg 180deg,
+          #7654d6 180deg 225deg,
+          #e9e5ff 225deg 270deg,
+          #30215f 270deg 315deg,
+          #aa92ff 315deg 360deg
+        );
+    }
+
+    .wheel-sector{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:50%;
+      height:2px;
+      transform-origin:0 50%;
+      background:rgba(255,255,255,.5);
+      z-index:2;
+    }
+
+    .wheel-number{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:38px;
+      height:38px;
+      margin-left:-19px;
+      margin-top:-19px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      color:white;
+      font-size:9px;
+      font-weight:1000;
+      z-index:4;
+      text-shadow:0 1px 2px #000;
+      transform-origin:50% 50%;
+    }
+
+    .wheel-center-ring{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:104px;
+      height:104px;
+      transform:translate(-50%,-50%);
+      border-radius:50%;
+      z-index:10;
+      border:5px solid var(--gold);
+      background:
+        radial-gradient(circle at 35% 25%,#fff,#d9d9d9 38%,#777 65%,#222 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 5px 18px rgba(0,0,0,.55);
+    }
+
+    .turbo-area .wheel-center-ring{
+      border-color:#20d9ff;
+    }
+
+    .diamond-area .wheel-center-ring{
+      border-color:#c5b0ff;
+    }
+
+    .wheel-center-button{
+      width:72px;
+      height:72px;
+      border-radius:50%;
+      padding:0;
+      border:3px solid var(--gold);
+      background:linear-gradient(145deg,#ffdf45,#d89500);
+      color:#211800;
+      font-size:12px;
+      font-weight:1000;
+      box-shadow:inset 0 2px 3px rgba(255,255,255,.7),0 4px 10px rgba(0,0,0,.45);
+    }
+
+    .turbo-area .wheel-center-button{
+      border-color:#20d9ff;
+      background:linear-gradient(145deg,#9cf5ff,#0a9bc1);
+    }
+
+    .diamond-area .wheel-center-button{
+      border-color:#c5b0ff;
+      background:linear-gradient(145deg,#eee8ff,#8660dc);
+      color:#fff;
+    }
+
+    .wheel-center-button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    /* ================= BET ================= */
+
+    .bet-panel{
+      padding:14px;
+      border-radius:16px;
+      background:#11141b;
+      border:1px solid var(--border);
+    }
+
+    .bet-label{
+      display:block;
+      color:#9fa7b6;
+      font-size:11px;
+      margin-bottom:7px;
+    }
+
+    .bet-row{
+      display:flex;
+      gap:8px;
+    }
+
+    .bet-input{
+      flex:1;
+      min-width:0;
+      border:1px solid #303642;
+      background:#090b10;
+      color:white;
+      border-radius:11px;
+      padding:12px;
+      outline:none;
+    }
+
+    .bet-input:focus{
+      border-color:rgba(255,212,59,.55);
+      box-shadow:0 0 0 2px rgba(255,212,59,.08);
+    }
+
+    .quick-values{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .quick-btn{
+      padding:7px 10px;
+      border-radius:9px;
+      border:1px solid #303642;
+      background:#181c24;
+      color:#dce1e8;
+      font-size:10px;
+      font-weight:900;
+    }
+
+    /* ================= WITHDRAW PIX ================= */
+
+    .pix-help{
+      margin-top:8px;
+      color:#8f98a8;
+      font-size:10px;
+      line-height:1.45;
+    }
+
+    .pix-input{
+      width:100%;
+      border:1px solid #303642;
+      background:#090b10;
+      color:white;
+      border-radius:11px;
+      padding:12px;
+      outline:none;
+    }
+
+    .pix-input:focus{
+      border-color:rgba(255,212,59,.55);
+      box-shadow:0 0 0 2px rgba(255,212,59,.08);
+    }
+
+    .pix-input::placeholder{
+      color:#687181;
+    }
+
+    /* ================= RESULT ================= */
+
+    .result{
+      display:none;
+      margin-top:12px;
+      padding:14px;
+      border-radius:15px;
+      text-align:center;
+      background:#151922;
+      border:1px solid var(--border);
+    }
+
+    .result.show{
+      display:block;
+    }
+
+    .result-label{
+      color:#9ea6b4;
+      font-size:10px;
+      text-transform:uppercase;
+    }
+
+    .result-main{
+      margin:4px 0;
+      font-size:25px;
+      font-weight:1000;
+    }
+
+    .result-prize{
+      color:var(--green);
+      font-size:18px;
+      font-weight:1000;
+    }
+
+    .result-loss{
+      color:var(--red);
+      font-size:18px;
+      font-weight:1000;
+    }
+
+    /* ================= HISTORY ================= */
+
+    .history{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .history-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px;
+      border-radius:13px;
+      background:#11141b;
+      border:1px solid var(--border);
+    }
+
+    .history-left strong{
+      display:block;
+      font-size:12px;
+    }
+
+    .history-left small{
+      color:#858e9e;
+      font-size:9px;
+    }
+
+    .history-right{
+      text-align:right;
+      font-weight:1000;
+      font-size:12px;
+    }
+
+    .positive{
+      color:var(--green);
+    }
+
+    .negative{
+      color:var(--red);
+    }
+
+    /* ================= DRAWER ================= */
+
+    .drawer{
+      position:fixed;
+      inset:0;
+      z-index:400;
+      display:none;
+      background:rgba(0,0,0,.65);
+    }
+
+    .drawer.open{
+      display:block;
+    }
+
+    .drawer-panel{
+      position:absolute;
+      right:0;
+      top:0;
+      height:100%;
+      width:min(330px,88%);
+      padding:20px;
+      background:#10131a;
+      border-left:1px solid var(--border);
+      box-shadow:-20px 0 60px rgba(0,0,0,.6);
+    }
+
+    .drawer-panel h3{
+      margin-top:0;
+    }
+
+    .drawer-link{
+      width:100%;
+      display:block;
+      text-align:left;
+      padding:13px;
+      margin-top:8px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#171a22;
+      color:white;
+    }
+
+    .logout{
+      margin-top:25px;
+      border-color:rgba(239,64,82,.3);
+      color:#ff7581;
+    }
+
+    /* ================= TOAST ================= */
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      z-index:1000;
+      transform:translate(-50%,20px);
+      opacity:0;
+      pointer-events:none;
+      width:min(90%,420px);
+      padding:13px 15px;
+      border-radius:13px;
+      background:#1a1e27;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 12px 40px rgba(0,0,0,.5);
+      text-align:center;
+      font-size:12px;
+      transition:.25s;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    @media(max-width:800px){
+      .games{
+        grid-template-columns:1fr;
+      }
+
+      .game-card{
+        min-height:235px;
+      }
+    }
+
+    @media(max-width:600px){
+      .container{
+        padding:14px 11px;
+      }
+
+      .welcome h1{
+        font-size:23px;
+      }
+
+      .balance-value{
+        font-size:31px;
+      }
+
+      .roulette-area{
+        height:min(295px,76vw);
+        min-height:250px;
+      }
+
+      .wheel{
+        width:min(255px,68vw);
+        height:min(255px,68vw);
+      }
+
+      .wheel-center-ring{
+        width:91px;
+        height:91px;
+      }
+
+      .wheel-center-button{
+        width:63px;
+        height:63px;
+        font-size:10px;
+      }
+    }
+
+    @media(max-width:380px){
+      .roulette-area{
+        height:245px;
+        min-height:225px;
+      }
+
+      .wheel{
+        width:215px;
+        height:215px;
+      }
+
+      .wheel-center-ring{
+        width:79px;
+        height:79px;
+      }
+
+      .wheel-center-button{
+        width:55px;
+        height:55px;
+        font-size:9px;
+      }
+
+      .wheel-number{
+        width:30px;
+        height:30px;
+        margin-left:-15px;
+        margin-top:-15px;
+        font-size:7px;
+      }
+    }
+
+    @media(max-height:700px) and (orientation:landscape){
+      .modal-box{
+        max-height:100vh;
+      }
+
+      .roulette-area{
+        min-height:240px;
+        height:260px;
+      }
+
+      .wheel{
+        width:220px;
+        height:220px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="header">
+    <div class="brand">JP<span>BET</span></div>
+
+    <div class="user-area">
+      <div class="balance-mini">
+        <small>SALDO</small>
+        <span id="headerBalance">0 créditos</span>
+      </div>
+
+      <button class="menu-btn" onclick="abrirMenu()">☰</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="welcome">
+      <h1>Olá, <span id="userName">jogador</span> 👋</h1>
+      <p>Escolha uma roleta e tente a sua sorte.</p>
+    </section>
+
+    <section class="balance-card">
+
+      <div class="balance-label">Seu saldo disponível</div>
+
+      <div class="balance-value" id="mainBalance">
+        0 créditos
+      </div>
+
+      <div class="balance-sub">
+        Créditos virtuais para demonstração
+      </div>
+
+      <div
+        id="reservedBalanceBox"
+        class="reserved-balance-box"
+      >
+        <div class="reserved-balance-title">
+          🔒 Crédito bloqueado
+        </div>
+
+        <div
+          id="reservedBalanceValue"
+          class="reserved-balance-value"
+        >
+          0 créditos
+        </div>
+
+        <div class="reserved-balance-description">
+          Valor reservado para solicitações de saque em análise.
+        </div>
+      </div>
+
+      <div class="balance-actions">
+
+        <button
+          class="action-btn action-deposit"
+          onclick="abrirDeposito()"
+        >
+          💳 DEPOSITAR
+        </button>
+
+        <button
+          class="action-btn action-withdraw"
+          onclick="abrirSaque()"
+        >
+          💸 SACAR
+        </button>
+
+      </div>
+
+    </section>
+
+    <div class="section-title">
+      <h2>🎰 Escolha sua roleta</h2>
+      <span>3 experiências</span>
+    </div>
+
+    <section class="games">
+
+      <!-- ROLETA 1 -->
+
+      <article class="game-card gold">
+
+        <div>
+
+          <div class="game-icon">🎡</div>
+
+          <h3>Roda da Sorte</h3>
+
+          <p>
+            A roleta clássica do JPBET, inspirada em rodas de prêmios
+            premium com valores fixos e multiplicadores.
+          </p>
+
+          <div class="game-tags">
+            <span class="game-tag">50 créditos</span>
+            <span class="game-tag">1000 créditos</span>
+            <span class="game-tag">x2</span>
+            <span class="game-tag">x3</span>
+          </div>
+
+        </div>
+
+        <button
+          class="play-btn"
+          onclick="abrirRoleta('sorte')"
+        >
+          GIRAR RODA DA SORTE
+        </button>
+
+      </article>
+
+      <!-- ROLETA 2 -->
+
+      <article class="game-card turbo">
+
+        <div>
+
+          <div class="game-icon">⚡</div>
+
+          <h3>Roleta Turbo</h3>
+
+          <p>
+            Uma roleta mais rápida e focada em multiplicadores.
+            Quanto maior o multiplicador, maior o prêmio calculado.
+          </p>
+
+          <div class="game-tags">
+            <span class="game-tag">x0</span>
+            <span class="game-tag">x2</span>
+            <span class="game-tag">x5</span>
+            <span class="game-tag">x10</span>
+          </div>
+
+        </div>
+
+        <button
+          class="play-btn"
+          onclick="abrirRoleta('turbo')"
+        >
+          GIRAR ROLETA TURBO
+        </button>
+
+      </article>
+
+      <!-- ROLETA 3 -->
+
+      <article class="game-card diamond">
+
+        <div>
+
+          <div class="game-icon">💎</div>
+
+          <h3>Roleta Diamante</h3>
+
+          <p>
+            Uma experiência premium baseada em categorias de prêmio,
+            com níveis Prata, Ouro, Platina e Diamante.
+          </p>
+
+          <div class="game-tags">
+            <span class="game-tag">Prata</span>
+            <span class="game-tag">Ouro</span>
+            <span class="game-tag">Platina</span>
+            <span class="game-tag">Diamante</span>
+          </div>
+
+        </div>
+
+        <button
+          class="play-btn"
+          onclick="abrirRoleta('diamante')"
+        >
+          GIRAR DIAMANTE
+        </button>
+
+      </article>
+
+    </section>
+
+    <div class="section-title">
+      <h2>📜 Histórico</h2>
+      <span id="historyStatus">Últimas movimentações</span>
+    </div>
+
+    <section id="historyList" class="history">
+      <div class="info-box">
+        Carregando histórico...
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h2>ℹ️ Informações</h2>
+    </div>
+
+    <div class="info-box">
+
+      <strong>Como funcionam as roletas?</strong><br>
+
+      Você escolhe uma roleta, informa o valor da rodada e gira.
+      O resultado é definido pelo sistema. Quando houver multiplicador,
+      o prêmio é calculado sobre o valor apostado.
+
+      <br><br>
+
+      <strong>Exemplo:</strong><br>
+
+      Aposta de 10 créditos × x3 = 30 créditos de prêmio.
+
+      <div class="virtual-note" id="virtualNotice">
+        🎮 Esta versão utiliza exclusivamente créditos virtuais
+        para demonstração. Os créditos não representam dinheiro real.
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- ================= MODAL ROLETA ================= -->
+
+<div class="modal" id="rouletteModal">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <div>
+
+        <div class="modal-title" id="rouletteTitle">
+          Roda da Sorte
+        </div>
+
+        <div class="modal-subtitle" id="rouletteSubtitle">
+          Prêmios e multiplicadores
+        </div>
+
+      </div>
+
+      <button
+        class="close-btn"
+        id="rouletteClose"
+        onclick="fecharRoleta()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-content">
+
+      <div class="rules">
+
+        <div class="rules-header">
+          📖 Como jogar
+        </div>
+
+        <div
+          class="rules-body"
+          id="rouletteRules"
+        ></div>
+
+      </div>
+
+      <div
+        class="roulette-area"
+        id="rouletteArea"
+      >
+
+        <div class="pointer"></div>
+
+        <div
+          class="wheel"
+          id="wheel"
+        >
+
+          <div
+            class="wheel-inner"
+            id="wheelInner"
+          >
+
+            <div id="wheelSectors"></div>
+            <div id="wheelNumbers"></div>
+
+            <div class="wheel-center-ring">
+
+              <button
+                class="wheel-center-button"
+                id="spinButton"
+                onclick="girarRoleta()"
+              >
+                GIRAR
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="bet-panel">
+
+        <label class="bet-label">
+          Valor da rodada
+        </label>
+
+        <div class="bet-row">
+
+          <input
+            id="betAmount"
+            class="bet-input"
+            type="number"
+            min="1"
+            step="1"
+            value="10"
+            inputmode="numeric"
+          >
+
+        </div>
+
+        <div class="quick-values">
+
+          <button
+            class="quick-btn"
+            onclick="definirValor(1)"
+          >
+            1
+          </button>
+
+          <button
+            class="quick-btn"
+            onclick="definirValor(5)"
+          >
+            5
+          </button>
+
+          <button
+            class="quick-btn"
+            onclick="definirValor(10)"
+          >
+            10
+          </button>
+
+          <button
+            class="quick-btn"
+            onclick="definirValor(25)"
+          >
+            25
+          </button>
+
+          <button
+            class="quick-btn"
+            onclick="definirValor(50)"
+          >
+            50
+          </button>
+
+          <button
+            class="quick-btn"
+            onclick="definirValor(100)"
+          >
+            100
+          </button>
+
+        </div>
+
+      </div>
+
+      <div
+        class="result"
+        id="rouletteResult"
+      >
+
+        <div class="result-label">
+          Resultado da rodada
+        </div>
+
+        <div
+          class="result-main"
+          id="resultMain"
+        >
+          —
+        </div>
+
+        <div
+          id="resultPrize"
+        ></div>
+
+      </div>
+
+      <div
+        class="virtual-note"
+        id="modalVirtualNotice"
+      >
+        🎮 Esta versão utiliza exclusivamente créditos virtuais
+        para demonstração. Os créditos não representam dinheiro real.
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= MODAL DEPOSITO ================= -->
+
+<div class="modal" id="depositModal">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <div>
+
+        <div class="modal-title">
+          💳 Depositar
+        </div>
+
+        <div class="modal-subtitle">
+          Adicionar créditos
+        </div>
+
+      </div>
+
+      <button
+        class="close-btn"
+        onclick="fecharModal('depositModal')"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-content">
+
+      <div class="rules">
+
+        <div class="rules-header">
+          Como funciona
+        </div>
+
+        <div class="rules-body">
+          O pagamento é realizado externamente.
+          Depois de efetuar o pagamento, solicite a confirmação.
+          O crédito somente deve ser disponibilizado após
+          verificação administrativa.
+        </div>
+
+      </div>
+
+      <div class="bet-panel">
+
+        <label class="bet-label">
+          Valor desejado
+        </label>
+
+        <input
+          id="depositAmount"
+          class="bet-input"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Digite o valor"
+        >
+
+        <button
+          class="play-btn"
+          style="margin-top:10px;background:linear-gradient(145deg,#22df85,#0aa95b);"
+          onclick="solicitarDeposito()"
+        >
+          SOLICITAR DEPÓSITO
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= MODAL SAQUE ================= -->
+
+<div class="modal" id="withdrawModal">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <div>
+
+        <div class="modal-title">
+          💸 Solicitar saque
+        </div>
+
+        <div class="modal-subtitle">
+          Retirada de créditos
+        </div>
+
+      </div>
+
+      <button
+        class="close-btn"
+        onclick="fecharModal('withdrawModal')"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-content">
+
+      <div class="rules">
+
+        <div class="rules-header">
+          Atenção
+        </div>
+
+        <div class="rules-body">
+
+          A solicitação será enviada para análise administrativa.
+          O valor solicitado ficará reservado enquanto o pedido
+          estiver em análise.
+
+          <br><br>
+
+          <strong>Importante:</strong>
+          informe a chave Pix que deverá receber este saque.
+          A chave Pix é solicitada novamente a cada novo saque
+          e não fica cadastrada permanentemente na sua conta.
+
+        </div>
+
+      </div>
+
+      <div class="bet-panel">
+
+        <label class="bet-label">
+          Valor do saque
+        </label>
+
+        <input
+          id="withdrawAmount"
+          class="bet-input"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Digite o valor"
+          inputmode="numeric"
+        >
+
+        <label
+          class="bet-label"
+          for="withdrawPixKey"
+          style="margin-top:14px;"
+        >
+          Chave Pix
+        </label>
+
+        <input
+          id="withdrawPixKey"
+          class="pix-input"
+          type="text"
+          placeholder="Digite a chave Pix para receber"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+        >
+
+        <div class="pix-help">
+          🔐 A chave será utilizada somente nesta solicitação de saque.
+          Ela não será cadastrada como chave permanente da sua conta.
+        </div>
+
+        <button
+          class="play-btn"
+          style="margin-top:14px;background:linear-gradient(145deg,#242934,#151820);color:white;border:1px solid #343946;"
+          onclick="solicitarSaque()"
+        >
+          SOLICITAR SAQUE
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= MENU ================= -->
+
+<div
+  class="drawer"
+  id="drawer"
+  onclick="fecharMenu(event)"
+>
+
+  <div
+    class="drawer-panel"
+    onclick="event.stopPropagation()"
+  >
+
+    <h3>JPBET</h3>
+
+    <button
+      class="drawer-link"
+      onclick="fecharMenu();abrirDeposito()"
+    >
+      💳 Depositar
+    </button>
+
+    <button
+      class="drawer-link"
+      onclick="fecharMenu();abrirSaque()"
+    >
+      💸 Sacar
+    </button>
+
+    <button
+      class="drawer-link"
+      onclick="fecharMenu();carregarHistorico()"
+    >
+      📜 Atualizar histórico
+    </button>
+
+    <button
+      class="drawer-link logout"
+      onclick="logout()"
+    >
+      🚪 Sair da conta
+    </button>
+
+  </div>
+
+</div>
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+<script>
+
+  const API_URL = "/api";
+
+  let usuarioAtual = null;
+  let tokenAtual = null;
+
+  let configuracoes = {
+    roulette_enabled: "true",
+    roulette_min_bet: "1",
+    roulette_max_bet: "100",
+    roulette_animation_ms: "4800",
+    roulette_sound_enabled: "true",
+
+    roulette_red_color: "#e51f35",
+    roulette_black_color: "#171717",
+    roulette_green_color: "#08a83e",
+    roulette_accent_color: "#ffd43b",
+
+    virtual_credits_mode: "true",
+
+    virtual_credits_text:
+      "Esta plataforma utiliza créditos virtuais para demonstração.",
+
+    virtual_credits_disclaimer:
+      "Os créditos desta versão não representam dinheiro real.",
+
+    virtual_credits_notice:
+      "🎮 Esta versão utiliza exclusivamente créditos virtuais para demonstração. Os créditos não representam dinheiro real.",
+
+    pix_enabled: "true",
+    pix_key: "",
+    pix_key_type: "aleatoria",
+    pix_receiver_name: "",
+    pix_city: "",
+    pix_description: "JPBET",
+    pix_txid: "***",
+    pix_instructions:
+      "Faça o pagamento pelo aplicativo do seu banco e depois clique em JÁ FIZ O PIX."
+  };
+
+  let roletaAtual = "sorte";
+  let rodadaEmAndamento = false;
+  let rotacaoAtual = 0;
+
+  /* ================= UTIL ================= */
+
+  function escaparHTML(valor){
+    return String(valor ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
-}
-/* =========================================================
-   FRONTEND
-========================================================= */
-const __filename =
-  fileURLToPath(import.meta.url);
-const __dirname =
-  path.dirname(__filename);
-const frontendPath =
-  path.join(
-    __dirname,
-    "../frontend"
-  );
-app.use(
-  express.static(frontendPath)
-);
-app.get(
-  "/",
-  (req, res) => {
-    res.sendFile(
-      path.join(
-        frontendPath,
-        "index.html"
-      )
+
+  function mostrarToast(mensagem){
+
+    const toast =
+      document.getElementById("toast");
+
+    toast.textContent =
+      mensagem;
+
+    toast.classList.add("show");
+
+    clearTimeout(
+      window.__toastTimer
     );
+
+    window.__toastTimer =
+      setTimeout(()=>{
+        toast.classList.remove("show");
+      },3000);
   }
-);
-/* =========================================================
-   AUXILIARES
-========================================================= */
-function obterCookie(req, nome) {
-  const cookies =
-    String(
-      req.headers.cookie || ""
-    )
-      .split(";")
-      .map(
-        item =>
-          item.trim()
-      );
-  const cookie =
-    cookies.find(
-      item =>
-        item.startsWith(
-          `${nome}=`
-        )
-    );
-  if (!cookie) {
-    return null;
-  }
-  return decodeURIComponent(
-    cookie.substring(
-      nome.length + 1
-    )
-  );
-}
-function exigirAdmin(
-  req,
-  res,
-  next
-) {
-  const token =
-    obterCookie(
-      req,
-      "jpbet_admin_session"
-    );
-  const sessao =
-    validarSessaoAdmin(
-      token
-    );
-  if (!sessao) {
-    return res.status(401).json({
-      ok: false,
-      message:
-        "Sessão administrativa inválida ou expirada."
-    });
-  }
-  req.admin =
-    sessao;
-  next();
-}
-async function obterAdminId(
-  client,
-  username
-) {
-  const result =
-    await client.query(
-      `
-      SELECT id
-      FROM admins
-      WHERE username = $1
-      LIMIT 1
-      `,
-      [username]
-    );
-  return result.rows.length
-    ? result.rows[0].id
-    : null;
-}
-async function registrarAuditoria(
-  client,
-  adminUsername,
-  action,
-  targetType,
-  targetId,
-  description,
-  metadata = null
-) {
-  const adminId =
-    await obterAdminId(
-      client,
-      adminUsername
-    );
-  await client.query(
-    `
-    INSERT INTO admin_audit_logs
-    (
-      admin_id,
-      action,
-      target_type,
-      target_id,
-      description,
-      metadata
-    )
-    VALUES
-    (
-      $1,
-      $2,
-      $3,
-      $4,
-      $5,
-      $6
-    )
-    `,
-    [
-      adminId,
-      action,
-      targetType,
-      targetId,
-      description,
-      metadata
-        ? JSON.stringify(metadata)
-        : null
-    ]
-  );
-}
-/* =========================================================
-   API DE AUTENTICAÇÃO
-========================================================= */
-app.use(
-  "/api/auth",
-  authRouter
-);
-/* =========================================================
-   API DE CONFIGURAÇÕES
-========================================================= */
-app.use(
-  "/api/settings",
-  settingsRouter
-);
-/* =========================================================
-   API DA ROLETA
-   ROLETAS PERSONALIZADAS
-========================================================= */
-/*
-  As opções precisam permanecer iguais às existentes
-  no dashboard.html.
-  O jogador escolhe uma fatia primeiro.
-  Depois o servidor sorteia a fatia vencedora.
-  O resultado só paga se a fatia sorteada
-  for a fatia escolhida pelo jogador.
-*/
-const ROLETAS = {
-  sorte: [
-    "1000",
-    "500",
-    "200",
-    "x2",
-    "50",
-    "NOVAMENTE",
-    "100",
-    "x3",
-    "250",
-    "SORTE"
-  ],
-  turbo: [
-    "x0",
-    "x1",
-    "x2",
-    "x3",
-    "x5",
-    "x10",
-    "+10",
-    "+25",
-    "NOVAMENTE"
-  ],
-  diamante: [
-    "PRATA",
-    "OURO",
-    "PLATINA",
-    "DIAMANTE",
-    "SUPER",
-    "NOVAMENTE",
-    "OURO",
-    "PRATA"
-  ]
-};
-function calcularPremioRoleta(
-  rouletteId,
-  resultado,
-  bet
-) {
-  const valor =
-    String(
-      resultado || ""
-    )
-      .trim()
-      .toUpperCase();
-  if (
-    rouletteId === "sorte"
-  ) {
-    if (
-      valor === "1000"
-    ) {
-      return bet * 1000;
-    }
-    if (
-      valor === "500"
-    ) {
-      return bet * 500;
-    }
-    if (
-      valor === "200"
-    ) {
-      return bet * 200;
-    }
-    if (
-      valor === "50"
-    ) {
-      return bet * 50;
-    }
-    if (
-      valor === "100"
-    ) {
-      return bet * 100;
-    }
-    if (
-      valor === "250"
-    ) {
-      return bet * 250;
-    }
-    if (
-      valor === "x2"
-    ) {
-      return bet * 2;
-    }
-    if (
-      valor === "x3"
-    ) {
-      return bet * 3;
-    }
-    return 0;
-  }
-  if (
-    rouletteId === "turbo"
-  ) {
-    if (
-      valor === "x0"
-    ) {
+
+  function obterSaldo(){
+
+    if(!usuarioAtual){
       return 0;
     }
-    if (
-      valor === "x1"
-    ) {
-      return bet;
-    }
-    if (
-      valor === "x2"
-    ) {
-      return bet * 2;
-    }
-    if (
-      valor === "x3"
-    ) {
-      return bet * 3;
-    }
-    if (
-      valor === "x5"
-    ) {
-      return bet * 5;
-    }
-    if (
-      valor === "x10"
-    ) {
-      return bet * 10;
-    }
-    if (
-      valor === "+10"
-    ) {
-      return 10;
-    }
-    if (
-      valor === "+25"
-    ) {
-      return 25;
-    }
-    return 0;
+
+    return Number(
+      usuarioAtual.balance ??
+      usuarioAtual.saldo ??
+      0
+    );
   }
-  if (
-    rouletteId === "diamante"
-  ) {
-    if (
-      valor === "PRATA"
-    ) {
-      return bet * 2;
-    }
-    if (
-      valor === "OURO"
-    ) {
-      return bet * 5;
-    }
-    if (
-      valor === "PLATINA"
-    ) {
-      return bet * 8;
-    }
-    if (
-      valor === "DIAMANTE"
-    ) {
-      return bet * 10;
-    }
-    if (
-      valor === "SUPER"
-    ) {
-      return bet * 15;
-    }
-    return 0;
+
+  function formatarCreditos(valor){
+
+    return `${Number(valor || 0).toLocaleString("pt-BR")} créditos`;
   }
-  return 0;
-}
-app.post(
-  "/api/roulette/spin",
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const {
-        userId,
-        betAmount,
-        betType,
-        betValue,
-        rouletteId,
-        selectedIndex
-      } = req.body;
-      const userIdNumber =
-        Number(userId);
-      const bet =
-        Number(betAmount);
-      /*
-        -----------------------------------------------------
-        VALIDAÇÕES BÁSICAS
-        -----------------------------------------------------
-      */
-      if (
-        !Number.isInteger(
-          userIdNumber
-        ) ||
-        userIdNumber <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      if (
-        !Number.isFinite(bet) ||
-        bet <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Valor da aposta inválido."
-        });
-      }
-      /*
-        -----------------------------------------------------
-        CONFIGURAÇÕES DO ADMIN
-        -----------------------------------------------------
-      */
-      const settingsResult =
-        await pool.query(
-          `
-          SELECT
-            setting_key,
-            setting_value
-          FROM site_settings
-          WHERE setting_key IN (
-            'roulette_enabled',
-            'roulette_min_bet',
-            'roulette_max_bet',
-            'virtual_credits_mode'
-          )
-          `
-        );
-      const settings = {};
-      for (
-        const row
-        of settingsResult.rows
-      ) {
-        settings[
-          row.setting_key
-        ] =
-          row.setting_value;
-      }
-      const rouletteEnabled =
-        String(
-          settings.roulette_enabled
-        ).toLowerCase() !==
-        "false";
-      const virtualCreditsMode =
-        String(
-          settings.virtual_credits_mode
-        ).toLowerCase() !==
-        "false";
-      const minBet =
-        Number(
-          settings.roulette_min_bet ||
-          1
-        );
-      const maxBet =
-        Number(
-          settings.roulette_max_bet ||
-          100
-        );
-      if (!rouletteEnabled) {
-        return res.status(403).json({
-          ok: false,
-          message:
-            "A roleta está desativada."
-        });
-      }
-      if (!virtualCreditsMode) {
-        return res.status(403).json({
-          ok: false,
-          message:
-            "A roleta está configurada apenas para créditos virtuais."
-        });
-      }
-      if (
-        bet < minBet ||
-        bet > maxBet
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
-        });
-      }
-      /*
-        -----------------------------------------------------
-        NOVA VALIDAÇÃO DA ROLETA PERSONALIZADA
-        -----------------------------------------------------
-        Antes o backend aceitava somente:
-          red
-          black
-          number
-        Por isso o dashboard enviava "roulette"
-        e recebia "Tipo de aposta inválido."
-        Agora "roulette" é aceito para as três
-        roletas personalizadas.
-      */
-      const tipoRoleta =
-        String(
-          betType || ""
-        ).toLowerCase();
-      if (
-        tipoRoleta !== "roulette"
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Tipo de roleta inválido."
-        });
-      }
-      const idRoleta =
-        String(
-          rouletteId || ""
-        ).toLowerCase();
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          ROLETAS,
-          idRoleta
-        )
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Roleta inválida."
-        });
-      }
-      /*
-        selectedIndex precisa ser informado
-        pelo jogador antes de girar.
-      */
-      const indiceEscolhido =
-        Number(
-          selectedIndex
-        );
-      if (
-        !Number.isInteger(
-          indiceEscolhido
-        ) ||
-        indiceEscolhido < 0 ||
-        indiceEscolhido >=
-          ROLETAS[idRoleta].length
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Opção da roleta inválida."
-        });
-      }
-      /*
-        -----------------------------------------------------
-        TRANSAÇÃO
-        -----------------------------------------------------
-      */
-      await client.query(
-        "BEGIN"
+
+  function atualizarSaldo(balance){
+
+    if(!usuarioAtual){
+      return;
+    }
+
+    usuarioAtual.balance =
+      Number(balance || 0);
+
+    document.getElementById(
+      "mainBalance"
+    ).textContent =
+      formatarCreditos(
+        usuarioAtual.balance
       );
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            username,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [userIdNumber]
+
+    document.getElementById(
+      "headerBalance"
+    ).textContent =
+      formatarCreditos(
+        usuarioAtual.balance
+      );
+  }
+
+  /* ================= CREDITO BLOQUEADO ================= */
+
+  function atualizarCreditoBloqueado(valor){
+
+    if(!usuarioAtual){
+      return;
+    }
+
+    const bloqueado =
+      Number(valor || 0);
+
+    usuarioAtual.reservedBalance =
+      Number.isFinite(bloqueado) && bloqueado > 0
+        ? bloqueado
+        : 0;
+
+    const box =
+      document.getElementById(
+        "reservedBalanceBox"
+      );
+
+    const value =
+      document.getElementById(
+        "reservedBalanceValue"
+      );
+
+    if(!box || !value){
+      return;
+    }
+
+    if(
+      !Number.isFinite(bloqueado) ||
+      bloqueado <= 0
+    ){
+
+      box.style.display =
+        "none";
+
+      value.textContent =
+        "0 créditos";
+
+      return;
+    }
+
+    box.style.display =
+      "block";
+
+    value.textContent =
+      formatarCreditos(
+        bloqueado
+      );
+  }
+
+  /* ================= SETTINGS ================= */
+
+  async function carregarConfiguracoes(){
+
+    try{
+
+      const resposta =
+        await fetch(
+          `${API_URL}/settings/public`,
+          {
+            cache:"no-store"
+          }
         );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário não encontrado."
-        });
+
+      if(!resposta.ok){
+        return;
       }
-      const user =
-        userResult.rows[0];
-      const saldoAtual =
-        Number(
-          user.balance || 0
-        );
-      const saldoReservado =
-        Number(
-          user.reserved_balance || 0
-        );
-      /*
-        O saldo reservado NUNCA é utilizado
-        para apostar.
-        Somente o saldo disponível pode
-        financiar a rodada.
-      */
-      if (
-        saldoAtual < bet
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Saldo disponível insuficiente.",
-          balance:
-            saldoAtual,
-          reservedBalance:
-            saldoReservado
-        });
+
+      const dados =
+        await resposta.json();
+
+      if(
+        dados &&
+        typeof dados === "object"
+      ){
+
+        if(dados.settings){
+
+          configuracoes = {
+            ...configuracoes,
+            ...dados.settings
+          };
+
+        }else{
+
+          configuracoes = {
+            ...configuracoes,
+            ...dados
+          };
+
+        }
+
       }
-      /*
-        -----------------------------------------------------
-        SORTEIO DO RESULTADO
-        -----------------------------------------------------
-      */
-      const segmentos =
-        ROLETAS[idRoleta];
-      const indiceResultado =
+
+    }catch(erro){
+
+      console.warn(
+        "Não foi possível carregar configurações:",
+        erro
+      );
+
+    }
+
+    aplicarConfiguracoes();
+  }
+
+  function aplicarConfiguracoes(){
+
+    document.documentElement.style.setProperty(
+      "--roulette-red",
+      configuracoes.roulette_red_color ||
+      "#e51f35"
+    );
+
+    document.documentElement.style.setProperty(
+      "--roulette-black",
+      configuracoes.roulette_black_color ||
+      "#171717"
+    );
+
+    document.documentElement.style.setProperty(
+      "--roulette-green",
+      configuracoes.roulette_green_color ||
+      "#08a83e"
+    );
+
+    document.documentElement.style.setProperty(
+      "--roulette-accent",
+      configuracoes.roulette_accent_color ||
+      "#ffd43b"
+    );
+
+    const aviso =
+      obterAvisoCreditosVirtuais();
+
+    document.getElementById(
+      "virtualNotice"
+    ).textContent =
+      aviso;
+
+    document.getElementById(
+      "modalVirtualNotice"
+    ).textContent =
+      aviso;
+  }
+
+  function obterAvisoCreditosVirtuais(){
+
+    if(
+      configuracoes.virtual_credits_notice &&
+      String(
+        configuracoes.virtual_credits_notice
+      ).trim()
+    ){
+
+      return configuracoes.virtual_credits_notice;
+    }
+
+    const texto =
+      configuracoes.virtual_credits_text ||
+      "Esta plataforma utiliza créditos virtuais para demonstração.";
+
+    const disclaimer =
+      configuracoes.virtual_credits_disclaimer ||
+      "Os créditos desta versão não representam dinheiro real.";
+
+    return `🎮 ${texto} ${disclaimer}`;
+  }
+
+  /* ================= USER ================= */
+
+  function recuperarSessao(){
+
+    try{
+
+      const usuarioSalvo =
+        localStorage.getItem(
+          "jpbet_user"
+        );
+
+      const tokenSalvo =
+        localStorage.getItem(
+          "jpbet_token"
+        );
+
+      if(!usuarioSalvo){
+        return false;
+      }
+
+      usuarioAtual =
+        JSON.parse(
+          usuarioSalvo
+        );
+
+      tokenAtual =
+        tokenSalvo || "";
+
+      return true;
+
+    }catch(erro){
+
+      console.error(erro);
+
+      return false;
+    }
+  }
+
+  async function carregarUsuario(){
+
+    if(!recuperarSessao()){
+
+      window.location.href = "/";
+
+      return false;
+    }
+
+    const nome =
+      usuarioAtual.name ||
+      usuarioAtual.nome ||
+      usuarioAtual.username ||
+      usuarioAtual.email ||
+      "jogador";
+
+    document.getElementById(
+      "userName"
+    ).textContent =
+      nome;
+
+    atualizarSaldo(
+      obterSaldo()
+    );
+
+    atualizarCreditoBloqueado(
+      usuarioAtual.reservedBalance ??
+      usuarioAtual.reserved_balance ??
+      0
+    );
+
+    return true;
+  }
+
+  /* ================= AUTH HEADERS ================= */
+
+  function headersJSON(){
+
+    const headers = {
+      "Content-Type":"application/json"
+    };
+
+    if(tokenAtual){
+
+      headers.Authorization =
+        `Bearer ${tokenAtual}`;
+    }
+
+    return headers;
+  }
+
+  /* ================= MENU ================= */
+
+  function abrirMenu(){
+
+    document
+      .getElementById("drawer")
+      .classList.add("open");
+  }
+
+  function fecharMenu(event){
+
+    if(event){
+      event.stopPropagation();
+    }
+
+    document
+      .getElementById("drawer")
+      .classList.remove("open");
+  }
+
+  /* ================= MODALS ================= */
+
+  function abrirModal(id){
+
+    document
+      .getElementById(id)
+      .classList.add("open");
+  }
+
+  function fecharModal(id){
+
+    document
+      .getElementById(id)
+      .classList.remove("open");
+  }
+
+  function abrirDeposito(){
+
+    if(
+      String(
+        configuracoes.pix_enabled
+      ).toLowerCase() !== "true"
+    ){
+
+      mostrarToast(
+        "Depósitos estão temporariamente desativados."
+      );
+
+      return;
+    }
+
+    document.getElementById(
+      "depositAmount"
+    ).value = "";
+
+    abrirModal(
+      "depositModal"
+    );
+  }
+
+  function abrirSaque(){
+
+    /*
+      Cada nova solicitação começa
+      obrigatoriamente com a chave Pix vazia.
+      Nenhuma chave é recuperada do localStorage.
+    */
+
+    document.getElementById(
+      "withdrawAmount"
+    ).value = "";
+
+    document.getElementById(
+      "withdrawPixKey"
+    ).value = "";
+
+    abrirModal(
+      "withdrawModal"
+    );
+
+    setTimeout(()=>{
+      document.getElementById(
+        "withdrawAmount"
+      ).focus();
+    },100);
+  }
+
+  /* ================= ROULETTE DATA ================= */
+
+  const ROLETAS = {
+
+    sorte:{
+
+      titulo:"Roda da Sorte",
+
+      subtitulo:
+        "Prêmios fixos + multiplicadores",
+
+      classe:"",
+
+      regras:`
+        <strong>Como funciona:</strong>
+        escolha o valor da rodada e pressione GIRAR.
+        A roleta possui prêmios fixos e multiplicadores.
+
+        <br><br>
+
+        <strong>Como o prêmio é calculado:</strong>
+        quando sair um multiplicador, ele é aplicado
+        diretamente sobre o valor apostado.
+
+        <br><br>
+
+        <strong>Exemplo:</strong>
+        10 créditos × x3 = 30 créditos de prêmio.
+
+        <div class="prize-grid">
+
+          <div class="prize-item">
+            <b>50</b>
+            <small>créditos</small>
+          </div>
+
+          <div class="prize-item">
+            <b>100</b>
+            <small>créditos</small>
+          </div>
+
+          <div class="prize-item">
+            <b>200</b>
+            <small>créditos</small>
+          </div>
+
+          <div class="prize-item">
+            <b>250</b>
+            <small>créditos</small>
+          </div>
+
+          <div class="prize-item">
+            <b>500</b>
+            <small>créditos</small>
+          </div>
+
+          <div class="prize-item">
+            <b>1000</b>
+            <small>créditos</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x2</b>
+            <small>multiplicador</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x3</b>
+            <small>multiplicador</small>
+          </div>
+
+          <div class="prize-item">
+            <b>NOVAMENTE</b>
+            <small>nova rodada</small>
+          </div>
+
+        </div>
+      `,
+
+      segmentos:[
+        "1000",
+        "500",
+        "200",
+        "x2",
+        "50",
+        "NOVAMENTE",
+        "100",
+        "x3",
+        "250",
+        "SORTE"
+      ]
+
+    },
+
+    turbo:{
+
+      titulo:"Roleta Turbo",
+
+      subtitulo:
+        "Multiplicadores rápidos",
+
+      classe:"turbo-area",
+
+      regras:`
+        <strong>Como funciona:</strong>
+        a Roleta Turbo é focada em multiplicadores.
+        O valor da sua rodada serve como base para
+        calcular o prêmio.
+
+        <br><br>
+
+        <strong>Exemplos:</strong><br>
+        10 × x2 = 20 créditos<br>
+        10 × x5 = 50 créditos<br>
+        10 × x10 = 100 créditos
+
+        <br><br>
+
+        Resultado <strong>x0</strong> significa que
+        não há prêmio naquela rodada.
+
+        <div class="prize-grid">
+
+          <div class="prize-item">
+            <b>x0</b>
+            <small>sem prêmio</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x1</b>
+            <small>valor da aposta</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x2</b>
+            <small>2 vezes</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x3</b>
+            <small>3 vezes</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x5</b>
+            <small>5 vezes</small>
+          </div>
+
+          <div class="prize-item">
+            <b>x10</b>
+            <small>10 vezes</small>
+          </div>
+
+          <div class="prize-item">
+            <b>+10</b>
+            <small>bônus</small>
+          </div>
+
+          <div class="prize-item">
+            <b>+25</b>
+            <small>bônus</small>
+          </div>
+
+          <div class="prize-item">
+            <b>NOVAMENTE</b>
+            <small>nova rodada</small>
+          </div>
+
+        </div>
+      `,
+
+      segmentos:[
+        "x0",
+        "x1",
+        "x2",
+        "x3",
+        "x5",
+        "x10",
+        "+10",
+        "+25",
+        "NOVAMENTE"
+      ]
+
+    },
+
+    diamante:{
+
+      titulo:"Roleta Diamante",
+
+      subtitulo:
+        "Níveis premium de prêmio",
+
+      classe:"diamond-area",
+
+      regras:`
+        <strong>Como funciona:</strong>
+        cada posição representa um nível de prêmio.
+        O valor da rodada é utilizado para calcular
+        os multiplicadores de cada categoria.
+
+        <br><br>
+
+        <strong>Exemplos:</strong><br>
+        Prata = aposta × 2<br>
+        Ouro = aposta × 5<br>
+        Platina = aposta × 8<br>
+        Diamante = aposta × 10
+
+        <div class="prize-grid">
+
+          <div class="prize-item">
+            <b>Prata</b>
+            <small>x2</small>
+          </div>
+
+          <div class="prize-item">
+            <b>Ouro</b>
+            <small>x5</small>
+          </div>
+
+          <div class="prize-item">
+            <b>Platina</b>
+            <small>x8</small>
+          </div>
+
+          <div class="prize-item">
+            <b>Diamante</b>
+            <small>x10</small>
+          </div>
+
+          <div class="prize-item">
+            <b>Super</b>
+            <small>x15</small>
+          </div>
+
+          <div class="prize-item">
+            <b>Novamente</b>
+            <small>nova rodada</small>
+          </div>
+
+        </div>
+      `,
+
+      segmentos:[
+        "PRATA",
+        "OURO",
+        "PLATINA",
+        "DIAMANTE",
+        "SUPER",
+        "NOVAMENTE",
+        "OURO",
+        "PRATA"
+      ]
+
+    }
+
+  };
+
+  /* ================= OPEN ROULETTE ================= */
+
+  function abrirRoleta(tipo){
+
+    if(
+      String(
+        configuracoes.roulette_enabled
+      ).toLowerCase() !== "true"
+    ){
+
+      mostrarToast(
+        "As roletas estão temporariamente desativadas."
+      );
+
+      return;
+    }
+
+    if(!ROLETAS[tipo]){
+      return;
+    }
+
+    roletaAtual =
+      tipo;
+
+    rodadaEmAndamento =
+      false;
+
+    const dados =
+      ROLETAS[tipo];
+
+    document.getElementById(
+      "rouletteTitle"
+    ).textContent =
+      dados.titulo;
+
+    document.getElementById(
+      "rouletteSubtitle"
+    ).textContent =
+      dados.subtitulo;
+
+    document.getElementById(
+      "rouletteRules"
+    ).innerHTML =
+      dados.regras;
+
+    document.getElementById(
+      "rouletteArea"
+    ).className =
+      `roulette-area ${dados.classe}`;
+
+    document.getElementById(
+      "rouletteResult"
+    ).classList.remove(
+      "show"
+    );
+
+    document.getElementById(
+      "resultMain"
+    ).textContent =
+      "—";
+
+    document.getElementById(
+      "resultPrize"
+    ).textContent =
+      "";
+
+    const min =
+      obterMinBet();
+
+    const max =
+      obterMaxBet();
+
+    const input =
+      document.getElementById(
+        "betAmount"
+      );
+
+    input.min =
+      min;
+
+    input.max =
+      max;
+
+    if(
+      Number(input.value) < min
+    ){
+
+      input.value =
+        min;
+    }
+
+    criarRoda();
+
+    abrirModal(
+      "rouletteModal"
+    );
+  }
+
+  function fecharRoleta(){
+
+    if(rodadaEmAndamento){
+
+      mostrarToast(
+        "Aguarde o término da rodada."
+      );
+
+      return;
+    }
+
+    fecharModal(
+      "rouletteModal"
+    );
+  }
+
+  /* ================= WHEEL ================= */
+
+  function criarRoda(){
+
+    const dados =
+      ROLETAS[roletaAtual];
+
+    const sectores =
+      document.getElementById(
+        "wheelSectors"
+      );
+
+    const numbers =
+      document.getElementById(
+        "wheelNumbers"
+      );
+
+    sectores.innerHTML =
+      "";
+
+    numbers.innerHTML =
+      "";
+
+    const total =
+      dados.segmentos.length;
+
+    for(let i=0;i<total;i++){
+
+      const angulo =
+        (360 / total) * i;
+
+      const linha =
+        document.createElement(
+          "div"
+        );
+
+      linha.className =
+        "wheel-sector";
+
+      linha.style.transform =
+        `rotate(${angulo}deg)`;
+
+      sectores.appendChild(
+        linha
+      );
+
+      const texto =
+        document.createElement(
+          "div"
+        );
+
+      texto.className =
+        "wheel-number";
+
+      texto.textContent =
+        dados.segmentos[i];
+
+      const rad =
+        (
+          angulo +
+          (180 / total)
+        ) *
+        Math.PI / 180;
+
+      const raio =
+        40;
+
+      const x =
+        Math.cos(rad) *
+        raio;
+
+      const y =
+        Math.sin(rad) *
+        raio;
+
+      texto.style.transform =
+        `translate(${x}px,${y}px) rotate(${angulo + (180 / total)}deg)`;
+
+      numbers.appendChild(
+        texto
+      );
+    }
+  }
+
+  /* ================= BET ================= */
+
+  function obterMinBet(){
+
+    const valor =
+      Number(
+        configuracoes.roulette_min_bet
+      );
+
+    return Number.isFinite(valor) &&
+      valor > 0
+      ? valor
+      : 1;
+  }
+
+  function obterMaxBet(){
+
+    const valor =
+      Number(
+        configuracoes.roulette_max_bet
+      );
+
+    return Number.isFinite(valor) &&
+      valor > 0
+      ? valor
+      : 100;
+  }
+
+  function definirValor(valor){
+
+    const input =
+      document.getElementById(
+        "betAmount"
+      );
+
+    const min =
+      obterMinBet();
+
+    const max =
+      obterMaxBet();
+
+    input.value =
+      Math.min(
+        Math.max(
+          Number(valor),
+          min
+        ),
+        max
+      );
+  }
+
+  function validarAposta(){
+
+    const valor =
+      Number(
+        document.getElementById(
+          "betAmount"
+        ).value
+      );
+
+    const min =
+      obterMinBet();
+
+    const max =
+      obterMaxBet();
+
+    if(!Number.isFinite(valor)){
+
+      throw new Error(
+        "Informe o valor da rodada."
+      );
+    }
+
+    if(valor < min){
+
+      throw new Error(
+        `A rodada mínima é ${formatarCreditos(min)}.`
+      );
+    }
+
+    if(valor > max){
+
+      throw new Error(
+        `A rodada máxima é ${formatarCreditos(max)}.`
+      );
+    }
+
+    if(valor > obterSaldo()){
+
+      throw new Error(
+        "Saldo insuficiente."
+      );
+    }
+
+    return valor;
+  }
+
+  /* ================= ANIMATION ================= */
+
+  function obterDuracaoAnimacao(){
+
+    const valor =
+      Number(
+        configuracoes.roulette_animation_ms
+      );
+
+    if(
+      !Number.isFinite(valor) ||
+      valor < 1000
+    ){
+
+      return 4800;
+    }
+
+    return Math.min(
+      valor,
+      15000
+    );
+  }
+
+  function animarRoleta(indiceResultado){
+
+    return new Promise(resolve=>{
+
+      const wheel =
+        document.getElementById(
+          "wheel"
+        );
+
+      const total =
+        ROLETAS[
+          roletaAtual
+        ].segmentos.length;
+
+      const setor =
+        360 / total;
+
+      const alvo =
+        (360 - (
+          indiceResultado *
+          setor +
+          setor / 2
+        ));
+
+      const voltas =
+        6 +
         Math.floor(
-          Math.random() *
-          segmentos.length
+          Math.random() * 3
         );
-      const resultado =
-        segmentos[
-          indiceResultado
-        ];
-      const escolhido =
-        segmentos[
-          indiceEscolhido
-        ];
-      /*
-        O jogador só ganha quando
-        a fatia sorteada é exatamente
-        a fatia que ele escolheu.
-      */
-      const ganhou =
-        indiceResultado ===
-        indiceEscolhido;
-      let premio = 0;
-      if (ganhou) {
-        premio =
-          calcularPremioRoleta(
-            idRoleta,
-            resultado,
-            bet
+
+      rotacaoAtual +=
+        voltas * 360 +
+        alvo;
+
+      wheel.style.transition =
+        `transform ${obterDuracaoAnimacao()}ms cubic-bezier(.12,.72,.12,1)`;
+
+      wheel.style.transform =
+        `rotate(${rotacaoAtual}deg)`;
+
+      setTimeout(
+        resolve,
+        obterDuracaoAnimacao() + 100
+      );
+
+    });
+  }
+
+  /* ================= SOUND ================= */
+
+  function tocarSom(){
+
+    if(
+      String(
+        configuracoes.roulette_sound_enabled
+      ).toLowerCase() !== "true"
+    ){
+
+      return;
+    }
+
+    try{
+
+      const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if(!AudioContext){
+        return;
+      }
+
+      const ctx =
+        new AudioContext();
+
+      const osc =
+        ctx.createOscillator();
+
+      const gain =
+        ctx.createGain();
+
+      osc.type =
+        "sine";
+
+      osc.frequency.value =
+        720;
+
+      gain.gain.value =
+        0.035;
+
+      osc.connect(gain);
+      gain.connect(
+        ctx.destination
+      );
+
+      osc.start();
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        ctx.currentTime + .18
+      );
+
+      osc.stop(
+        ctx.currentTime + .18
+      );
+
+    }catch(e){
+
+      console.warn(
+        "Som indisponível.",
+        e
+      );
+    }
+  }
+
+  /* ================= SPIN ================= */
+
+  async function girarRoleta(){
+
+    if(rodadaEmAndamento){
+      return;
+    }
+
+    try{
+
+      const bet =
+        validarAposta();
+
+      rodadaEmAndamento =
+        true;
+
+      const button =
+        document.getElementById(
+          "spinButton"
+        );
+
+      const close =
+        document.getElementById(
+          "rouletteClose"
+        );
+
+      button.disabled =
+        true;
+
+      close.disabled =
+        true;
+
+      button.textContent =
+        "GIRANDO...";
+
+      document.getElementById(
+        "rouletteResult"
+      ).classList.remove(
+        "show"
+      );
+
+      tocarSom();
+
+      const resposta =
+        await fetch(
+          `${API_URL}/roulette/spin`,
+          {
+            method:"POST",
+            headers:headersJSON(),
+
+            body:JSON.stringify({
+
+              userId:
+                usuarioAtual.id,
+
+              betAmount:
+                bet,
+
+              betType:
+                "roulette",
+
+              betValue:
+                roletaAtual,
+
+              rouletteId:
+                roletaAtual
+
+            })
+          }
+        );
+
+      const data =
+        await resposta.json()
+          .catch(()=>({}));
+
+      if(!resposta.ok){
+
+        throw new Error(
+          data.message ||
+          data.error ||
+          "Não foi possível realizar a rodada."
+        );
+      }
+
+      const spin =
+        data.spin ||
+        data.result ||
+        {};
+
+      let resultado =
+        spin.number ??
+        spin.result ??
+        spin.index;
+
+      const total =
+        ROLETAS[
+          roletaAtual
+        ].segmentos.length;
+
+      let indice;
+
+      if(
+        Number.isFinite(
+          Number(resultado)
+        )
+      ){
+
+        indice =
+          Math.abs(
+            Number(resultado)
+          ) % total;
+
+      }else{
+
+        indice =
+          Math.floor(
+            Math.random() * total
           );
       }
+
+      await animarRoleta(
+        indice
+      );
+
+      const textoResultado =
+        ROLETAS[
+          roletaAtual
+        ].segmentos[indice];
+
+      const premio =
+        Number(
+          spin.prize ??
+          spin.premio ??
+          0
+        );
+
+      const ganhou =
+        Boolean(
+          spin.won ??
+          spin.ganho ??
+          premio > 0
+        );
+
+      await carregarSaldoServidor();
+
+      document.getElementById(
+        "resultMain"
+      ).textContent =
+        textoResultado;
+
+      const prizeElement =
+        document.getElementById(
+          "resultPrize"
+        );
+
+      if(
+        ganhou &&
+        premio > 0
+      ){
+
+        prizeElement.className =
+          "result-prize";
+
+        prizeElement.textContent =
+          `+ ${formatarCreditos(premio)}`;
+
+      }else{
+
+        prizeElement.className =
+          "result-loss";
+
+        prizeElement.textContent =
+          "Sem prêmio nesta rodada";
+      }
+
+      document.getElementById(
+        "rouletteResult"
+      ).classList.add(
+        "show"
+      );
+
+      tocarSom();
+
+      await carregarHistorico();
+
+    }catch(erro){
+
+      console.error(
+        erro
+      );
+
+      mostrarToast(
+        erro.message ||
+        "Erro ao realizar rodada."
+      );
+
+    }finally{
+
+      rodadaEmAndamento =
+        false;
+
+      document.getElementById(
+        "spinButton"
+      ).disabled =
+        false;
+
+      document.getElementById(
+        "spinButton"
+      ).textContent =
+        "GIRAR";
+
+      document.getElementById(
+        "rouletteClose"
+      ).disabled =
+        false;
+    }
+  }
+
+  /* ================= SERVER BALANCE ================= */
+
+  async function carregarSaldoServidor(){
+
+    try{
+
+      if(!usuarioAtual?.id){
+        return;
+      }
+
+      const endpoint =
+        `${API_URL}/account/${encodeURIComponent(
+          usuarioAtual.id
+        )}`;
+
+      const resposta =
+        await fetch(
+          endpoint,
+          {
+            headers:headersJSON(),
+            cache:"no-store"
+          }
+        );
+
+      if(!resposta.ok){
+        return;
+      }
+
+      const data =
+        await resposta.json();
+
+      const user =
+        data.user ||
+        data;
+
+      if(!user){
+        return;
+      }
+
+      if(
+        user.balance !== undefined
+      ){
+
+        atualizarSaldo(
+          user.balance
+        );
+      }
+
+      const reservado =
+        user.reservedBalance ??
+        user.reserved_balance ??
+        0;
+
+      atualizarCreditoBloqueado(
+        reservado
+      );
+
+      usuarioAtual.reservedBalance =
+        Number(reservado || 0);
+
+      localStorage.setItem(
+        "jpbet_user",
+        JSON.stringify(
+          usuarioAtual
+        )
+      );
+
+    }catch(e){
+
+      console.warn(
+        "Saldo não atualizado pelo servidor.",
+        e
+      );
+    }
+  }
+
+  /* ================= DEPOSIT ================= */
+
+  async function solicitarDeposito(){
+
+    const valor =
+      Number(
+        document.getElementById(
+          "depositAmount"
+        ).value
+      );
+
+    if(
+      !Number.isFinite(valor) ||
+      valor <= 0
+    ){
+
+      mostrarToast(
+        "Informe um valor válido."
+      );
+
+      return;
+    }
+
+    try{
+
+      const resposta =
+        await fetch(
+          `${API_URL}/deposits`,
+          {
+            method:"POST",
+            headers:headersJSON(),
+
+            body:JSON.stringify({
+
+              userId:
+                usuarioAtual.id,
+
+              amount:
+                valor
+
+            })
+          }
+        );
+
+      const data =
+        await resposta.json()
+          .catch(()=>({}));
+
+      if(!resposta.ok){
+
+        throw new Error(
+          data.message ||
+          data.error ||
+          "Não foi possível solicitar o depósito."
+        );
+      }
+
+      fecharModal(
+        "depositModal"
+      );
+
+      mostrarToast(
+        "Depósito solicitado. Aguarde a análise administrativa."
+      );
+
+      await carregarHistorico();
+
+    }catch(erro){
+
+      mostrarToast(
+        erro.message
+      );
+    }
+  }
+
+  /* ================= WITHDRAW ================= */
+
+  async function solicitarSaque(){
+
+    const valor =
+      Number(
+        document.getElementById(
+          "withdrawAmount"
+        ).value
+      );
+
+    const pixInput =
+      document.getElementById(
+        "withdrawPixKey"
+      );
+
+    const pixKey =
+      String(
+        pixInput.value || ""
+      ).trim();
+
+    if(
+      !Number.isFinite(valor) ||
+      valor <= 0
+    ){
+
+      mostrarToast(
+        "Informe um valor válido."
+      );
+
+      return;
+    }
+
+    if(!pixKey){
+
+      mostrarToast(
+        "Informe a chave Pix para receber o saque."
+      );
+
+      pixInput.focus();
+
+      return;
+    }
+
+    if(
+      pixKey.length < 3
+    ){
+
+      mostrarToast(
+        "Informe uma chave Pix válida."
+      );
+
+      pixInput.focus();
+
+      return;
+    }
+
+    if(
+      valor > obterSaldo()
+    ){
+
+      mostrarToast(
+        "Saldo insuficiente."
+      );
+
+      return;
+    }
+
+    const botao =
+      document.querySelector(
+        '#withdrawModal .play-btn'
+      );
+
+    try{
+
+      if(botao){
+
+        botao.disabled =
+          true;
+
+        botao.textContent =
+          "ENVIANDO...";
+      }
+
+      const resposta =
+        await fetch(
+          `${API_URL}/withdrawals`,
+          {
+            method:"POST",
+            headers:headersJSON(),
+
+            body:JSON.stringify({
+
+              userId:
+                usuarioAtual.id,
+
+              amount:
+                valor,
+
+              pixKey:
+                pixKey
+
+            })
+          }
+        );
+
+      const data =
+        await resposta.json()
+          .catch(()=>({}));
+
+      if(!resposta.ok){
+
+        throw new Error(
+          data.message ||
+          data.error ||
+          "Não foi possível solicitar o saque."
+        );
+      }
+
       /*
-        -----------------------------------------------------
-        ATUALIZAÇÃO DO SALDO
-        -----------------------------------------------------
-        Primeiro desconta a aposta.
-        Depois acrescenta o prêmio.
-        O saldo reservado permanece exatamente igual.
+        Limpamos imediatamente a chave Pix.
+        Ela não é salva no localStorage
+        nem no objeto do jogador.
       */
-      const novoSaldo =
-        saldoAtual -
-        bet +
-        premio;
-      await client.query(
-        `
-        UPDATE users
-        SET balance = $1
-        WHERE id = $2
-        `,
-        [
-          novoSaldo,
-          userIdNumber
-        ]
+
+      pixInput.value =
+        "";
+
+      document.getElementById(
+        "withdrawAmount"
+      ).value =
+        "";
+
+      fecharModal(
+        "withdrawModal"
       );
-      /*
-        -----------------------------------------------------
-        REGISTRO DA RODADA
-        -----------------------------------------------------
-      */
-      const resultadoTexto =
-        `${idRoleta}:${indiceResultado}:${resultado}:escolhido:${indiceEscolhido}:${escolhido}`;
-      const spinResult =
-        await client.query(
-          `
-          INSERT INTO spins
-          (
-            user_id,
-            result,
-            amount
-          )
-          VALUES
-          (
-            $1,
-            $2,
-            $3
-          )
-          RETURNING
-            id,
-            created_at
-          `,
-          [
-            userIdNumber,
-            resultadoTexto,
-            premio
-          ]
+
+      mostrarToast(
+        "Saque solicitado com sucesso. O valor foi reservado e está aguardando análise."
+      );
+
+      await carregarSaldoServidor();
+
+      await carregarHistorico();
+
+    }catch(erro){
+
+      mostrarToast(
+        erro.message ||
+        "Erro ao solicitar saque."
+      );
+
+    }finally{
+
+      if(botao){
+
+        botao.disabled =
+          false;
+
+        botao.textContent =
+          "SOLICITAR SAQUE";
+      }
+    }
+  }
+
+  /* ================= HISTORY ================= */
+
+  async function carregarHistorico(){
+
+    const container =
+      document.getElementById(
+        "historyList"
+      );
+
+    try{
+
+      const endpoints = [];
+
+      if(usuarioAtual?.id){
+
+        endpoints.push(
+          `${API_URL}/history/${encodeURIComponent(usuarioAtual.id)}`
         );
-      /*
-        -----------------------------------------------------
-        TRANSAÇÃO FINANCEIRA
-        -----------------------------------------------------
-      */
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          $2,
-          $3
-        )
-        `,
-        [
-          userIdNumber,
-          ganhou
-            ? "roulette_win"
-            : "roulette_bet",
-          ganhou
-            ? premio
-            : -bet
-        ]
-      );
-      await client.query(
-        "COMMIT"
-      );
-      /*
-        -----------------------------------------------------
-        RESPOSTA
-        -----------------------------------------------------
-      */
-      return res.json({
-        ok: true,
-        spin: {
-          id:
-            spinResult.rows[0].id,
-          rouletteId:
-            idRoleta,
-          index:
-            indiceResultado,
-          result:
-            resultado,
-          selectedIndex:
-            indiceEscolhido,
-          selected:
-            escolhido,
-          betType:
-            "roulette",
-          betAmount:
-            bet,
-          won:
-            ganhou,
-          prize:
-            premio
-        },
-        user: {
-          id:
-            user.id,
-          username:
-            user.username,
-          balance:
-            Number(
-              novoSaldo
-            ),
-          reservedBalance:
-            saldoReservado
+
+        endpoints.push(
+          `${API_URL}/transactions/${encodeURIComponent(usuarioAtual.id)}`
+        );
+
+        endpoints.push(
+          `${API_URL}/history?userId=${encodeURIComponent(usuarioAtual.id)}`
+        );
+      }
+
+      let dados = null;
+
+      for(
+        const endpoint of endpoints
+      ){
+
+        try{
+
+          const resposta =
+            await fetch(
+              endpoint,
+              {
+                headers:headersJSON(),
+                cache:"no-store"
+              }
+            );
+
+          if(!resposta.ok){
+            continue;
+          }
+
+          dados =
+            await resposta.json();
+
+          break;
+
+        }catch(e){
+
+          continue;
         }
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro na roleta:",
-        error
+      }
+
+      if(!dados){
+
+        container.innerHTML = `
+          <div class="info-box">
+            O histórico será exibido aqui.
+          </div>
+        `;
+
+        return;
+      }
+
+      const lista =
+        dados.transactions ||
+        dados.history ||
+        dados.items ||
+        dados.data ||
+        [];
+
+      if(
+        !Array.isArray(lista) ||
+        lista.length === 0
+      ){
+
+        container.innerHTML = `
+          <div class="info-box">
+            Nenhuma movimentação encontrada.
+          </div>
+        `;
+
+        return;
+      }
+
+      container.innerHTML =
+        lista
+          .slice(0,12)
+          .map(item=>{
+
+            const valor =
+              Number(
+                item.amount ??
+                item.value ??
+                item.prize ??
+                0
+              );
+
+            const tipo =
+              String(
+                item.type ??
+                item.description ??
+                item.action ??
+                "Movimentação"
+              );
+
+            const positivo =
+              valor >= 0;
+
+            const data =
+              item.created_at ||
+              item.createdAt ||
+              item.date ||
+              "";
+
+            return `
+
+              <div class="history-item">
+
+                <div class="history-left">
+
+                  <strong>
+                    ${escaparHTML(tipo)}
+                  </strong>
+
+                  <small>
+                    ${
+                      escaparHTML(
+                        data
+                          ? new Date(data)
+                            .toLocaleString("pt-BR")
+                          : ""
+                      )
+                    }
+                  </small>
+
+                </div>
+
+                <div
+                  class="history-right ${
+                    positivo
+                      ? "positive"
+                      : "negative"
+                  }"
+                >
+                  ${
+                    positivo
+                      ? "+"
+                      : ""
+                  }${formatarCreditos(valor)}
+                </div>
+
+              </div>
+
+            `;
+          })
+          .join("");
+
+    }catch(erro){
+
+      console.warn(
+        "Histórico:",
+        erro
       );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao executar a roleta."
-      });
-    } finally {
-      client.release();
+
+      container.innerHTML = `
+        <div class="info-box">
+          Não foi possível carregar o histórico agora.
+        </div>
+      `;
     }
   }
-);
-/* =========================================================
-   CONSULTAR SALDO
-========================================================= */
-app.get(
-  "/api/account/:userId",
-  async (req, res) => {
-    try {
-      const userId =
-        Number(
-          req.params.userId
-        );
-      if (
-        !Number.isInteger(
-          userId
-        ) ||
-        userId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            username,
-            balance,
-            reserved_balance,
-            (
-              balance +
-              reserved_balance
-            ) AS total_balance,
-            created_at
-          FROM users
-          WHERE id = $1
-          `,
-          [userId]
-        );
-      if (
-        result.rows.length === 0
-      ) {
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário não encontrado."
-        });
-      }
-      const user =
-        result.rows[0];
-      return res.json({
-        ok: true,
-        user: {
-          id:
-            user.id,
-          username:
-            user.username,
-          balance:
-            Number(
-              user.balance || 0
-            ),
-          reservedBalance:
-            Number(
-              user.reserved_balance || 0
-            ),
-          totalBalance:
-            Number(
-              user.total_balance || 0
-            ),
-          createdAt:
-            user.created_at
+
+  /* ================= LOGOUT ================= */
+
+  function logout(){
+
+    localStorage.removeItem(
+      "jpbet_user"
+    );
+
+    localStorage.removeItem(
+      "jpbet_token"
+    );
+
+    usuarioAtual =
+      null;
+
+    tokenAtual =
+      null;
+
+    window.location.href =
+      "/";
+  }
+
+  /* ================= CLOSE OUTSIDE ================= */
+
+  document.addEventListener(
+    "keydown",
+    event=>{
+
+      if(event.key === "Escape"){
+
+        if(
+          document
+            .getElementById("rouletteModal")
+            .classList.contains("open")
+        ){
+
+          fecharRoleta();
+
+        }else{
+
+          document
+            .querySelectorAll(".modal.open")
+            .forEach(modal=>{
+              modal.classList.remove(
+                "open"
+              );
+            });
         }
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao consultar conta:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao consultar conta."
-      });
+      }
+
     }
-  }
-);
-/* =========================================================
-   SOLICITAR DEPÓSITO
-========================================================= */
-app.post(
-  "/api/deposits",
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const {
-        userId,
-        amount,
-        playerNote
-      } = req.body;
-      const userIdNumber =
-        Number(userId);
-      const valor =
-        Number(amount);
-      if (
-        !Number.isInteger(
-          userIdNumber
-        ) ||
-        userIdNumber <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      if (
-        !Number.isFinite(valor) ||
-        valor <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Valor do depósito inválido."
-        });
-      }
-      const userResult =
-        await client.query(
-          `
-          SELECT id
-          FROM users
-          WHERE id = $1
-          `,
-          [userIdNumber]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário não encontrado."
-        });
-      }
-      const result =
-        await client.query(
-          `
-          INSERT INTO deposits
-          (
-            user_id,
-            amount,
-            status,
-            payment_method,
-            player_note
-          )
-          VALUES
-          (
-            $1,
-            $2,
-            'pending',
-            'pix',
-            $3
-          )
-          RETURNING
-            id,
-            user_id,
-            amount,
-            status,
-            created_at
-          `,
-          [
-            userIdNumber,
-            valor,
-            playerNote || null
-          ]
-        );
-      return res.status(201).json({
-        ok: true,
-        message:
-          "Solicitação de depósito criada e enviada para análise.",
-        deposit:
-          result.rows[0]
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao criar depósito:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao criar depósito."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   SOLICITAR SAQUE
-========================================================= */
-app.post(
-  "/api/withdrawals",
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const {
-        userId,
-        amount,
-        pixKey,
-        playerNote
-      } = req.body;
-      const userIdNumber =
-        Number(userId);
-      const valor =
-        Number(amount);
-      if (
-        !Number.isInteger(
-          userIdNumber
-        ) ||
-        userIdNumber <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      if (
-        !Number.isFinite(valor) ||
-        valor <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Valor do saque inválido."
-        });
-      }
-      const chavePix =
-        String(
-          pixKey || ""
-        ).trim();
-      if (!chavePix) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Informe a chave Pix."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            username,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [userIdNumber]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário não encontrado."
-        });
-      }
-      const user =
-        userResult.rows[0];
-      const saldoDisponivel =
-        Number(
-          user.balance || 0
-        );
-      const saldoReservado =
-        Number(
-          user.reserved_balance || 0
-        );
-      if (
-        saldoDisponivel < valor
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Saldo disponível insuficiente.",
-          balance:
-            saldoDisponivel,
-          reservedBalance:
-            saldoReservado
-        });
-      }
-      const novoSaldo =
-        saldoDisponivel -
-        valor;
-      const novaReserva =
-        saldoReservado +
-        valor;
-      await client.query(
-        `
-        UPDATE users
-        SET
-          balance = $1,
-          reserved_balance = $2
-        WHERE id = $3
-        `,
-        [
-          novoSaldo,
-          novaReserva,
-          userIdNumber
-        ]
-      );
-      const withdrawalResult =
-        await client.query(
-          `
-          INSERT INTO withdrawals
-          (
-            user_id,
-            amount,
-            status,
-            withdrawal_method,
-            pix_key,
-            player_note
-          )
-          VALUES
-          (
-            $1,
-            $2,
-            'pending',
-            'pix',
-            $3,
-            $4
-          )
-          RETURNING
-            id,
-            user_id,
-            amount,
-            status,
-            withdrawal_method,
-            pix_key,
-            player_note,
-            created_at
-          `,
-          [
-            userIdNumber,
-            valor,
-            chavePix,
-            playerNote || null
-          ]
-        );
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          'withdrawal_reserved',
-          $2
-        )
-        `,
-        [
-          userIdNumber,
-          -valor
-        ]
-      );
-      await registrarAuditoriaSistema({
-        userId:
-          userIdNumber,
-        action:
-          "SAQUE_SOLICITADO",
-        module:
-          "withdrawals",
-        targetType:
-          "withdrawal",
-        targetId:
-          withdrawalResult.rows[0].id,
-        newValue: {
-          amount:
-            valor,
-          status:
-            "pending",
-          withdrawalMethod:
-            "pix"
-        },
-        details:
-          "Jogador solicitou um saque via Pix.",
-        result:
-          "SUCCESS",
-        ipAddress:
-          req.headers["x-forwarded-for"] ||
-          req.socket.remoteAddress ||
-          null,
-        userAgent:
-          req.headers["user-agent"] ||
-          null
-      });
-      await client.query(
-        "COMMIT"
-      );
-      return res.status(201).json({
-        ok: true,
-        message:
-          "Saque solicitado. O valor foi reservado e está aguardando análise.",
-        withdrawal:
-          withdrawalResult.rows[0],
-        user: {
-          id:
-            user.id,
-          username:
-            user.username,
-          balance:
-            novoSaldo,
-          reservedBalance:
-            novaReserva,
-          totalBalance:
-            novoSaldo +
-            novaReserva
-        }
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao solicitar saque:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao solicitar saque."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   HISTÓRICO FINANCEIRO
-========================================================= */
-app.get(
-  "/api/transactions/:userId",
-  async (req, res) => {
-    try {
-      const userId =
-        Number(
-          req.params.userId
-        );
-      if (
-        !Number.isInteger(
-          userId
-        ) ||
-        userId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            type,
-            amount,
-            created_at
-          FROM transactions
-          WHERE user_id = $1
-          ORDER BY
-            created_at DESC,
-            id DESC
-          `,
-          [userId]
-        );
-      return res.json({
-        ok: true,
-        transactions:
-          result.rows
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao consultar transações:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao consultar histórico."
-      });
-    }
-  }
-);
-/* =========================================================
-   ADMIN - ADICIONAR CRÉDITOS
-========================================================= */
-app.post(
-  "/api/admin/users/:id/add-credits",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const userId =
-        Number(
-          req.params.id
-        );
-      const valor =
-        Number(
-          req.body.amount
-        );
-      const reason =
-        String(
-          req.body.reason || ""
-        ).trim();
-      if (
-        !Number.isInteger(
-          userId
-        ) ||
-        userId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      if (
-        !Number.isFinite(
-          valor
-        ) ||
-        valor <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Informe um valor de créditos válido."
-        });
-      }
-      if (!reason) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Informe o motivo da alteração."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            username,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [userId]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário não encontrado."
-        });
-      }
-      const user =
-        userResult.rows[0];
-      const saldoAntes =
-        Number(
-          user.balance || 0
-        );
-      const saldoReservado =
-        Number(
-          user.reserved_balance || 0
-        );
-      const saldoDepois =
-        saldoAntes +
-        valor;
-      await client.query(
-        `
-        UPDATE users
-        SET balance = $1
-        WHERE id = $2
-        `,
-        [
-          saldoDepois,
-          userId
-        ]
-      );
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          'admin_credit_added',
-          $2
-        )
-        `,
-        [
-          userId,
-          valor
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "credits_added",
-        "user",
-        userId,
-        "Créditos adicionados manualmente pelo administrador.",
-        {
-          username:
-            user.username,
-          amount:
-            valor,
-          balanceBefore:
-            saldoAntes,
-          balanceAfter:
-            saldoDepois,
-          reservedBalance:
-            saldoReservado,
-          reason
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Créditos adicionados com sucesso.",
-        user: {
-          id:
-            user.id,
-          username:
-            user.username,
-          balance:
-            saldoDepois,
-          reservedBalance:
-            saldoReservado,
-          totalBalance:
-            saldoDepois +
-            saldoReservado
-        }
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao adicionar créditos:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao adicionar créditos."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - REMOVER CRÉDITOS
-========================================================= */
-app.post(
-  "/api/admin/users/:id/remove-credits",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const userId =
-        Number(
-          req.params.id
-        );
-      const valor =
-        Number(
-          req.body.amount
-        );
-      const reason =
-        String(
-          req.body.reason || ""
-        ).trim();
-      if (
-        !Number.isInteger(
-          userId
-        ) ||
-        userId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Usuário inválido."
-        });
-      }
-      if (
-        !Number.isFinite(
-          valor
-        ) ||
-        valor <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Informe um valor de créditos válido."
-        });
-      }
-      if (!reason) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Informe o motivo da alteração."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            username,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [userId]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário não encontrado."
-        });
-      }
-      const user =
-        userResult.rows[0];
-      const saldoAntes =
-        Number(
-          user.balance || 0
-        );
-      const saldoReservado =
-        Number(
-          user.reserved_balance || 0
-        );
-      if (
-        saldoAntes < valor
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            "O usuário não possui saldo disponível suficiente para essa remoção.",
-          balance:
-            saldoAntes,
-          reservedBalance:
-            saldoReservado
-        });
-      }
-      const saldoDepois =
-        saldoAntes -
-        valor;
-      await client.query(
-        `
-        UPDATE users
-        SET balance = $1
-        WHERE id = $2
-        `,
-        [
-          saldoDepois,
-          userId
-        ]
-      );
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          'admin_credit_removed',
-          $2
-        )
-        `,
-        [
-          userId,
-          -valor
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "credits_removed",
-        "user",
-        userId,
-        "Créditos removidos manualmente pelo administrador.",
-        {
-          username:
-            user.username,
-          amount:
-            valor,
-          balanceBefore:
-            saldoAntes,
-          balanceAfter:
-            saldoDepois,
-          reservedBalance:
-            saldoReservado,
-          reason
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Créditos removidos com sucesso.",
-        user: {
-          id:
-            user.id,
-          username:
-            user.username,
-          balance:
-            saldoDepois,
-          reservedBalance:
-            saldoReservado,
-          totalBalance:
-            saldoDepois +
-            saldoReservado
-        }
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao remover créditos:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao remover créditos."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - LISTAR SAQUES
-========================================================= */
-app.get(
-  "/api/admin/withdrawals",
-  exigirAdmin,
-  async (req, res) => {
-    try {
-      const result =
-        await pool.query(
-          `
-          SELECT
-            w.id,
-            w.user_id,
-            u.username,
-            w.amount,
-            w.status,
-            w.withdrawal_method,
-            w.pix_key,
-            w.player_note,
-            w.admin_note,
-            w.rejection_reason,
-            w.approved_by,
-            w.approved_at,
-            w.paid_by,
-            w.paid_at,
-            w.rejected_by,
-            w.rejected_at,
-            w.refunded_by,
-            w.refunded_at,
-            w.created_at,
-            w.updated_at
-          FROM withdrawals w
-          INNER JOIN users u
-            ON u.id = w.user_id
-          ORDER BY
-            w.created_at DESC,
-            w.id DESC
-          `
-        );
-      return res.json({
-        ok: true,
-        withdrawals:
-          result.rows
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao listar saques:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao listar saques."
-      });
-    }
-  }
-);
-/* =========================================================
-   ADMIN - APROVAR SAQUE
-========================================================= */
-app.post(
-  "/api/admin/withdrawals/:id/approve",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const withdrawalId =
-        Number(
-          req.params.id
-        );
-      if (
-        !Number.isInteger(
-          withdrawalId
-        ) ||
-        withdrawalId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Saque inválido."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const result =
-        await client.query(
-          `
-          SELECT
-            id,
-            user_id,
-            amount,
-            status
-          FROM withdrawals
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [withdrawalId]
-        );
-      if (
-        result.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Saque não encontrado."
-        });
-      }
-      const withdrawal =
-        result.rows[0];
-      if (
-        withdrawal.status !==
-        "pending"
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            `Este saque não está pendente. Status atual: ${withdrawal.status}.`
-        });
-      }
-      const adminId =
-        await obterAdminId(
-          client,
-          req.admin.username
-        );
-      await client.query(
-        `
-        UPDATE withdrawals
-        SET
-          status = 'approved',
-          approved_by = $1,
-          approved_at = CURRENT_TIMESTAMP,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-        `,
-        [
-          adminId,
-          withdrawalId
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "withdrawal_approved",
-        "withdrawal",
-        withdrawalId,
-        "Saque aprovado pelo administrador.",
-        {
-          amount:
-            Number(
-              withdrawal.amount
-            ),
-          userId:
-            withdrawal.user_id
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Saque aprovado. O valor continua reservado até a baixa/conclusão do pagamento."
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao aprovar saque:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao aprovar saque."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - REJEITAR SAQUE
-========================================================= */
-app.post(
-  "/api/admin/withdrawals/:id/reject",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const withdrawalId =
-        Number(
-          req.params.id
-        );
-      const reason =
-        String(
-          req.body.reason || ""
-        ).trim();
-      if (
-        !Number.isInteger(
-          withdrawalId
-        ) ||
-        withdrawalId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Saque inválido."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const withdrawalResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            user_id,
-            amount,
-            status
-          FROM withdrawals
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [withdrawalId]
-        );
-      if (
-        withdrawalResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Saque não encontrado."
-        });
-      }
-      const withdrawal =
-        withdrawalResult.rows[0];
-      if (
-        withdrawal.status !==
-        "pending"
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            `Este saque não pode ser rejeitado. Status atual: ${withdrawal.status}.`
-        });
-      }
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [withdrawal.user_id]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário do saque não encontrado."
-        });
-      }
-      const user =
-        userResult.rows[0];
-      const valor =
-        Number(
-          withdrawal.amount
-        );
-      const saldoAtual =
-        Number(
-          user.balance || 0
-        );
-      const reservadoAtual =
-        Number(
-          user.reserved_balance || 0
-        );
-      if (
-        reservadoAtual < valor
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(409).json({
-          ok: false,
-          message:
-            "A reserva desse saque não possui saldo suficiente para devolução."
-        });
-      }
-      const novoSaldo =
-        saldoAtual +
-        valor;
-      const novaReserva =
-        reservadoAtual -
-        valor;
-      const adminId =
-        await obterAdminId(
-          client,
-          req.admin.username
-        );
-      await client.query(
-        `
-        UPDATE users
-        SET
-          balance = $1,
-          reserved_balance = $2
-        WHERE id = $3
-        `,
-        [
-          novoSaldo,
-          novaReserva,
-          withdrawal.user_id
-        ]
-      );
-      await client.query(
-        `
-        UPDATE withdrawals
-        SET
-          status = 'rejected',
-          rejection_reason = $1,
-          rejected_by = $2,
-          rejected_at = CURRENT_TIMESTAMP,
-          refunded_by = $2,
-          refunded_at = CURRENT_TIMESTAMP,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $3
-        `,
-        [
-          reason ||
-            "Saque rejeitado.",
-          adminId,
-          withdrawalId
-        ]
-      );
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          'withdrawal_refunded',
-          $2
-        )
-        `,
-        [
-          withdrawal.user_id,
-          valor
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "withdrawal_rejected",
-        "withdrawal",
-        withdrawalId,
-        "Saque rejeitado e valor devolvido ao saldo disponível.",
-        {
-          amount:
-            valor,
-          userId:
-            withdrawal.user_id,
-          reason:
-            reason ||
-            "Saque rejeitado.",
-          balanceBefore:
-            saldoAtual,
-          balanceAfter:
-            novoSaldo,
-          reservedBefore:
-            reservadoAtual,
-          reservedAfter:
-            novaReserva
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Saque rejeitado e valor devolvido ao saldo disponível.",
-        user: {
-          balance:
-            novoSaldo,
-          reservedBalance:
-            novaReserva,
-          totalBalance:
-            novoSaldo +
-            novaReserva
-        }
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao rejeitar saque:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao rejeitar saque."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - DAR BAIXA / CONCLUIR SAQUE
-========================================================= */
-app.post(
-  "/api/admin/withdrawals/:id/complete",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const withdrawalId =
-        Number(
-          req.params.id
-        );
-      if (
-        !Number.isInteger(
-          withdrawalId
-        ) ||
-        withdrawalId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Saque inválido."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const withdrawalResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            user_id,
-            amount,
-            status
-          FROM withdrawals
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [withdrawalId]
-        );
-      if (
-        withdrawalResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Saque não encontrado."
-        });
-      }
-      const withdrawal =
-        withdrawalResult.rows[0];
-      if (
-        withdrawal.status !==
-        "approved"
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Somente saques aprovados podem receber baixa."
-        });
-      }
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [withdrawal.user_id]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário do saque não encontrado."
-        });
-      }
-      const user =
-        userResult.rows[0];
-      const valor =
-        Number(
-          withdrawal.amount
-        );
-      const saldoAtual =
-        Number(
-          user.balance || 0
-        );
-      const reservadoAtual =
-        Number(
-          user.reserved_balance || 0
-        );
-      if (
-        reservadoAtual < valor
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(409).json({
-          ok: false,
-          message:
-            "O valor reservado não é suficiente para concluir este saque."
-        });
-      }
-      const novaReserva =
-        reservadoAtual -
-        valor;
-      const adminId =
-        await obterAdminId(
-          client,
-          req.admin.username
-        );
-      await client.query(
-        `
-        UPDATE users
-        SET
-          reserved_balance = $1
-        WHERE id = $2
-        `,
-        [
-          novaReserva,
-          withdrawal.user_id
-        ]
-      );
-      await client.query(
-        `
-        UPDATE withdrawals
-        SET
-          status = 'paid',
-          paid_by = $1,
-          paid_at = CURRENT_TIMESTAMP,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-        `,
-        [
-          adminId,
-          withdrawalId
-        ]
-      );
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          'withdrawal_paid',
-          $2
-        )
-        `,
-        [
-          withdrawal.user_id,
-          -valor
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "withdrawal_completed",
-        "withdrawal",
-        withdrawalId,
-        "Saque concluído e valor reservado baixado definitivamente.",
-        {
-          amount:
-            valor,
-          userId:
-            withdrawal.user_id,
-          balance:
-            saldoAtual,
-          reservedBefore:
-            reservadoAtual,
-          reservedAfter:
-            novaReserva
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Saque concluído. O valor reservado foi baixado.",
-        user: {
-          balance:
-            saldoAtual,
-          reservedBalance:
-            novaReserva,
-          totalBalance:
-            saldoAtual +
-            novaReserva
-        }
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao concluir saque:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao concluir saque."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - LISTAR DEPÓSITOS
-========================================================= */
-app.get(
-  "/api/admin/deposits",
-  exigirAdmin,
-  async (req, res) => {
-    try {
-      const result =
-        await pool.query(
-          `
-          SELECT
-            d.id,
-            d.user_id,
-            u.username,
-            d.amount,
-            d.status,
-            d.payment_method,
-            d.player_note,
-            d.admin_note,
-            d.approved_by,
-            d.approved_at,
-            d.rejected_by,
-            d.rejected_at,
-            d.created_at,
-            d.updated_at
-          FROM deposits d
-          INNER JOIN users u
-            ON u.id = d.user_id
-          ORDER BY
-            d.created_at DESC,
-            d.id DESC
-          `
-        );
-      return res.json({
-        ok: true,
-        deposits:
-          result.rows
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao listar depósitos:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao listar depósitos."
-      });
-    }
-  }
-);
-/* =========================================================
-   ADMIN - APROVAR DEPÓSITO
-========================================================= */
-app.post(
-  "/api/admin/deposits/:id/approve",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const depositId =
-        Number(
-          req.params.id
-        );
-      if (
-        !Number.isInteger(
-          depositId
-        ) ||
-        depositId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Depósito inválido."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const depositResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            user_id,
-            amount,
-            status
-          FROM deposits
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [depositId]
-        );
-      if (
-        depositResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Depósito não encontrado."
-        });
-      }
-      const deposit =
-        depositResult.rows[0];
-      if (
-        deposit.status !==
-        "pending"
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            `Este depósito não está pendente. Status atual: ${deposit.status}.`
-        });
-      }
-      const userResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            balance,
-            reserved_balance
-          FROM users
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [deposit.user_id]
-        );
-      if (
-        userResult.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Usuário do depósito não encontrado."
-        });
-      }
-      const user =
-        userResult.rows[0];
-      const saldoAtual =
-        Number(
-          user.balance || 0
-        );
-      const valor =
-        Number(
-          deposit.amount
-        );
-      const novoSaldo =
-        saldoAtual +
-        valor;
-      const adminId =
-        await obterAdminId(
-          client,
-          req.admin.username
-        );
-      await client.query(
-        `
-        UPDATE users
-        SET balance = $1
-        WHERE id = $2
-        `,
-        [
-          novoSaldo,
-          deposit.user_id
-        ]
-      );
-      await client.query(
-        `
-        UPDATE deposits
-        SET
-          status = 'approved',
-          approved_by = $1,
-          approved_at = CURRENT_TIMESTAMP,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-        `,
-        [
-          adminId,
-          depositId
-        ]
-      );
-      await client.query(
-        `
-        INSERT INTO transactions
-        (
-          user_id,
-          type,
-          amount
-        )
-        VALUES
-        (
-          $1,
-          'deposit_approved',
-          $2
-        )
-        `,
-        [
-          deposit.user_id,
-          valor
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "deposit_approved",
-        "deposit",
-        depositId,
-        "Depósito aprovado e créditos adicionados ao saldo disponível.",
-        {
-          amount:
-            valor,
-          userId:
-            deposit.user_id,
-          balanceBefore:
-            saldoAtual,
-          balanceAfter:
-            novoSaldo
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Depósito aprovado e saldo creditado.",
-        balance:
-          novoSaldo
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao aprovar depósito:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao aprovar depósito."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - REJEITAR DEPÓSITO
-========================================================= */
-app.post(
-  "/api/admin/deposits/:id/reject",
-  exigirAdmin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-    try {
-      const depositId =
-        Number(
-          req.params.id
-        );
-      const reason =
-        String(
-          req.body.reason || ""
-        ).trim();
-      if (
-        !Number.isInteger(
-          depositId
-        ) ||
-        depositId <= 0
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Depósito inválido."
-        });
-      }
-      await client.query(
-        "BEGIN"
-      );
-      const result =
-        await client.query(
-          `
-          SELECT
-            id,
-            user_id,
-            amount,
-            status
-          FROM deposits
-          WHERE id = $1
-          FOR UPDATE
-          `,
-          [depositId]
-        );
-      if (
-        result.rows.length === 0
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(404).json({
-          ok: false,
-          message:
-            "Depósito não encontrado."
-        });
-      }
-      const deposit =
-        result.rows[0];
-      if (
-        deposit.status !==
-        "pending"
-      ) {
-        await client.query(
-          "ROLLBACK"
-        );
-        return res.status(400).json({
-          ok: false,
-          message:
-            `Este depósito não está pendente. Status atual: ${deposit.status}.`
-        });
-      }
-      const adminId =
-        await obterAdminId(
-          client,
-          req.admin.username
-        );
-      await client.query(
-        `
-        UPDATE deposits
-        SET
-          status = 'rejected',
-          admin_note = $1,
-          rejected_by = $2,
-          rejected_at = CURRENT_TIMESTAMP,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $3
-        `,
-        [
-          reason ||
-            "Depósito rejeitado.",
-          adminId,
-          depositId
-        ]
-      );
-      await registrarAuditoria(
-        client,
-        req.admin.username,
-        "deposit_rejected",
-        "deposit",
-        depositId,
-        "Depósito rejeitado pelo administrador.",
-        {
-          amount:
-            Number(
-              deposit.amount
-            ),
-          userId:
-            deposit.user_id,
-          reason:
-            reason ||
-            "Depósito rejeitado."
-        }
-      );
-      await client.query(
-        "COMMIT"
-      );
-      return res.json({
-        ok: true,
-        message:
-          "Depósito rejeitado."
-      });
-    } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
-      console.error(
-        "Erro ao rejeitar depósito:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao rejeitar depósito."
-      });
-    } finally {
-      client.release();
-    }
-  }
-);
-/* =========================================================
-   ADMIN - LISTAR USUÁRIOS
-========================================================= */
-app.get(
-  "/api/admin/users",
-  exigirAdmin,
-  async (req, res) => {
-    try {
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            username,
-            balance,
-            reserved_balance,
-            (
-              balance +
-              reserved_balance
-            ) AS total_balance,
-            created_at
-          FROM users
-          ORDER BY
-            created_at DESC,
-            id DESC
-          `
-        );
-      return res.json({
-        ok: true,
-        users:
-          result.rows
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao listar usuários:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao listar usuários."
-      });
-    }
-  }
-);
-/* =========================================================
-   ADMIN - CONSULTAR AUDITORIA
-========================================================= */
-app.get(
-  "/api/admin/audit-logs",
-  exigirAdmin,
-  async (req, res) => {
-    try {
-      const result =
-        await pool.query(
-          `
-          SELECT
-            l.id,
-            l.admin_id,
-            a.username AS admin_username,
-            l.action,
-            l.target_type,
-            l.target_id,
-            l.description,
-            l.metadata,
-            l.created_at
-          FROM admin_audit_logs l
-          LEFT JOIN admins a
-            ON a.id = l.admin_id
-          ORDER BY
-            l.created_at DESC,
-            l.id DESC
-          LIMIT 500
-          `
-        );
-      return res.json({
-        ok: true,
-        logs:
-          result.rows
-      });
-    } catch (error) {
-      console.error(
-        "Erro ao consultar auditoria:",
-        error
-      );
-      return res.status(500).json({
-        ok: false,
-        message:
-          "Erro interno ao consultar auditoria."
-      });
-    }
-  }
-);
-/* =========================================================
-   SERVIDOR
-========================================================= */
-const PORT =
-  Number(
-    process.env.PORT || 3000
   );
-inicializarBanco()
-  .then(() => {
-    app.listen(
-      PORT,
-      () => {
-        console.log(
-          `JPBET rodando na porta ${PORT}`
-        );
-      }
-    );
-  })
-  .catch(error => {
-    console.error(
-      "JPBET não pôde iniciar:",
-      error
-    );
-    process.exit(1);
-  });
+
+  /* ================= INIT ================= */
+
+  async function iniciarDashboard(){
+
+    const sessao =
+      await carregarUsuario();
+
+    if(!sessao){
+      return;
+    }
+
+    await carregarConfiguracoes();
+
+    await carregarSaldoServidor();
+
+    await carregarHistorico();
+  }
+
+  iniciarDashboard();
+
+</script>
+
+</body>
+</html>
