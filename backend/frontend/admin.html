@@ -17,133 +17,146 @@ content=“width=device-width, initial-scale=1.0”
       font-family: Arial, sans-serif;
       background: #111;
       color: #fff;
+      font-size: 17px;
     }
     .container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1050px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 18px;
     }
     h1 {
       text-align: center;
-      margin-bottom: 25px;
+      font-size: 32px;
+      margin: 10px 0 28px;
     }
     .card {
       background: #1d1d1d;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 22px;
     }
     .card h2 {
       margin-top: 0;
+      font-size: 24px;
     }
     input {
       width: 100%;
-      padding: 12px;
-      margin: 7px 0;
-      border: 1px solid #444;
-      border-radius: 8px;
+      padding: 15px;
+      margin: 8px 0;
+      border: 1px solid #555;
+      border-radius: 10px;
       background: #111;
       color: #fff;
-      font-size: 16px;
+      font-size: 17px;
+      min-height: 52px;
     }
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 8px;
+      padding: 15px;
+      margin-top: 10px;
       border: 0;
-      border-radius: 8px;
+      border-radius: 10px;
       background: #fff;
       color: #111;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: bold;
       cursor: pointer;
+      min-height: 52px;
     }
     button:hover {
-      opacity: 0.9;
+      opacity: .9;
     }
     .message {
-      margin-top: 10px;
-      min-height: 20px;
+      margin-top: 12px;
+      min-height: 22px;
+      font-size: 16px;
+      line-height: 1.4;
     }
     .admin-info {
-      padding: 12px;
+      padding: 15px;
       background: #292929;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+      font-size: 16px;
     }
     .danger {
       background: #8b0000;
       color: #fff;
     }
     .logout {
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
     .admin-connected {
       background: #292929;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 20px;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 22px;
       text-align: center;
+      font-size: 17px;
     }
     .admin-connected strong {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 7px;
+      font-size: 20px;
     }
     .users-list {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
+      margin-top: 18px;
     }
     .user-card {
       background: #292929;
-      border: 1px solid #3a3a3a;
-      border-radius: 12px;
-      padding: 16px;
+      border: 1px solid #444;
+      border-radius: 14px;
+      padding: 18px;
     }
     .user-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
     .user-name {
-      font-size: 19px;
+      font-size: 22px;
       font-weight: bold;
       word-break: break-word;
     }
     .user-id {
       color: #aaa;
-      font-size: 13px;
+      font-size: 15px;
+      margin-top: 5px;
     }
     .balance-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 15px;
     }
     .balance-box {
       background: #181818;
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 14px 8px;
       text-align: center;
     }
     .balance-label {
       display: block;
       color: #aaa;
-      font-size: 12px;
-      margin-bottom: 5px;
+      font-size: 13px;
+      margin-bottom: 7px;
     }
     .balance-value {
       display: block;
-      font-size: 16px;
+      font-size: 19px;
       font-weight: bold;
     }
     .user-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
     }
     .user-actions button {
       margin-top: 0;
@@ -160,49 +173,81 @@ content=“width=device-width, initial-scale=1.0”
       background: #444;
       color: #fff;
     }
-    .loading {
-      text-align: center;
-      color: #aaa;
-      padding: 20px;
-    }
+    .loading,
     .empty {
       text-align: center;
       color: #aaa;
-      padding: 20px;
+      padding: 25px 10px;
+      font-size: 17px;
     }
     .search-box {
-      margin-bottom: 15px;
+      margin-bottom: 8px;
     }
     .operation-box {
       display: none;
-      margin-top: 12px;
-      padding: 12px;
+      margin-top: 15px;
+      padding: 16px;
       background: #181818;
-      border-radius: 10px;
+      border-radius: 12px;
+      border: 1px solid #444;
     }
     .operation-title {
+      font-size: 19px;
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
     .operation-box button {
-      margin-top: 5px;
+      margin-top: 8px;
     }
     .cancel-button {
       background: #555;
       color: #fff;
     }
-    @media (max-width: 600px) {
+    @media (max-width: 650px) {
+      body {
+        font-size: 18px;
+      }
       .container {
         padding: 12px;
       }
+      h1 {
+        font-size: 29px;
+        margin-bottom: 22px;
+      }
       .card {
-        padding: 15px;
+        padding: 17px;
+        margin-bottom: 17px;
+      }
+      .card h2 {
+        font-size: 22px;
       }
       .balance-grid {
         grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .balance-box {
+        padding: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+      }
+      .balance-label {
+        margin-bottom: 0;
+        font-size: 14px;
+      }
+      .balance-value {
+        font-size: 20px;
       }
       .user-actions {
         grid-template-columns: 1fr;
+      }
+      .user-name {
+        font-size: 21px;
+      }
+      button {
+        font-size: 17px;
+        min-height: 54px;
       }
     }
   </style>
@@ -210,7 +255,6 @@ content=“width=device-width, initial-scale=1.0”
 <body>
   <div class="container">
 <h1>Administração</h1>
-<!-- BOTÃO SAIR -->
 <button
   id="logoutButton"
   class="logout danger"
@@ -219,7 +263,6 @@ content=“width=device-width, initial-scale=1.0”
 >
   🚪 SAIR DA ADMINISTRAÇÃO
 </button>
-<!-- LOGIN ADMINISTRATIVO -->
 <div
   class="card"
   id="adminLoginCard"
@@ -245,7 +288,6 @@ content=“width=device-width, initial-scale=1.0”
     class="message"
   ></div>
 </div>
-<!-- PAINEL ADMINISTRATIVO -->
 <div
   id="adminPanel"
   style="display:none;"
@@ -256,7 +298,6 @@ content=“width=device-width, initial-scale=1.0”
       Painel administrativo ativo
     </span>
   </div>
-  <!-- CONFIGURAÇÕES -->
   <div class="card">
     <h2>⚙️ Configurações</h2>
     <div class="admin-info">
@@ -267,13 +308,12 @@ content=“width=device-width, initial-scale=1.0”
       ⚙️ ABRIR CONFIGURAÇÕES
     </button>
   </div>
-  <!-- USUÁRIOS E CRÉDITOS -->
   <div class="card">
     <h2>👥 Usuários e créditos</h2>
     <div class="admin-info">
-      Consulte os saldos e gerencie créditos disponíveis.
-      O saldo reservado para saques não pode ser removido
-      por esta função.
+      Consulte os saldos e gerencie os créditos
+      disponíveis. O saldo reservado para saques
+      permanece protegido.
     </div>
     <input
       id="userSearch"
@@ -301,7 +341,6 @@ content=“width=device-width, initial-scale=1.0”
       </div>
     </div>
   </div>
-  <!-- STATUS -->
   <div class="card">
     <h2>Status</h2>
     <div class="admin-info">
@@ -323,50 +362,37 @@ content=“width=device-width, initial-scale=1.0”
   <script>
     const API_URL = "/api";
     let usuarios = [];
-    /* =========================
-       LOGIN ADMINISTRATIVO
-    ========================= */
     async function loginAdmin() {
       const username =
-        document
-          .getElementById("adminUsername")
-          .value
-          .trim();
+        document.getElementById("adminUsername")
+          .value.trim();
       const password =
-        document
-          .getElementById("adminPassword")
+        document.getElementById("adminPassword")
           .value;
       const message =
-        document.getElementById(
-          "adminLoginMessage"
-        );
+        document.getElementById("adminLoginMessage");
       if (!username || !password) {
         message.textContent =
           "Digite usuário e senha.";
         return;
       }
-      message.textContent =
-        "Entrando...";
+      message.textContent = "Entrando...";
       try {
-        const response =
-          await fetch(
-            `${API_URL}/auth/admin-login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-              body: JSON.stringify({
-                username,
-                password
-              })
-            }
-          );
+        const response = await fetch(
+          `${API_URL}/auth/admin-login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              username,
+              password
+            })
+          }
+        );
         const data =
-          await response
-            .json()
-            .catch(() => ({}));
+          await response.json().catch(() => ({}));
         if (!response.ok) {
           throw new Error(
             data.message ||
@@ -376,13 +402,10 @@ content=“width=device-width, initial-scale=1.0”
         localStorage.setItem(
           "jpbet_admin",
           JSON.stringify({
-            username:
-              data.username
+            username: data.username
           })
         );
-        mostrarPainel(
-          data.username
-        );
+        mostrarPainel(data.username);
       } catch (error) {
         console.error(error);
         message.textContent =
@@ -390,61 +413,40 @@ content=“width=device-width, initial-scale=1.0”
           "Erro ao entrar.";
       }
     }
-    /* =========================
-       MOSTRAR PAINEL
-    ========================= */
     function mostrarPainel(username) {
-      document
-        .getElementById(
-          "adminLoginCard"
-        )
-        .style.display = "none";
-      document
-        .getElementById(
-          "adminPanel"
-        )
-        .style.display = "block";
-      document
-        .getElementById(
-          "logoutButton"
-        )
-        .style.display = "block";
+      document.getElementById(
+        "adminLoginCard"
+      ).style.display = "none";
+      document.getElementById(
+        "adminPanel"
+      ).style.display = "block";
+      document.getElementById(
+        "logoutButton"
+      ).style.display = "block";
       if (username) {
-        document
-          .getElementById(
-            "connectedAdmin"
-          )
-          .textContent =
+        document.getElementById(
+          "connectedAdmin"
+        ).textContent =
           `Administrador: ${username}`;
       }
       carregarUsuarios();
     }
-    /* =========================
-       CARREGAR USUÁRIOS
-    ========================= */
     async function carregarUsuarios() {
       const list =
-        document.getElementById(
-          "usersList"
-        );
+        document.getElementById("usersList");
       const message =
-        document.getElementById(
-          "usersMessage"
-        );
+        document.getElementById("usersMessage");
       list.innerHTML =
         `<div class="loading">
           Carregando usuários...
         </div>`;
       message.textContent = "";
       try {
-        const response =
-          await fetch(
-            `${API_URL}/admin/users`
-          );
+        const response = await fetch(
+          `${API_URL}/admin/users`
+        );
         const data =
-          await response
-            .json()
-            .catch(() => ({}));
+          await response.json().catch(() => ({}));
         if (!response.ok) {
           throw new Error(
             data.message ||
@@ -455,9 +457,7 @@ content=“width=device-width, initial-scale=1.0”
           Array.isArray(data)
             ? data
             : (data.users || []);
-        renderizarUsuarios(
-          usuarios
-        );
+        renderizarUsuarios(usuarios);
       } catch (error) {
         console.error(error);
         list.innerHTML =
@@ -469,14 +469,9 @@ content=“width=device-width, initial-scale=1.0”
           "Erro ao carregar usuários.";
       }
     }
-    /* =========================
-       RENDERIZAR USUÁRIOS
-    ========================= */
     function renderizarUsuarios(lista) {
       const list =
-        document.getElementById(
-          "usersList"
-        );
+        document.getElementById("usersList");
       if (!lista.length) {
         list.innerHTML =
           `<div class="empty">
@@ -485,154 +480,128 @@ content=“width=device-width, initial-scale=1.0”
         return;
       }
       list.innerHTML =
-        lista
-          .map(usuario => {
-            const balance =
-              Number(usuario.balance || 0);
-            const reserved =
-              Number(
-                usuario.reserved_balance || 0
-              );
-            const total =
-              balance + reserved;
-            return `
-              <div
-                class="user-card"
-                data-user-id="${usuario.id}"
-              >
-                <div class="user-header">
-                  <div>
-                    <div class="user-name">
-                      👤 ${esc(usuario.username)}
-                    </div>
-                    <div class="user-id">
-                      ID: ${usuario.id}
-                    </div>
+        lista.map(usuario => {
+          const balance =
+            Number(usuario.balance || 0);
+          const reserved =
+            Number(usuario.reserved_balance || 0);
+          const total =
+            balance + reserved;
+          return `
+            <div
+              class="user-card"
+              data-user-id="${usuario.id}"
+            >
+              <div class="user-header">
+                <div>
+                  <div class="user-name">
+                    👤 ${esc(usuario.username)}
                   </div>
-                </div>
-                <div class="balance-grid">
-                  <div class="balance-box">
-                    <span class="balance-label">
-                      DISPONÍVEL
-                    </span>
-                    <span class="balance-value">
-                      ${formatarMoeda(balance)}
-                    </span>
+                  <div class="user-id">
+                    ID: ${usuario.id}
                   </div>
-                  <div class="balance-box">
-                    <span class="balance-label">
-                      RESERVADO
-                    </span>
-                    <span class="balance-value">
-                      ${formatarMoeda(reserved)}
-                    </span>
-                  </div>
-                  <div class="balance-box">
-                    <span class="balance-label">
-                      TOTAL
-                    </span>
-                    <span class="balance-value">
-                      ${formatarMoeda(total)}
-                    </span>
-                  </div>
-                </div>
-                <div class="user-actions">
-                  <button
-                    class="add-button"
-                    onclick="abrirOperacao(${usuario.id}, 'add')"
-                  >
-                    ➕ ADICIONAR CRÉDITOS
-                  </button>
-                  <button
-                    class="remove-button"
-                    onclick="abrirOperacao(${usuario.id}, 'remove')"
-                  >
-                    ➖ REMOVER CRÉDITOS
-                  </button>
-                </div>
-                <div
-                  id="operation-${usuario.id}"
-                  class="operation-box"
-                >
-                  <div
-                    id="operation-title-${usuario.id}"
-                    class="operation-title"
-                  >
-                    Operação
-                  </div>
-                  <input
-                    id="amount-${usuario.id}"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    placeholder="Valor"
-                  >
-                  <input
-                    id="reason-${usuario.id}"
-                    type="text"
-                    maxlength="250"
-                    placeholder="Motivo obrigatório"
-                  >
-                  <button
-                    onclick="confirmarOperacao(${usuario.id})"
-                  >
-                    ✅ CONFIRMAR
-                  </button>
-                  <button
-                    class="cancel-button"
-                    onclick="fecharOperacao(${usuario.id})"
-                  >
-                    CANCELAR
-                  </button>
-                  <div
-                    id="operation-message-${usuario.id}"
-                    class="message"
-                  ></div>
                 </div>
               </div>
-            `;
-          })
-          .join("");
+              <div class="balance-grid">
+                <div class="balance-box">
+                  <span class="balance-label">
+                    DISPONÍVEL
+                  </span>
+                  <span class="balance-value">
+                    ${formatarMoeda(balance)}
+                  </span>
+                </div>
+                <div class="balance-box">
+                  <span class="balance-label">
+                    RESERVADO
+                  </span>
+                  <span class="balance-value">
+                    ${formatarMoeda(reserved)}
+                  </span>
+                </div>
+                <div class="balance-box">
+                  <span class="balance-label">
+                    TOTAL
+                  </span>
+                  <span class="balance-value">
+                    ${formatarMoeda(total)}
+                  </span>
+                </div>
+              </div>
+              <div class="user-actions">
+                <button
+                  class="add-button"
+                  onclick="abrirOperacao(${usuario.id}, 'add')"
+                >
+                  ➕ ADICIONAR CRÉDITOS
+                </button>
+                <button
+                  class="remove-button"
+                  onclick="abrirOperacao(${usuario.id}, 'remove')"
+                >
+                  ➖ REMOVER CRÉDITOS
+                </button>
+              </div>
+              <div
+                id="operation-${usuario.id}"
+                class="operation-box"
+              >
+                <div
+                  id="operation-title-${usuario.id}"
+                  class="operation-title"
+                >
+                  Operação
+                </div>
+                <input
+                  id="amount-${usuario.id}"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Valor em R$"
+                >
+                <input
+                  id="reason-${usuario.id}"
+                  type="text"
+                  maxlength="250"
+                  placeholder="Motivo obrigatório"
+                >
+                <button
+                  onclick="confirmarOperacao(${usuario.id})"
+                >
+                  ✅ CONFIRMAR
+                </button>
+                <button
+                  class="cancel-button"
+                  onclick="fecharOperacao(${usuario.id})"
+                >
+                  CANCELAR
+                </button>
+                <div
+                  id="operation-message-${usuario.id}"
+                  class="message"
+                ></div>
+              </div>
+            </div>
+          `;
+        }).join("");
     }
-    /* =========================
-       FILTRAR USUÁRIOS
-    ========================= */
     function filtrarUsuarios() {
       const termo =
-        document
-          .getElementById(
-            "userSearch"
-          )
-          .value
-          .trim()
-          .toLowerCase();
+        document.getElementById("userSearch")
+          .value.trim().toLowerCase();
       const filtrados =
-        usuarios.filter(
-          usuario =>
-            String(
-              usuario.username || ""
-            )
-              .toLowerCase()
-              .includes(termo)
+        usuarios.filter(usuario =>
+          String(usuario.username || "")
+            .toLowerCase()
+            .includes(termo)
         );
-      renderizarUsuarios(
-        filtrados
-      );
+      renderizarUsuarios(filtrados);
     }
-    /* =========================
-       ABRIR OPERAÇÃO
-    ========================= */
-    function abrirOperacao(
-      userId,
-      tipo
-    ) {
+    function abrirOperacao(userId, tipo) {
       document
-        .querySelectorAll(
-          ".operation-box"
-        )
+        .querySelectorAll(".operation-box")
         .forEach(box => {
-          box.style.display =
-            "none";
+          box.style.display = "none";
         });
       const box =
         document.getElementById(
@@ -654,8 +623,7 @@ content=“width=device-width, initial-scale=1.0”
         document.getElementById(
           `operation-message-${userId}`
         );
-      box.dataset.type =
-        tipo;
+      box.dataset.type = tipo;
       title.textContent =
         tipo === "add"
           ? "➕ Adicionar créditos"
@@ -663,52 +631,34 @@ content=“width=device-width, initial-scale=1.0”
       amount.value = "";
       reason.value = "";
       message.textContent = "";
-      box.style.display =
-        "block";
+      box.style.display = "block";
       amount.focus();
     }
-    /* =========================
-       FECHAR OPERAÇÃO
-    ========================= */
-    function fecharOperacao(
-      userId
-    ) {
+    function fecharOperacao(userId) {
       const box =
         document.getElementById(
           `operation-${userId}`
         );
       if (box) {
-        box.style.display =
-          "none";
+        box.style.display = "none";
       }
     }
-    /* =========================
-       CONFIRMAR OPERAÇÃO
-    ========================= */
-    async function confirmarOperacao(
-      userId
-    ) {
+    async function confirmarOperacao(userId) {
       const box =
         document.getElementById(
           `operation-${userId}`
         );
-      const tipo =
-        box.dataset.type;
+      const tipo = box.dataset.type;
       const amount =
         Number(
-          document
-            .getElementById(
-              `amount-${userId}`
-            )
-            .value
+          document.getElementById(
+            `amount-${userId}`
+          ).value
         );
       const reason =
-        document
-          .getElementById(
-            `reason-${userId}`
-          )
-          .value
-          .trim();
+        document.getElementById(
+          `reason-${userId}`
+        ).value.trim();
       const message =
         document.getElementById(
           `operation-message-${userId}`
@@ -734,32 +684,28 @@ content=“width=device-width, initial-scale=1.0”
           "O motivo é obrigatório.";
         return;
       }
-      message.textContent =
-        "Processando...";
+      message.textContent = "Processando...";
       try {
         const endpoint =
           tipo === "add"
             ? `${API_URL}/admin/users/${userId}/add-credits`
             : `${API_URL}/admin/users/${userId}/remove-credits`;
-        const response =
-          await fetch(
-            endpoint,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-              body: JSON.stringify({
-                amount,
-                reason
-              })
-            }
-          );
+        const response = await fetch(
+          endpoint,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+            body: JSON.stringify({
+              amount,
+              reason
+            })
+          }
+        );
         const data =
-          await response
-            .json()
-            .catch(() => ({}));
+          await response.json().catch(() => ({}));
         if (!response.ok) {
           throw new Error(
             data.message ||
@@ -778,62 +724,28 @@ content=“width=device-width, initial-scale=1.0”
           "Erro ao realizar operação.";
       }
     }
-    /* =========================
-       FORMATAR MOEDA
-    ========================= */
-    function formatarMoeda(
-      valor
-    ) {
-      return Number(
-        valor || 0
-      ).toLocaleString(
-        "pt-BR",
-        {
-          style: "currency",
-          currency: "BRL"
-        }
-      );
-    }
-    /* =========================
-       ESCAPAR HTML
-    ========================= */
-    function esc(
-      valor
-    ) {
-      return String(
-        valor ?? ""
-      )
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
+    function formatarMoeda(valor) {
+      return Number(valor || 0)
+        .toLocaleString(
+          "pt-BR",
+          {
+            style: "currency",
+            currency: "BRL"
+          }
         );
     }
-    /* =========================
-       ABRIR CONFIGURAÇÕES
-    ========================= */
+    function esc(valor) {
+      return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
     function abrirConfiguracoes() {
       window.location.href =
         "admin-settings.html";
     }
-    /* =========================
-       SAIR
-    ========================= */
     async function sairAdmin() {
       try {
         await fetch(
@@ -851,9 +763,6 @@ content=“width=device-width, initial-scale=1.0”
       window.location.href =
         "admin.html";
     }
-    /* =========================
-       VERIFICAR LOGIN SALVO
-    ========================= */
     window.addEventListener(
       "load",
       () => {
