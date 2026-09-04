@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>JPBET - Dashboard</title>
 
-<!-- Biblioteca para geração do QR Code -->
+<!-- Biblioteca para geração dinâmica do QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
@@ -42,7 +42,9 @@ body{
     env(safe-area-inset-left);
 }
 
-button,input,textarea,select{font-family:inherit}
+button,input,textarea,select{
+  font-family:inherit;
+}
 
 button{
   cursor:pointer;
@@ -50,8 +52,15 @@ button{
   touch-action:manipulation;
 }
 
-button:active{transform:scale(.98)}
-button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+button:active{
+  transform:scale(.98);
+}
+
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
 
 .container{
   width:100%;
@@ -79,7 +88,9 @@ header{
   letter-spacing:-1px;
 }
 
-.logo span{color:#6c3cff}
+.logo span{
+  color:#6c3cff;
+}
 
 .user{
   min-width:0;
@@ -100,13 +111,31 @@ header{
   padding:18px 16px;
   margin-bottom:13px;
   text-align:center;
-  box-shadow:0 10px 30px rgba(70,55,0,.1),inset 0 1px 0 #fff;
+  box-shadow:
+    0 10px 30px rgba(70,55,0,.1),
+    inset 0 1px 0 #fff;
 }
 
-.balance-title{font-size:13px;color:#666;margin-bottom:5px}
-.balance-value{font-size:32px;font-weight:900}
-.balance-value.balance-up{color:#07963a;transform:scale(1.05)}
-.balance-value.balance-down{color:#d71932;transform:scale(1.05)}
+.balance-title{
+  font-size:13px;
+  color:#666;
+  margin-bottom:5px;
+}
+
+.balance-value{
+  font-size:32px;
+  font-weight:900;
+}
+
+.balance-value.balance-up{
+  color:#07963a;
+  transform:scale(1.05);
+}
+
+.balance-value.balance-down{
+  color:#d71932;
+  transform:scale(1.05);
+}
 
 .balance-details{
   display:grid;
@@ -141,8 +170,13 @@ header{
   font-weight:900;
 }
 
-.balance-delta.up{color:#07963a}
-.balance-delta.down{color:#d71932}
+.balance-delta.up{
+  color:#07963a;
+}
+
+.balance-delta.down{
+  color:#d71932;
+}
 
 .buttons{
   display:grid;
@@ -160,7 +194,10 @@ button{
   font-weight:800;
 }
 
-.buttons button,.logout{min-height:52px}
+.buttons button,
+.logout{
+  min-height:52px;
+}
 
 .primary{
   background:linear-gradient(135deg,#ffd900,#ffb700);
@@ -192,8 +229,16 @@ button{
   box-shadow:0 7px 20px rgba(0,0,0,.06);
 }
 
-.card h2{margin:0 0 8px;font-size:18px}
-.card p{margin:0;font-size:14px;color:#666}
+.card h2{
+  margin:0 0 8px;
+  font-size:18px;
+}
+
+.card p{
+  margin:0;
+  font-size:14px;
+  color:#666;
+}
 
 .message{
   min-height:18px;
@@ -261,7 +306,9 @@ button{
   color:#555;
 }
 
-.form-input,.form-select,.form-textarea{
+.form-input,
+.form-select,
+.form-textarea{
   width:100%;
   min-height:46px;
   padding:10px;
@@ -272,8 +319,16 @@ button{
   outline:none;
 }
 
-.form-textarea{resize:vertical;min-height:70px}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#e1b900}
+.form-textarea{
+  resize:vertical;
+  min-height:70px;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus{
+  border-color:#e1b900;
+}
 
 .modal-actions{
   display:grid;
@@ -301,9 +356,20 @@ button{
   text-align:center;
 }
 
-.status.success{background:#e4f8eb;color:#087c35}
-.status.error{background:#ffe5e8;color:#b31529}
-.status.pending{background:#fff4ca;color:#735700}
+.status.success{
+  background:#e4f8eb;
+  color:#087c35;
+}
+
+.status.error{
+  background:#ffe5e8;
+  color:#b31529;
+}
+
+.status.pending{
+  background:#fff4ca;
+  color:#735700;
+}
 
 .pix-box{
   text-align:center;
@@ -323,7 +389,8 @@ button{
   align-items:center;
 }
 
-#pixQrCode img,#pixQrCode canvas{
+#pixQrCode img,
+#pixQrCode canvas{
   max-width:100%;
   height:auto;
   margin:auto;
@@ -341,7 +408,7 @@ button{
   padding:10px;
   border:1px solid #ddd;
   border-radius:8px;
-  font-size:12px;
+  font-size:11px;
 }
 
 .copy-button{
@@ -353,7 +420,18 @@ button{
   font-size:11px;
 }
 
-.history-list{margin-top:8px}
+.pix-recipient{
+  margin-top:8px;
+  padding:8px;
+  background:#f7f7f7;
+  border-radius:8px;
+  font-size:11px;
+  color:#555;
+}
+
+.history-list{
+  margin-top:8px;
+}
 
 .history-item{
   background:#fff;
@@ -383,9 +461,17 @@ button{
   font-weight:900;
 }
 
-.history-positive{color:#07963a}
-.history-negative{color:#d71932}
-.history-pending{color:#9a7300}
+.history-positive{
+  color:#07963a;
+}
+
+.history-negative{
+  color:#d71932;
+}
+
+.history-pending{
+  color:#9a7300;
+}
 
 /* ROLETA */
 
@@ -397,7 +483,9 @@ button{
   margin-bottom:9px;
 }
 
-.roulette-top strong{font-size:17px}
+.roulette-top strong{
+  font-size:17px;
+}
 
 .roulette-balance{
   font-size:13px;
@@ -426,7 +514,13 @@ button{
   overflow:hidden;
   margin-bottom:6px;
   border-radius:20px;
-  background:radial-gradient(circle at center,#5130a8 0%,#24124f 45%,#11091f 100%);
+  background:
+    radial-gradient(
+      circle at center,
+      #5130a8 0%,
+      #24124f 45%,
+      #11091f 100%
+    );
   border:2px solid #d8ad25;
 }
 
@@ -452,7 +546,18 @@ button{
   max-height:285px;
   border-radius:50%;
   padding:10px;
-  background:radial-gradient(circle,#fff7bf 0%,#d7a920 49%,#fff1a0 51%,#9b6c00 59%,#f3d34e 67%,#7d5700 75%,#d7a920 84%,#5b3c00 100%);
+  background:
+    radial-gradient(
+      circle,
+      #fff7bf 0%,
+      #d7a920 49%,
+      #fff1a0 51%,
+      #9b6c00 59%,
+      #f3d34e 67%,
+      #7d5700 75%,
+      #d7a920 84%,
+      #5b3c00 100%
+    );
   box-shadow:0 15px 35px rgba(0,0,0,.55);
   transition:transform 4.8s cubic-bezier(.12,.72,.12,1);
 }
@@ -464,7 +569,12 @@ button{
   border-radius:50%;
   overflow:hidden;
   border:5px solid #f3d34e;
-  background:repeating-conic-gradient(from -4.86deg,var(--roulette-red) 0deg 4.864deg,var(--roulette-black) 4.864deg 9.728deg);
+  background:
+    repeating-conic-gradient(
+      from -4.86deg,
+      var(--roulette-red) 0deg 4.864deg,
+      var(--roulette-black) 4.864deg 9.728deg
+    );
 }
 
 .wheel-sector{
@@ -496,12 +606,22 @@ button{
   z-index:4;
 }
 
-.wheel-number.red{background:var(--roulette-red)}
-.wheel-number.black{background:var(--roulette-black)}
-.wheel-number.green{background:var(--roulette-green)}
+.wheel-number.red{
+  background:var(--roulette-red);
+}
+
+.wheel-number.black{
+  background:var(--roulette-black);
+}
+
+.wheel-number.green{
+  background:var(--roulette-green);
+}
 
 .result-highlight{
-  box-shadow:0 0 0 3px #fff,0 0 12px 4px var(--roulette-accent);
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 12px 4px var(--roulette-accent);
 }
 
 .wheel-center-ring{
@@ -514,7 +634,14 @@ button{
   border-radius:50%;
   z-index:10;
   border:5px solid var(--roulette-accent);
-  background:radial-gradient(circle at 35% 25%,#fff,#d9d9d9 38%,#777 65%,#222 100%);
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      #fff,
+      #d9d9d9 38%,
+      #777 65%,
+      #222 100%
+    );
   display:flex;
   align-items:center;
   justify-content:center;
@@ -542,9 +669,17 @@ button{
   font-weight:900;
 }
 
-.result-red{color:#d71932}
-.result-black{color:#111}
-.result-green{color:#07963a}
+.result-red{
+  color:#d71932;
+}
+
+.result-black{
+  color:#111;
+}
+
+.result-green{
+  color:#07963a;
+}
 
 .result-label{
   font-size:12px;
@@ -563,7 +698,9 @@ button{
   border:1px solid #ead58a;
 }
 
-.round-summary.visible{display:grid}
+.round-summary.visible{
+  display:grid;
+}
 
 .summary-item{
   padding:8px;
@@ -586,8 +723,13 @@ button{
   font-weight:900;
 }
 
-.summary-prize{color:#07963a}
-.summary-loss{color:#d71932}
+.summary-prize{
+  color:#07963a;
+}
+
+.summary-loss{
+  color:#d71932;
+}
 
 .bet-title{
   font-size:12px;
@@ -636,11 +778,23 @@ button{
   border:2px solid #dfe2eb;
 }
 
-.bet-type.selected{border-color:#171717}
-.red-button.selected{border-color:var(--roulette-red);background:#ffe3e7}
-.black-button.selected{border-color:var(--roulette-black);background:#e8e8e8}
+.bet-type.selected{
+  border-color:#171717;
+}
 
-.number-section{margin-top:8px}
+.red-button.selected{
+  border-color:var(--roulette-red);
+  background:#ffe3e7;
+}
+
+.black-button.selected{
+  border-color:var(--roulette-black);
+  background:#e8e8e8;
+}
+
+.number-section{
+  margin-top:8px;
+}
 
 .number-toggle{
   min-height:44px;
@@ -657,7 +811,9 @@ button{
   margin-top:6px;
 }
 
-.number-grid.visible{display:grid}
+.number-grid.visible{
+  display:grid;
+}
 
 .number-button{
   min-height:38px;
@@ -668,10 +824,21 @@ button{
   border:2px solid transparent;
 }
 
-.number-button.red{background:var(--roulette-red)}
-.number-button.black{background:var(--roulette-black)}
-.number-button.zero{background:var(--roulette-green)}
-.number-button.selected{border-color:var(--roulette-accent)}
+.number-button.red{
+  background:var(--roulette-red);
+}
+
+.number-button.black{
+  background:var(--roulette-black);
+}
+
+.number-button.zero{
+  background:var(--roulette-green);
+}
+
+.number-button.selected{
+  border-color:var(--roulette-accent);
+}
 
 .roulette-message{
   min-height:32px;
@@ -682,8 +849,13 @@ button{
   line-height:1.4;
 }
 
-.win-message{color:#07963a}
-.lose-message{color:#d71932}
+.win-message{
+  color:#07963a;
+}
+
+.lose-message{
+  color:#d71932;
+}
 
 .roulette-info{
   text-align:center;
@@ -694,30 +866,112 @@ button{
 }
 
 @media(max-width:600px){
-  .container{padding:12px 10px 18px}
-  .logo{font-size:25px}
-  .user{font-size:12px;max-width:155px}
-  .balance{padding:14px 10px}
-  .balance-value{font-size:29px}
-  .buttons{gap:8px}
-  .buttons button{min-height:52px;font-size:13px}
-  .card{padding:14px}
-  .modal{align-items:flex-start;padding:6px}
-  .modal-box{max-height:calc(100dvh - 12px);padding:11px;border-radius:17px}
-  .roulette-area{height:min(285px,70vw);min-height:235px}
-  .wheel{width:min(250px,68vw);height:min(250px,68vw)}
-  .wheel-center-ring{width:88px;height:88px}
-  .wheel-center-button{width:62px;height:62px;font-size:10px}
+
+  .container{
+    padding:12px 10px 18px;
+  }
+
+  .logo{
+    font-size:25px;
+  }
+
+  .user{
+    font-size:12px;
+    max-width:155px;
+  }
+
+  .balance{
+    padding:14px 10px;
+  }
+
+  .balance-value{
+    font-size:29px;
+  }
+
+  .buttons{
+    gap:8px;
+  }
+
+  .buttons button{
+    min-height:52px;
+    font-size:13px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .modal{
+    align-items:flex-start;
+    padding:6px;
+  }
+
+  .modal-box{
+    max-height:calc(100dvh - 12px);
+    padding:11px;
+    border-radius:17px;
+  }
+
+  .roulette-area{
+    height:min(285px,70vw);
+    min-height:235px;
+  }
+
+  .wheel{
+    width:min(250px,68vw);
+    height:min(250px,68vw);
+  }
+
+  .wheel-center-ring{
+    width:88px;
+    height:88px;
+  }
+
+  .wheel-center-button{
+    width:62px;
+    height:62px;
+    font-size:10px;
+  }
 }
 
 @media(max-width:380px){
-  .balance-value{font-size:27px}
-  .balance-details{gap:3px}
-  .roulette-area{height:245px;min-height:220px}
-  .wheel{width:215px;height:215px}
-  .wheel-center-ring{width:78px;height:78px}
-  .wheel-center-button{width:56px;height:56px;font-size:9px}
-  .wheel-number{width:24px;height:24px;margin-left:-12px;margin-top:-12px;font-size:8px}
+
+  .balance-value{
+    font-size:27px;
+  }
+
+  .balance-details{
+    gap:3px;
+  }
+
+  .roulette-area{
+    height:245px;
+    min-height:220px;
+  }
+
+  .wheel{
+    width:215px;
+    height:215px;
+  }
+
+  .wheel-center-ring{
+    width:78px;
+    height:78px;
+  }
+
+  .wheel-center-button{
+    width:56px;
+    height:56px;
+    font-size:9px;
+  }
+
+  .wheel-number{
+    width:24px;
+    height:24px;
+    margin-left:-12px;
+    margin-top:-12px;
+    font-size:8px;
+  }
 }
 </style>
 </head>
@@ -733,9 +987,13 @@ button{
 
 <div class="balance">
 
-  <div class="balance-title">Saldo total</div>
+  <div class="balance-title">
+    Saldo total
+  </div>
 
-  <div class="balance-value" id="balance">R$ 0,00</div>
+  <div class="balance-value" id="balance">
+    R$ 0,00
+  </div>
 
   <div id="balanceDelta" class="balance-delta"></div>
 
@@ -784,7 +1042,9 @@ button{
 
   <h2>Minha conta</h2>
 
-  <p>Bem-vindo à plataforma JPBET.</p>
+  <p>
+    Bem-vindo à plataforma JPBET.
+  </p>
 
   <div id="message" class="message"></div>
 
@@ -798,22 +1058,23 @@ button{
 
 <div id="actionModal" class="modal">
 
-<div class="modal-box">
+  <div class="modal-box">
 
-<button
-  class="close-button"
-  onclick="fecharModal()"
-  aria-label="Fechar"
-  type="button"
->
-×
-</button>
+    <button
+      class="close-button"
+      onclick="fecharModal()"
+      aria-label="Fechar"
+      type="button"
+    >
+      ×
+    </button>
 
-<h2 id="modalTitle">JPBET</h2>
+    <h2 id="modalTitle">JPBET</h2>
 
-<div id="modalContent"></div>
+    <div id="modalContent"></div>
 
-</div>
+  </div>
+
 </div>
 
 <script>
@@ -826,27 +1087,42 @@ let configuracoes={
   roulette_max_bet:"100",
   roulette_animation_ms:"4800",
   roulette_sound_enabled:"true",
+
   roulette_red_color:"#e51f35",
   roulette_black_color:"#171717",
   roulette_green_color:"#08a83e",
   roulette_accent_color:"#ffd43b",
-  virtual_credits_mode:"true",
-  virtual_credits_text:"Esta plataforma utiliza créditos virtuais para demonstração.",
-  virtual_credits_disclaimer:"Os créditos desta versão não representam dinheiro real.",
 
-  pix_key:"",
-  pix_key_type:"",
-  pix_receiver_name:"",
-  pix_city:"",
-  pix_description:""
+  virtual_credits_mode:"true",
+  virtual_credits_text:
+    "Esta plataforma utiliza créditos virtuais para demonstração.",
+  virtual_credits_disclaimer:
+    "Os créditos desta versão não representam dinheiro real.",
+
+  /* PIX */
+  pix_enabled:"true",
+  pix_key:"38135fb2-dd1f-44aa-ab51-d2670ee36c7d",
+  pix_key_type:"aleatoria",
+  pix_receiver_name:"João Paulo da Silva",
+  pix_city:"Paramirim",
+  pix_description:"JPBET",
+  pix_txid:"***",
+  pix_instructions:
+    "Faça o pagamento pelo aplicativo do seu banco e depois clique em JÁ FIZ O PIX."
 };
 
 let usuarioAtual=null;
+
 let tipoAposta=null;
 let numeroAposta=null;
+
 let rodadaEmAndamento=false;
 let wheelRotation=0;
 let audioContext=null;
+
+/* PIX GERADO ATUALMENTE */
+let pixPayloadAtual="";
+let pixValorAtual=0;
 
 const numerosVermelhos=[
   1,3,5,7,9,12,14,16,18,
@@ -861,20 +1137,23 @@ async function carregarConfiguracoes(){
 
   try{
 
-    const response=await fetch(
-      `${API_URL}/settings/public`
-    );
+    const response=
+      await fetch(`${API_URL}/settings/public`);
 
     if(!response.ok)return;
 
-    const data=await response.json();
+    const data=
+      await response.json();
 
     const recebidas=
       data.settings||
       data.configuracoes||
       data;
 
-    if(recebidas&&typeof recebidas==="object"){
+    if(
+      recebidas&&
+      typeof recebidas==="object"
+    ){
 
       configuracoes={
         ...configuracoes,
@@ -896,26 +1175,31 @@ async function carregarConfiguracoes(){
 
 function aplicarConfiguracoes(){
 
-  const root=document.documentElement;
+  const root=
+    document.documentElement;
 
   root.style.setProperty(
     "--roulette-red",
-    configuracoes.roulette_red_color||"#e51f35"
+    configuracoes.roulette_red_color||
+    "#e51f35"
   );
 
   root.style.setProperty(
     "--roulette-black",
-    configuracoes.roulette_black_color||"#171717"
+    configuracoes.roulette_black_color||
+    "#171717"
   );
 
   root.style.setProperty(
     "--roulette-green",
-    configuracoes.roulette_green_color||"#08a83e"
+    configuracoes.roulette_green_color||
+    "#08a83e"
   );
 
   root.style.setProperty(
     "--roulette-accent",
-    configuracoes.roulette_accent_color||"#ffd43b"
+    configuracoes.roulette_accent_color||
+    "#ffd43b"
   );
 
 }
@@ -938,10 +1222,14 @@ function carregarUsuario(){
 
   try{
 
-    usuarioAtual=JSON.parse(savedUser);
+    usuarioAtual=
+      JSON.parse(savedUser);
 
-    document.getElementById("userName").textContent=
-      usuarioAtual.username||"Usuário";
+    document.getElementById(
+      "userName"
+    ).textContent=
+      usuarioAtual.username||
+      "Usuário";
 
     atualizarSaldos(
       usuarioAtual.balance,
@@ -957,6 +1245,7 @@ function carregarUsuario(){
 
     localStorage.removeItem("jpbet_user");
     localStorage.removeItem("jpbet_token");
+
     window.location.href="index.html";
 
   }
@@ -969,13 +1258,15 @@ async function atualizarContaServidor(){
 
   try{
 
-    const response=await fetch(
-      `${API_URL}/account/${usuarioAtual.id}`
-    );
+    const response=
+      await fetch(
+        `${API_URL}/account/${usuarioAtual.id}`
+      );
 
     if(!response.ok)return;
 
-    const data=await response.json();
+    const data=
+      await response.json();
 
     const user=
       data.user||
@@ -1032,34 +1323,51 @@ function atualizarSaldos(
   saldo=Number(saldo||0);
   reservado=Number(reservado||0);
 
-  const total=saldo+reservado;
+  const total=
+    saldo+reservado;
 
   const anterior=
     saldoAnterior===null
-      ? Number(usuarioAtual?.balance||saldo)
-      : Number(saldoAnterior||0);
+      ?Number(usuarioAtual?.balance||saldo)
+      :Number(saldoAnterior||0);
 
-  const delta=saldo-anterior;
+  const delta=
+    saldo-anterior;
 
-  document.getElementById("balance").textContent=
+  document.getElementById(
+    "balance"
+  ).textContent=
     formatarSaldo(total);
 
-  document.getElementById("availableBalance").textContent=
+  document.getElementById(
+    "availableBalance"
+  ).textContent=
     formatarSaldo(saldo);
 
-  document.getElementById("reservedBalance").textContent=
+  document.getElementById(
+    "reservedBalance"
+  ).textContent=
     formatarSaldo(reservado);
 
-  document.getElementById("totalBalance").textContent=
+  document.getElementById(
+    "totalBalance"
+  ).textContent=
     formatarSaldo(total);
 
   const deltaElement=
-    document.getElementById("balanceDelta");
+    document.getElementById(
+      "balanceDelta"
+    );
 
   const balanceElement=
-    document.getElementById("balance");
+    document.getElementById(
+      "balance"
+    );
 
-  if(mostrarVariacao&&delta!==0){
+  if(
+    mostrarVariacao&&
+    delta!==0
+  ){
 
     balanceElement.classList.remove(
       "balance-up",
@@ -1069,7 +1377,9 @@ function atualizarSaldos(
     void balanceElement.offsetWidth;
 
     balanceElement.classList.add(
-      delta>0?"balance-up":"balance-down"
+      delta>0
+        ?"balance-up"
+        :"balance-down"
     );
 
     deltaElement.textContent=
@@ -1114,7 +1424,9 @@ function atualizarSaldo(
 
   atualizarSaldos(
     Number(valor||0),
-    Number(usuarioAtual?.reserved_balance||0),
+    Number(
+      usuarioAtual?.reserved_balance||0
+    ),
     mostrarVariacao,
     saldoAnterior
   );
@@ -1134,13 +1446,22 @@ function formatarSaldo(valor){
    MODAL
 ========================= */
 
-function abrirModal(titulo,conteudo){
+function abrirModal(
+  titulo,
+  conteudo
+){
 
-  document.getElementById("modalTitle").textContent=titulo;
+  document.getElementById(
+    "modalTitle"
+  ).textContent=titulo;
 
-  document.getElementById("modalContent").innerHTML=conteudo;
+  document.getElementById(
+    "modalContent"
+  ).innerHTML=conteudo;
 
-  document.getElementById("actionModal").style.display="flex";
+  document.getElementById(
+    "actionModal"
+  ).style.display="flex";
 
   document.body.style.overflow="hidden";
 
@@ -1150,7 +1471,9 @@ function fecharModal(){
 
   if(rodadaEmAndamento)return;
 
-  document.getElementById("actionModal").style.display="none";
+  document.getElementById(
+    "actionModal"
+  ).style.display="none";
 
   document.body.style.overflow="";
 
@@ -1162,12 +1485,58 @@ function fecharModal(){
 
 function depositar(){
 
+  const pixAtivo=
+    String(
+      configuracoes.pix_enabled
+    ).toLowerCase()!=="false";
+
+  if(!pixAtivo){
+
+    abrirModal(
+      "💰 Depósito",
+      `
+        <div class="status pending">
+          Os depósitos estão temporariamente desativados.
+        </div>
+
+        <button
+          class="primary"
+          style="margin-top:10px"
+          onclick="fecharModal()"
+          type="button"
+        >
+          FECHAR
+        </button>
+      `
+    );
+
+    return;
+
+  }
+
+  pixPayloadAtual="";
+  pixValorAtual=0;
+
   abrirModal(
-    "💰 Depósito",
+    "💰 Depósito Pix",
     `
       <div class="info-box">
-        Informe o valor que deseja depositar. O QR Code Pix será gerado automaticamente.
-        Depois de realizar o pagamento, solicite a confirmação do depósito.
+
+        Informe o valor que deseja depositar.
+        O sistema irá gerar um
+        <strong>QR Code Pix dinamicamente</strong>
+        e também o código
+        <strong>Pix Copia e Cola</strong>.
+
+        <br><br>
+
+        ${
+          escapeHtml(
+            configuracoes.pix_instructions||
+            "Faça o pagamento pelo aplicativo do seu banco e depois clique em JÁ FIZ O PIX."
+          )
+        }
+
       </div>
 
       <label class="form-label">
@@ -1182,6 +1551,7 @@ function depositar(){
         step="0.01"
         placeholder="Ex.: 50,00"
         inputmode="decimal"
+        oninput="limparPixGerado()"
       >
 
       <div id="pixArea"></div>
@@ -1212,17 +1582,49 @@ function depositar(){
 
 }
 
+function limparPixGerado(){
+
+  pixPayloadAtual="";
+  pixValorAtual=0;
+
+  const area=
+    document.getElementById(
+      "pixArea"
+    );
+
+  if(area){
+    area.innerHTML="";
+  }
+
+  const status=
+    document.getElementById(
+      "depositStatus"
+    );
+
+  if(status){
+    status.innerHTML="";
+  }
+
+}
+
 function gerarPix(){
 
   const input=
-    document.getElementById("depositAmount");
+    document.getElementById(
+      "depositAmount"
+    );
 
   const valor=
     Number(
-      String(input?.value||"").replace(",",".")
+      String(
+        input?.value||""
+      ).replace(",",".")
     );
 
-  if(!Number.isFinite(valor)||valor<=0){
+  if(
+    !Number.isFinite(valor)||
+    valor<=0
+  ){
 
     mostrarStatus(
       "depositStatus",
@@ -1255,11 +1657,47 @@ function gerarPix(){
       ""
     ).trim();
 
+  const txid=
+    String(
+      configuracoes.pix_txid||
+      "***"
+    ).trim();
+
+  const descricao=
+    String(
+      configuracoes.pix_description||
+      "JPBET"
+    ).trim();
+
   if(!chave){
 
     mostrarStatus(
       "depositStatus",
       "A chave Pix ainda não foi configurada pelo administrador.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!nome){
+
+    mostrarStatus(
+      "depositStatus",
+      "O nome do recebedor ainda não foi configurado pelo administrador.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(!cidade){
+
+    mostrarStatus(
+      "depositStatus",
+      "A cidade do recebedor ainda não foi configurada pelo administrador.",
       "error"
     );
 
@@ -1273,13 +1711,19 @@ function gerarPix(){
       nome,
       cidade,
       valor,
-      descricao:
-        configuracoes.pix_description||
-        "JPBET"
+      descricao,
+      txid
     });
 
+  pixPayloadAtual=payload;
+  pixValorAtual=valor;
+
   const area=
-    document.getElementById("pixArea");
+    document.getElementById(
+      "pixArea"
+    );
+
+  if(!area)return;
 
   area.innerHTML=`
     <div class="pix-box">
@@ -1290,7 +1734,11 @@ function gerarPix(){
 
       <div id="pixQrCode"></div>
 
-      <div style="font-size:11px;color:#777;margin-bottom:5px">
+      <div style="
+        font-size:11px;
+        color:#777;
+        margin-bottom:5px
+      ">
         Ou copie o código Pix:
       </div>
 
@@ -1312,8 +1760,21 @@ function gerarPix(){
 
       </div>
 
-      <div style="margin-top:8px;font-size:12px;color:#555">
-        Valor: <strong>${formatarSaldo(valor)}</strong>
+      <div class="pix-recipient">
+
+        <strong>Recebedor:</strong>
+        ${escapeHtml(nome)}
+
+        <br>
+
+        <strong>Cidade:</strong>
+        ${escapeHtml(cidade)}
+
+        <br>
+
+        <strong>Valor:</strong>
+        ${formatarSaldo(valor)}
+
       </div>
 
       <button
@@ -1329,21 +1790,54 @@ function gerarPix(){
   `;
 
   const qr=
-    document.getElementById("pixQrCode");
+    document.getElementById(
+      "pixQrCode"
+    );
 
-  if(window.QRCode){
+  if(
+    window.QRCode&&
+    typeof window.QRCode==="function"
+  ){
 
-    new QRCode(qr,{
-      text:payload,
-      width:220,
-      height:220,
-      correctLevel:QRCode.CorrectLevel.M
-    });
+    try{
+
+      new QRCode(
+        qr,
+        {
+          text:payload,
+          width:220,
+          height:220,
+          correctLevel:
+            QRCode.CorrectLevel.M
+        }
+      );
+
+    }catch(error){
+
+      console.error(
+        "Erro ao gerar QR Code:",
+        error
+      );
+
+      qr.innerHTML=
+        `
+          <p style="color:#b31529;font-size:12px">
+            Não foi possível gerar o QR Code.
+            Use o Pix Copia e Cola abaixo.
+          </p>
+        `;
+
+    }
 
   }else{
 
     qr.innerHTML=
-      "<p>Não foi possível carregar o gerador de QR Code.</p>";
+      `
+        <p style="color:#b31529;font-size:12px">
+          O gerador de QR Code não foi carregado.
+          Use o Pix Copia e Cola abaixo.
+        </p>
+      `;
 
   }
 
@@ -1352,18 +1846,40 @@ function gerarPix(){
 async function confirmarDeposito(){
 
   const input=
-    document.getElementById("depositAmount");
+    document.getElementById(
+      "depositAmount"
+    );
 
   const valor=
     Number(
-      String(input?.value||"").replace(",",".")
+      String(
+        input?.value||""
+      ).replace(",",".")
     );
 
-  if(!Number.isFinite(valor)||valor<=0){
+  if(
+    !Number.isFinite(valor)||
+    valor<=0
+  ){
 
     mostrarStatus(
       "depositStatus",
       "Informe o valor do depósito.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(
+    !pixPayloadAtual||
+    Math.abs(pixValorAtual-valor)>0.001
+  ){
+
+    mostrarStatus(
+      "depositStatus",
+      "Gere o QR Code para este valor antes de confirmar o pagamento.",
       "error"
     );
 
@@ -1379,12 +1895,14 @@ async function confirmarDeposito(){
         {
           method:"POST",
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           },
           body:JSON.stringify({
             userId:usuarioAtual.id,
             amount:valor,
-            playerNote:"Jogador informou que realizou o Pix."
+            playerNote:
+              "Jogador informou que realizou o Pix."
           })
         }
       );
@@ -1392,7 +1910,10 @@ async function confirmarDeposito(){
     const data=
       await response.json();
 
-    if(!response.ok||!data.ok){
+    if(
+      !response.ok||
+      !data.ok
+    ){
 
       throw new Error(
         data.message||
@@ -1424,14 +1945,22 @@ async function confirmarDeposito(){
    PIX BR CODE
 ========================= */
 
-function campoPix(id,valor){
+function campoPix(
+  id,
+  valor
+){
+
+  const texto=
+    String(valor);
 
   const tamanho=
-    String(valor).length
+    texto.length
       .toString()
       .padStart(2,"0");
 
-  return id+tamanho+valor;
+  return id+
+    tamanho+
+    texto;
 
 }
 
@@ -1440,35 +1969,80 @@ function montarPayloadPix({
   nome,
   cidade,
   valor,
-  descricao
+  descricao,
+  txid
 }){
 
+  chave=
+    String(chave||"").trim();
+
   nome=
-    removerAcentos(nome||"JPBET")
-      .substring(0,25)
-      .toUpperCase();
+    removerAcentos(
+      nome||
+      "RECEBEDOR"
+    )
+    .substring(0,25)
+    .toUpperCase();
 
   cidade=
-    removerAcentos(cidade||"SAO PAULO")
-      .substring(0,15)
-      .toUpperCase();
+    removerAcentos(
+      cidade||
+      "PARAMIRIM"
+    )
+    .substring(0,15)
+    .toUpperCase();
 
-  const merchantAccount=
+  descricao=
+    removerAcentos(
+      descricao||
+      ""
+    )
+    .substring(0,72);
+
+  txid=
+    String(
+      txid||
+      "***"
+    )
+    .trim()
+    .substring(0,25);
+
+  /*
+    CAMPO 26
+    00 = GUI
+    01 = CHAVE PIX
+
+    A chave fica diretamente no campo 01.
+    Não existe um campo 00 adicional envolvendo
+    a chave.
+  */
+
+  let merchantAccount=
     campoPix(
       "00",
       "BR.GOV.BCB.PIX"
     )+
     campoPix(
       "01",
-      campoPix("00",chave)
+      chave
     );
 
-  const txid=
-    "***";
+  if(descricao){
 
-  const payloadSemCrc=
+    merchantAccount+=
+      campoPix(
+        "02",
+        descricao
+      );
+
+  }
+
+  let payloadSemCrc=
     "000201"+
-    campoPix("26",merchantAccount)+
+    campoPix(
+      "26",
+      merchantAccount
+    )+
     "52040000"+
     "5303986"+
     campoPix(
@@ -1476,8 +2050,14 @@ function montarPayloadPix({
       Number(valor).toFixed(2)
     )+
     "5802BR"+
-    campoPix("59",nome)+
-    campoPix("60",cidade)+
+    campoPix(
+      "59",
+      nome
+    )+
+    campoPix(
+      "60",
+      cidade
+    )+
     campoPix(
       "62",
       campoPix(
@@ -1496,12 +2076,20 @@ function crc16(str){
 
   let crc=0xFFFF;
 
-  for(let i=0;i<str.length;i++){
+  for(
+    let i=0;
+    i<str.length;
+    i++
+  ){
 
     crc^=
       str.charCodeAt(i)<<8;
 
-    for(let j=0;j<8;j++){
+    for(
+      let j=0;
+      j<8;
+      j++
+    ){
 
       if(crc&0x8000){
 
@@ -1531,7 +2119,10 @@ function removerAcentos(text){
 
   return String(text)
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g,"");
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    );
 
 }
 
@@ -1548,33 +2139,70 @@ function escapeHtml(text){
 function copiarPix(){
 
   const campo=
-    document.getElementById("pixCopyField");
+    document.getElementById(
+      "pixCopyField"
+    );
 
   if(!campo)return;
 
-  navigator.clipboard
-    ?.writeText(campo.value)
-    .then(()=>{
+  if(
+    navigator.clipboard&&
+    navigator.clipboard.writeText
+  ){
 
-      mostrarStatus(
-        "depositStatus",
-        "Código Pix copiado.",
-        "success"
-      );
+    navigator.clipboard
+      .writeText(campo.value)
+      .then(()=>{
 
-    })
-    .catch(()=>{
+        mostrarStatus(
+          "depositStatus",
+          "Código Pix copiado.",
+          "success"
+        );
 
-      campo.select();
-      document.execCommand("copy");
+      })
+      .catch(()=>{
 
-      mostrarStatus(
-        "depositStatus",
-        "Código Pix copiado.",
-        "success"
-      );
+        copiarPixFallback(campo);
 
-    });
+      });
+
+  }else{
+
+    copiarPixFallback(campo);
+
+  }
+
+}
+
+function copiarPixFallback(campo){
+
+  try{
+
+    campo.focus();
+    campo.select();
+    campo.setSelectionRange(
+      0,
+      campo.value.length
+    );
+
+    document.execCommand("copy");
+
+    mostrarStatus(
+      "depositStatus",
+      "Código Pix copiado.",
+      "success"
+    );
+
+  }catch(error){
+
+    mostrarStatus(
+      "depositStatus",
+      "Não foi possível copiar automaticamente. Selecione e copie o código manualmente.",
+      "error"
+    );
+
+  }
 
 }
 
@@ -1585,15 +2213,26 @@ function copiarPix(){
 function sacar(){
 
   const disponivel=
-    Number(usuarioAtual?.balance||0);
+    Number(
+      usuarioAtual?.balance||0
+    );
 
   abrirModal(
     "💸 Solicitar saque",
     `
       <div class="info-box">
+
         Saldo disponível:
-        <strong>${formatarSaldo(disponivel)}</strong><br>
-        O valor solicitado será reservado imediatamente e não poderá ser usado para apostas enquanto o saque estiver em análise.
+        <strong>
+          ${formatarSaldo(disponivel)}
+        </strong>
+
+        <br>
+
+        O valor solicitado será
+        <strong>reservado imediatamente</strong>
+        e não poderá ser usado para apostas enquanto o saque estiver em análise.
+
       </div>
 
       <label class="form-label">
@@ -1612,7 +2251,7 @@ function sacar(){
       >
 
       <label class="form-label">
-        Chave Pix
+        Chave Pix para receber
       </label>
 
       <input
@@ -1664,24 +2303,35 @@ async function confirmarSaque(){
   const amount=
     Number(
       String(
-        document.getElementById("withdrawAmount")?.value||""
+        document.getElementById(
+          "withdrawAmount"
+        )?.value||""
       ).replace(",",".")
     );
 
   const pixKey=
     String(
-      document.getElementById("withdrawPixKey")?.value||""
+      document.getElementById(
+        "withdrawPixKey"
+      )?.value||""
     ).trim();
 
   const note=
     String(
-      document.getElementById("withdrawNote")?.value||""
+      document.getElementById(
+        "withdrawNote"
+      )?.value||""
     ).trim();
 
   const disponivel=
-    Number(usuarioAtual?.balance||0);
+    Number(
+      usuarioAtual?.balance||0
+    );
 
-  if(!Number.isFinite(amount)||amount<=0){
+  if(
+    !Number.isFinite(amount)||
+    amount<=0
+  ){
 
     mostrarStatus(
       "withdrawStatus",
@@ -1725,7 +2375,8 @@ async function confirmarSaque(){
         {
           method:"POST",
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           },
           body:JSON.stringify({
             userId:usuarioAtual.id,
@@ -1739,7 +2390,10 @@ async function confirmarSaque(){
     const data=
       await response.json();
 
-    if(!response.ok||!data.ok){
+    if(
+      !response.ok||
+      !data.ok
+    ){
 
       throw new Error(
         data.message||
@@ -1779,9 +2433,11 @@ async function historico(){
     "📋 Histórico",
     `
       <div id="historyContent">
+
         <div class="info-box">
           Carregando seu histórico...
         </div>
+
       </div>
     `
   );
@@ -1812,21 +2468,39 @@ async function historico(){
 
     renderizarHistorico(
       Array.isArray(lista)
-        ? lista
-        : []
+        ?lista
+        :[]
     );
 
   }catch(error){
 
-    document.getElementById("historyContent").innerHTML=
-      `
-        <div class="status error">
-          ${escapeHtml(
-            error.message||
-            "Erro ao carregar histórico."
-          )}
-        </div>
-      `;
+    const container=
+      document.getElementById(
+        "historyContent"
+      );
+
+    if(container){
+
+      container.innerHTML=
+        `
+          <div class="status error">
+            ${escapeHtml(
+              error.message||
+              "Erro ao carregar histórico."
+            )}
+          </div>
+
+          <button
+            class="primary"
+            style="margin-top:10px"
+            onclick="fecharModal()"
+            type="button"
+          >
+            FECHAR
+          </button>
+        `;
+
+    }
 
   }
 
@@ -1835,7 +2509,9 @@ async function historico(){
 function renderizarHistorico(lista){
 
   const container=
-    document.getElementById("historyContent");
+    document.getElementById(
+      "historyContent"
+    );
 
   if(!container)return;
 
@@ -1885,27 +2561,36 @@ function renderizarHistorico(lista){
       item.data||
       "";
 
-    const positivo=valor>0;
+    const positivo=
+      valor>0;
+
+    const classe=
+      positivo
+        ?"history-positive"
+        :valor===0
+          ?"history-pending"
+          :"history-negative";
 
     html+=`
+
       <div class="history-item">
 
         <div class="history-top">
 
           <span>
-            ${escapeHtml(formatarTipoTransacao(tipo))}
+            ${escapeHtml(
+              formatarTipoTransacao(tipo)
+            )}
           </span>
 
-          <span class="${
-            positivo
-              ?"history-positive"
-              :"history-negative"
-          }">
+          <span class="${classe}">
+
             ${
               positivo
                 ?"+"
                 :""
             }${formatarSaldo(valor)}
+
           </span>
 
         </div>
@@ -1915,11 +2600,13 @@ function renderizarHistorico(lista){
         </div>
 
       </div>
+
     `;
 
   });
 
   html+=`
+
     </div>
 
     <button
@@ -1929,6 +2616,7 @@ function renderizarHistorico(lista){
     >
       FECHAR
     </button>
+
   `;
 
   container.innerHTML=html;
@@ -1938,15 +2626,37 @@ function renderizarHistorico(lista){
 function formatarTipoTransacao(tipo){
 
   const nomes={
-    roulette_bet:"Aposta na roleta",
-    roulette_win:"Prêmio da roleta",
-    deposit:"Depósito",
-    deposit_approved:"Depósito aprovado",
-    deposit_rejected:"Depósito rejeitado",
-    withdrawal_reserved:"Saque reservado",
-    withdrawal_paid:"Saque pago",
-    withdrawal_refunded:"Saque devolvido",
-    withdrawal:"Saque"
+
+    roulette_bet:
+      "Aposta na roleta",
+
+    roulette_win:
+      "Prêmio da roleta",
+
+    deposit:
+      "Depósito",
+
+    deposit_pending:
+      "Depósito pendente",
+
+    deposit_approved:
+      "Depósito aprovado",
+
+    deposit_rejected:
+      "Depósito rejeitado",
+
+    withdrawal_reserved:
+      "Saque reservado",
+
+    withdrawal_paid:
+      "Saque pago",
+
+    withdrawal_refunded:
+      "Saque devolvido",
+
+    withdrawal:
+      "Saque"
+
   };
 
   return nomes[tipo]||tipo;
@@ -1957,10 +2667,18 @@ function formatarData(data){
 
   if(!data)return"";
 
-  const d=new Date(data);
+  const d=
+    new Date(data);
 
-  if(Number.isNaN(d.getTime()))
+  if(
+    Number.isNaN(
+      d.getTime()
+    )
+  ){
+
     return String(data);
+
+  }
 
   return d.toLocaleString(
     "pt-BR",
@@ -1976,7 +2694,11 @@ function formatarData(data){
    STATUS
 ========================= */
 
-function mostrarStatus(id,texto,tipo){
+function mostrarStatus(
+  id,
+  texto,
+  tipo
+){
 
   const elemento=
     document.getElementById(id);
@@ -1998,9 +2720,12 @@ function mostrarStatus(id,texto,tipo){
 
 function obterCorNumero(numero){
 
-  if(Number(numero)===0)return"green";
+  if(Number(numero)===0)
+    return"green";
 
-  return numerosVermelhos.includes(Number(numero))
+  return numerosVermelhos.includes(
+    Number(numero)
+  )
     ?"red"
     :"black";
 
@@ -2009,10 +2734,14 @@ function obterCorNumero(numero){
 function criarRoda(){
 
   const setores=
-    document.getElementById("wheelSectors");
+    document.getElementById(
+      "wheelSectors"
+    );
 
   const numeros=
-    document.getElementById("wheelNumbers");
+    document.getElementById(
+      "wheelNumbers"
+    );
 
   if(!setores||!numeros)return;
 
@@ -2021,7 +2750,11 @@ function criarRoda(){
 
   const quantidade=37;
 
-  for(let numero=0;numero<quantidade;numero++){
+  for(
+    let numero=0;
+    numero<quantidade;
+    numero++
+  ){
 
     const angulo=
       numero*(360/quantidade);
@@ -2029,7 +2762,8 @@ function criarRoda(){
     const setor=
       document.createElement("div");
 
-    setor.className="wheel-sector";
+    setor.className=
+      "wheel-sector";
 
     setor.style.transform=
       `rotate(${angulo}deg)`;
@@ -2040,26 +2774,36 @@ function criarRoda(){
       document.createElement("div");
 
     elemento.className=
-      `wheel-number ${obterCorNumero(numero)}`;
+      `wheel-number ${
+        obterCorNumero(numero)
+      }`;
 
     elemento.id=
       `wheel-number-${numero}`;
 
     const anguloTexto=
-      angulo+(360/quantidade)/2;
+      angulo+
+      (360/quantidade)/2;
 
     const raio=100;
 
     const radianos=
-      ((anguloTexto-90)*Math.PI)/180;
+      ((anguloTexto-90)*
+      Math.PI)/180;
 
-    const x=Math.cos(radianos)*raio;
-    const y=Math.sin(radianos)*raio;
+    const x=
+      Math.cos(radianos)*
+      raio;
+
+    const y=
+      Math.sin(radianos)*
+      raio;
 
     elemento.style.transform=
       `translate(${x}px,${y}px)`;
 
-    elemento.textContent=numero;
+    elemento.textContent=
+      numero;
 
     numeros.appendChild(elemento);
 
@@ -2070,7 +2814,9 @@ function criarRoda(){
 function abrirRoleta(){
 
   if(
-    String(configuracoes.roulette_enabled).toLowerCase()==="false"
+    String(
+      configuracoes.roulette_enabled
+    ).toLowerCase()==="false"
   ){
 
     abrirModal(
@@ -2099,26 +2845,39 @@ function abrirRoleta(){
   rodadaEmAndamento=false;
 
   const minBet=
-    Number(configuracoes.roulette_min_bet||1);
+    Number(
+      configuracoes.roulette_min_bet||1
+    );
 
   const maxBet=
-    Number(configuracoes.roulette_max_bet||100);
+    Number(
+      configuracoes.roulette_max_bet||100
+    );
 
   let numeroHtml="";
 
-  for(let numero=0;numero<37;numero++){
+  for(
+    let numero=0;
+    numero<37;
+    numero++
+  ){
 
-    const cor=obterCorNumero(numero);
+    const cor=
+      obterCorNumero(numero);
 
     numeroHtml+=`
+
       <button
-        class="number-button ${cor} ${numero===0?"zero":""}"
+        class="number-button ${cor} ${
+          numero===0?"zero":""
+        }"
         onclick="selecionarNumero(${numero})"
         id="numero-${numero}"
         type="button"
       >
         ${numero}
       </button>
+
     `;
 
   }
@@ -2130,14 +2889,18 @@ function abrirRoleta(){
 
         <div>
 
-          <strong>Roleta Premium</strong>
+          <strong>
+            Roleta Premium
+          </strong>
 
           <div
             class="roulette-balance"
             id="rouletteBalance"
           >
             Saldo:
-            ${formatarSaldo(usuarioAtual?.balance||0)}
+            ${formatarSaldo(
+              usuarioAtual?.balance||0
+            )}
           </div>
 
         </div>
@@ -2214,23 +2977,63 @@ function abrirRoleta(){
       >
 
         <div class="summary-item">
-          <span class="summary-label">APOSTA</span>
-          <span id="summaryBet" class="summary-value">R$ 0,00</span>
+
+          <span class="summary-label">
+            APOSTA
+          </span>
+
+          <span
+            id="summaryBet"
+            class="summary-value"
+          >
+            R$ 0,00
+          </span>
+
         </div>
 
         <div class="summary-item">
-          <span class="summary-label">RESULTADO</span>
-          <span id="summaryResult" class="summary-value">-</span>
+
+          <span class="summary-label">
+            RESULTADO
+          </span>
+
+          <span
+            id="summaryResult"
+            class="summary-value"
+          >
+            -
+          </span>
+
         </div>
 
         <div class="summary-item">
-          <span class="summary-label">PRÊMIO</span>
-          <span id="summaryPrize" class="summary-value summary-prize">R$ 0,00</span>
+
+          <span class="summary-label">
+            PRÊMIO
+          </span>
+
+          <span
+            id="summaryPrize"
+            class="summary-value summary-prize"
+          >
+            R$ 0,00
+          </span>
+
         </div>
 
         <div class="summary-item">
-          <span class="summary-label">SALDO FINAL</span>
-          <span id="summaryBalance" class="summary-value">R$ 0,00</span>
+
+          <span class="summary-label">
+            SALDO FINAL
+          </span>
+
+          <span
+            id="summaryBalance"
+            class="summary-value"
+          >
+            R$ 0,00
+          </span>
+
         </div>
 
       </div>
@@ -2252,19 +3055,35 @@ function abrirRoleta(){
 
       <div class="quick-values">
 
-        <button class="quick-value" onclick="definirValor(${minBet})" type="button">
+        <button
+          class="quick-value"
+          onclick="definirValor(${minBet})"
+          type="button"
+        >
           R$ ${minBet}
         </button>
 
-        <button class="quick-value" onclick="definirValor(5)" type="button">
+        <button
+          class="quick-value"
+          onclick="definirValor(5)"
+          type="button"
+        >
           R$ 5
         </button>
 
-        <button class="quick-value" onclick="definirValor(10)" type="button">
+        <button
+          class="quick-value"
+          onclick="definirValor(10)"
+          type="button"
+        >
           R$ 10
         </button>
 
-        <button class="quick-value" onclick="definirValor(25)" type="button">
+        <button
+          class="quick-value"
+          onclick="definirValor(25)"
+          type="button"
+        >
           R$ 25
         </button>
 
@@ -2339,24 +3158,36 @@ function abrirRoleta(){
   );
 
   criarRoda();
+
   atualizarBotaoSom();
+
   atualizarSaldosDaRoleta(
-    Number(usuarioAtual?.balance||0)
+    Number(
+      usuarioAtual?.balance||0
+    )
   );
 
 }
 
 function definirValor(valor){
 
-  const input=document.getElementById("betAmount");
+  const input=
+    document.getElementById(
+      "betAmount"
+    );
 
   if(!input)return;
 
   const maxBet=
-    Number(configuracoes.roulette_max_bet||100);
+    Number(
+      configuracoes.roulette_max_bet||100
+    );
 
   input.value=
-    Math.min(Number(valor),maxBet);
+    Math.min(
+      Number(valor),
+      maxBet
+    );
 
 }
 
@@ -2375,15 +3206,29 @@ function selecionarCor(cor){
 
   document
     .querySelectorAll(".bet-type")
-    .forEach(b=>b.classList.remove("selected"));
+    .forEach(
+      b=>
+        b.classList.remove(
+          "selected"
+        )
+    );
 
   document
     .querySelectorAll(".number-button")
-    .forEach(b=>b.classList.remove("selected"));
+    .forEach(
+      b=>
+        b.classList.remove(
+          "selected"
+        )
+    );
 
   document
-    .getElementById(`bet-${cor}`)
-    ?.classList.add("selected");
+    .getElementById(
+      `bet-${cor}`
+    )
+    ?.classList.add(
+      "selected"
+    );
 
   mostrarMensagem(
     cor==="red"
@@ -2401,15 +3246,29 @@ function selecionarNumero(numero){
 
   document
     .querySelectorAll(".bet-type")
-    .forEach(b=>b.classList.remove("selected"));
+    .forEach(
+      b=>
+        b.classList.remove(
+          "selected"
+        )
+    );
 
   document
     .querySelectorAll(".number-button")
-    .forEach(b=>b.classList.remove("selected"));
+    .forEach(
+      b=>
+        b.classList.remove(
+          "selected"
+        )
+    );
 
   document
-    .getElementById(`numero-${numero}`)
-    ?.classList.add("selected");
+    .getElementById(
+      `numero-${numero}`
+    )
+    ?.classList.add(
+      "selected"
+    );
 
   mostrarMensagem(
     `Aposta selecionada: número ${numero}.`,
@@ -2418,24 +3277,35 @@ function selecionarNumero(numero){
 
 }
 
-function mostrarMensagem(texto,classe){
+function mostrarMensagem(
+  texto,
+  classe
+){
 
   const elemento=
-    document.getElementById("rouletteMessage");
+    document.getElementById(
+      "rouletteMessage"
+    );
 
   if(!elemento)return;
 
-  elemento.textContent=texto;
+  elemento.textContent=
+    texto;
 
   elemento.className=
-    "roulette-message "+(classe||"");
+    "roulette-message "+
+    (classe||"");
 
 }
 
-function atualizarSaldosDaRoleta(saldo){
+function atualizarSaldosDaRoleta(
+  saldo
+){
 
   const elemento=
-    document.getElementById("rouletteBalance");
+    document.getElementById(
+      "rouletteBalance"
+    );
 
   if(elemento){
 
@@ -2460,12 +3330,19 @@ function obterAudioContext(){
 
     if(!AudioCtx)return null;
 
-    audioContext=new AudioCtx();
+    audioContext=
+      new AudioCtx();
 
   }
 
-  if(audioContext.state==="suspended")
+  if(
+    audioContext.state===
+    "suspended"
+  ){
+
     audioContext.resume();
+
+  }
 
   return audioContext;
 
@@ -2484,15 +3361,22 @@ function tocarSom(
     ).toLowerCase()==="false"
   )return;
 
-  const ctx=obterAudioContext();
+  const ctx=
+    obterAudioContext();
 
   if(!ctx)return;
 
-  const oscillator=ctx.createOscillator();
-  const gain=ctx.createGain();
+  const oscillator=
+    ctx.createOscillator();
 
-  oscillator.type=tipo;
-  oscillator.frequency.value=frequencia;
+  const gain=
+    ctx.createGain();
+
+  oscillator.type=
+    tipo;
+
+  oscillator.frequency.value=
+    frequencia;
 
   gain.gain.setValueAtTime(
     volume,
@@ -2508,6 +3392,7 @@ function tocarSom(
   gain.connect(ctx.destination);
 
   oscillator.start();
+
   oscillator.stop(
     ctx.currentTime+duracao
   );
@@ -2516,30 +3401,65 @@ function tocarSom(
 
 function somInicio(){
 
-  tocarSom(440,.1,"triangle",.05);
+  tocarSom(
+    440,
+    .1,
+    "triangle",
+    .05
+  );
 
   setTimeout(
-    ()=>tocarSom(660,.12,"triangle",.05),
+    ()=>
+      tocarSom(
+        660,
+        .12,
+        "triangle",
+        .05
+      ),
     100
   );
 
 }
 
 function somTick(){
-  tocarSom(900,.035,"square",.025);
+
+  tocarSom(
+    900,
+    .035,
+    "square",
+    .025
+  );
+
 }
 
 function somVitoria(){
 
-  tocarSom(523,.12,"triangle",.06);
+  tocarSom(
+    523,
+    .12,
+    "triangle",
+    .06
+  );
 
   setTimeout(
-    ()=>tocarSom(659,.12,"triangle",.06),
+    ()=>
+      tocarSom(
+        659,
+        .12,
+        "triangle",
+        .06
+      ),
     100
   );
 
   setTimeout(
-    ()=>tocarSom(784,.2,"triangle",.07),
+    ()=>
+      tocarSom(
+        784,
+        .2,
+        "triangle",
+        .07
+      ),
     200
   );
 
@@ -2547,10 +3467,21 @@ function somVitoria(){
 
 function somDerrota(){
 
-  tocarSom(280,.18,"sawtooth",.035);
+  tocarSom(
+    280,
+    .18,
+    "sawtooth",
+    .035
+  );
 
   setTimeout(
-    ()=>tocarSom(190,.25,"sawtooth",.03),
+    ()=>
+      tocarSom(
+        190,
+        .25,
+        "sawtooth",
+        .03
+      ),
     120
   );
 
@@ -2564,14 +3495,19 @@ function alternarSom(){
     ).toLowerCase()!=="false";
 
   configuracoes.roulette_sound_enabled=
-    atual?"false":"true";
+    atual
+      ?"false"
+      :"true";
 
   atualizarBotaoSom();
 
   if(
-    configuracoes.roulette_sound_enabled==="true"
+    configuracoes.roulette_sound_enabled===
+    "true"
   ){
+
     somInicio();
+
   }
 
 }
@@ -2579,7 +3515,9 @@ function alternarSom(){
 function atualizarBotaoSom(){
 
   const button=
-    document.getElementById("soundButton");
+    document.getElementById(
+      "soundButton"
+    );
 
   if(!button)return;
 
@@ -2589,7 +3527,9 @@ function atualizarBotaoSom(){
     ).toLowerCase()!=="false";
 
   button.textContent=
-    ligado?"🔊 SOM":"🔇 MUDO";
+    ligado
+      ?"🔊 SOM"
+      :"🔇 MUDO";
 
 }
 
@@ -2600,34 +3540,47 @@ function atualizarBotaoSom(){
 function obterDuracaoAnimacao(){
 
   const valor=
-    Number(configuracoes.roulette_animation_ms);
+    Number(
+      configuracoes.roulette_animation_ms
+    );
 
   if(
     Number.isFinite(valor)&&
     valor>=1000&&
     valor<=15000
   ){
+
     return valor;
+
   }
 
   return 4800;
 
 }
 
-function animarRoleta(numeroResultado){
+function animarRoleta(
+  numeroResultado
+){
 
   const wheel=
-    document.getElementById("rouletteWheel");
+    document.getElementById(
+      "rouletteWheel"
+    );
 
   if(!wheel)return;
 
-  const setor=360/37;
+  const setor=
+    360/37;
 
   const anguloResultado=
-    numeroResultado*setor;
+    numeroResultado*
+    setor;
 
   const voltas=
-    6+Math.floor(Math.random()*3);
+    6+
+    Math.floor(
+      Math.random()*3
+    );
 
   const alvo=
     360-
@@ -2648,11 +3601,16 @@ function animarRoleta(numeroResultado){
   wheel.style.transform=
     `rotate(${wheelRotation}deg)`;
 
-  for(let i=0;i<18;i++){
+  for(
+    let i=0;
+    i<18;
+    i++
+  ){
 
     setTimeout(
       ()=>{
-        if(rodadaEmAndamento)somTick();
+        if(rodadaEmAndamento)
+          somTick();
       },
       duracao*(i+1)/18
     );
@@ -2667,12 +3625,18 @@ function destacarResultado(numero){
     .querySelectorAll(".wheel-number")
     .forEach(
       elemento=>
-        elemento.classList.remove("result-highlight")
+        elemento.classList.remove(
+          "result-highlight"
+        )
     );
 
   document
-    .getElementById(`wheel-number-${numero}`)
-    ?.classList.add("result-highlight");
+    .getElementById(
+      `wheel-number-${numero}`
+    )
+    ?.classList.add(
+      "result-highlight"
+    );
 
 }
 
@@ -2686,11 +3650,15 @@ function atualizarResumoRodada({
 }){
 
   const resumo=
-    document.getElementById("roundSummary");
+    document.getElementById(
+      "roundSummary"
+    );
 
   if(!resumo)return;
 
-  document.getElementById("summaryBet").textContent=
+  document.getElementById(
+    "summaryBet"
+  ).textContent=
     formatarSaldo(bet);
 
   const nomeCor=
@@ -2700,11 +3668,15 @@ function atualizarResumoRodada({
         ?"⚫ Preto"
         :"🟢 Verde";
 
-  document.getElementById("summaryResult").textContent=
+  document.getElementById(
+    "summaryResult"
+  ).textContent=
     `${numero} — ${nomeCor}`;
 
   const prize=
-    document.getElementById("summaryPrize");
+    document.getElementById(
+      "summaryPrize"
+    );
 
   prize.textContent=
     ganhou
@@ -2716,10 +3688,14 @@ function atualizarResumoRodada({
       ?"summary-value summary-prize"
       :"summary-value summary-loss";
 
-  document.getElementById("summaryBalance").textContent=
+  document.getElementById(
+    "summaryBalance"
+  ).textContent=
     formatarSaldo(saldoFinal);
 
-  resumo.classList.add("visible");
+  resumo.classList.add(
+    "visible"
+  );
 
 }
 
@@ -2734,20 +3710,28 @@ async function girarRoleta(){
   if(!usuarioAtual)return;
 
   const input=
-    document.getElementById("betAmount");
+    document.getElementById(
+      "betAmount"
+    );
 
   if(!input)return;
 
   const bet=
     Number(
-      String(input.value).replace(",",".")
+      String(
+        input.value
+      ).replace(",",".")
     );
 
   const minBet=
-    Number(configuracoes.roulette_min_bet||1);
+    Number(
+      configuracoes.roulette_min_bet||1
+    );
 
   const maxBet=
-    Number(configuracoes.roulette_max_bet||100);
+    Number(
+      configuracoes.roulette_max_bet||100
+    );
 
   if(
     !Number.isFinite(bet)||
@@ -2790,7 +3774,9 @@ async function girarRoleta(){
   }
 
   const saldoAntes=
-    Number(usuarioAtual.balance||0);
+    Number(
+      usuarioAtual.balance||0
+    );
 
   if(saldoAntes<bet){
 
@@ -2806,12 +3792,15 @@ async function girarRoleta(){
   rodadaEmAndamento=true;
 
   const centerButton=
-    document.getElementById("centerSpinButton");
+    document.getElementById(
+      "centerSpinButton"
+    );
 
   if(centerButton){
 
     centerButton.disabled=true;
-    centerButton.textContent="GIRANDO";
+    centerButton.textContent=
+      "GIRANDO";
 
   }
 
@@ -2828,13 +3817,17 @@ async function girarRoleta(){
         {
           method:"POST",
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           },
           body:JSON.stringify({
-            userId:usuarioAtual.id,
+            userId:
+              usuarioAtual.id,
             betAmount:bet,
-            betType:tipoAposta,
-            betValue:numeroAposta
+            betType:
+              tipoAposta,
+            betValue:
+              numeroAposta
           })
         }
       );
@@ -2842,7 +3835,10 @@ async function girarRoleta(){
     const data=
       await response.json();
 
-    if(!response.ok||!data.ok){
+    if(
+      !response.ok||
+      !data.ok
+    ){
 
       throw new Error(
         data.message||
@@ -2852,22 +3848,27 @@ async function girarRoleta(){
     }
 
     const numero=
-      Number(data.spin.number);
+      Number(
+        data.spin.number
+      );
 
     const cor=
       data.spin.color;
 
     const ganhou=
-      Boolean(data.spin.won);
+      Boolean(
+        data.spin.won
+      );
 
     const premio=
-      Number(data.spin.prize||0);
+      Number(
+        data.spin.prize||0
+      );
 
     const saldoServidor=
-      Number(data.user.balance||0);
-
-    const variacao=
-      saldoServidor-saldoAntes;
+      Number(
+        data.user.balance||0
+      );
 
     mostrarMensagem(
       "A roleta está girando...",
@@ -2887,14 +3888,19 @@ async function girarRoleta(){
     );
 
     const resultNumber=
-      document.getElementById("resultNumber");
+      document.getElementById(
+        "resultNumber"
+      );
 
     const resultLabel=
-      document.getElementById("resultLabel");
+      document.getElementById(
+        "resultLabel"
+      );
 
     if(resultNumber){
 
-      resultNumber.textContent=numero;
+      resultNumber.textContent=
+        numero;
 
       resultNumber.className=
         `result-number result-${cor}`;
@@ -2929,7 +3935,8 @@ async function girarRoleta(){
       numero,
       cor,
       premio,
-      saldoFinal:saldoServidor,
+      saldoFinal:
+        saldoServidor,
       ganhou
     });
 
@@ -2956,7 +3963,8 @@ async function girarRoleta(){
     if(centerButton){
 
       centerButton.disabled=false;
-      centerButton.textContent="GIRAR";
+      centerButton.textContent=
+        "GIRAR";
 
     }
 
@@ -2975,7 +3983,8 @@ async function girarRoleta(){
     if(centerButton){
 
       centerButton.disabled=false;
-      centerButton.textContent="GIRAR";
+      centerButton.textContent=
+        "GIRAR";
 
     }
 
@@ -2991,10 +4000,16 @@ async function girarRoleta(){
 
 function sair(){
 
-  localStorage.removeItem("jpbet_user");
-  localStorage.removeItem("jpbet_token");
+  localStorage.removeItem(
+    "jpbet_user"
+  );
 
-  window.location.href="index.html";
+  localStorage.removeItem(
+    "jpbet_token"
+  );
+
+  window.location.href=
+    "index.html";
 
 }
 
@@ -3003,7 +4018,9 @@ function sair(){
 ========================= */
 
 document
-  .getElementById("actionModal")
+  .getElementById(
+    "actionModal"
+  )
   .addEventListener(
     "click",
     function(event){
@@ -3012,7 +4029,9 @@ document
         event.target===this&&
         !rodadaEmAndamento
       ){
+
         fecharModal();
+
       }
 
     }
@@ -3022,17 +4041,22 @@ document.addEventListener(
   "keydown",
   function(event){
 
-    if(event.key!=="Escape")return;
+    if(event.key!=="Escape")
+      return;
 
     const modal=
-      document.getElementById("actionModal");
+      document.getElementById(
+        "actionModal"
+      );
 
     if(
       modal&&
       modal.style.display==="flex"&&
       !rodadaEmAndamento
     ){
+
       fecharModal();
+
     }
 
   }
