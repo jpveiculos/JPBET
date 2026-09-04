@@ -728,6 +728,11 @@
       outline:none;
     }
 
+    .bet-input:focus{
+      border-color:rgba(255,212,59,.55);
+      box-shadow:0 0 0 2px rgba(255,212,59,.08);
+    }
+
     .quick-values{
       display:flex;
       gap:6px;
@@ -743,6 +748,34 @@
       color:#dce1e8;
       font-size:10px;
       font-weight:900;
+    }
+
+    /* ================= WITHDRAW PIX ================= */
+
+    .pix-help{
+      margin-top:8px;
+      color:#8f98a8;
+      font-size:10px;
+      line-height:1.45;
+    }
+
+    .pix-input{
+      width:100%;
+      border:1px solid #303642;
+      background:#090b10;
+      color:white;
+      border-radius:11px;
+      padding:12px;
+      outline:none;
+    }
+
+    .pix-input:focus{
+      border-color:rgba(255,212,59,.55);
+      box-shadow:0 0 0 2px rgba(255,212,59,.08);
+    }
+
+    .pix-input::placeholder{
+      color:#687181;
     }
 
     /* ================= RESULT ================= */
@@ -1035,13 +1068,21 @@
       </div>
 
       <div class="balance-actions">
-        <button class="action-btn action-deposit" onclick="abrirDeposito()">
+
+        <button
+          class="action-btn action-deposit"
+          onclick="abrirDeposito()"
+        >
           💳 DEPOSITAR
         </button>
 
-        <button class="action-btn action-withdraw" onclick="abrirSaque()">
+        <button
+          class="action-btn action-withdraw"
+          onclick="abrirSaque()"
+        >
           💸 SACAR
         </button>
+
       </div>
 
     </section>
@@ -1058,6 +1099,7 @@
       <article class="game-card gold">
 
         <div>
+
           <div class="game-icon">🎡</div>
 
           <h3>Roda da Sorte</h3>
@@ -1073,6 +1115,7 @@
             <span class="game-tag">x2</span>
             <span class="game-tag">x3</span>
           </div>
+
         </div>
 
         <button
@@ -1089,6 +1132,7 @@
       <article class="game-card turbo">
 
         <div>
+
           <div class="game-icon">⚡</div>
 
           <h3>Roleta Turbo</h3>
@@ -1104,13 +1148,14 @@
             <span class="game-tag">x5</span>
             <span class="game-tag">x10</span>
           </div>
+
         </div>
 
         <button
           class="play-btn"
           onclick="abrirRoleta('turbo')"
         >
-          GIRAR ROLET​A TURBO
+          GIRAR ROLETA TURBO
         </button>
 
       </article>
@@ -1120,6 +1165,7 @@
       <article class="game-card diamond">
 
         <div>
+
           <div class="game-icon">💎</div>
 
           <h3>Roleta Diamante</h3>
@@ -1135,6 +1181,7 @@
             <span class="game-tag">Platina</span>
             <span class="game-tag">Diamante</span>
           </div>
+
         </div>
 
         <button
@@ -1196,6 +1243,7 @@
     <div class="modal-header">
 
       <div>
+
         <div class="modal-title" id="rouletteTitle">
           Roda da Sorte
         </div>
@@ -1203,6 +1251,7 @@
         <div class="modal-subtitle" id="rouletteSubtitle">
           Prêmios e multiplicadores
         </div>
+
       </div>
 
       <button
@@ -1381,6 +1430,7 @@
     <div class="modal-header">
 
       <div>
+
         <div class="modal-title">
           💳 Depositar
         </div>
@@ -1388,6 +1438,7 @@
         <div class="modal-subtitle">
           Adicionar créditos
         </div>
+
       </div>
 
       <button
@@ -1456,6 +1507,7 @@
     <div class="modal-header">
 
       <div>
+
         <div class="modal-title">
           💸 Solicitar saque
         </div>
@@ -1463,6 +1515,7 @@
         <div class="modal-subtitle">
           Retirada de créditos
         </div>
+
       </div>
 
       <button
@@ -1483,9 +1536,18 @@
         </div>
 
         <div class="rules-body">
+
           A solicitação será enviada para análise administrativa.
           O valor solicitado ficará reservado enquanto o pedido
           estiver em análise.
+
+          <br><br>
+
+          <strong>Importante:</strong>
+          informe a chave Pix que deverá receber este saque.
+          A chave Pix é solicitada novamente a cada novo saque
+          e não fica cadastrada permanentemente na sua conta.
+
         </div>
 
       </div>
@@ -1503,11 +1565,35 @@
           min="1"
           step="1"
           placeholder="Digite o valor"
+          inputmode="numeric"
         >
+
+        <label
+          class="bet-label"
+          for="withdrawPixKey"
+          style="margin-top:14px;"
+        >
+          Chave Pix
+        </label>
+
+        <input
+          id="withdrawPixKey"
+          class="pix-input"
+          type="text"
+          placeholder="Digite a chave Pix para receber"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+        >
+
+        <div class="pix-help">
+          🔐 A chave será utilizada somente nesta solicitação de saque.
+          Ela não será cadastrada como chave permanente da sua conta.
+        </div>
 
         <button
           class="play-btn"
-          style="margin-top:10px;background:linear-gradient(145deg,#242934,#151820);color:white;border:1px solid #343946;"
+          style="margin-top:14px;background:linear-gradient(145deg,#242934,#151820);color:white;border:1px solid #343946;"
           onclick="solicitarSaque()"
         >
           SOLICITAR SAQUE
@@ -1630,20 +1716,30 @@
   }
 
   function mostrarToast(mensagem){
-    const toast = document.getElementById("toast");
 
-    toast.textContent = mensagem;
+    const toast =
+      document.getElementById("toast");
+
+    toast.textContent =
+      mensagem;
+
     toast.classList.add("show");
 
-    clearTimeout(window.__toastTimer);
+    clearTimeout(
+      window.__toastTimer
+    );
 
-    window.__toastTimer = setTimeout(()=>{
-      toast.classList.remove("show");
-    },3000);
+    window.__toastTimer =
+      setTimeout(()=>{
+        toast.classList.remove("show");
+      },3000);
   }
 
   function obterSaldo(){
-    if(!usuarioAtual) return 0;
+
+    if(!usuarioAtual){
+      return 0;
+    }
 
     return Number(
       usuarioAtual.balance ??
@@ -1653,19 +1749,32 @@
   }
 
   function formatarCreditos(valor){
+
     return `${Number(valor || 0).toLocaleString("pt-BR")} créditos`;
   }
 
   function atualizarSaldo(balance){
-    if(!usuarioAtual) return;
 
-    usuarioAtual.balance = Number(balance || 0);
+    if(!usuarioAtual){
+      return;
+    }
 
-    document.getElementById("mainBalance").textContent =
-      formatarCreditos(usuarioAtual.balance);
+    usuarioAtual.balance =
+      Number(balance || 0);
 
-    document.getElementById("headerBalance").textContent =
-      formatarCreditos(usuarioAtual.balance);
+    document.getElementById(
+      "mainBalance"
+    ).textContent =
+      formatarCreditos(
+        usuarioAtual.balance
+      );
+
+    document.getElementById(
+      "headerBalance"
+    ).textContent =
+      formatarCreditos(
+        usuarioAtual.balance
+      );
   }
 
   /* ================= SETTINGS ================= */
@@ -1674,31 +1783,40 @@
 
     try{
 
-      const resposta = await fetch(
-        `${API_URL}/settings/public`,
-        {
-          cache:"no-store"
-        }
-      );
+      const resposta =
+        await fetch(
+          `${API_URL}/settings/public`,
+          {
+            cache:"no-store"
+          }
+        );
 
       if(!resposta.ok){
         return;
       }
 
-      const dados = await resposta.json();
+      const dados =
+        await resposta.json();
 
-      if(dados && typeof dados === "object"){
+      if(
+        dados &&
+        typeof dados === "object"
+      ){
 
         if(dados.settings){
+
           configuracoes = {
             ...configuracoes,
             ...dados.settings
           };
+
         }else{
+
           configuracoes = {
             ...configuracoes,
             ...dados
           };
+
         }
 
       }
@@ -1741,23 +1859,29 @@
       "#ffd43b"
     );
 
-    const aviso = obterAvisoCreditosVirtuais();
+    const aviso =
+      obterAvisoCreditosVirtuais();
 
     document.getElementById(
       "virtualNotice"
-    ).textContent = aviso;
+    ).textContent =
+      aviso;
 
     document.getElementById(
       "modalVirtualNotice"
-    ).textContent = aviso;
+    ).textContent =
+      aviso;
   }
 
   function obterAvisoCreditosVirtuais(){
 
     if(
       configuracoes.virtual_credits_notice &&
-      String(configuracoes.virtual_credits_notice).trim()
+      String(
+        configuracoes.virtual_credits_notice
+      ).trim()
     ){
+
       return configuracoes.virtual_credits_notice;
     }
 
@@ -1779,17 +1903,23 @@
     try{
 
       const usuarioSalvo =
-        localStorage.getItem("jpbet_user");
+        localStorage.getItem(
+          "jpbet_user"
+        );
 
       const tokenSalvo =
-        localStorage.getItem("jpbet_token");
+        localStorage.getItem(
+          "jpbet_token"
+        );
 
       if(!usuarioSalvo){
         return false;
       }
 
       usuarioAtual =
-        JSON.parse(usuarioSalvo);
+        JSON.parse(
+          usuarioSalvo
+        );
 
       tokenAtual =
         tokenSalvo || "";
@@ -1822,7 +1952,8 @@
 
     document.getElementById(
       "userName"
-    ).textContent = nome;
+    ).textContent =
+      nome;
 
     atualizarSaldo(
       obterSaldo()
@@ -1840,6 +1971,7 @@
     };
 
     if(tokenAtual){
+
       headers.Authorization =
         `Bearer ${tokenAtual}`;
     }
@@ -1850,6 +1982,7 @@
   /* ================= MENU ================= */
 
   function abrirMenu(){
+
     document
       .getElementById("drawer")
       .classList.add("open");
@@ -1869,12 +2002,14 @@
   /* ================= MODALS ================= */
 
   function abrirModal(id){
+
     document
       .getElementById(id)
       .classList.add("open");
   }
 
   function fecharModal(id){
+
     document
       .getElementById(id)
       .classList.remove("open");
@@ -1883,8 +2018,9 @@
   function abrirDeposito(){
 
     if(
-      String(configuracoes.pix_enabled)
-        .toLowerCase() !== "true"
+      String(
+        configuracoes.pix_enabled
+      ).toLowerCase() !== "true"
     ){
 
       mostrarToast(
@@ -1898,16 +2034,36 @@
       "depositAmount"
     ).value = "";
 
-    abrirModal("depositModal");
+    abrirModal(
+      "depositModal"
+    );
   }
 
   function abrirSaque(){
+
+    /*
+      Cada nova solicitação começa
+      obrigatoriamente com a chave Pix vazia.
+      Nenhuma chave é recuperada do localStorage.
+    */
 
     document.getElementById(
       "withdrawAmount"
     ).value = "";
 
-    abrirModal("withdrawModal");
+    document.getElementById(
+      "withdrawPixKey"
+    ).value = "";
+
+    abrirModal(
+      "withdrawModal"
+    );
+
+    setTimeout(()=>{
+      document.getElementById(
+        "withdrawAmount"
+      ).focus();
+    },100);
   }
 
   /* ================= ROULETTE DATA ================= */
@@ -2173,8 +2329,9 @@
   function abrirRoleta(tipo){
 
     if(
-      String(configuracoes.roulette_enabled)
-        .toLowerCase() !== "true"
+      String(
+        configuracoes.roulette_enabled
+      ).toLowerCase() !== "true"
     ){
 
       mostrarToast(
@@ -2188,9 +2345,11 @@
       return;
     }
 
-    roletaAtual = tipo;
+    roletaAtual =
+      tipo;
 
-    rodadaEmAndamento = false;
+    rodadaEmAndamento =
+      false;
 
     const dados =
       ROLETAS[tipo];
@@ -2217,15 +2376,19 @@
 
     document.getElementById(
       "rouletteResult"
-    ).classList.remove("show");
+    ).classList.remove(
+      "show"
+    );
 
     document.getElementById(
       "resultMain"
-    ).textContent = "—";
+    ).textContent =
+      "—";
 
     document.getElementById(
       "resultPrize"
-    ).textContent = "";
+    ).textContent =
+      "";
 
     const min =
       obterMinBet();
@@ -2238,23 +2401,31 @@
         "betAmount"
       );
 
-    input.min = min;
-    input.max = max;
+    input.min =
+      min;
+
+    input.max =
+      max;
 
     if(
       Number(input.value) < min
     ){
-      input.value = min;
+
+      input.value =
+        min;
     }
 
     criarRoda();
 
-    abrirModal("rouletteModal");
+    abrirModal(
+      "rouletteModal"
+    );
   }
 
   function fecharRoleta(){
 
     if(rodadaEmAndamento){
+
       mostrarToast(
         "Aguarde o término da rodada."
       );
@@ -2262,7 +2433,9 @@
       return;
     }
 
-    fecharModal("rouletteModal");
+    fecharModal(
+      "rouletteModal"
+    );
   }
 
   /* ================= WHEEL ================= */
@@ -2282,8 +2455,11 @@
         "wheelNumbers"
       );
 
-    sectores.innerHTML = "";
-    numbers.innerHTML = "";
+    sectores.innerHTML =
+      "";
+
+    numbers.innerHTML =
+      "";
 
     const total =
       dados.segmentos.length;
@@ -2294,7 +2470,9 @@
         (360 / total) * i;
 
       const linha =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       linha.className =
         "wheel-sector";
@@ -2302,10 +2480,14 @@
       linha.style.transform =
         `rotate(${angulo}deg)`;
 
-      sectores.appendChild(linha);
+      sectores.appendChild(
+        linha
+      );
 
       const texto =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       texto.className =
         "wheel-number";
@@ -2314,22 +2496,29 @@
         dados.segmentos[i];
 
       const rad =
-        (angulo + (180 / total))
-        * Math.PI / 180;
+        (
+          angulo +
+          (180 / total)
+        ) *
+        Math.PI / 180;
 
       const raio =
         40;
 
       const x =
-        Math.cos(rad) * raio;
+        Math.cos(rad) *
+        raio;
 
       const y =
-        Math.sin(rad) * raio;
+        Math.sin(rad) *
+        raio;
 
       texto.style.transform =
         `translate(${x}px,${y}px) rotate(${angulo + (180 / total)}deg)`;
 
-      numbers.appendChild(texto);
+      numbers.appendChild(
+        texto
+      );
     }
   }
 
@@ -2400,24 +2589,28 @@
       obterMaxBet();
 
     if(!Number.isFinite(valor)){
+
       throw new Error(
         "Informe o valor da rodada."
       );
     }
 
     if(valor < min){
+
       throw new Error(
         `A rodada mínima é ${formatarCreditos(min)}.`
       );
     }
 
     if(valor > max){
+
       throw new Error(
         `A rodada máxima é ${formatarCreditos(max)}.`
       );
     }
 
     if(valor > obterSaldo()){
+
       throw new Error(
         "Saldo insuficiente."
       );
@@ -2439,6 +2632,7 @@
       !Number.isFinite(valor) ||
       valor < 1000
     ){
+
       return 4800;
     }
 
@@ -2467,12 +2661,14 @@
 
       const alvo =
         (360 - (
-          indiceResultado * setor +
+          indiceResultado *
+          setor +
           setor / 2
         ));
 
       const voltas =
-        6 + Math.floor(
+        6 +
+        Math.floor(
           Math.random() * 3
         );
 
@@ -2503,6 +2699,7 @@
         configuracoes.roulette_sound_enabled
       ).toLowerCase() !== "true"
     ){
+
       return;
     }
 
@@ -2525,7 +2722,8 @@
       const gain =
         ctx.createGain();
 
-      osc.type = "sine";
+      osc.type =
+        "sine";
 
       osc.frequency.value =
         720;
@@ -2534,7 +2732,9 @@
         0.035;
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(
+        ctx.destination
+      );
 
       osc.start();
 
@@ -2553,7 +2753,6 @@
         "Som indisponível.",
         e
       );
-
     }
   }
 
@@ -2570,7 +2769,8 @@
       const bet =
         validarAposta();
 
-      rodadaEmAndamento = true;
+      rodadaEmAndamento =
+        true;
 
       const button =
         document.getElementById(
@@ -2582,15 +2782,20 @@
           "rouletteClose"
         );
 
-      button.disabled = true;
-      close.disabled = true;
+      button.disabled =
+        true;
+
+      close.disabled =
+        true;
 
       button.textContent =
         "GIRANDO...";
 
       document.getElementById(
         "rouletteResult"
-      ).classList.remove("show");
+      ).classList.remove(
+        "show"
+      );
 
       tocarSom();
 
@@ -2635,20 +2840,10 @@
         );
       }
 
-      /*
-        O backend atual retorna:
-        data.spin.number
-        data.spin.color
-        data.spin.won
-        data.spin.prize
-        data.user.balance
-
-        Para manter compatibilidade,
-        também aceitamos index/result/resultIndex.
-      */
-
       const spin =
-        data.spin || data.result || {};
+        data.spin ||
+        data.result ||
+        {};
 
       let resultado =
         spin.number ??
@@ -2715,12 +2910,6 @@
 
       }else{
 
-        /*
-          Não recalculamos o saldo
-          quando o backend não retornar
-          o novo saldo.
-        */
-
         await carregarSaldoServidor();
       }
 
@@ -2734,7 +2923,10 @@
           "resultPrize"
         );
 
-      if(ganhou && premio > 0){
+      if(
+        ganhou &&
+        premio > 0
+      ){
 
         prizeElement.className =
           "result-prize";
@@ -2753,7 +2945,9 @@
 
       document.getElementById(
         "rouletteResult"
-      ).classList.add("show");
+      ).classList.add(
+        "show"
+      );
 
       tocarSom();
 
@@ -2772,19 +2966,23 @@
 
     }finally{
 
-      rodadaEmAndamento = false;
+      rodadaEmAndamento =
+        false;
 
       document.getElementById(
         "spinButton"
-      ).disabled = false;
+      ).disabled =
+        false;
 
       document.getElementById(
         "spinButton"
-      ).textContent = "GIRAR";
+      ).textContent =
+        "GIRAR";
 
       document.getElementById(
         "rouletteClose"
-      ).disabled = false;
+      ).disabled =
+        false;
     }
   }
 
@@ -2794,15 +2992,10 @@
 
     try{
 
-      /*
-        Tentamos endpoints comuns sem
-        quebrar a sessão caso o backend
-        atual utilize outra estrutura.
-      */
-
       const endpoints = [];
 
       if(usuarioAtual?.id){
+
         endpoints.push(
           `${API_URL}/users/${encodeURIComponent(usuarioAtual.id)}`
         );
@@ -2816,7 +3009,9 @@
         );
       }
 
-      for(const endpoint of endpoints){
+      for(
+        const endpoint of endpoints
+      ){
 
         try{
 
@@ -2960,6 +3155,16 @@
         ).value
       );
 
+    const pixInput =
+      document.getElementById(
+        "withdrawPixKey"
+      );
+
+    const pixKey =
+      String(
+        pixInput.value || ""
+      ).trim();
+
     if(
       !Number.isFinite(valor) ||
       valor <= 0
@@ -2968,6 +3173,30 @@
       mostrarToast(
         "Informe um valor válido."
       );
+
+      return;
+    }
+
+    if(!pixKey){
+
+      mostrarToast(
+        "Informe a chave Pix para receber o saque."
+      );
+
+      pixInput.focus();
+
+      return;
+    }
+
+    if(
+      pixKey.length < 3
+    ){
+
+      mostrarToast(
+        "Informe uma chave Pix válida."
+      );
+
+      pixInput.focus();
 
       return;
     }
@@ -2983,7 +3212,21 @@
       return;
     }
 
+    const botao =
+      document.querySelector(
+        '#withdrawModal .play-btn'
+      );
+
     try{
+
+      if(botao){
+
+        botao.disabled =
+          true;
+
+        botao.textContent =
+          "ENVIANDO...";
+      }
 
       const resposta =
         await fetch(
@@ -2998,7 +3241,10 @@
                 usuarioAtual.id,
 
               amount:
-                valor
+                valor,
+
+              pixKey:
+                pixKey
 
             })
           }
@@ -3017,12 +3263,26 @@
         );
       }
 
+      /*
+        Limpamos imediatamente a chave Pix.
+        Ela não é salva no localStorage
+        nem no objeto do jogador.
+      */
+
+      pixInput.value =
+        "";
+
+      document.getElementById(
+        "withdrawAmount"
+      ).value =
+        "";
+
       fecharModal(
         "withdrawModal"
       );
 
       mostrarToast(
-        "Saque solicitado com sucesso."
+        "Saque solicitado com sucesso. O valor foi reservado e está aguardando análise."
       );
 
       if(
@@ -3033,6 +3293,7 @@
         atualizarSaldo(
           data.user.balance
         );
+
       }else{
 
         await carregarSaldoServidor();
@@ -3043,8 +3304,20 @@
     }catch(erro){
 
       mostrarToast(
-        erro.message
+        erro.message ||
+        "Erro ao solicitar saque."
       );
+
+    }finally{
+
+      if(botao){
+
+        botao.disabled =
+          false;
+
+        botao.textContent =
+          "SOLICITAR SAQUE";
+      }
     }
   }
 
@@ -3078,7 +3351,9 @@
 
       let dados = null;
 
-      for(const endpoint of endpoints){
+      for(
+        const endpoint of endpoints
+      ){
 
         try{
 
@@ -3124,8 +3399,10 @@
         dados.data ||
         [];
 
-      if(!Array.isArray(lista) ||
-         lista.length === 0){
+      if(
+        !Array.isArray(lista) ||
+        lista.length === 0
+      ){
 
         container.innerHTML = `
           <div class="info-box">
@@ -3137,7 +3414,8 @@
       }
 
       container.innerHTML =
-        lista.slice(0,12)
+        lista
+          .slice(0,12)
           .map(item=>{
 
             const valor =
@@ -3176,12 +3454,14 @@
                   </strong>
 
                   <small>
-                    ${escaparHTML(
-                      data
-                        ? new Date(data)
-                          .toLocaleString("pt-BR")
-                        : ""
-                    )}
+                    ${
+                      escaparHTML(
+                        data
+                          ? new Date(data)
+                            .toLocaleString("pt-BR")
+                          : ""
+                      )
+                    }
                   </small>
 
                 </div>
@@ -3233,10 +3513,14 @@
       "jpbet_token"
     );
 
-    usuarioAtual = null;
-    tokenAtual = null;
+    usuarioAtual =
+      null;
 
-    window.location.href = "/";
+    tokenAtual =
+      null;
+
+    window.location.href =
+      "/";
   }
 
   /* ================= CLOSE OUTSIDE ================= */
@@ -3260,9 +3544,10 @@
           document
             .querySelectorAll(".modal.open")
             .forEach(modal=>{
-              modal.classList.remove("open");
+              modal.classList.remove(
+                "open"
+              );
             });
-
         }
       }
 
