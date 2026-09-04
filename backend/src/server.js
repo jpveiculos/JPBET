@@ -43,13 +43,19 @@ app.post("/api/roulette/spin", async (req, res) => {
     ========================= */
     const userIdNumber = Number(userId);
     const bet = Number(betAmount);
-    if (!Number.isInteger(userIdNumber) || userIdNumber <= 0) {
+    if (
+      !Number.isInteger(userIdNumber) ||
+      userIdNumber <= 0
+    ) {
       return res.status(400).json({
         ok: false,
         message: "Usuário inválido."
       });
     }
-    if (!Number.isFinite(bet) || bet <= 0) {
+    if (
+      !Number.isFinite(bet) ||
+      bet <= 0
+    ) {
       return res.status(400).json({
         ok: false,
         message: "Valor da aposta inválido."
@@ -59,9 +65,9 @@ app.post("/api/roulette/spin", async (req, res) => {
        BUSCAR CONFIGURAÇÕES
     ========================= */
     const settingsResult = await pool.query(`
-      SELECT key, value
+      SELECT setting_key, setting_value
       FROM site_settings
-      WHERE key IN (
+      WHERE setting_key IN (
         'roulette_enabled',
         'roulette_min_bet',
         'roulette_max_bet',
@@ -70,16 +76,24 @@ app.post("/api/roulette/spin", async (req, res) => {
     `);
     const settings = {};
     for (const row of settingsResult.rows) {
-      settings[row.key] = row.value;
+      settings[row.setting_key] = row.setting_value;
     }
     const rouletteEnabled =
-      String(settings.roulette_enabled).toLowerCase() !== "false";
+      String(
+        settings.roulette_enabled
+      ).toLowerCase() !== "false";
     const virtualCreditsMode =
-      String(settings.virtual_credits_mode).toLowerCase() !== "false";
+      String(
+        settings.virtual_credits_mode
+      ).toLowerCase() !== "false";
     const minBet =
-      Number(settings.roulette_min_bet || 1);
+      Number(
+        settings.roulette_min_bet || 1
+      );
     const maxBet =
-      Number(settings.roulette_max_bet || 100);
+      Number(
+        settings.roulette_max_bet || 100
+      );
     if (!rouletteEnabled) {
       return res.status(403).json({
         ok: false,
@@ -89,13 +103,18 @@ app.post("/api/roulette/spin", async (req, res) => {
     if (!virtualCreditsMode) {
       return res.status(403).json({
         ok: false,
-        message: "A roleta está configurada apenas para créditos virtuais."
+        message:
+          "A roleta está configurada apenas para créditos virtuais."
       });
     }
-    if (bet < minBet || bet > maxBet) {
+    if (
+      bet < minBet ||
+      bet > maxBet
+    ) {
       return res.status(400).json({
         ok: false,
-        message: `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
+        message:
+          `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
       });
     }
     /* =========================
@@ -106,10 +125,13 @@ app.post("/api/roulette/spin", async (req, res) => {
       "black",
       "number"
     ];
-    if (!tiposPermitidos.includes(betType)) {
+    if (
+      !tiposPermitidos.includes(betType)
+    ) {
       return res.status(400).json({
         ok: false,
-        message: "Tipo de aposta inválido."
+        message:
+          "Tipo de aposta inválido."
       });
     }
     let numeroApostado = null;
@@ -122,7 +144,8 @@ app.post("/api/roulette/spin", async (req, res) => {
       ) {
         return res.status(400).json({
           ok: false,
-          message: "Número da roleta inválido."
+          message:
+            "Número da roleta inválido."
         });
       }
     }
@@ -139,20 +162,26 @@ app.post("/api/roulette/spin", async (req, res) => {
       `,
       [userIdNumber]
     );
-    if (userResult.rows.length === 0) {
+    if (
+      userResult.rows.length === 0
+    ) {
       await client.query("ROLLBACK");
       return res.status(404).json({
         ok: false,
-        message: "Usuário não encontrado."
+        message:
+          "Usuário não encontrado."
       });
     }
-    const user = userResult.rows[0];
-    const saldoAtual = Number(user.balance);
+    const user =
+      userResult.rows[0];
+    const saldoAtual =
+      Number(user.balance);
     if (saldoAtual < bet) {
       await client.query("ROLLBACK");
       return res.status(400).json({
         ok: false,
-        message: "Saldo insuficiente.",
+        message:
+          "Saldo insuficiente.",
         balance: saldoAtual
       });
     }
@@ -169,9 +198,10 @@ app.post("/api/roulette/spin", async (req, res) => {
         19, 21, 23, 25,
         27, 30, 32, 34, 36
       ];
-      cor = numerosVermelhos.includes(numero)
-        ? "red"
-        : "black";
+      cor =
+        numerosVermelhos.includes(numero)
+          ? "red"
+          : "black";
     }
     /* =========================
        CALCULAR PRÊMIO
@@ -185,8 +215,14 @@ app.post("/api/roulette/spin", async (req, res) => {
         premio = bet * 36;
       }
     }
-    if (betType === "red" || betType === "black") {
-      if (numero !== 0 && cor === betType) {
+    if (
+      betType === "red" ||
+      betType === "black"
+    ) {
+      if (
+        numero !== 0 &&
+        cor === betType
+      ) {
         ganhou = true;
         // Pagamento 1:1 + devolução da aposta
         premio = bet * 2;
@@ -203,26 +239,30 @@ app.post("/api/roulette/spin", async (req, res) => {
       SET balance = $1
       WHERE id = $2
       `,
-      [novoSaldo, userIdNumber]
+      [
+        novoSaldo,
+        userIdNumber
+      ]
     );
     /* =========================
        REGISTRAR RODADA
     ========================= */
     const resultadoTexto =
       `${numero}:${cor}:${betType}`;
-    const spinResult = await client.query(
-      `
-      INSERT INTO spins
-      (user_id, result, amount)
-      VALUES ($1, $2, $3)
-      RETURNING id, created_at
-      `,
-      [
-        userIdNumber,
-        resultadoTexto,
-        premio
-      ]
-    );
+    const spinResult =
+      await client.query(
+        `
+        INSERT INTO spins
+        (user_id, result, amount)
+        VALUES ($1, $2, $3)
+        RETURNING id, created_at
+        `,
+        [
+          userIdNumber,
+          resultadoTexto,
+          premio
+        ]
+      );
     /* =========================
        REGISTRAR TRANSAÇÃO
     ========================= */
@@ -234,8 +274,12 @@ app.post("/api/roulette/spin", async (req, res) => {
       `,
       [
         userIdNumber,
-        ganhou ? "roulette_win" : "roulette_bet",
-        ganhou ? premio : -bet
+        ganhou
+          ? "roulette_win"
+          : "roulette_bet",
+        ganhou
+          ? premio
+          : -bet
       ]
     );
     await client.query("COMMIT");
@@ -245,7 +289,8 @@ app.post("/api/roulette/spin", async (req, res) => {
     return res.json({
       ok: true,
       spin: {
-        id: spinResult.rows[0].id,
+        id:
+          spinResult.rows[0].id,
         number: numero,
         color: cor,
         betType,
@@ -255,8 +300,10 @@ app.post("/api/roulette/spin", async (req, res) => {
       },
       user: {
         id: user.id,
-        username: user.username,
-        balance: Number(novoSaldo)
+        username:
+          user.username,
+        balance:
+          Number(novoSaldo)
       }
     });
   } catch (error) {
@@ -271,7 +318,8 @@ app.post("/api/roulette/spin", async (req, res) => {
     );
     return res.status(500).json({
       ok: false,
-      message: "Erro interno ao executar a roleta."
+      message:
+        "Erro interno ao executar a roleta."
     });
   } finally {
     client.release();
@@ -280,9 +328,10 @@ app.post("/api/roulette/spin", async (req, res) => {
 /* =========================
    SERVIDOR
 ========================= */
-const PORT = Number(
-  process.env.PORT || 3000
-);
+const PORT =
+  Number(
+    process.env.PORT || 3000
+  );
 app.listen(PORT, () => {
   console.log(
     `JPBET rodando na porta ${PORT}`
