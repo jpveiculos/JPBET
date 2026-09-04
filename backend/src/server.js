@@ -16,45 +16,235 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const frontendPath = path.join(__dirname, "../frontend");
+/* =========================================================
+   INICIALIZAÇÃO / MIGRAÇÃO AUTOMÁTICA DO BANCO
+========================================================= */
 
-app.use(express.static(frontendPath));
+async function inicializarBanco() {
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
+  try {
+
+    /*
+      Garante que usuários existentes
+      tenham a coluna de saldo reservado.
+    */
+
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS
+      reserved_balance NUMERIC(12,2)
+      DEFAULT 0;
+    `);
+
+    /*
+      Corrige registros antigos que
+      eventualmente estejam NULL.
+    */
+
+    await pool.query(`
+      UPDATE users
+      SET reserved_balance = 0
+      WHERE reserved_balance IS NULL;
+    `);
+
+    /*
+      Garante que as tabelas financeiras
+      necessárias existam caso o schema
+      ainda não tenha sido aplicado no banco.
+    */
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS deposits (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        amount NUMERIC(12,2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        payment_method VARCHAR(30) DEFAULT 'pix',
+        player_note TEXT,
+        admin_note TEXT,
+        approved_by INTEGER REFERENCES admins(id),
+        approved_at TIMESTAMP,
+        rejected_by INTEGER REFERENCES admins(id),
+        rejected_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS withdrawals (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        amount NUMERIC(12,2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        withdrawal_method VARCHAR(30) DEFAULT 'pix',
+        pix_key TEXT,
+        player_note TEXT,
+        admin_note TEXT,
+        rejection_reason TEXT,
+        approved_by INTEGER REFERENCES admins(id),
+        approved_at TIMESTAMP,
+        paid_by INTEGER REFERENCES admins(id),
+        paid_at TIMESTAMP,
+        rejected_by INTEGER REFERENCES admins(id),
+        rejected_at TIMESTAMP,
+        refunded_by INTEGER REFERENCES admins(id),
+        refunded_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admin_audit_logs (
+        id SERIAL PRIMARY KEY,
+        admin_id INTEGER REFERENCES admins(id),
+        action VARCHAR(100) NOT NULL,
+        target_type VARCHAR(50),
+        target_id INTEGER,
+        description TEXT,
+        metadata TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS
+      idx_deposits_user_id
+      ON deposits(user_id);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS
+      idx_deposits_status
+      ON deposits(status);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS
+      idx_withdrawals_user_id
+      ON withdrawals(user_id);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS
+      idx_withdrawals_status
+      ON withdrawals(status);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS
+      idx_admin_audit_logs_admin_id
+      ON admin_audit_logs(admin_id);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS
+      idx_admin_audit_logs_created_at
+      ON admin_audit_logs(created_at);
+    `);
+
+    console.log(
+      "Banco JPBET inicializado com sucesso."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao inicializar banco:",
+      error
+    );
+
+    throw error;
+  }
+}
+
+/* =========================================================
+   FRONTEND
+========================================================= */
+
+const __filename =
+  fileURLToPath(import.meta.url);
+
+const __dirname =
+  path.dirname(__filename);
+
+const frontendPath =
+  path.join(
+    __dirname,
+    "../frontend"
+  );
+
+app.use(
+  express.static(frontendPath)
+);
+
+app.get(
+  "/",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        frontendPath,
+        "index.html"
+      )
+    );
+  }
+);
 
 /* =========================================================
    AUXILIARES
 ========================================================= */
 
 function obterCookie(req, nome) {
-  const cookies = String(req.headers.cookie || "")
-    .split(";")
-    .map(item => item.trim());
 
-  const cookie = cookies.find(item =>
-    item.startsWith(`${nome}=`)
-  );
+  const cookies =
+    String(
+      req.headers.cookie || ""
+    )
+      .split(";")
+      .map(
+        item =>
+          item.trim()
+      );
 
-  if (!cookie) return null;
+  const cookie =
+    cookies.find(
+      item =>
+        item.startsWith(
+          `${nome}=`
+        )
+    );
+
+  if (!cookie) {
+    return null;
+  }
 
   return decodeURIComponent(
-    cookie.substring(nome.length + 1)
+    cookie.substring(
+      nome.length + 1
+    )
   );
 }
 
-function exigirAdmin(req, res, next) {
-  const token = obterCookie(
-    req,
-    "jpbet_admin_session"
-  );
+function exigirAdmin(
+  req,
+  res,
+  next
+) {
 
-  const sessao = validarSessaoAdmin(token);
+  const token =
+    obterCookie(
+      req,
+      "jpbet_admin_session"
+    );
+
+  const sessao =
+    validarSessaoAdmin(
+      token
+    );
 
   if (!sessao) {
+
     return res.status(401).json({
       ok: false,
       message:
@@ -62,21 +252,27 @@ function exigirAdmin(req, res, next) {
     });
   }
 
-  req.admin = sessao;
+  req.admin =
+    sessao;
 
   next();
 }
 
-async function obterAdminId(client, username) {
-  const result = await client.query(
-    `
-    SELECT id
-    FROM admins
-    WHERE username = $1
-    LIMIT 1
-    `,
-    [username]
-  );
+async function obterAdminId(
+  client,
+  username
+) {
+
+  const result =
+    await client.query(
+      `
+      SELECT id
+      FROM admins
+      WHERE username = $1
+      LIMIT 1
+      `,
+      [username]
+    );
 
   return result.rows.length
     ? result.rows[0].id
@@ -92,6 +288,7 @@ async function registrarAuditoria(
   description,
   metadata = null
 ) {
+
   const adminId =
     await obterAdminId(
       client,
@@ -109,7 +306,15 @@ async function registrarAuditoria(
       description,
       metadata
     )
-    VALUES ($1, $2, $3, $4, $5, $6)
+    VALUES
+    (
+      $1,
+      $2,
+      $3,
+      $4,
+      $5,
+      $6
+    )
     `,
     [
       adminId,
@@ -118,7 +323,9 @@ async function registrarAuditoria(
       targetId,
       description,
       metadata
-        ? JSON.stringify(metadata)
+        ? JSON.stringify(
+            metadata
+          )
         : null
     ]
   );
@@ -169,14 +376,13 @@ app.post(
       const bet =
         Number(betAmount);
 
-      /* =====================================================
-         VALIDAÇÃO
-      ===================================================== */
-
       if (
-        !Number.isInteger(userIdNumber) ||
+        !Number.isInteger(
+          userIdNumber
+        ) ||
         userIdNumber <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -188,16 +394,13 @@ app.post(
         !Number.isFinite(bet) ||
         bet <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
             "Valor da aposta inválido."
         });
       }
-
-      /* =====================================================
-         CONFIGURAÇÕES
-      ===================================================== */
 
       const settingsResult =
         await pool.query(
@@ -221,32 +424,39 @@ app.post(
         const row
         of settingsResult.rows
       ) {
+
         settings[
           row.setting_key
-        ] = row.setting_value;
+        ] =
+          row.setting_value;
       }
 
       const rouletteEnabled =
         String(
           settings.roulette_enabled
-        ).toLowerCase() !== "false";
+        ).toLowerCase() !==
+        "false";
 
       const virtualCreditsMode =
         String(
           settings.virtual_credits_mode
-        ).toLowerCase() !== "false";
+        ).toLowerCase() !==
+        "false";
 
       const minBet =
         Number(
-          settings.roulette_min_bet || 1
+          settings.roulette_min_bet ||
+          1
         );
 
       const maxBet =
         Number(
-          settings.roulette_max_bet || 100
+          settings.roulette_max_bet ||
+          100
         );
 
       if (!rouletteEnabled) {
+
         return res.status(403).json({
           ok: false,
           message:
@@ -255,6 +465,7 @@ app.post(
       }
 
       if (!virtualCreditsMode) {
+
         return res.status(403).json({
           ok: false,
           message:
@@ -266,16 +477,13 @@ app.post(
         bet < minBet ||
         bet > maxBet
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
             `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
         });
       }
-
-      /* =====================================================
-         TIPO DE APOSTA
-      ===================================================== */
 
       const tiposPermitidos = [
         "red",
@@ -288,6 +496,7 @@ app.post(
           betType
         )
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -295,14 +504,17 @@ app.post(
         });
       }
 
-      let numeroApostado = null;
+      let numeroApostado =
+        null;
 
       if (
         betType === "number"
       ) {
 
         numeroApostado =
-          Number(betValue);
+          Number(
+            betValue
+          );
 
         if (
           !Number.isInteger(
@@ -311,6 +523,7 @@ app.post(
           numeroApostado < 0 ||
           numeroApostado > 36
         ) {
+
           return res.status(400).json({
             ok: false,
             message:
@@ -319,11 +532,9 @@ app.post(
         }
       }
 
-      /* =====================================================
-         TRANSAÇÃO
-      ===================================================== */
-
-      await client.query("BEGIN");
+      await client.query(
+        "BEGIN"
+      );
 
       const userResult =
         await client.query(
@@ -368,11 +579,6 @@ app.post(
           user.reserved_balance || 0
         );
 
-      /*
-        Apenas saldo disponível
-        pode ser utilizado.
-      */
-
       if (
         saldoAtual < bet
       ) {
@@ -392,18 +598,17 @@ app.post(
         });
       }
 
-      /* =====================================================
-         SORTEIO
-      ===================================================== */
-
       const numero =
         Math.floor(
           Math.random() * 37
         );
 
-      let cor = "green";
+      let cor =
+        "green";
 
-      if (numero !== 0) {
+      if (
+        numero !== 0
+      ) {
 
         const numerosVermelhos = [
           1, 3, 5, 7, 9,
@@ -420,12 +625,11 @@ app.post(
             : "black";
       }
 
-      /* =====================================================
-         PRÊMIO
-      ===================================================== */
+      let ganhou =
+        false;
 
-      let ganhou = false;
-      let premio = 0;
+      let premio =
+        0;
 
       if (
         betType === "number"
@@ -436,9 +640,9 @@ app.post(
           numeroApostado
         ) {
 
-          ganhou = true;
+          ganhou =
+            true;
 
-          // 35:1 + devolução da aposta
           premio =
             bet * 36;
         }
@@ -454,17 +658,13 @@ app.post(
           cor === betType
         ) {
 
-          ganhou = true;
+          ganhou =
+            true;
 
-          // 1:1 + devolução da aposta
           premio =
             bet * 2;
         }
       }
-
-      /* =====================================================
-         ATUALIZAR SALDO
-      ===================================================== */
 
       const novoSaldo =
         saldoAtual -
@@ -483,10 +683,6 @@ app.post(
         ]
       );
 
-      /* =====================================================
-         REGISTRAR GIRO
-      ===================================================== */
-
       const resultadoTexto =
         `${numero}:${cor}:${betType}`;
 
@@ -499,7 +695,12 @@ app.post(
             result,
             amount
           )
-          VALUES ($1, $2, $3)
+          VALUES
+          (
+            $1,
+            $2,
+            $3
+          )
           RETURNING
             id,
             created_at
@@ -511,10 +712,6 @@ app.post(
           ]
         );
 
-      /* =====================================================
-         REGISTRAR TRANSAÇÃO
-      ===================================================== */
-
       await client.query(
         `
         INSERT INTO transactions
@@ -523,7 +720,12 @@ app.post(
           type,
           amount
         )
-        VALUES ($1, $2, $3)
+        VALUES
+        (
+          $1,
+          $2,
+          $3
+        )
         `,
         [
           userIdNumber,
@@ -541,20 +743,27 @@ app.post(
       );
 
       return res.json({
+
         ok: true,
 
         spin: {
           id:
             spinResult.rows[0].id,
+
           number:
             numero,
+
           color:
             cor,
+
           betType,
+
           betAmount:
             bet,
+
           won:
             ganhou,
+
           prize:
             premio
         },
@@ -562,12 +771,15 @@ app.post(
         user: {
           id:
             user.id,
+
           username:
             user.username,
+
           balance:
             Number(
               novoSaldo
             ),
+
           reservedBalance:
             saldoReservado
         }
@@ -593,14 +805,11 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
 );
-
-/* =========================================================
-   API FINANCEIRA DO JOGADOR
-========================================================= */
 
 /* =========================================================
    CONSULTAR SALDO
@@ -618,9 +827,12 @@ app.get(
         );
 
       if (
-        !Number.isInteger(userId) ||
+        !Number.isInteger(
+          userId
+        ) ||
         userId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -650,6 +862,7 @@ app.get(
       if (
         result.rows.length === 0
       ) {
+
         return res.status(404).json({
           ok: false,
           message:
@@ -665,20 +878,25 @@ app.get(
         user: {
           id:
             user.id,
+
           username:
             user.username,
+
           balance:
             Number(
               user.balance || 0
             ),
+
           reservedBalance:
             Number(
               user.reserved_balance || 0
             ),
+
           totalBalance:
             Number(
               user.total_balance || 0
             ),
+
           createdAt:
             user.created_at
         }
@@ -731,6 +949,7 @@ app.post(
         ) ||
         userIdNumber <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -742,6 +961,7 @@ app.post(
         !Number.isFinite(valor) ||
         valor <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -762,6 +982,7 @@ app.post(
       if (
         userResult.rows.length === 0
       ) {
+
         return res.status(404).json({
           ok: false,
           message:
@@ -824,6 +1045,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -861,6 +1083,7 @@ app.post(
         ) ||
         userIdNumber <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -872,6 +1095,7 @@ app.post(
         !Number.isFinite(valor) ||
         valor <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -881,9 +1105,11 @@ app.post(
 
       if (
         !pixKey ||
-        String(pixKey).trim()
+        String(pixKey)
+          .trim()
           .length === 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1012,7 +1238,9 @@ app.post(
           [
             userIdNumber,
             valor,
-            String(pixKey).trim(),
+            String(
+              pixKey
+            ).trim(),
             playerNote || null
           ]
         );
@@ -1083,13 +1311,14 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
 );
 
 /* =========================================================
-   HISTÓRICO FINANCEIRO DO JOGADOR
+   HISTÓRICO FINANCEIRO
 ========================================================= */
 
 app.get(
@@ -1104,9 +1333,12 @@ app.get(
         );
 
       if (
-        !Number.isInteger(userId) ||
+        !Number.isInteger(
+          userId
+        ) ||
         userId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1154,7 +1386,7 @@ app.get(
 );
 
 /* =========================================================
-   ADMIN - ADICIONAR CRÉDITOS AO USUÁRIO
+   ADMIN - ADICIONAR CRÉDITOS
 ========================================================= */
 
 app.post(
@@ -1168,10 +1400,14 @@ app.post(
     try {
 
       const userId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       const valor =
-        Number(req.body.amount);
+        Number(
+          req.body.amount
+        );
 
       const reason =
         String(
@@ -1179,9 +1415,12 @@ app.post(
         ).trim();
 
       if (
-        !Number.isInteger(userId) ||
+        !Number.isInteger(
+          userId
+        ) ||
         userId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1190,9 +1429,12 @@ app.post(
       }
 
       if (
-        !Number.isFinite(valor) ||
+        !Number.isFinite(
+          valor
+        ) ||
         valor <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1201,6 +1443,7 @@ app.post(
       }
 
       if (!reason) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1256,7 +1499,8 @@ app.post(
         );
 
       const saldoDepois =
-        saldoAntes + valor;
+        saldoAntes +
+        valor;
 
       await client.query(
         `
@@ -1356,13 +1600,14 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
 );
 
 /* =========================================================
-   ADMIN - REMOVER CRÉDITOS DO USUÁRIO
+   ADMIN - REMOVER CRÉDITOS
 ========================================================= */
 
 app.post(
@@ -1376,10 +1621,14 @@ app.post(
     try {
 
       const userId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       const valor =
-        Number(req.body.amount);
+        Number(
+          req.body.amount
+        );
 
       const reason =
         String(
@@ -1387,9 +1636,12 @@ app.post(
         ).trim();
 
       if (
-        !Number.isInteger(userId) ||
+        !Number.isInteger(
+          userId
+        ) ||
         userId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1398,9 +1650,12 @@ app.post(
       }
 
       if (
-        !Number.isFinite(valor) ||
+        !Number.isFinite(
+          valor
+        ) ||
         valor <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1409,6 +1664,7 @@ app.post(
       }
 
       if (!reason) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1463,14 +1719,6 @@ app.post(
           user.reserved_balance || 0
         );
 
-      /*
-        Somente saldo disponível
-        pode ser removido.
-
-        Créditos reservados para saque
-        ficam protegidos.
-      */
-
       if (
         saldoAntes < valor
       ) {
@@ -1491,7 +1739,8 @@ app.post(
       }
 
       const saldoDepois =
-        saldoAntes - valor;
+        saldoAntes -
+        valor;
 
       await client.query(
         `
@@ -1591,6 +1840,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -1677,7 +1927,9 @@ app.post(
     try {
 
       const withdrawalId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       if (
         !Number.isInteger(
@@ -1685,6 +1937,7 @@ app.post(
         ) ||
         withdrawalId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1814,6 +2067,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -1821,7 +2075,6 @@ app.post(
 
 /* =========================================================
    ADMIN - REJEITAR SAQUE
-   DEVOLVER VALOR AO SALDO
 ========================================================= */
 
 app.post(
@@ -1835,7 +2088,9 @@ app.post(
     try {
 
       const withdrawalId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       const reason =
         String(
@@ -1848,6 +2103,7 @@ app.post(
         ) ||
         withdrawalId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -1971,10 +2227,12 @@ app.post(
       }
 
       const novoSaldo =
-        saldoAtual + valor;
+        saldoAtual +
+        valor;
 
       const novaReserva =
-        reservadoAtual - valor;
+        reservadoAtual -
+        valor;
 
       const adminId =
         await obterAdminId(
@@ -2104,6 +2362,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -2124,7 +2383,9 @@ app.post(
     try {
 
       const withdrawalId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       if (
         !Number.isInteger(
@@ -2132,6 +2393,7 @@ app.post(
         ) ||
         withdrawalId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -2254,16 +2516,9 @@ app.post(
         });
       }
 
-      /*
-        O valor já foi retirado do saldo disponível
-        quando o saque foi solicitado.
-
-        Neste momento ocorre somente a baixa
-        definitiva da reserva.
-      */
-
       const novaReserva =
-        reservadoAtual - valor;
+        reservadoAtual -
+        valor;
 
       const adminId =
         await obterAdminId(
@@ -2381,6 +2636,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -2461,7 +2717,9 @@ app.post(
     try {
 
       const depositId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       if (
         !Number.isInteger(
@@ -2469,6 +2727,7 @@ app.post(
         ) ||
         depositId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -2572,7 +2831,8 @@ app.post(
         );
 
       const novoSaldo =
-        saldoAtual + valor;
+        saldoAtual +
+        valor;
 
       const adminId =
         await obterAdminId(
@@ -2680,6 +2940,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -2700,7 +2961,9 @@ app.post(
     try {
 
       const depositId =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
       const reason =
         String(
@@ -2713,6 +2976,7 @@ app.post(
         ) ||
         depositId <= 0
       ) {
+
         return res.status(400).json({
           ok: false,
           message:
@@ -2848,6 +3112,7 @@ app.post(
       });
 
     } finally {
+
       client.release();
     }
   }
@@ -2971,11 +3236,27 @@ const PORT =
     process.env.PORT || 3000
   );
 
-app.listen(
-  PORT,
-  () => {
-    console.log(
-      `JPBET rodando na porta ${PORT}`
+inicializarBanco()
+  .then(() => {
+
+    app.listen(
+      PORT,
+      () => {
+
+        console.log(
+          `JPBET rodando na porta ${PORT}`
+        );
+
+      }
     );
-  }
-);
+
+  })
+  .catch(error => {
+
+    console.error(
+      "JPBET não pôde iniciar:",
+      error
+    );
+
+    process.exit(1);
+  });
