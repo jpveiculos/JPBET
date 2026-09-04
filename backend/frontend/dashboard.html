@@ -4,46 +4,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JPBET - Dashboard</title>
+
   <style>
     * {
       box-sizing: border-box;
     }
+
     html,
     body {
       margin: 0;
       padding: 0;
       min-height: 100%;
     }
+
     body {
       font-family: Arial, sans-serif;
       background:
-        radial-gradient(circle at top, #20252f 0%, #0b0d12 48%, #050609 100%);
-      color: #fff;
+        radial-gradient(circle at 15% 0%, #fff2a8 0%, transparent 28%),
+        radial-gradient(circle at 100% 10%, #d9c7ff 0%, transparent 30%),
+        linear-gradient(135deg, #f5f7ff 0%, #ffffff 48%, #fff8dc 100%);
+      color: #171717;
     }
+
     button,
     input {
       font-family: inherit;
     }
+
     button {
       cursor: pointer;
     }
+
     button:active {
       transform: scale(.98);
     }
+
     button:disabled {
       opacity: .55;
       cursor: not-allowed;
       transform: none;
     }
+
     .container {
       width: 100%;
       max-width: 760px;
       margin: auto;
       padding: 14px;
     }
+
     /* =========================
        CABEÇALHO
     ========================= */
+
     header {
       display: flex;
       justify-content: space-between;
@@ -51,131 +63,168 @@
       gap: 12px;
       margin-bottom: 14px;
     }
+
     .logo {
-      font-size: 25px;
+      font-size: 27px;
       font-weight: 900;
-      letter-spacing: -.5px;
+      letter-spacing: -1px;
+      color: #171717;
     }
+
     .logo span {
-      opacity: .5;
+      color: #6c3cff;
     }
+
     .user {
       font-size: 13px;
-      opacity: .7;
+      color: #555;
       text-align: right;
-      max-width: 160px;
+      max-width: 180px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     /* =========================
        SALDO
     ========================= */
+
     .balance {
-      background: linear-gradient(145deg, #1b2029, #11141a);
-      border: 1px solid #2b313d;
-      border-radius: 16px;
-      padding: 15px;
+      background:
+        linear-gradient(135deg, #ffffff 0%, #fffbea 100%);
+      border: 2px solid #f0cf45;
+      border-radius: 18px;
+      padding: 16px;
       margin-bottom: 12px;
       text-align: center;
-      box-shadow: 0 12px 35px #0008;
+      box-shadow:
+        0 10px 30px rgba(70, 55, 0, .10),
+        inset 0 1px 0 #fff;
     }
+
     .balance-title {
       font-size: 12px;
-      opacity: .6;
-      margin-bottom: 4px;
+      color: #666;
+      margin-bottom: 5px;
     }
+
     .balance-value {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 900;
+      color: #171717;
     }
+
     /* =========================
        BOTÕES
     ========================= */
+
     .buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 9px;
       margin-bottom: 12px;
     }
+
     button {
       width: 100%;
       padding: 12px;
       border: 0;
-      border-radius: 10px;
+      border-radius: 11px;
       font-size: 14px;
       font-weight: 800;
     }
+
     .primary {
-      background: #fff;
-      color: #111;
+      background:
+        linear-gradient(135deg, #ffd900, #ffb700);
+      color: #171717;
+      box-shadow: 0 5px 14px rgba(255, 193, 0, .25);
     }
+
     .secondary {
-      background: #181c24;
-      color: #fff;
-      border: 1px solid #2b313d;
+      background: #ffffff;
+      color: #171717;
+      border: 1px solid #dfe2eb;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
     }
+
     .logout {
-      background: #761d25;
+      background:
+        linear-gradient(135deg, #ff4757, #c91832);
       color: #fff;
       margin-top: 4px;
     }
+
     /* =========================
        CONTA
     ========================= */
+
     .card {
-      background: #151820;
-      border: 1px solid #272c36;
-      border-radius: 14px;
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid #e2e5ee;
+      border-radius: 15px;
       padding: 15px;
       margin-bottom: 12px;
+      box-shadow: 0 7px 20px rgba(0, 0, 0, .06);
     }
+
     .card h2 {
       margin: 0 0 7px;
       font-size: 17px;
     }
+
     .card p {
       margin: 0;
       font-size: 13px;
-      opacity: .65;
+      color: #666;
     }
+
     .message {
       min-height: 18px;
       margin-top: 8px;
       font-size: 12px;
-      opacity: .75;
+      color: #555;
     }
+
     /* =========================
        MODAL
     ========================= */
+
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
       inset: 0;
-      background: rgba(0,0,0,.86);
+      background: rgba(13, 10, 25, .78);
+      backdrop-filter: blur(5px);
       padding: 8px;
       align-items: center;
       justify-content: center;
     }
+
     .modal-box {
       width: 100%;
-      max-width: 470px;
+      max-width: 500px;
       max-height: calc(100vh - 16px);
       overflow-y: auto;
       background:
-        linear-gradient(180deg, #191d25, #0d0f14);
-      border: 1px solid #303641;
-      border-radius: 20px;
+        linear-gradient(180deg, #ffffff 0%, #fffdf4 100%);
+      border: 2px solid #e2bd31;
+      border-radius: 22px;
       padding: 14px;
       position: relative;
-      box-shadow: 0 25px 80px #000;
+      box-shadow:
+        0 25px 80px rgba(0, 0, 0, .35),
+        0 0 35px rgba(255, 208, 0, .16);
     }
+
     .modal-box h2 {
       margin: 0 0 10px;
       padding-right: 48px;
-      font-size: 19px;
+      font-size: 20px;
+      color: #171717;
     }
+
     .close-button {
       position: absolute;
       right: 10px;
@@ -184,361 +233,2508 @@
       height: 36px;
       padding: 0;
       border-radius: 50%;
-      background: #090b0f;
-      border: 1px solid #343a46;
+      background: #171717;
+      border: 2px solid #e2bd31;
       color: #fff;
       font-size: 22px;
     }
+
+    .modal-message {
+      min-height: 20px;
+    }
+
     /* =========================
-       TOPO DA ROLETA
+       TOPO ROLETA
     ========================= */
+
     .roulette-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
       margin-bottom: 8px;
-      font-size: 13px;
+      color: #171717;
     }
+
+    .roulette-top strong {
+      font-size: 16px;
+    }
+
     .roulette-balance {
-      opacity: .65;
       font-size: 12px;
+      font-weight: 700;
+      color: #666;
     }
+
     .sound-button {
       width: auto;
       padding: 7px 10px;
-      background: #10131a;
-      border: 1px solid #343a46;
+      background: #171717;
+      border: 1px solid #555;
       color: #fff;
       font-size: 12px;
       border-radius: 8px;
     }
+
     /* =========================
-       RODA DA ROLETA
+       ÁREA PREMIUM DA ROLETA
     ========================= */
+
     .roulette-area {
       position: relative;
-      height: 270px;
+      height: 315px;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
+      border-radius: 20px;
+      background:
+        radial-gradient(
+          circle at center,
+          #5130a8 0%,
+          #24124f 45%,
+          #11091f 100%
+        );
+      border: 2px solid #d8ad25;
+      box-shadow:
+        inset 0 0 35px rgba(255, 215, 0, .12),
+        0 10px 25px rgba(42, 19, 90, .20);
     }
+
+    .roulette-area::before {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 215, 0, .35);
+      pointer-events: none;
+    }
+
+    .roulette-lights {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .roulette-lights::before,
+    .roulette-lights::after {
+      content: "";
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffd43b;
+      box-shadow:
+        0 0 8px #ffd43b,
+        0 0 18px #ffd43b;
+    }
+
+    .roulette-lights::before {
+      left: 18px;
+      top: 18px;
+    }
+
+    .roulette-lights::after {
+      right: 18px;
+      bottom: 18px;
+    }
+
+    /* =========================
+       PONTEIRO
+    ========================= */
+
     .pointer {
       position: absolute;
-      top: 1px;
+      top: 4px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 20;
+      z-index: 50;
       width: 0;
       height: 0;
-      border-left: 13px solid transparent;
-      border-right: 13px solid transparent;
-      border-top: 30px solid #fff;
-      filter: drop-shadow(0 3px 5px #000);
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 34px solid #ffd43b;
+      filter:
+        drop-shadow(0 2px 2px #000)
+        drop-shadow(0 0 7px rgba(255, 212, 59, .7));
     }
+
+    .pointer::after {
+      content: "";
+      position: absolute;
+      left: -7px;
+      top: -32px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow:
+        0 0 7px #fff,
+        0 0 13px #ffd43b;
+    }
+
+    /* =========================
+       RODA
+    ========================= */
+
     .wheel {
       position: relative;
-      width: 245px;
-      height: 245px;
+      width: 285px;
+      height: 285px;
       border-radius: 50%;
-      padding: 9px;
+      padding: 10px;
       background:
         radial-gradient(
           circle,
-          #15171c 0%,
-          #15171c 58%,
-          #d5d5d5 59%,
-          #707070 63%,
-          #151515 67%,
-          #a9a9a9 70%,
-          #161616 74%,
-          #080808 100%
+          #fff7bf 0%,
+          #d7a920 49%,
+          #fff1a0 51%,
+          #9b6c00 59%,
+          #f3d34e 67%,
+          #7d5700 75%,
+          #d7a920 84%,
+          #5b3c00 100%
         );
       box-shadow:
-        0 15px 35px #000b,
-        inset 0 0 0 2px #555;
+        0 15px 35px rgba(0, 0, 0, .55),
+        0 0 30px rgba(255, 208, 0, .24),
+        inset 0 0 0 3px #fff0a0;
       transition:
-        transform 4.8s cubic-bezier(.12,.72,.12,1);
+        transform 4.8s cubic-bezier(.12, .72, .12, 1);
+      transform: rotate(0deg);
     }
+
     .wheel-inner {
+      position: relative;
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      position: relative;
       overflow: hidden;
+      border: 5px solid #f3d34e;
       background:
-        conic-gradient(
-          from -5deg,
-          #15823b 0deg 9.73deg,
-          #111 9.73deg 19.46deg,
-          #b51e2a 19.46deg 29.19deg,
-          #111 29.19deg 38.92deg,
-          #b51e2a 38.92deg 48.65deg,
-          #111 48.65deg 58.38deg,
-          #b51e2a 58.38deg 68.11deg,
-          #111 68.11deg 77.84deg,
-          #b51e2a 77.84deg 87.57deg,
-          #111 87.57deg 97.30deg,
-          #b51e2a 97.30deg 107.03deg,
-          #111 107.03deg 116.76deg,
-          #b51e2a 116.76deg 126.49deg,
-          #111 126.49deg 136.22deg,
-          #b51e2a 136.22deg 145.95deg,
-          #111 145.95deg 155.68deg,
-          #b51e2a 155.68deg 165.41deg,
-          #111 165.41deg 175.14deg,
-          #b51e2a 175.14deg 184.87deg,
-          #111 184.87deg 194.60deg,
-          #b51e2a 194.60deg 204.33deg,
-          #111 204.33deg 214.06deg,
-          #b51e2a 214.06deg 223.79deg,
-          #111 223.79deg 233.52deg,
-          #b51e2a 233.52deg 243.25deg,
-          #111 243.25deg 252.98deg,
-          #b51e2a 252.98deg 262.71deg,
-          #111 262.71deg 272.44deg,
-          #b51e2a 272.44deg 282.17deg,
-          #111 282.17deg 291.90deg,
-          #b51e2a 291.90deg 301.63deg,
-          #111 301.63deg 311.36deg,
-          #b51e2a 311.36deg 321.09deg,
-          #111 321.09deg 330.82deg,
-          #b51e2a 330.82deg 340.55deg,
-          #111 340.55deg 350.28deg,
-          #b51e2a 350.28deg 360deg
+        repeating-conic-gradient(
+          from -4.86deg,
+          #c81e2d 0deg 4.864deg,
+          #171717 4.864deg 9.728deg
         );
-      border: 3px solid #c7c7c7;
-      box-shadow: inset 0 0 0 3px #191919;
-    }
-    .wheel-inner::after {
-      content: "";
-      position: absolute;
-      inset: 20%;
-      border-radius: 50%;
-      border: 2px solid #aaa;
       box-shadow:
-        inset 0 0 0 9px #171717,
-        inset 0 0 0 11px #999;
-      pointer-events: none;
+        inset 0 0 0 4px #111,
+        inset 0 0 25px rgba(0, 0, 0, .7);
     }
-    .wheel-center {
+
+    .wheel-sectors {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+
+    .wheel-sector {
       position: absolute;
       left: 50%;
       top: 50%;
-      transform: translate(-50%,-50%);
-      width: 66px;
-      height: 66px;
-      border-radius: 50%;
-      z-index: 5;
+      width: 50%;
+      height: 2px;
+      transform-origin: 0 50%;
+      background: rgba(255, 255, 255, .45);
+      z-index: 2;
+    }
+
+    .wheel-number {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 31px;
+      height: 31px;
+      margin-left: -15.5px;
+      margin-top: -15.5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background:
-        radial-gradient(circle at 35% 30%, #f4f4f4, #8e8e8e 45%, #292929 72%, #050505 100%);
-      border: 4px solid #d3d3d3;
-      box-shadow:
-        0 4px 12px #000,
-        inset 0 0 0 4px #333;
-      color: #111;
-      font-size: 23px;
-      font-weight: 900;
-    }
-    .wheel-spokes {
-      position: absolute;
-      inset: 7%;
       border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.35);
-      pointer-events: none;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      z-index: 4;
+      text-shadow: 0 1px 2px #000;
     }
+
+    .wheel-number.red {
+      background: #c91f32;
+      border: 1px solid #ff7b87;
+    }
+
+    .wheel-number.black {
+      background: #111;
+      border: 1px solid #777;
+    }
+
+    .wheel-number.green {
+      background: #08a83e;
+      border: 1px solid #79ffad;
+    }
+
+    .wheel-number.result-highlight {
+      box-shadow:
+        0 0 0 3px #fff,
+        0 0 12px 4px #ffd43b;
+    }
+
+    .wheel-center-ring {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 104px;
+      height: 104px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 10;
+      border: 5px solid #f5d14d;
+      background:
+        radial-gradient(
+          circle at 35% 25%,
+          #fff,
+          #d9d9d9 38%,
+          #777 65%,
+          #222 100%
+        );
+      box-shadow:
+        0 5px 15px rgba(0, 0, 0, .65),
+        inset 0 0 0 5px #292929,
+        0 0 15px rgba(255, 212, 59, .45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel-center-button {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      padding: 0;
+      border: 3px solid #ffd43b;
+      background:
+        linear-gradient(145deg, #ffdf45, #d89500);
+      color: #171717;
+      font-size: 12px;
+      font-weight: 1000;
+      box-shadow:
+        inset 0 3px 5px rgba(255, 255, 255, .5),
+        0 3px 8px rgba(0, 0, 0, .4);
+    }
+
+    .wheel-center-button:disabled {
+      opacity: .8;
+    }
+
     /* =========================
        RESULTADO
     ========================= */
+
     .result-panel {
       text-align: center;
-      min-height: 32px;
-      margin-bottom: 8px;
+      min-height: 42px;
+      margin-bottom: 6px;
     }
+
     .result-number {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 900;
     }
+
     .result-red {
-      color: #ff5b66;
+      color: #d71932;
     }
+
     .result-black {
-      color: #fff;
+      color: #111;
     }
+
     .result-green {
-      color: #49e778;
+      color: #07963a;
     }
+
     .result-label {
       font-size: 11px;
-      opacity: .62;
+      color: #666;
       margin-top: 2px;
     }
+
     /* =========================
        APOSTA
     ========================= */
+
     .bet-title {
       font-size: 11px;
-      font-weight: 800;
-      opacity: .6;
+      font-weight: 900;
+      color: #666;
       margin: 7px 0 5px;
     }
+
     .bet-amount {
       width: 100%;
-      height: 40px;
+      height: 42px;
       padding: 0 12px;
-      background: #080a0f;
-      border: 1px solid #303642;
-      border-radius: 9px;
-      color: #fff;
+      background: #fff;
+      border: 2px solid #dfe2eb;
+      border-radius: 10px;
+      color: #171717;
       font-size: 17px;
-      font-weight: 800;
+      font-weight: 900;
       text-align: center;
       outline: none;
     }
+
     .bet-amount:focus {
-      border-color: #fff;
+      border-color: #e1b900;
     }
+
     .quick-values {
       display: grid;
-      grid-template-columns: repeat(4,1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 5px;
       margin-top: 5px;
     }
+
     .quick-value {
       padding: 7px 4px;
       font-size: 11px;
-      background: #0c0f15;
-      color: #e1e4ea;
-      border: 1px solid #303642;
+      background: #fff;
+      color: #171717;
+      border: 1px solid #dfe2eb;
     }
+
+    .quick-value:hover {
+      background: #fff5c4;
+    }
+
     /* =========================
        CORES
     ========================= */
+
     .bet-types {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 7px;
     }
+
     .bet-type {
       padding: 10px 6px;
-      background: #0a0c11;
-      color: #fff;
-      border: 2px solid #303642;
+      background: #fff;
+      color: #171717;
+      border: 2px solid #dfe2eb;
     }
+
     .bet-type.selected {
-      border-color: #fff;
-      background: #252a33;
+      border-color: #171717;
     }
+
     .red-button.selected {
-      border-color: #f25560;
-      background: #48151a;
+      border-color: #e51f35;
+      background: #ffe3e7;
+      color: #b30f22;
     }
+
     .black-button.selected {
-      border-color: #aaa;
-      background: #262626;
+      border-color: #171717;
+      background: #e8e8e8;
     }
+
     /* =========================
        NÚMERO
     ========================= */
+
     .number-section {
       margin-top: 7px;
     }
+
     .number-toggle {
       padding: 8px;
-      background: #0b0e14;
-      color: #d5d9e1;
-      border: 1px solid #303642;
+      background: #fff;
+      color: #444;
+      border: 1px solid #dfe2eb;
       font-size: 11px;
     }
+
     .number-grid {
       display: none;
-      grid-template-columns: repeat(6,1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 4px;
       margin-top: 5px;
     }
+
     .number-grid.visible {
       display: grid;
     }
+
     .number-button {
       padding: 7px 2px;
       font-size: 11px;
-      background: #0b0d12;
+      background: #171717;
       color: #fff;
-      border: 1px solid #303642;
+      border: 2px solid transparent;
     }
-    .number-button.selected {
-      background: #fff;
-      color: #111;
-      border-color: #fff;
+
+    .number-button.red {
+      background: #c91f32;
     }
+
+    .number-button.black {
+      background: #171717;
+    }
+
     .number-button.zero {
-      background: #08752a;
+      background: #08a83e;
     }
-    .number-button.zero.selected {
-      background: #43d86d;
-      color: #111;
+
+    .number-button.selected {
+      border-color: #ffd43b;
+      box-shadow: 0 0 0 2px #171717;
     }
+
     /* =========================
        MENSAGEM
     ========================= */
+
     .roulette-message {
       min-height: 24px;
       text-align: center;
       margin: 6px 0;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
     }
+
     .win-message {
-      color: #55e878;
+      color: #07963a;
     }
+
     .lose-message {
-      color: #ff7070;
+      color: #d71932;
     }
+
     .spin-button {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       font-size: 15px;
       margin-top: 1px;
     }
+
     .roulette-info {
       text-align: center;
       font-size: 9px;
-      opacity: .42;
+      color: #777;
       margin-top: 6px;
     }
+
     /* =========================
        HISTÓRICO
     ========================= */
+
     .history-list {
       margin-top: 8px;
     }
+
     .history-item {
-      background: #0b0d12;
-      border: 1px solid #242933;
+      background: #fff;
+      border: 1px solid #dfe2eb;
       border-radius: 9px;
       padding: 10px;
       margin-bottom: 6px;
       font-size: 13px;
     }
+
     .empty {
       opacity: .6;
     }
+
     /* =========================
        CELULAR
     ========================= */
+
     @media (max-width: 600px) {
       .container {
         padding: 10px;
       }
+
       header {
         margin-bottom: 10px;
       }
+
       .logo {
         font-size: 22px;
       }
+
+      .user {
+        font-size: 12px;
+      }
+
       .balance {
-        padding:
+        padding: 12px;
+        margin-bottom: 9px;
+      }
+
+      .balance-value {
+        font-size: 26px;
+      }
+
+      .buttons {
+        gap: 7px;
+        margin-bottom: 9px;
+      }
+
+      .buttons button {
+        padding: 11px 8px;
+        font-size: 13px;
+      }
+
+      .modal {
+        padding: 6px;
+      }
+
+      .modal-box {
+        max-height: calc(100vh - 12px);
+        padding: 11px;
+        border-radius: 17px;
+      }
+
+      .roulette-area {
+        height: 275px;
+      }
+
+      .wheel {
+        width: 245px;
+        height: 245px;
+      }
+
+      .wheel-center-ring {
+        width: 88px;
+        height: 88px;
+      }
+
+      .wheel-center-button {
+        width: 62px;
+        height: 62px;
+        font-size: 10px;
+      }
+
+      .pointer {
+        border-left-width: 12px;
+        border-right-width: 12px;
+        border-top-width: 30px;
+      }
+
+      .wheel-number {
+        width: 27px;
+        height: 27px;
+        margin-left: -13.5px;
+        margin-top: -13.5px;
+        font-size: 9px;
+      }
+    }
+
+    @media (max-height: 700px) {
+      .roulette-area {
+        height: 245px;
+      }
+
+      .wheel {
+        width: 215px;
+        height: 215px;
+      }
+
+      .wheel-center-ring {
+        width: 78px;
+        height: 78px;
+      }
+
+      .wheel-center-button {
+        width: 56px;
+        height: 56px;
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- CABEÇALHO -->
+    <header>
+      <div class="logo">
+        JP<span>BET</span>
+      </div>
+
+      <div
+        class="user"
+        id="userName"
+      >
+        Usuário
+      </div>
+    </header>
+
+    <!-- SALDO -->
+    <div class="balance">
+      <div class="balance-title">
+        Seu saldo
+      </div>
+
+      <div
+        class="balance-value"
+        id="balance"
+      >
+        R$ 0,00
+      </div>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="buttons">
+
+      <button
+        class="primary"
+        onclick="abrirRoleta()"
+      >
+        🎰 JOGAR
+      </button>
+
+      <button
+        class="secondary"
+        onclick="depositar()"
+      >
+        💰 DEPOSITAR
+      </button>
+
+      <button
+        class="secondary"
+        onclick="sacar()"
+      >
+        💸 SACAR
+      </button>
+
+      <button
+        class="secondary"
+        onclick="historico()"
+      >
+        📋 HISTÓRICO
+      </button>
+
+    </div>
+
+    <!-- CONTA -->
+    <div class="card">
+
+      <h2>
+        Minha conta
+      </h2>
+
+      <p>
+        Bem-vindo à plataforma JPBET.
+      </p>
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+    </div>
+
+    <!-- SAIR -->
+    <button
+      class="logout"
+      onclick="sair()"
+    >
+      SAIR DA CONTA
+    </button>
+
+  </div>
+
+  <!-- MODAL -->
+  <div
+    id="actionModal"
+    class="modal"
+  >
+
+    <div class="modal-box">
+
+      <button
+        class="close-button"
+        onclick="fecharModal()"
+      >
+        ×
+      </button>
+
+      <h2 id="modalTitle">
+        JPBET
+      </h2>
+
+      <div
+        id="modalContent"
+        class="modal-message"
+      ></div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    /* =========================
+       CONFIGURAÇÃO
+    ========================= */
+
+    const API_URL = "/api";
+
+    let configuracoes = {
+      roulette_enabled: "true",
+      roulette_min_bet: "1",
+      roulette_max_bet: "100",
+      roulette_animation_ms: "4800",
+      roulette_sound_enabled: "true",
+      roulette_red_color: "#e51f35",
+      roulette_black_color: "#171717",
+      roulette_green_color: "#08a83e",
+      roulette_accent_color: "#ffd43b",
+      roulette_background_color: "#fff7d6",
+      virtual_credits_mode: "true",
+      virtual_credits_text:
+        "Esta plataforma utiliza créditos virtuais para demonstração.",
+      virtual_credits_disclaimer:
+        "Os créditos desta versão não representam dinheiro real."
+    };
+
+    /* =========================
+       USUÁRIO
+    ========================= */
+
+    let usuarioAtual = null;
+
+    let tipoAposta = null;
+
+    let valorAposta = 1;
+
+    let numeroAposta = null;
+
+    let rodadaEmAndamento = false;
+
+    let wheelRotation = 0;
+
+    let audioContext = null;
+
+    /* =========================
+       CORES DA ROLETA
+    ========================= */
+
+    const numerosVermelhos = [
+      1, 3, 5, 7, 9,
+      12, 14, 16, 18,
+      19, 21, 23, 25,
+      27, 30, 32, 34, 36
+    ];
+
+    /* =========================
+       CARREGAR CONFIGURAÇÕES
+    ========================= */
+
+    async function carregarConfiguracoes() {
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/settings/public`
+          );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data =
+          await response.json();
+
+        const recebidas =
+          data.settings ||
+          data.configuracoes ||
+          data;
+
+        if (
+          recebidas &&
+          typeof recebidas === "object"
+        ) {
+
+          configuracoes = {
+            ...configuracoes,
+            ...recebidas
+          };
+
+        }
+
+      } catch (error) {
+
+        console.warn(
+          "Não foi possível carregar as configurações públicas.",
+          error
+        );
+
+      }
+
+    }
+
+    /* =========================
+       APLICAR CONFIGURAÇÕES
+    ========================= */
+
+    function aplicarConfiguracoes() {
+
+      const root =
+        document.documentElement;
+
+      root.style.setProperty(
+        "--roulette-red",
+        configuracoes.roulette_red_color ||
+        "#e51f35"
+      );
+
+      root.style.setProperty(
+        "--roulette-black",
+        configuracoes.roulette_black_color ||
+        "#171717"
+      );
+
+      root.style.setProperty(
+        "--roulette-green",
+        configuracoes.roulette_green_color ||
+        "#08a83e"
+      );
+
+      root.style.setProperty(
+        "--roulette-accent",
+        configuracoes.roulette_accent_color ||
+        "#ffd43b"
+      );
+
+      root.style.setProperty(
+        "--roulette-background",
+        configuracoes.roulette_background_color ||
+        "#fff7d6"
+      );
+
+    }
+
+    /* =========================
+       USUÁRIO
+    ========================= */
+
+    function carregarUsuario() {
+
+      const savedUser =
+        localStorage.getItem(
+          "jpbet_user"
+        );
+
+      if (!savedUser) {
+
+        window.location.href =
+          "index.html";
+
+        return;
+      }
+
+      try {
+
+        const user =
+          JSON.parse(savedUser);
+
+        usuarioAtual = user;
+
+        document.getElementById(
+          "userName"
+        ).textContent =
+          user.username ||
+          "Usuário";
+
+        atualizarSaldo(
+          user.balance
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        localStorage.removeItem(
+          "jpbet_user"
+        );
+
+        localStorage.removeItem(
+          "jpbet_token"
+        );
+
+        window.location.href =
+          "index.html";
+      }
+    }
+
+    /* =========================
+       SALDO
+    ========================= */
+
+    function atualizarSaldo(valor) {
+
+      const balance =
+        Number(valor || 0);
+
+      document.getElementById(
+        "balance"
+      ).textContent =
+        formatarSaldo(balance);
+
+      if (usuarioAtual) {
+
+        usuarioAtual.balance =
+          balance;
+
+        localStorage.setItem(
+          "jpbet_user",
+          JSON.stringify(
+            usuarioAtual
+          )
+        );
+      }
+    }
+
+    /* =========================
+       FORMATAR R$
+    ========================= */
+
+    function formatarSaldo(valor) {
+
+      return (
+        "R$ " +
+        Number(valor || 0)
+          .toFixed(2)
+          .replace(".", ",")
+      );
+
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+
+    function abrirModal(
+      titulo,
+      conteudo
+    ) {
+
+      document.getElementById(
+        "modalTitle"
+      ).textContent =
+        titulo;
+
+      document.getElementById(
+        "modalContent"
+      ).innerHTML =
+        conteudo;
+
+      document.getElementById(
+        "actionModal"
+      ).style.display =
+        "flex";
+    }
+
+    function fecharModal() {
+
+      document.getElementById(
+        "actionModal"
+      ).style.display =
+        "none";
+
+      rodadaEmAndamento =
+        false;
+    }
+
+    /* =========================
+       COR DO NÚMERO
+    ========================= */
+
+    function obterCorNumero(numero) {
+
+      if (Number(numero) === 0) {
+        return "green";
+      }
+
+      return numerosVermelhos.includes(
+        Number(numero)
+      )
+        ? "red"
+        : "black";
+    }
+
+    /* =========================
+       CRIAR RODA
+    ========================= */
+
+    function criarRoda() {
+
+      const setores =
+        document.getElementById(
+          "wheelSectors"
+        );
+
+      const numeros =
+        document.getElementById(
+          "wheelNumbers"
+        );
+
+      if (!setores || !numeros) {
+        return;
+      }
+
+      setores.innerHTML = "";
+      numeros.innerHTML = "";
+
+      const quantidade = 37;
+
+      for (
+        let numero = 0;
+        numero < quantidade;
+        numero++
+      ) {
+
+        const angulo =
+          numero *
+          (360 / quantidade);
+
+        const setor =
+          document.createElement(
+            "div"
+          );
+
+        setor.className =
+          "wheel-sector";
+
+        setor.style.transform =
+          `rotate(${angulo}deg)`;
+
+        setores.appendChild(
+          setor
+        );
+
+        const elemento =
+          document.createElement(
+            "div"
+          );
+
+        elemento.className =
+          `wheel-number ${obterCorNumero(numero)}`;
+
+        elemento.id =
+          `wheel-number-${numero}`;
+
+        const anguloTexto =
+          angulo +
+          (360 / quantidade) / 2;
+
+        const raio =
+          100;
+
+        const radianos =
+          (
+            (anguloTexto - 90) *
+            Math.PI
+          ) / 180;
+
+        const x =
+          Math.cos(radianos) *
+          raio;
+
+        const y =
+          Math.sin(radianos) *
+          raio;
+
+        elemento.style.transform =
+          `translate(${x}px, ${y}px)`;
+
+        elemento.textContent =
+          numero;
+
+        numeros.appendChild(
+          elemento
+        );
+      }
+
+    }
+
+    /* =========================
+       ROLETA
+    ========================= */
+
+    function abrirRoleta() {
+
+      tipoAposta = null;
+
+      numeroAposta = null;
+
+      valorAposta = 1;
+
+      rodadaEmAndamento =
+        false;
+
+      const minBet =
+        Number(
+          configuracoes.roulette_min_bet ||
+          1
+        );
+
+      const maxBet =
+        Number(
+          configuracoes.roulette_max_bet ||
+          100
+        );
+
+      const numeros =
+        Array.from(
+          {
+            length: 37
+          },
+          (_, index) =>
+            index
+        );
+
+      let numeroHtml = "";
+
+      numeros.forEach(
+        numero => {
+
+          const cor =
+            obterCorNumero(
+              numero
+            );
+
+          numeroHtml += `
+            <button
+              class="number-button ${cor} ${numero === 0 ? "zero" : ""}"
+              onclick="selecionarNumero(${numero})"
+              id="numero-${numero}"
+            >
+              ${numero}
+            </button>
+          `;
+
+        }
+      );
+
+      abrirModal(
+        "🎰 Roleta JPBET",
+        `
+          <div class="roulette-top">
+
+            <div>
+              <strong>
+                Roleta Premium
+              </strong>
+
+              <div
+                class="roulette-balance"
+              >
+                Saldo:
+                ${formatarSaldo(
+                  usuarioAtual
+                    ? usuarioAtual.balance
+                    : 0
+                )}
+              </div>
+            </div>
+
+            <button
+              class="sound-button"
+              id="soundButton"
+              onclick="alternarSom()"
+            >
+              🔊 SOM
+            </button>
+
+          </div>
+
+          <div class="roulette-area">
+
+            <div class="roulette-lights"></div>
+
+            <div class="pointer"></div>
+
+            <div
+              class="wheel"
+              id="rouletteWheel"
+            >
+
+              <div
+                class="wheel-inner"
+              >
+
+                <div
+                  class="wheel-sectors"
+                  id="wheelSectors"
+                ></div>
+
+                <div
+                  id="wheelNumbers"
+                ></div>
+
+                <div
+                  class="wheel-center-ring"
+                >
+
+                  <button
+                    class="wheel-center-button"
+                    id="centerSpinButton"
+                    onclick="girarRoleta()"
+                  >
+                    GIRAR
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="result-panel">
+
+            <div
+              id="resultNumber"
+              class="result-number"
+            >
+              ?
+            </div>
+
+            <div
+              id="resultLabel"
+              class="result-label"
+            >
+              Escolha sua aposta
+            </div>
+
+          </div>
+
+          <div class="bet-title">
+            Valor da aposta
+          </div>
+
+          <input
+            id="betAmount"
+            class="bet-amount"
+            type="number"
+            min="${minBet}"
+            max="${maxBet}"
+            step="1"
+            value="${minBet}"
+            inputmode="numeric"
+          >
+
+          <div class="quick-values">
+
+            <button
+              class="quick-value"
+              onclick="definirValor(${minBet})"
+            >
+              R$ ${minBet}
+            </button>
+
+            <button
+              class="quick-value"
+              onclick="definirValor(5)"
+            >
+              R$ 5
+            </button>
+
+            <button
+              class="quick-value"
+              onclick="definirValor(10)"
+            >
+              R$ 10
+            </button>
+
+            <button
+              class="quick-value"
+              onclick="definirValor(25)"
+            >
+              R$ 25
+            </button>
+
+          </div>
+
+          <div class="bet-title">
+            Escolha uma cor
+          </div>
+
+          <div class="bet-types">
+
+            <button
+              class="bet-type red-button"
+              id="bet-red"
+              onclick="selecionarCor('red')"
+            >
+              🔴 VERMELHO
+            </button>
+
+            <button
+              class="bet-type black-button"
+              id="bet-black"
+              onclick="selecionarCor('black')"
+            >
+              ⚫ PRETO
+            </button>
+
+          </div>
+
+          <div class="number-section">
+
+            <button
+              class="number-toggle"
+              onclick="mostrarNumeros()"
+            >
+              🔢 ESCOLHER NÚMERO
+            </button>
+
+            <div
+              id="numberGrid"
+              class="number-grid"
+            >
+              ${numeroHtml}
+            </div>
+
+          </div>
+
+          <div
+            id="rouletteMessage"
+            class="roulette-message"
+          ></div>
+
+          <button
+            class="primary spin-button"
+            id="spinButton"
+            onclick="girarRoleta()"
+          >
+            🎰 GIRAR ROLETA
+          </button>
+
+          <div class="roulette-info">
+            ${
+              configuracoes.virtual_credits_text ||
+              "Esta plataforma utiliza créditos virtuais para demonstração."
+            }
+            <br>
+            ${
+              configuracoes.virtual_credits_disclaimer ||
+              "Os créditos desta versão não representam dinheiro real."
+            }
+          </div>
+        `
+      );
+
+      criarRoda();
+
+      atualizarBotaoSom();
+
+      aplicarConfiguracoes();
+    }
+
+    /* =========================
+       VALOR RÁPIDO
+    ========================= */
+
+    function definirValor(valor) {
+
+      const input =
+        document.getElementById(
+          "betAmount"
+        );
+
+      if (!input) {
+        return;
+      }
+
+      const maxBet =
+        Number(
+          configuracoes.roulette_max_bet ||
+          100
+        );
+
+      input.value =
+        Math.min(
+          Number(valor),
+          maxBet
+        );
+
+    }
+
+    /* =========================
+       MOSTRAR NÚMEROS
+    ========================= */
+
+    function mostrarNumeros() {
+
+      const grid =
+        document.getElementById(
+          "numberGrid"
+        );
+
+      if (!grid) {
+        return;
+      }
+
+      grid.classList.toggle(
+        "visible"
+      );
+
+    }
+
+    /* =========================
+       SELECIONAR COR
+    ========================= */
+
+    function selecionarCor(cor) {
+
+      tipoAposta = cor;
+
+      numeroAposta = null;
+
+      document
+        .querySelectorAll(
+          ".bet-type"
+        )
+        .forEach(
+          button => {
+
+            button.classList.remove(
+              "selected"
+            );
+
+          }
+        );
+
+      document
+        .querySelectorAll(
+          ".number-button"
+        )
+        .forEach(
+          button => {
+
+            button.classList.remove(
+              "selected"
+            );
+
+          }
+        );
+
+      const button =
+        document.getElementById(
+          `bet-${cor}`
+        );
+
+      if (button) {
+
+        button.classList.add(
+          "selected"
+        );
+
+      }
+
+      mostrarMensagem(
+        cor === "red"
+          ? "Aposta selecionada: vermelho."
+          : "Aposta selecionada: preto.",
+        ""
+      );
+
+    }
+
+    /* =========================
+       SELECIONAR NÚMERO
+    ========================= */
+
+    function selecionarNumero(
+      numero
+    ) {
+
+      tipoAposta =
+        "number";
+
+      numeroAposta =
+        numero;
+
+      document
+        .querySelectorAll(
+          ".bet-type"
+        )
+        .forEach(
+          button => {
+
+            button.classList.remove(
+              "selected"
+            );
+
+          }
+        );
+
+      document
+        .querySelectorAll(
+          ".number-button"
+        )
+        .forEach(
+          button => {
+
+            button.classList.remove(
+              "selected"
+            );
+
+          }
+        );
+
+      const button =
+        document.getElementById(
+          `numero-${numero}`
+        );
+
+      if (button) {
+
+        button.classList.add(
+          "selected"
+        );
+
+      }
+
+      mostrarMensagem(
+        `Aposta selecionada: número ${numero}.`,
+        ""
+      );
+
+    }
+
+    /* =========================
+       MENSAGEM
+    ========================= */
+
+    function mostrarMensagem(
+      texto,
+      classe
+    ) {
+
+      const elemento =
+        document.getElementById(
+          "rouletteMessage"
+        );
+
+      if (!elemento) {
+        return;
+      }
+
+      elemento.textContent =
+        texto;
+
+      elemento.className =
+        "roulette-message " +
+        (classe || "");
+
+    }
+
+    /* =========================
+       ÁUDIO
+    ========================= */
+
+    function obterAudioContext() {
+
+      if (!audioContext) {
+
+        const AudioCtx =
+          window.AudioContext ||
+          window.webkitAudioContext;
+
+        if (!AudioCtx) {
+          return null;
+        }
+
+        audioContext =
+          new AudioCtx();
+
+      }
+
+      if (
+        audioContext.state ===
+        "suspended"
+      ) {
+
+        audioContext.resume();
+
+      }
+
+      return audioContext;
+
+    }
+
+    function tocarSom(
+      frequencia,
+      duracao,
+      tipo = "sine",
+      volume = .045
+    ) {
+
+      if (
+        String(
+          configuracoes.roulette_sound_enabled
+        ).toLowerCase() === "false"
+      ) {
+        return;
+      }
+
+      const ctx =
+        obterAudioContext();
+
+      if (!ctx) {
+        return;
+      }
+
+      const oscillator =
+        ctx.createOscillator();
+
+      const gain =
+        ctx.createGain();
+
+      oscillator.type =
+        tipo;
+
+      oscillator.frequency.value =
+        frequencia;
+
+      gain.gain.setValueAtTime(
+        volume,
+        ctx.currentTime
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .001,
+        ctx.currentTime +
+        duracao
+      );
+
+      oscillator.connect(
+        gain
+      );
+
+      gain.connect(
+        ctx.destination
+      );
+
+      oscillator.start();
+
+      oscillator.stop(
+        ctx.currentTime +
+        duracao
+      );
+
+    }
+
+    function somInicio() {
+
+      tocarSom(
+        440,
+        .10,
+        "triangle",
+        .05
+      );
+
+      setTimeout(
+        () => {
+          tocarSom(
+            660,
+            .12,
+            "triangle",
+            .05
+          );
+        },
+        100
+      );
+
+    }
+
+    function somTick() {
+
+      tocarSom(
+        900,
+        .035,
+        "square",
+        .025
+      );
+
+    }
+
+    function somVitoria() {
+
+      tocarSom(
+        523,
+        .12,
+        "triangle",
+        .06
+      );
+
+      setTimeout(
+        () => {
+          tocarSom(
+            659,
+            .12,
+            "triangle",
+            .06
+          );
+        },
+        100
+      );
+
+      setTimeout(
+        () => {
+          tocarSom(
+            784,
+            .20,
+            "triangle",
+            .07
+          );
+        },
+        200
+      );
+
+    }
+
+    function somDerrota() {
+
+      tocarSom(
+        280,
+        .18,
+        "sawtooth",
+        .035
+      );
+
+      setTimeout(
+        () => {
+          tocarSom(
+            190,
+            .25,
+            "sawtooth",
+            .03
+          );
+        },
+        120
+      );
+
+    }
+
+    function alternarSom() {
+
+      const atual =
+        String(
+          configuracoes.roulette_sound_enabled
+        ).toLowerCase() !== "false";
+
+      configuracoes.roulette_sound_enabled =
+        atual
+          ? "false"
+          : "true";
+
+      atualizarBotaoSom();
+
+      if (
+        configuracoes.roulette_sound_enabled ===
+        "true"
+      ) {
+
+        somInicio();
+
+      }
+
+    }
+
+    function atualizarBotaoSom() {
+
+      const button =
+        document.getElementById(
+          "soundButton"
+        );
+
+      if (!button) {
+        return;
+      }
+
+      const ligado =
+        String(
+          configuracoes.roulette_sound_enabled
+        ).toLowerCase() !== "false";
+
+      button.textContent =
+        ligado
+          ? "🔊 SOM"
+          : "🔇 MUDO";
+
+    }
+
+    /* =========================
+       ANIMAÇÃO
+    ========================= */
+
+    function obterDuracaoAnimacao() {
+
+      const configurada =
+        Number(
+          configuracoes.roulette_animation_ms
+        );
+
+      if (
+        Number.isFinite(
+          configurada
+        ) &&
+        configurada >= 1000 &&
+        configurada <= 15000
+      ) {
+
+        return configurada;
+
+      }
+
+      return 4800;
+
+    }
+
+    function animarRoleta(
+      numeroResultado
+    ) {
+
+      const wheel =
+        document.getElementById(
+          "rouletteWheel"
+        );
+
+      if (!wheel) {
+        return;
+      }
+
+      const quantidade =
+        37;
+
+      const setor =
+        360 / quantidade;
+
+      const anguloResultado =
+        numeroResultado *
+        setor;
+
+      const voltas =
+        6 + Math.floor(
+          Math.random() * 3
+        );
+
+      const alvo =
+        360 -
+        anguloResultado -
+        setor / 2;
+
+      wheelRotation +=
+        voltas * 360 +
+        alvo -
+        (
+          wheelRotation % 360
+        );
+
+      wheel.style.transition =
+        `transform ${obterDuracaoAnimacao()}ms cubic-bezier(.12,.72,.12,1)`;
+
+      wheel.style.transform =
+        `rotate(${wheelRotation}deg)`;
+
+      /* Pequenos tiques sonoros */
+      if (
+        String(
+          configuracoes.roulette_sound_enabled
+        ).toLowerCase() !== "false"
+      ) {
+
+        const duracao =
+          obterDuracaoAnimacao();
+
+        const quantidadeTicks =
+          18;
+
+        for (
+          let i = 0;
+          i < quantidadeTicks;
+          i++
+        ) {
+
+          setTimeout(
+            () => {
+
+              if (
+                rodadaEmAndamento
+              ) {
+                somTick();
+              }
+
+            },
+            (
+              duracao *
+              (i + 1)
+            ) /
+            quantidadeTicks
+          );
+
+        }
+
+      }
+
+    }
+
+    /* =========================
+       DESTACAR RESULTADO
+    ========================= */
+
+    function destacarResultado(
+      numero
+    ) {
+
+      document
+        .querySelectorAll(
+          ".wheel-number"
+        )
+        .forEach(
+          elemento => {
+
+            elemento.classList.remove(
+              "result-highlight"
+            );
+
+          }
+        );
+
+      const elemento =
+        document.getElementById(
+          `wheel-number-${numero}`
+        );
+
+      if (elemento) {
+
+        elemento.classList.add(
+          "result-highlight"
+        );
+
+      }
+
+    }
+
+    /* =========================
+       GIRAR ROLETA
+    ========================= */
+
+    async function girarRoleta() {
+
+      if (rodadaEmAndamento) {
+        return;
+      }
+
+      if (!usuarioAtual) {
+
+        mostrarMensagem(
+          "Usuário não encontrado.",
+          "lose-message"
+        );
+
+        return;
+      }
+
+      const input =
+        document.getElementById(
+          "betAmount"
+        );
+
+      if (!input) {
+        return;
+      }
+
+      const bet =
+        Number(input.value);
+
+      const minBet =
+        Number(
+          configuracoes.roulette_min_bet ||
+          1
+        );
+
+      const maxBet =
+        Number(
+          configuracoes.roulette_max_bet ||
+          100
+        );
+
+      if (
+        !Number.isFinite(bet) ||
+        bet < minBet ||
+        bet > maxBet
+      ) {
+
+        mostrarMensagem(
+          `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`,
+          "lose-message"
+        );
+
+        return;
+      }
+
+      if (!tipoAposta) {
+
+        mostrarMensagem(
+          "Escolha vermelho, preto ou um número.",
+          "lose-message"
+        );
+
+        return;
+      }
+
+      if (
+        tipoAposta === "number" &&
+        numeroAposta === null
+      ) {
+
+        mostrarMensagem(
+          "Escolha um número da roleta.",
+          "lose-message"
+        );
+
+        return;
+      }
+
+      const saldo =
+        Number(
+          usuarioAtual.balance ||
+          0
+        );
+
+      if (saldo < bet) {
+
+        mostrarMensagem(
+          "Saldo insuficiente.",
+          "lose-message"
+        );
+
+        return;
+      }
+
+      rodadaEmAndamento =
+        true;
+
+      const spinButton =
+        document.getElementById(
+          "spinButton"
+        );
+
+      const centerButton =
+        document.getElementById(
+          "centerSpinButton"
+        );
+
+      if (spinButton) {
+
+        spinButton.disabled =
+          true;
+
+        spinButton.textContent =
+          "🎰 GIRANDO...";
+
+      }
+
+      if (centerButton) {
+
+        centerButton.disabled =
+          true;
+
+        centerButton.textContent =
+          "GIRANDO";
+
+      }
+
+      mostrarMensagem(
+        "A roleta está girando...",
+        ""
+      );
+
+      const resultNumber =
+        document.getElementById(
+          "resultNumber"
+        );
+
+      const resultLabel =
+        document.getElementById(
+          "resultLabel"
+        );
+
+      if (resultNumber) {
+
+        resultNumber.className =
+          "result-number";
+
+        resultNumber.textContent =
+          "…";
+
+      }
+
+      somInicio();
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/roulette/spin`,
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  userId:
+                    usuarioAtual.id,
+
+                  betAmount:
+                    bet,
+
+                  betType:
+                    tipoAposta,
+
+                  betValue:
+                    numeroAposta
+                })
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.ok
+        ) {
+
+          throw new Error(
+            data.message ||
+            "Não foi possível realizar a rodada."
+          );
+
+        }
+
+        const numero =
+          Number(
+            data.spin.number
+          );
+
+        const cor =
+          data.spin.color;
+
+        const ganhou =
+          data.spin.won;
+
+        const premio =
+          Number(
+            data.spin.prize || 0
+          );
+
+        /* =========================
+           ANIMAR
+        ========================= */
+
+        animarRoleta(
+          numero
+        );
+
+        const duracao =
+          obterDuracaoAnimacao();
+
+        await new Promise(
+          resolve =>
+            setTimeout(
+              resolve,
+              duracao + 80
+            )
+        );
+
+        /* =========================
+           RESULTADO
+        ========================= */
+
+        if (resultNumber) {
+
+          resultNumber.textContent =
+            numero;
+
+          resultNumber.className =
+            "result-number " +
+            `result-${cor}`;
+
+        }
+
+        if (resultLabel) {
+
+          const nomeCor =
+            cor === "red"
+              ? "🔴 Vermelho"
+              : cor === "black"
+                ? "⚫ Preto"
+                : "🟢 Verde";
+
+          resultLabel.textContent =
+            nomeCor;
+
+        }
+
+        destacarResultado(
+          numero
+        );
+
+        /* =========================
+           SALDO
+        ========================= */
+
+        atualizarSaldo(
+          data.user.balance
+        );
+
+        /* =========================
+           MENSAGEM
+        ========================= */
+
+        if (ganhou) {
+
+          mostrarMensagem(
+            `🎉 VOCÊ GANHOU ${formatarSaldo(premio)}!`,
+            "win-message"
+          );
+
+          somVitoria();
+
+        } else {
+
+          mostrarMensagem(
+            `Resultado: ${numero}. Você não ganhou nesta rodada.`,
+            "lose-message"
+          );
+
+          somDerrota();
+
+        }
+
+        if (spinButton) {
+
+          spinButton.disabled =
+            false;
+
+          spinButton.textContent =
+            "🎰 GIRAR NOVAMENTE";
+
+        }
+
+        if (centerButton) {
+
+          centerButton.disabled =
+            false;
+
+          centerButton.textContent =
+            "GIRAR";
+
+        }
+
+        rodadaEmAndamento =
+          false;
+
+      } catch (error) {
+
+        console.error(error);
+
+        mostrarMensagem(
+          error.message ||
+          "Erro ao executar a roleta.",
+          "lose-message"
+        );
+
+        if (spinButton) {
+
+          spinButton.disabled =
+            false;
+
+          spinButton.textContent =
+            "🎰 TENTAR NOVAMENTE";
+
+        }
+
+        if (centerButton) {
+
+          centerButton.disabled =
+            false;
+
+          centerButton.textContent =
+            "GIRAR";
+
+        }
+
+        rodadaEmAndamento =
+          false;
+
+      }
+
+    }
+
+    /* =========================
+       DEPÓSITO
+    ========================= */
+
+    function depositar() {
+
+      abrirModal(
+        "💰 Depósito",
+        `
+          <p>
+            A área de depósito está sendo preparada.
+          </p>
+
+          <p>
+            Nesta versão, a plataforma trabalha somente com créditos virtuais.
+          </p>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            FECHAR
+          </button>
+        `
+      );
+
+    }
+
+    /* =========================
+       SAQUE
+    ========================= */
+
+    function sacar() {
+
+      abrirModal(
+        "💸 Saque",
+        `
+          <p>
+            A área de saque está sendo preparada.
+          </p>
+
+          <p>
+            As operações financeiras reais não estão habilitadas nesta versão.
+          </p>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            FECHAR
+          </button>
+        `
+      );
+
+    }
+
+    /* =========================
+       HISTÓRICO
+    ========================= */
+
+    function historico() {
+
+      abrirModal(
+        "📋 Histórico",
+        `
+          <div class="history-list">
+
+            <div class="history-item empty">
+              O histórico detalhado será conectado à tabela de rodadas na próxima etapa.
+            </div>
+
+          </div>
+
+          <button
+            class="primary"
+            onclick="fecharModal()"
+          >
+            FECHAR
+          </button>
+        `
+      );
+
+    }
+
+    /* =========================
+       SAIR
+    ========================= */
+
+    function sair() {
+
+      localStorage.removeItem(
+        "jpbet_user"
+      );
+
+      localStorage.removeItem(
+        "jpbet_token"
+      );
+
+      window.location.href =
+        "index.html";
+
+    }
+
+    /* =========================
+       CLICAR FORA
+    ========================= */
+
+    document
+      .getElementById(
+        "actionModal"
+      )
+      .addEventListener(
+        "click",
+        function(event) {
+
+          if (
+            event.target === this
+          ) {
+
+            fecharModal();
+
+          }
+
+        }
+      );
+
+    /* =========================
+       INICIALIZAÇÃO
+    ========================= */
+
+    async function iniciarDashboard() {
+
+      await carregarConfiguracoes();
+
+      aplicarConfiguracoes();
+
+      carregarUsuario();
+
+    }
+
+    iniciarDashboard();
+
+  </script>
+
+</body>
+</html>
