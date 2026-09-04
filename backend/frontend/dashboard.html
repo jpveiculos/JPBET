@@ -1099,6 +1099,14 @@ let configuracoes={
   virtual_credits_disclaimer:
     "Os créditos desta versão não representam dinheiro real.",
 
+  /*
+    Aviso completo editável pelo administrador.
+    Este é apenas o fallback caso a configuração
+    ainda não esteja disponível.
+  */
+  virtual_credits_notice:
+    "🎮 Esta versão utiliza exclusivamente créditos virtuais para demonstração. Os créditos não representam dinheiro real.",
+
   /* PIX */
   pix_enabled:"true",
   pix_key:"38135fb2-dd1f-44aa-ab51-d2670ee36c7d",
@@ -2811,6 +2819,71 @@ function criarRoda(){
 
 }
 
+function obterAvisoCreditosVirtuais(){
+
+  const aviso=
+    String(
+      configuracoes.virtual_credits_notice||
+      ""
+    ).trim();
+
+  if(aviso){
+
+    return aviso;
+
+  }
+
+  /*
+    Compatibilidade com instalações antigas:
+    caso o novo campo ainda não exista,
+    monta o aviso usando os dois campos antigos.
+  */
+
+  const texto=
+    String(
+      configuracoes.virtual_credits_text||
+      ""
+    ).trim();
+
+  const disclaimer=
+    String(
+      configuracoes.virtual_credits_disclaimer||
+      ""
+    ).trim();
+
+  if(texto&&disclaimer){
+
+    return `${texto} ${disclaimer}`;
+
+  }
+
+  if(texto){
+
+    return texto;
+
+  }
+
+  if(disclaimer){
+
+    return disclaimer;
+
+  }
+
+  return "🎮 Esta versão utiliza exclusivamente créditos virtuais para demonstração. Os créditos não representam dinheiro real.";
+
+}
+
+function escaparAvisoCreditos(){
+
+  return escapeHtml(
+    obterAvisoCreditosVirtuais()
+  ).replace(
+    /\n/g,
+    "<br>"
+  );
+
+}
+
 function abrirRoleta(){
 
   if(
@@ -3141,17 +3214,7 @@ function abrirRoleta(){
 
       <div class="roulette-info">
 
-        ${
-          configuracoes.virtual_credits_text||
-          "Esta plataforma utiliza créditos virtuais para demonstração."
-        }
-
-        <br>
-
-        ${
-          configuracoes.virtual_credits_disclaimer||
-          "Os créditos desta versão não representam dinheiro real."
-        }
+        ${escaparAvisoCreditosVirtuais()}
 
       </div>
     `
