@@ -187,6 +187,40 @@
       font-size:12px;
     }
 
+    /* ================= CREDITO BLOQUEADO ================= */
+
+    .reserved-balance-box{
+      display:none;
+      position:relative;
+      z-index:2;
+      margin-top:12px;
+      padding:12px 14px;
+      border:1px solid rgba(255,210,60,.35);
+      border-radius:12px;
+      background:rgba(255,210,60,.06);
+    }
+
+    .reserved-balance-title{
+      font-size:13px;
+      font-weight:700;
+      color:#c8cbd5;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .reserved-balance-value{
+      margin-top:3px;
+      font-size:20px;
+      font-weight:800;
+      color:#ffe95b;
+    }
+
+    .reserved-balance-description{
+      margin-top:3px;
+      font-size:12px;
+      color:#9da2b0;
+    }
+
     .balance-actions{
       position:relative;
       z-index:2;
@@ -1067,6 +1101,26 @@
         Créditos virtuais para demonstração
       </div>
 
+      <div
+        id="reservedBalanceBox"
+        class="reserved-balance-box"
+      >
+        <div class="reserved-balance-title">
+          🔒 Crédito bloqueado
+        </div>
+
+        <div
+          id="reservedBalanceValue"
+          class="reserved-balance-value"
+        >
+          0 créditos
+        </div>
+
+        <div class="reserved-balance-description">
+          Valor reservado para solicitações de saque em análise.
+        </div>
+      </div>
+
       <div class="balance-actions">
 
         <button
@@ -1777,6 +1831,59 @@
       );
   }
 
+  /* ================= CREDITO BLOQUEADO ================= */
+
+  function atualizarCreditoBloqueado(valor){
+
+    if(!usuarioAtual){
+      return;
+    }
+
+    const bloqueado =
+      Number(valor || 0);
+
+    usuarioAtual.reservedBalance =
+      Number.isFinite(bloqueado) && bloqueado > 0
+        ? bloqueado
+        : 0;
+
+    const box =
+      document.getElementById(
+        "reservedBalanceBox"
+      );
+
+    const value =
+      document.getElementById(
+        "reservedBalanceValue"
+      );
+
+    if(!box || !value){
+      return;
+    }
+
+    if(
+      !Number.isFinite(bloqueado) ||
+      bloqueado <= 0
+    ){
+
+      box.style.display =
+        "none";
+
+      value.textContent =
+        "0 créditos";
+
+      return;
+    }
+
+    box.style.display =
+      "block";
+
+    value.textContent =
+      formatarCreditos(
+        bloqueado
+      );
+  }
+
   /* ================= SETTINGS ================= */
 
   async function carregarConfiguracoes(){
@@ -1957,6 +2064,12 @@
 
     atualizarSaldo(
       obterSaldo()
+    );
+
+    atualizarCreditoBloqueado(
+      usuarioAtual.reservedBalance ??
+      usuarioAtual.reserved_balance ??
+      0
     );
 
     return true;
@@ -2899,19 +3012,7 @@
           premio > 0
         );
 
-      if(
-        data.user &&
-        data.user.balance !== undefined
-      ){
-
-        atualizarSaldo(
-          data.user.balance
-        );
-
-      }else{
-
-        await carregarSaldoServidor();
-      }
+      await carregarSaldoServidor();
 
       document.getElementById(
         "resultMain"
@@ -2992,73 +3093,66 @@
 
     try{
 
-      const endpoints = [];
-
-      if(usuarioAtual?.id){
-
-        endpoints.push(
-          `${API_URL}/users/${encodeURIComponent(usuarioAtual.id)}`
-        );
-
-        endpoints.push(
-          `${API_URL}/user/${encodeURIComponent(usuarioAtual.id)}`
-        );
-
-        endpoints.push(
-          `${API_URL}/users/${encodeURIComponent(usuarioAtual.id)}/balance`
-        );
+      if(!usuarioAtual?.id){
+        return;
       }
 
-      for(
-        const endpoint of endpoints
+      const endpoint =
+        `${API_URL}/account/${encodeURIComponent(
+          usuarioAtual.id
+        )}`;
+
+      const resposta =
+        await fetch(
+          endpoint,
+          {
+            headers:headersJSON(),
+            cache:"no-store"
+          }
+        );
+
+      if(!resposta.ok){
+        return;
+      }
+
+      const data =
+        await resposta.json();
+
+      const user =
+        data.user ||
+        data;
+
+      if(!user){
+        return;
+      }
+
+      if(
+        user.balance !== undefined
       ){
 
-        try{
-
-          const resposta =
-            await fetch(
-              endpoint,
-              {
-                headers:headersJSON(),
-                cache:"no-store"
-              }
-            );
-
-          if(!resposta.ok){
-            continue;
-          }
-
-          const data =
-            await resposta.json();
-
-          const user =
-            data.user ||
-            data;
-
-          if(
-            user &&
-            user.balance !== undefined
-          ){
-
-            atualizarSaldo(
-              user.balance
-            );
-
-            localStorage.setItem(
-              "jpbet_user",
-              JSON.stringify(
-                usuarioAtual
-              )
-            );
-
-            return;
-          }
-
-        }catch(e){
-
-          continue;
-        }
+        atualizarSaldo(
+          user.balance
+        );
       }
+
+      const reservado =
+        user.reservedBalance ??
+        user.reserved_balance ??
+        0;
+
+      atualizarCreditoBloqueado(
+        reservado
+      );
+
+      usuarioAtual.reservedBalance =
+        Number(reservado || 0);
+
+      localStorage.setItem(
+        "jpbet_user",
+        JSON.stringify(
+          usuarioAtual
+        )
+      );
 
     }catch(e){
 
@@ -3285,19 +3379,7 @@
         "Saque solicitado com sucesso. O valor foi reservado e está aguardando análise."
       );
 
-      if(
-        data.user &&
-        data.user.balance !== undefined
-      ){
-
-        atualizarSaldo(
-          data.user.balance
-        );
-
-      }else{
-
-        await carregarSaldoServidor();
-      }
+      await carregarSaldoServidor();
 
       await carregarHistorico();
 
