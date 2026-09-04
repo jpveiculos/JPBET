@@ -1100,9 +1100,11 @@ let configuracoes={
     "Os créditos desta versão não representam dinheiro real.",
 
   /*
-    Aviso completo editável pelo administrador.
-    Este é apenas o fallback caso a configuração
-    ainda não esteja disponível.
+    Fallback local.
+    O valor exibido normalmente vem de:
+    /api/settings/public
+    → virtual_credits_notice
+    configurado pelo administrador.
   */
   virtual_credits_notice:
     "🎮 Esta versão utiliza exclusivamente créditos virtuais para demonstração. Os créditos não representam dinheiro real.",
@@ -1146,7 +1148,9 @@ async function carregarConfiguracoes(){
   try{
 
     const response=
-      await fetch(`${API_URL}/settings/public`);
+      await fetch(`${API_URL}/settings/public`,{
+        cache:"no-store"
+      });
 
     if(!response.ok)return;
 
@@ -2015,16 +2019,6 @@ function montarPayloadPix({
     .trim()
     .substring(0,25);
 
-  /*
-    CAMPO 26
-    00 = GUI
-    01 = CHAVE PIX
-
-    A chave fica diretamente no campo 01.
-    Não existe um campo 00 adicional envolvendo
-    a chave.
-  */
-
   let merchantAccount=
     campoPix(
       "00",
@@ -2819,24 +2813,43 @@ function criarRoda(){
 
 }
 
+/* =========================
+   AVISO DE CRÉDITOS VIRTUAIS
+========================= */
+
 function obterAvisoCreditosVirtuais(){
 
-  const aviso=
-    String(
-      configuracoes.virtual_credits_notice||
-      ""
-    ).trim();
+  /*
+    Prioridade máxima:
+    configuração definida pelo administrador
+    no campo virtual_credits_notice.
+  */
 
-  if(aviso){
+  const avisoConfigurado=
+    configuracoes.virtual_credits_notice;
 
-    return aviso;
+  if(
+    avisoConfigurado!==undefined&&
+    avisoConfigurado!==null
+  ){
+
+    const aviso=
+      String(
+        avisoConfigurado
+      ).trim();
+
+    if(aviso){
+
+      return aviso;
+
+    }
 
   }
 
   /*
     Compatibilidade com instalações antigas:
     caso o novo campo ainda não exista,
-    monta o aviso usando os dois campos antigos.
+    usa os campos antigos.
   */
 
   const texto=
@@ -4131,6 +4144,11 @@ document.addEventListener(
 
 async function iniciarDashboard(){
 
+  /*
+    Primeiro carrega as configurações públicas
+    salvas pelo administrador.
+    Só depois o dashboard é inicializado.
+  */
   await carregarConfiguracoes();
 
   aplicarConfiguracoes();
