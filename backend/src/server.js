@@ -8,6 +8,9 @@ import authRouter from "./auth.js";
 import settingsRouter from "./settings.js";
 import { pool } from "./db.js";
 import { validarSessaoAdmin } from "./adminSession.js";
+import {
+  registrarAuditoria as registrarAuditoriaSistema
+} from "./audit.js";
 
 dotenv.config();
 
@@ -21,9 +24,7 @@ app.use(express.json());
 ========================================================= */
 
 async function inicializarBanco() {
-
   try {
-
     /*
       Garante que usuários existentes
       tenham a coluna de saldo reservado.
@@ -1103,11 +1104,21 @@ app.post(
         });
       }
 
+      /*
+        A chave Pix é obrigatória em TODA
+        solicitação de saque.
+
+        Ela não é salva no perfil do usuário.
+        Fica somente vinculada ao saque.
+      */
+
+      const chavePix =
+        String(
+          pixKey || ""
+        ).trim();
+
       if (
-        !pixKey ||
-        String(pixKey)
-          .trim()
-          .length === 0
+        !chavePix
       ) {
 
         return res.status(400).json({
@@ -1191,6 +1202,12 @@ app.post(
         saldoReservado +
         valor;
 
+      /*
+        O valor é retirado do saldo disponível
+        e colocado em saldo reservado enquanto
+        o administrador analisa o saque.
+      */
+
       await client.query(
         `
         UPDATE users
@@ -1205,6 +1222,13 @@ app.post(
           userIdNumber
         ]
       );
+
+      /*
+        A chave Pix fica somente nesta
+        solicitação de saque.
+
+        NÃO é adicionada à tabela users.
+      */
 
       const withdrawalResult =
         await client.query(
@@ -1232,15 +1256,15 @@ app.post(
             user_id,
             amount,
             status,
+            withdrawal_method,
             pix_key,
+            player_note,
             created_at
           `,
           [
             userIdNumber,
             valor,
-            String(
-              pixKey
-            ).trim(),
+            chavePix,
             playerNote || null
           ]
         );
@@ -1266,25 +1290,83 @@ app.post(
         ]
       );
 
+      /*
+        Auditoria do sistema.
+
+        A chave Pix NÃO é colocada no log de auditoria
+        para evitar duplicação desnecessária de dado
+        sensível.
+      */
+
+      await registrarAuditoriaSistema({
+        userId:
+          userIdNumber,
+
+        action:
+          "SAQUE_SOLICITADO",
+
+        module:
+          "withdrawals",
+
+        targetType:
+          "withdrawal",
+
+        targetId:
+          withdrawalResult.rows[0].id,
+
+        newValue: {
+          amount:
+            valor,
+
+          status:
+            "pending",
+
+          withdrawalMethod:
+            "pix"
+        },
+
+        details:
+          "Jogador solicitou um saque via Pix.",
+
+        result:
+          "SUCCESS",
+
+        ipAddress:
+          req.headers["x-forwarded-for"] ||
+          req.socket.remoteAddress ||
+          null,
+
+        userAgent:
+          req.headers["user-agent"] ||
+          null
+      });
+
       await client.query(
         "COMMIT"
       );
 
       return res.status(201).json({
         ok: true,
+
         message:
           "Saque solicitado. O valor foi reservado e está aguardando análise.",
+
         withdrawal:
           withdrawalResult.rows[0],
+
         user: {
           id:
             user.id,
+
           username:
             user.username,
+
           balance:
             novoSaldo,
+
           reservedBalance:
             novaReserva,
+
           totalBalance:
             novoSaldo +
             novaReserva
