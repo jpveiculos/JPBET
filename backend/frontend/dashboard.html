@@ -13,6 +13,14 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --roulette-red: #e51f35;
+      --roulette-black: #171717;
+      --roulette-green: #08a83e;
+      --roulette-accent: #ffd43b;
+      --roulette-background: #fff7d6;
+    }
+
     html,
     body {
       margin: 0;
@@ -576,11 +584,11 @@
 
       border-radius: 50%;
 
-      background: #ffd43b;
+      background: var(--roulette-accent);
 
       box-shadow:
-        0 0 8px #ffd43b,
-        0 0 18px #ffd43b;
+        0 0 8px var(--roulette-accent),
+        0 0 18px var(--roulette-accent);
     }
 
     .roulette-lights::before {
@@ -618,7 +626,7 @@
         15px solid transparent;
 
       border-top:
-        34px solid #ffd43b;
+        34px solid var(--roulette-accent);
 
       filter:
         drop-shadow(0 2px 2px #000)
@@ -645,7 +653,7 @@
 
       box-shadow:
         0 0 7px #fff,
-        0 0 13px #ffd43b;
+        0 0 13px var(--roulette-accent);
     }
 
     /* =========================
@@ -709,9 +717,9 @@
       background:
         repeating-conic-gradient(
           from -4.86deg,
-          var(--roulette-red, #c81e2d)
+          var(--roulette-red)
           0deg 4.864deg,
-          var(--roulette-black, #171717)
+          var(--roulette-black)
           4.864deg 9.728deg
         );
 
@@ -779,7 +787,7 @@
 
     .wheel-number.red {
       background:
-        var(--roulette-red, #c91f32);
+        var(--roulette-red);
 
       border:
         1px solid #ff7b87;
@@ -787,7 +795,7 @@
 
     .wheel-number.black {
       background:
-        var(--roulette-black, #111);
+        var(--roulette-black);
 
       border:
         1px solid #777;
@@ -795,7 +803,7 @@
 
     .wheel-number.green {
       background:
-        var(--roulette-green, #08a83e);
+        var(--roulette-green);
 
       border:
         1px solid #79ffad;
@@ -805,7 +813,7 @@
       box-shadow:
         0 0 0 3px #fff,
         0 0 12px 4px
-        var(--roulette-accent, #ffd43b);
+        var(--roulette-accent);
     }
 
     /* =========================
@@ -830,7 +838,7 @@
 
       border:
         5px solid
-        var(--roulette-accent, #f5d14d);
+        var(--roulette-accent);
 
       background:
         radial-gradient(
@@ -863,7 +871,7 @@
 
       border:
         3px solid
-        var(--roulette-accent, #ffd43b);
+        var(--roulette-accent);
 
       background:
         linear-gradient(
@@ -923,6 +931,84 @@
       color: #666;
 
       margin-top: 2px;
+    }
+
+    /* =========================
+       RESUMO DA RODADA
+    ========================= */
+
+    .round-summary {
+      display: none;
+
+      width: 100%;
+
+      margin: 7px 0 8px;
+
+      padding: 10px;
+
+      border-radius: 12px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #fffdf3,
+          #fff7d6
+        );
+
+      border: 1px solid #ead58a;
+    }
+
+    .round-summary.visible {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 7px;
+    }
+
+    .summary-item {
+      min-width: 0;
+
+      padding: 8px;
+
+      border-radius: 9px;
+
+      background: rgba(255,255,255,.8);
+
+      border: 1px solid #eee4bb;
+
+      text-align: center;
+    }
+
+    .summary-label {
+      display: block;
+
+      font-size: 10px;
+
+      color: #777;
+
+      margin-bottom: 3px;
+    }
+
+    .summary-value {
+      display: block;
+
+      font-size: 14px;
+
+      font-weight: 900;
+
+      color: #171717;
+
+      overflow-wrap: anywhere;
+    }
+
+    .summary-prize {
+      color: #07963a;
+    }
+
+    .summary-loss {
+      color: #d71932;
     }
 
     /* =========================
@@ -1031,7 +1117,7 @@
     }
 
     .red-button.selected {
-      border-color: #e51f35;
+      border-color: var(--roulette-red);
 
       background: #ffe3e7;
 
@@ -1039,7 +1125,7 @@
     }
 
     .black-button.selected {
-      border-color: #171717;
+      border-color: var(--roulette-black);
 
       background: #e8e8e8;
     }
@@ -1089,7 +1175,7 @@
 
       font-size: 11px;
 
-      background: #171717;
+      background: var(--roulette-black);
 
       color: #fff;
 
@@ -1099,22 +1185,22 @@
 
     .number-button.red {
       background:
-        var(--roulette-red, #c91f32);
+        var(--roulette-red);
     }
 
     .number-button.black {
       background:
-        var(--roulette-black, #171717);
+        var(--roulette-black);
     }
 
     .number-button.zero {
       background:
-        var(--roulette-green, #08a83e);
+        var(--roulette-green);
     }
 
     .number-button.selected {
       border-color:
-        var(--roulette-accent, #ffd43b);
+        var(--roulette-accent);
 
       box-shadow:
         0 0 0 2px #171717;
@@ -1145,11 +1231,6 @@
     .lose-message {
       color: #d71932;
     }
-
-    /*
-      NÃO EXISTE MAIS BOTÃO INFERIOR
-      DE GIRAR A ROLETA.
-    */
 
     .roulette-info {
       text-align: center;
@@ -1354,6 +1435,14 @@
       .number-button {
         min-height: 39px;
       }
+
+      .round-summary {
+        padding: 8px;
+      }
+
+      .summary-item {
+        padding: 7px 5px;
+      }
     }
 
     /* =========================
@@ -1434,6 +1523,11 @@
         grid-template-columns:
           repeat(6, minmax(0, 1fr));
       }
+
+      .round-summary.visible {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
     }
 
     /* =========================
@@ -1484,8 +1578,6 @@
 
   <div class="container">
 
-    <!-- CABEÇALHO -->
-
     <header>
 
       <div class="logo">
@@ -1500,9 +1592,6 @@
       </div>
 
     </header>
-
-
-    <!-- SALDO -->
 
     <div class="balance">
 
@@ -1523,9 +1612,6 @@
       ></div>
 
     </div>
-
-
-    <!-- AÇÕES -->
 
     <div class="buttons">
 
@@ -1563,9 +1649,6 @@
 
     </div>
 
-
-    <!-- CONTA -->
-
     <div class="card">
 
       <h2>
@@ -1583,9 +1666,6 @@
 
     </div>
 
-
-    <!-- SAIR -->
-
     <button
       class="logout"
       onclick="sair()"
@@ -1595,9 +1675,6 @@
     </button>
 
   </div>
-
-
-  <!-- MODAL -->
 
   <div
     id="actionModal"
@@ -1628,12 +1705,7 @@
 
   </div>
 
-
   <script>
-
-    /* =========================
-       CONFIGURAÇÃO
-    ========================= */
 
     const API_URL = "/api";
 
@@ -1669,11 +1741,6 @@
 
     };
 
-
-    /* =========================
-       ESTADO
-    ========================= */
-
     let usuarioAtual = null;
 
     let tipoAposta = null;
@@ -1688,11 +1755,6 @@
 
     let audioContext = null;
 
-
-    /* =========================
-       CORES DA ROLETA
-    ========================= */
-
     const numerosVermelhos = [
 
       1, 3, 5, 7, 9,
@@ -1704,11 +1766,6 @@
       27, 30, 32, 34, 36
 
     ];
-
-
-    /* =========================
-       CARREGAR CONFIGURAÇÕES
-    ========================= */
 
     async function carregarConfiguracoes() {
 
@@ -1757,11 +1814,6 @@
 
     }
 
-
-    /* =========================
-       APLICAR CONFIGURAÇÕES
-    ========================= */
-
     function aplicarConfiguracoes() {
 
       const root =
@@ -1798,11 +1850,6 @@
       );
 
     }
-
-
-    /* =========================
-       USUÁRIO
-    ========================= */
 
     function carregarUsuario() {
 
@@ -1857,11 +1904,6 @@
 
     }
 
-
-    /* =========================
-       SALDO
-    ========================= */
-
     function atualizarSaldo(
       valor,
       saldoAnterior = null,
@@ -1898,11 +1940,6 @@
         document.getElementById(
           "balanceDelta"
         );
-
-
-      /* =========================
-         SALDO NO TOPO
-      ========================= */
 
       if (elemento) {
 
@@ -1942,11 +1979,6 @@
         }
 
       }
-
-
-      /* =========================
-         INDICADOR DE GANHO/PERDA
-      ========================= */
 
       if (
         deltaElemento &&
@@ -1991,11 +2023,6 @@
 
       }
 
-
-      /* =========================
-         ATUALIZAR USUÁRIO LOCAL
-      ========================= */
-
       if (usuarioAtual) {
 
         usuarioAtual.balance =
@@ -2034,22 +2061,12 @@
 
       }
 
-
-      /* =========================
-         ATUALIZAR SALDO NA ROLETA
-      ========================= */
-
       atualizarSaldosDaRoleta(
         balance,
         delta
       );
 
     }
-
-
-    /* =========================
-       SALDO DENTRO DA ROLETA
-    ========================= */
 
     function atualizarSaldosDaRoleta(
       saldo,
@@ -2089,11 +2106,6 @@
 
     }
 
-
-    /* =========================
-       FORMATAR R$
-    ========================= */
-
     function formatarSaldo(valor) {
 
       return (
@@ -2104,11 +2116,6 @@
       );
 
     }
-
-
-    /* =========================
-       MODAL
-    ========================= */
 
     function abrirModal(
       titulo,
@@ -2135,8 +2142,11 @@
 
     }
 
-
     function fecharModal() {
+
+      if (rodadaEmAndamento) {
+        return;
+      }
 
       document.getElementById(
         "actionModal"
@@ -2146,15 +2156,7 @@
       document.body.style.overflow =
         "";
 
-      rodadaEmAndamento =
-        false;
-
     }
-
-
-    /* =========================
-       COR DO NÚMERO
-    ========================= */
 
     function obterCorNumero(numero) {
 
@@ -2173,11 +2175,6 @@
         : "black";
 
     }
-
-
-    /* =========================
-       CRIAR RODA
-    ========================= */
 
     function criarRoda() {
 
@@ -2216,7 +2213,6 @@
           numero *
           (360 / quantidade);
 
-
         const setor =
           document.createElement(
             "div"
@@ -2232,7 +2228,6 @@
           setor
         );
 
-
         const elemento =
           document.createElement(
             "div"
@@ -2243,7 +2238,6 @@
 
         elemento.id =
           `wheel-number-${numero}`;
-
 
         const anguloTexto =
           angulo +
@@ -2279,11 +2273,6 @@
 
     }
 
-
-    /* =========================
-       ABRIR ROLETA
-    ========================= */
-
     function abrirRoleta() {
 
       if (
@@ -2313,7 +2302,6 @@
 
       }
 
-
       tipoAposta = null;
 
       numeroAposta = null;
@@ -2322,7 +2310,6 @@
 
       rodadaEmAndamento =
         false;
-
 
       const minBet =
         Number(
@@ -2336,7 +2323,6 @@
           100
         );
 
-
       const numeros =
         Array.from(
           {
@@ -2346,9 +2332,7 @@
             index
         );
 
-
       let numeroHtml = "";
-
 
       numeros.forEach(
         numero => {
@@ -2371,7 +2355,6 @@
 
         }
       );
-
 
       abrirModal(
         "🎰 Roleta JPBET",
@@ -2398,7 +2381,6 @@
 
             </div>
 
-
             <button
               class="sound-button"
               id="soundButton"
@@ -2410,7 +2392,6 @@
 
           </div>
 
-
           <div class="roulette-area">
 
             <div
@@ -2420,7 +2401,6 @@
             <div
               class="pointer"
             ></div>
-
 
             <div
               class="wheel"
@@ -2439,7 +2419,6 @@
                 <div
                   id="wheelNumbers"
                 ></div>
-
 
                 <div
                   class="wheel-center-ring"
@@ -2462,7 +2441,6 @@
 
           </div>
 
-
           <div class="result-panel">
 
             <div
@@ -2481,11 +2459,76 @@
 
           </div>
 
+          <div
+            id="roundSummary"
+            class="round-summary"
+          >
+
+            <div class="summary-item">
+
+              <span class="summary-label">
+                APOSTA
+              </span>
+
+              <span
+                id="summaryBet"
+                class="summary-value"
+              >
+                R$ 0,00
+              </span>
+
+            </div>
+
+            <div class="summary-item">
+
+              <span class="summary-label">
+                RESULTADO
+              </span>
+
+              <span
+                id="summaryResult"
+                class="summary-value"
+              >
+                -
+              </span>
+
+            </div>
+
+            <div class="summary-item">
+
+              <span class="summary-label">
+                PRÊMIO
+              </span>
+
+              <span
+                id="summaryPrize"
+                class="summary-value summary-prize"
+              >
+                R$ 0,00
+              </span>
+
+            </div>
+
+            <div class="summary-item">
+
+              <span class="summary-label">
+                SALDO FINAL
+              </span>
+
+              <span
+                id="summaryBalance"
+                class="summary-value"
+              >
+                R$ 0,00
+              </span>
+
+            </div>
+
+          </div>
 
           <div class="bet-title">
             Valor da aposta
           </div>
-
 
           <input
             id="betAmount"
@@ -2497,7 +2540,6 @@
             value="${minBet}"
             inputmode="decimal"
           >
-
 
           <div class="quick-values">
 
@@ -2535,11 +2577,9 @@
 
           </div>
 
-
           <div class="bet-title">
             Escolha uma cor
           </div>
-
 
           <div class="bet-types">
 
@@ -2563,7 +2603,6 @@
 
           </div>
 
-
           <div class="number-section">
 
             <button
@@ -2574,7 +2613,6 @@
               🔢 ESCOLHER NÚMERO
             </button>
 
-
             <div
               id="numberGrid"
               class="number-grid"
@@ -2584,12 +2622,10 @@
 
           </div>
 
-
           <div
             id="rouletteMessage"
             class="roulette-message"
           ></div>
-
 
           <div class="roulette-info">
 
@@ -2609,7 +2645,6 @@
         `
       );
 
-
       criarRoda();
 
       atualizarBotaoSom();
@@ -2625,11 +2660,6 @@
       );
 
     }
-
-
-    /* =========================
-       VALOR RÁPIDO
-    ========================= */
 
     function definirValor(valor) {
 
@@ -2656,11 +2686,6 @@
 
     }
 
-
-    /* =========================
-       MOSTRAR NÚMEROS
-    ========================= */
-
     function mostrarNumeros() {
 
       const grid =
@@ -2678,17 +2703,11 @@
 
     }
 
-
-    /* =========================
-       SELECIONAR COR
-    ========================= */
-
     function selecionarCor(cor) {
 
       tipoAposta = cor;
 
       numeroAposta = null;
-
 
       document
         .querySelectorAll(
@@ -2704,7 +2723,6 @@
           }
         );
 
-
       document
         .querySelectorAll(
           ".number-button"
@@ -2719,12 +2737,10 @@
           }
         );
 
-
       const button =
         document.getElementById(
           `bet-${cor}`
         );
-
 
       if (button) {
 
@@ -2733,7 +2749,6 @@
         );
 
       }
-
 
       mostrarMensagem(
         cor === "red"
@@ -2747,11 +2762,6 @@
 
     }
 
-
-    /* =========================
-       SELECIONAR NÚMERO
-    ========================= */
-
     function selecionarNumero(
       numero
     ) {
@@ -2761,7 +2771,6 @@
 
       numeroAposta =
         numero;
-
 
       document
         .querySelectorAll(
@@ -2777,7 +2786,6 @@
           }
         );
 
-
       document
         .querySelectorAll(
           ".number-button"
@@ -2792,12 +2800,10 @@
           }
         );
 
-
       const button =
         document.getElementById(
           `numero-${numero}`
         );
-
 
       if (button) {
 
@@ -2807,18 +2813,12 @@
 
       }
 
-
       mostrarMensagem(
         `Aposta selecionada: número ${numero}.`,
         ""
       );
 
     }
-
-
-    /* =========================
-       MENSAGEM
-    ========================= */
 
     function mostrarMensagem(
       texto,
@@ -2842,11 +2842,6 @@
         (classe || "");
 
     }
-
-
-    /* =========================
-       ÁUDIO
-    ========================= */
 
     function obterAudioContext() {
 
@@ -2877,7 +2872,6 @@
       return audioContext;
 
     }
-
 
     function tocarSom(
       frequencia,
@@ -2943,7 +2937,6 @@
 
     }
 
-
     function somInicio() {
 
       tocarSom(
@@ -2969,7 +2962,6 @@
 
     }
 
-
     function somTick() {
 
       tocarSom(
@@ -2980,7 +2972,6 @@
       );
 
     }
-
 
     function somVitoria() {
 
@@ -3021,7 +3012,6 @@
 
     }
 
-
     function somDerrota() {
 
       tocarSom(
@@ -3046,7 +3036,6 @@
       );
 
     }
-
 
     function alternarSom() {
 
@@ -3073,7 +3062,6 @@
 
     }
 
-
     function atualizarBotaoSom() {
 
       const button =
@@ -3097,11 +3085,6 @@
 
     }
 
-
-    /* =========================
-       ANIMAÇÃO
-    ========================= */
-
     function obterDuracaoAnimacao() {
 
       const configurada =
@@ -3124,7 +3107,6 @@
       return 4800;
 
     }
-
 
     function animarRoleta(
       numeroResultado
@@ -3167,21 +3149,20 @@
           wheelRotation % 360
         );
 
+      const duracao =
+        obterDuracaoAnimacao();
+
       wheel.style.transition =
-        `transform ${obterDuracaoAnimacao()}ms cubic-bezier(.12,.72,.12,1)`;
+        `transform ${duracao}ms cubic-bezier(.12,.72,.12,1)`;
 
       wheel.style.transform =
         `rotate(${wheelRotation}deg)`;
-
 
       if (
         String(
           configuracoes.roulette_sound_enabled
         ).toLowerCase() !== "false"
       ) {
-
-        const duracao =
-          obterDuracaoAnimacao();
 
         const quantidadeTicks =
           18;
@@ -3217,11 +3198,6 @@
 
     }
 
-
-    /* =========================
-       DESTACAR RESULTADO
-    ========================= */
-
     function destacarResultado(
       numero
     ) {
@@ -3240,12 +3216,10 @@
           }
         );
 
-
       const elemento =
         document.getElementById(
           `wheel-number-${numero}`
         );
-
 
       if (elemento) {
 
@@ -3257,17 +3231,97 @@
 
     }
 
+    function atualizarResumoRodada({
+      bet,
+      numero,
+      cor,
+      premio,
+      saldoFinal,
+      ganhou
+    }) {
 
-    /* =========================
-       GIRAR ROLETA
-    ========================= */
+      const resumo =
+        document.getElementById(
+          "roundSummary"
+        );
+
+      const summaryBet =
+        document.getElementById(
+          "summaryBet"
+        );
+
+      const summaryResult =
+        document.getElementById(
+          "summaryResult"
+        );
+
+      const summaryPrize =
+        document.getElementById(
+          "summaryPrize"
+        );
+
+      const summaryBalance =
+        document.getElementById(
+          "summaryBalance"
+        );
+
+      if (!resumo) {
+        return;
+      }
+
+      if (summaryBet) {
+
+        summaryBet.textContent =
+          formatarSaldo(bet);
+
+      }
+
+      if (summaryResult) {
+
+        const nomeCor =
+          cor === "red"
+            ? "🔴 Vermelho"
+            : cor === "black"
+              ? "⚫ Preto"
+              : "🟢 Verde";
+
+        summaryResult.textContent =
+          `${numero} — ${nomeCor}`;
+
+      }
+
+      if (summaryPrize) {
+
+        summaryPrize.textContent =
+          ganhou
+            ? formatarSaldo(premio)
+            : "R$ 0,00";
+
+        summaryPrize.className =
+          ganhou
+            ? "summary-value summary-prize"
+            : "summary-value summary-loss";
+
+      }
+
+      if (summaryBalance) {
+
+        summaryBalance.textContent =
+          formatarSaldo(saldoFinal);
+
+      }
+
+      resumo.classList.add(
+        "visible"
+      );
+
+    }
 
     async function girarRoleta() {
 
       if (rodadaEmAndamento) {
         return;
       }
-
 
       if (!usuarioAtual) {
 
@@ -3280,7 +3334,6 @@
 
       }
 
-
       const input =
         document.getElementById(
           "betAmount"
@@ -3290,10 +3343,8 @@
         return;
       }
 
-
       const bet =
         Number(input.value);
-
 
       const minBet =
         Number(
@@ -3301,13 +3352,11 @@
           1
         );
 
-
       const maxBet =
         Number(
           configuracoes.roulette_max_bet ||
           100
         );
-
 
       if (
         !Number.isFinite(bet) ||
@@ -3324,7 +3373,6 @@
 
       }
 
-
       if (!tipoAposta) {
 
         mostrarMensagem(
@@ -3335,7 +3383,6 @@
         return;
 
       }
-
 
       if (
         tipoAposta === "number" &&
@@ -3351,13 +3398,11 @@
 
       }
 
-
       const saldoAntes =
         Number(
           usuarioAtual.balance ||
           0
         );
-
 
       if (saldoAntes < bet) {
 
@@ -3370,21 +3415,13 @@
 
       }
 
-
       rodadaEmAndamento =
         true;
-
-
-      /*
-        AGORA EXISTE SOMENTE
-        O BOTÃO CENTRAL.
-      */
 
       const centerButton =
         document.getElementById(
           "centerSpinButton"
         );
-
 
       if (centerButton) {
 
@@ -3396,24 +3433,25 @@
 
       }
 
-
       mostrarMensagem(
         "A roleta está girando...",
         ""
       );
-
 
       const resultNumber =
         document.getElementById(
           "resultNumber"
         );
 
-
       const resultLabel =
         document.getElementById(
           "resultLabel"
         );
 
+      const roundSummary =
+        document.getElementById(
+          "roundSummary"
+        );
 
       if (resultNumber) {
 
@@ -3425,9 +3463,22 @@
 
       }
 
+      if (resultLabel) {
+
+        resultLabel.textContent =
+          "Aguardando o resultado...";
+
+      }
+
+      if (roundSummary) {
+
+        roundSummary.classList.remove(
+          "visible"
+        );
+
+      }
 
       somInicio();
-
 
       try {
 
@@ -3462,10 +3513,8 @@
             }
           );
 
-
         const data =
           await response.json();
-
 
         if (
           !response.ok ||
@@ -3479,38 +3528,37 @@
 
         }
 
-
         const numero =
           Number(
             data.spin.number
           );
 
-
         const cor =
           data.spin.color;
 
-
         const ganhou =
-          data.spin.won;
-
+          Boolean(
+            data.spin.won
+          );
 
         const premio =
           Number(
             data.spin.prize || 0
           );
 
-
         /*
           ==================================================
-          SALDO ATUALIZADO IMEDIATAMENTE
+          IMPORTANTE
           ==================================================
 
-          O servidor é a fonte oficial.
+          O servidor já calculou o saldo final.
 
-          Assim que recebemos a resposta,
-          o saldo do jogador é atualizado.
+          Porém, NÃO alteramos o saldo visual agora.
 
-          NÃO esperamos a animação acabar.
+          Primeiro a roleta gira.
+
+          Somente depois da animação o saldo
+          será atualizado na tela.
         */
 
         const saldoServidor =
@@ -3518,63 +3566,28 @@
             data.user.balance || 0
           );
 
-
         const variacaoSaldo =
           saldoServidor -
           saldoAntes;
-
-
-        atualizarSaldo(
-          saldoServidor,
-          saldoAntes,
-          true
-        );
-
-
-        /*
-          Atualização explícita
-          do saldo dentro da roleta.
-        */
-
-        atualizarSaldosDaRoleta(
-          saldoServidor,
-          variacaoSaldo
-        );
-
-
-        /*
-          ==================================================
-          ANIMAÇÃO
-          ==================================================
-        */
 
         animarRoleta(
           numero
         );
 
-
         const duracao =
           obterDuracaoAnimacao();
-
-
-        /*
-          O saldo já foi atualizado.
-          A animação serve apenas para
-          apresentar visualmente o resultado.
-        */
 
         await new Promise(
           resolve =>
             setTimeout(
               resolve,
-              duracao + 80
+              duracao + 120
             )
         );
 
-
         /*
           ==================================================
-          RESULTADO
+          RESULTADO VISUAL
           ==================================================
         */
 
@@ -3589,7 +3602,6 @@
 
         }
 
-
         if (resultLabel) {
 
           const nomeCor =
@@ -3603,28 +3615,65 @@
 
                 : "🟢 Verde";
 
-
           resultLabel.textContent =
             nomeCor;
 
         }
 
-
         destacarResultado(
           numero
         );
 
+        /*
+          ==================================================
+          AGORA SIM ATUALIZA O SALDO
+          ==================================================
+        */
+
+        atualizarSaldo(
+          saldoServidor,
+          saldoAntes,
+          true
+        );
+
+        atualizarSaldosDaRoleta(
+          saldoServidor,
+          variacaoSaldo
+        );
 
         /*
           ==================================================
-          MENSAGEM
+          RESUMO CLARO DA RODADA
+          ==================================================
+        */
+
+        atualizarResumoRodada({
+
+          bet,
+
+          numero,
+
+          cor,
+
+          premio,
+
+          saldoFinal:
+            saldoServidor,
+
+          ganhou
+
+        });
+
+        /*
+          ==================================================
+          MENSAGEM FINAL
           ==================================================
         */
 
         if (ganhou) {
 
           mostrarMensagem(
-            `🎉 VOCÊ GANHOU ${formatarSaldo(premio)}! Saldo atualizado: ${formatarSaldo(saldoServidor)}.`,
+            `🎉 VOCÊ GANHOU ${formatarSaldo(premio)}! Aposta: ${formatarSaldo(bet)}. Saldo final: ${formatarSaldo(saldoServidor)}.`,
             "win-message"
           );
 
@@ -3633,7 +3682,7 @@
         } else {
 
           mostrarMensagem(
-            `Resultado: ${numero}. Você perdeu ${formatarSaldo(Math.abs(variacaoSaldo))}. Saldo: ${formatarSaldo(saldoServidor)}.`,
+            `Resultado: ${numero}. Você perdeu ${formatarSaldo(bet)}. Saldo final: ${formatarSaldo(saldoServidor)}.`,
             "lose-message"
           );
 
@@ -3641,13 +3690,6 @@
 
         }
 
-
-        /*
-          ==================================================
-          LIBERAR BOTÃO CENTRAL
-          ==================================================
-        */
-
         if (centerButton) {
 
           centerButton.disabled =
@@ -3658,15 +3700,12 @@
 
         }
 
-
         rodadaEmAndamento =
           false;
-
 
       } catch (error) {
 
         console.error(error);
-
 
         mostrarMensagem(
           error.message ||
@@ -3674,7 +3713,6 @@
           "lose-message"
         );
 
-
         if (centerButton) {
 
           centerButton.disabled =
@@ -3685,18 +3723,12 @@
 
         }
 
-
         rodadaEmAndamento =
           false;
 
       }
 
     }
-
-
-    /* =========================
-       DEPÓSITO
-    ========================= */
 
     function depositar() {
 
@@ -3723,11 +3755,6 @@
 
     }
 
-
-    /* =========================
-       SAQUE
-    ========================= */
-
     function sacar() {
 
       abrirModal(
@@ -3753,11 +3780,6 @@
 
     }
 
-
-    /* =========================
-       HISTÓRICO
-    ========================= */
-
     function historico() {
 
       abrirModal(
@@ -3773,7 +3795,6 @@
 
           </div>
 
-
           <button
             class="primary"
             onclick="fecharModal()"
@@ -3785,11 +3806,6 @@
       );
 
     }
-
-
-    /* =========================
-       SAIR
-    ========================= */
 
     function sair() {
 
@@ -3806,11 +3822,6 @@
 
     }
 
-
-    /* =========================
-       CLICAR FORA
-    ========================= */
-
     document
       .getElementById(
         "actionModal"
@@ -3820,7 +3831,8 @@
         function(event) {
 
           if (
-            event.target === this
+            event.target === this &&
+            !rodadaEmAndamento
           ) {
 
             fecharModal();
@@ -3829,11 +3841,6 @@
 
         }
       );
-
-
-    /* =========================
-       ESC FECHA MODAL
-    ========================= */
 
     document.addEventListener(
       "keydown",
@@ -3851,7 +3858,8 @@
           if (
             modal &&
             modal.style.display ===
-            "flex"
+            "flex" &&
+            !rodadaEmAndamento
           ) {
 
             fecharModal();
@@ -3863,11 +3871,6 @@
       }
     );
 
-
-    /* =========================
-       INICIALIZAÇÃO
-    ========================= */
-
     async function iniciarDashboard() {
 
       await carregarConfiguracoes();
@@ -3877,7 +3880,6 @@
       carregarUsuario();
 
     }
-
 
     iniciarDashboard();
 
