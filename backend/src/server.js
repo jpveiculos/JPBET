@@ -57,13 +57,30 @@ function exigirAdmin(req, res, next) {
   if (!sessao) {
     return res.status(401).json({
       ok: false,
-      message: "Sessão administrativa inválida ou expirada."
+      message:
+        "Sessão administrativa inválida ou expirada."
     });
   }
 
   req.admin = sessao;
 
   next();
+}
+
+async function obterAdminId(client, username) {
+  const result = await client.query(
+    `
+    SELECT id
+    FROM admins
+    WHERE username = $1
+    LIMIT 1
+    `,
+    [username]
+  );
+
+  return result.rows.length
+    ? result.rows[0].id
+    : null;
 }
 
 async function registrarAuditoria(
@@ -75,20 +92,11 @@ async function registrarAuditoria(
   description,
   metadata = null
 ) {
-  const adminResult = await client.query(
-    `
-    SELECT id
-    FROM admins
-    WHERE username = $1
-    LIMIT 1
-    `,
-    [adminUsername]
-  );
-
   const adminId =
-    adminResult.rows.length > 0
-      ? adminResult.rows[0].id
-      : null;
+    await obterAdminId(
+      client,
+      adminUsername
+    );
 
   await client.query(
     `
@@ -120,400 +128,483 @@ async function registrarAuditoria(
    API DE AUTENTICAÇÃO
 ========================================================= */
 
-app.use("/api/auth", authRouter);
+app.use(
+  "/api/auth",
+  authRouter
+);
 
 /* =========================================================
    API DE CONFIGURAÇÕES
 ========================================================= */
 
-app.use("/api/settings", settingsRouter);
+app.use(
+  "/api/settings",
+  settingsRouter
+);
 
 /* =========================================================
    API DA ROLETA
    CRÉDITOS VIRTUAIS
 ========================================================= */
 
-app.post("/api/roulette/spin", async (req, res) => {
-  const client = await pool.connect();
+app.post(
+  "/api/roulette/spin",
+  async (req, res) => {
 
-  try {
-    const {
-      userId,
-      betAmount,
-      betType,
-      betValue
-    } = req.body;
+    const client =
+      await pool.connect();
 
-    const userIdNumber = Number(userId);
-    const bet = Number(betAmount);
+    try {
 
-    /* =====================================================
-       VALIDAÇÃO
-    ===================================================== */
+      const {
+        userId,
+        betAmount,
+        betType,
+        betValue
+      } = req.body;
 
-    if (
-      !Number.isInteger(userIdNumber) ||
-      userIdNumber <= 0
-    ) {
-      return res.status(400).json({
-        ok: false,
-        message: "Usuário inválido."
-      });
-    }
+      const userIdNumber =
+        Number(userId);
 
-    if (
-      !Number.isFinite(bet) ||
-      bet <= 0
-    ) {
-      return res.status(400).json({
-        ok: false,
-        message: "Valor da aposta inválido."
-      });
-    }
+      const bet =
+        Number(betAmount);
 
-    /* =====================================================
-       CONFIGURAÇÕES
-    ===================================================== */
-
-    const settingsResult = await pool.query(`
-      SELECT setting_key, setting_value
-      FROM site_settings
-      WHERE setting_key IN (
-        'roulette_enabled',
-        'roulette_min_bet',
-        'roulette_max_bet',
-        'virtual_credits_mode'
-      )
-    `);
-
-    const settings = {};
-
-    for (const row of settingsResult.rows) {
-      settings[row.setting_key] =
-        row.setting_value;
-    }
-
-    const rouletteEnabled =
-      String(
-        settings.roulette_enabled
-      ).toLowerCase() !== "false";
-
-    const virtualCreditsMode =
-      String(
-        settings.virtual_credits_mode
-      ).toLowerCase() !== "false";
-
-    const minBet =
-      Number(
-        settings.roulette_min_bet || 1
-      );
-
-    const maxBet =
-      Number(
-        settings.roulette_max_bet || 100
-      );
-
-    if (!rouletteEnabled) {
-      return res.status(403).json({
-        ok: false,
-        message: "A roleta está desativada."
-      });
-    }
-
-    if (!virtualCreditsMode) {
-      return res.status(403).json({
-        ok: false,
-        message:
-          "A roleta está configurada apenas para créditos virtuais."
-      });
-    }
-
-    if (
-      bet < minBet ||
-      bet > maxBet
-    ) {
-      return res.status(400).json({
-        ok: false,
-        message:
-          `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
-      });
-    }
-
-    /* =====================================================
-       TIPO DE APOSTA
-    ===================================================== */
-
-    const tiposPermitidos = [
-      "red",
-      "black",
-      "number"
-    ];
-
-    if (
-      !tiposPermitidos.includes(betType)
-    ) {
-      return res.status(400).json({
-        ok: false,
-        message:
-          "Tipo de aposta inválido."
-      });
-    }
-
-    let numeroApostado = null;
-
-    if (betType === "number") {
-      numeroApostado = Number(betValue);
+      /* =====================================================
+         VALIDAÇÃO
+      ===================================================== */
 
       if (
-        !Number.isInteger(numeroApostado) ||
-        numeroApostado < 0 ||
-        numeroApostado > 36
+        !Number.isInteger(userIdNumber) ||
+        userIdNumber <= 0
       ) {
         return res.status(400).json({
           ok: false,
           message:
-            "Número da roleta inválido."
+            "Usuário inválido."
         });
       }
-    }
 
-    /* =====================================================
-       TRANSAÇÃO
-    ===================================================== */
+      if (
+        !Number.isFinite(bet) ||
+        bet <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Valor da aposta inválido."
+        });
+      }
 
-    await client.query("BEGIN");
+      /* =====================================================
+         CONFIGURAÇÕES
+      ===================================================== */
 
-    const userResult = await client.query(
-      `
-      SELECT
-        id,
-        username,
-        balance,
-        reserved_balance
-      FROM users
-      WHERE id = $1
-      FOR UPDATE
-      `,
-      [userIdNumber]
-    );
+      const settingsResult =
+        await pool.query(
+          `
+          SELECT
+            setting_key,
+            setting_value
+          FROM site_settings
+          WHERE setting_key IN (
+            'roulette_enabled',
+            'roulette_min_bet',
+            'roulette_max_bet',
+            'virtual_credits_mode'
+          )
+          `
+        );
 
-    if (
-      userResult.rows.length === 0
-    ) {
-      await client.query("ROLLBACK");
+      const settings = {};
 
-      return res.status(404).json({
-        ok: false,
-        message:
-          "Usuário não encontrado."
-      });
-    }
+      for (
+        const row
+        of settingsResult.rows
+      ) {
+        settings[
+          row.setting_key
+        ] = row.setting_value;
+      }
 
-    const user =
-      userResult.rows[0];
+      const rouletteEnabled =
+        String(
+          settings.roulette_enabled
+        ).toLowerCase() !== "false";
 
-    const saldoAtual =
-      Number(user.balance || 0);
+      const virtualCreditsMode =
+        String(
+          settings.virtual_credits_mode
+        ).toLowerCase() !== "false";
 
-    const saldoReservado =
-      Number(user.reserved_balance || 0);
+      const minBet =
+        Number(
+          settings.roulette_min_bet || 1
+        );
 
-    /*
-      Apenas o saldo disponível pode ser utilizado.
-    */
+      const maxBet =
+        Number(
+          settings.roulette_max_bet || 100
+        );
 
-    if (saldoAtual < bet) {
-      await client.query("ROLLBACK");
+      if (!rouletteEnabled) {
+        return res.status(403).json({
+          ok: false,
+          message:
+            "A roleta está desativada."
+        });
+      }
 
-      return res.status(400).json({
-        ok: false,
-        message:
-          "Saldo disponível insuficiente.",
-        balance: saldoAtual,
-        reservedBalance: saldoReservado
-      });
-    }
+      if (!virtualCreditsMode) {
+        return res.status(403).json({
+          ok: false,
+          message:
+            "A roleta está configurada apenas para créditos virtuais."
+        });
+      }
 
-    /* =====================================================
-       SORTEIO
-    ===================================================== */
+      if (
+        bet < minBet ||
+        bet > maxBet
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
+        });
+      }
 
-    const numero =
-      Math.floor(Math.random() * 37);
+      /* =====================================================
+         TIPO DE APOSTA
+      ===================================================== */
 
-    let cor = "green";
-
-    if (numero !== 0) {
-      const numerosVermelhos = [
-        1, 3, 5, 7, 9,
-        12, 14, 16, 18,
-        19, 21, 23, 25,
-        27, 30, 32, 34, 36
+      const tiposPermitidos = [
+        "red",
+        "black",
+        "number"
       ];
 
-      cor =
-        numerosVermelhos.includes(numero)
-          ? "red"
-          : "black";
-    }
-
-    /* =====================================================
-       PRÊMIO
-    ===================================================== */
-
-    let ganhou = false;
-    let premio = 0;
-
-    if (betType === "number") {
-      if (numero === numeroApostado) {
-        ganhou = true;
-
-        // 35:1 + devolução da aposta
-        premio = bet * 36;
-      }
-    }
-
-    if (
-      betType === "red" ||
-      betType === "black"
-    ) {
       if (
-        numero !== 0 &&
-        cor === betType
+        !tiposPermitidos.includes(
+          betType
+        )
       ) {
-        ganhou = true;
-
-        // 1:1 + devolução da aposta
-        premio = bet * 2;
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Tipo de aposta inválido."
+        });
       }
-    }
 
-    /* =====================================================
-       ATUALIZAR SALDO
-    ===================================================== */
+      let numeroApostado = null;
 
-    const novoSaldo =
-      saldoAtual - bet + premio;
+      if (
+        betType === "number"
+      ) {
 
-    await client.query(
-      `
-      UPDATE users
-      SET balance = $1
-      WHERE id = $2
-      `,
-      [
-        novoSaldo,
-        userIdNumber
-      ]
-    );
+        numeroApostado =
+          Number(betValue);
 
-    /* =====================================================
-       REGISTRAR GIRO
-    ===================================================== */
+        if (
+          !Number.isInteger(
+            numeroApostado
+          ) ||
+          numeroApostado < 0 ||
+          numeroApostado > 36
+        ) {
+          return res.status(400).json({
+            ok: false,
+            message:
+              "Número da roleta inválido."
+          });
+        }
+      }
 
-    const resultadoTexto =
-      `${numero}:${cor}:${betType}`;
+      /* =====================================================
+         TRANSAÇÃO
+      ===================================================== */
 
-    const spinResult =
+      await client.query("BEGIN");
+
+      const userResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            username,
+            balance,
+            reserved_balance
+          FROM users
+          WHERE id = $1
+          FOR UPDATE
+          `,
+          [userIdNumber]
+        );
+
+      if (
+        userResult.rows.length === 0
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+          ok: false,
+          message:
+            "Usuário não encontrado."
+        });
+      }
+
+      const user =
+        userResult.rows[0];
+
+      const saldoAtual =
+        Number(
+          user.balance || 0
+        );
+
+      const saldoReservado =
+        Number(
+          user.reserved_balance || 0
+        );
+
+      /*
+        Apenas saldo disponível
+        pode ser utilizado.
+      */
+
+      if (
+        saldoAtual < bet
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Saldo disponível insuficiente.",
+          balance:
+            saldoAtual,
+          reservedBalance:
+            saldoReservado
+        });
+      }
+
+      /* =====================================================
+         SORTEIO
+      ===================================================== */
+
+      const numero =
+        Math.floor(
+          Math.random() * 37
+        );
+
+      let cor = "green";
+
+      if (numero !== 0) {
+
+        const numerosVermelhos = [
+          1, 3, 5, 7, 9,
+          12, 14, 16, 18,
+          19, 21, 23, 25,
+          27, 30, 32, 34, 36
+        ];
+
+        cor =
+          numerosVermelhos.includes(
+            numero
+          )
+            ? "red"
+            : "black";
+      }
+
+      /* =====================================================
+         PRÊMIO
+      ===================================================== */
+
+      let ganhou = false;
+      let premio = 0;
+
+      if (
+        betType === "number"
+      ) {
+
+        if (
+          numero ===
+          numeroApostado
+        ) {
+
+          ganhou = true;
+
+          // 35:1 + devolução da aposta
+          premio =
+            bet * 36;
+        }
+      }
+
+      if (
+        betType === "red" ||
+        betType === "black"
+      ) {
+
+        if (
+          numero !== 0 &&
+          cor === betType
+        ) {
+
+          ganhou = true;
+
+          // 1:1 + devolução da aposta
+          premio =
+            bet * 2;
+        }
+      }
+
+      /* =====================================================
+         ATUALIZAR SALDO
+      ===================================================== */
+
+      const novoSaldo =
+        saldoAtual -
+        bet +
+        premio;
+
       await client.query(
         `
-        INSERT INTO spins
-        (
-          user_id,
-          result,
-          amount
-        )
-        VALUES ($1, $2, $3)
-        RETURNING id, created_at
+        UPDATE users
+        SET balance = $1
+        WHERE id = $2
         `,
         [
-          userIdNumber,
-          resultadoTexto,
-          premio
+          novoSaldo,
+          userIdNumber
         ]
       );
 
-    /* =====================================================
-       REGISTRAR TRANSAÇÃO
-    ===================================================== */
+      /* =====================================================
+         REGISTRAR GIRO
+      ===================================================== */
 
-    await client.query(
-      `
-      INSERT INTO transactions
-      (
-        user_id,
-        type,
-        amount
-      )
-      VALUES ($1, $2, $3)
-      `,
-      [
-        userIdNumber,
-        ganhou
-          ? "roulette_win"
-          : "roulette_bet",
-        ganhou
-          ? premio
-          : -bet
-      ]
-    );
+      const resultadoTexto =
+        `${numero}:${cor}:${betType}`;
 
-    await client.query("COMMIT");
+      const spinResult =
+        await client.query(
+          `
+          INSERT INTO spins
+          (
+            user_id,
+            result,
+            amount
+          )
+          VALUES ($1, $2, $3)
+          RETURNING
+            id,
+            created_at
+          `,
+          [
+            userIdNumber,
+            resultadoTexto,
+            premio
+          ]
+        );
 
-    return res.json({
-      ok: true,
+      /* =====================================================
+         REGISTRAR TRANSAÇÃO
+      ===================================================== */
 
-      spin: {
-        id:
-          spinResult.rows[0].id,
-        number: numero,
-        color: cor,
-        betType,
-        betAmount: bet,
-        won: ganhou,
-        prize: premio
-      },
+      await client.query(
+        `
+        INSERT INTO transactions
+        (
+          user_id,
+          type,
+          amount
+        )
+        VALUES ($1, $2, $3)
+        `,
+        [
+          userIdNumber,
+          ganhou
+            ? "roulette_win"
+            : "roulette_bet",
+          ganhou
+            ? premio
+            : -bet
+        ]
+      );
 
-      user: {
-        id: user.id,
-        username:
-          user.username,
-        balance:
-          Number(novoSaldo),
-        reservedBalance:
-          saldoReservado
-      }
-    });
+      await client.query(
+        "COMMIT"
+      );
 
-  } catch (error) {
+      return res.json({
+        ok: true,
 
-    try {
-      await client.query("ROLLBACK");
-    } catch (_) {}
+        spin: {
+          id:
+            spinResult.rows[0].id,
+          number:
+            numero,
+          color:
+            cor,
+          betType,
+          betAmount:
+            bet,
+          won:
+            ganhou,
+          prize:
+            premio
+        },
 
-    console.error(
-      "Erro na roleta:",
-      error
-    );
+        user: {
+          id:
+            user.id,
+          username:
+            user.username,
+          balance:
+            Number(
+              novoSaldo
+            ),
+          reservedBalance:
+            saldoReservado
+        }
+      });
 
-    return res.status(500).json({
-      ok: false,
-      message:
-        "Erro interno ao executar a roleta."
-    });
+    } catch (error) {
 
-  } finally {
-    client.release();
+      try {
+        await client.query(
+          "ROLLBACK"
+        );
+      } catch (_) {}
+
+      console.error(
+        "Erro na roleta:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        message:
+          "Erro interno ao executar a roleta."
+      });
+
+    } finally {
+      client.release();
+    }
   }
-});
+);
 
 /* =========================================================
    API FINANCEIRA DO JOGADOR
 ========================================================= */
 
-/*
+/* =========================================================
    CONSULTAR SALDO
-*/
+========================================================= */
 
 app.get(
   "/api/account/:userId",
@@ -522,7 +613,9 @@ app.get(
     try {
 
       const userId =
-        Number(req.params.userId);
+        Number(
+          req.params.userId
+        );
 
       if (
         !Number.isInteger(userId) ||
@@ -530,7 +623,8 @@ app.get(
       ) {
         return res.status(400).json({
           ok: false,
-          message: "Usuário inválido."
+          message:
+            "Usuário inválido."
         });
       }
 
@@ -543,7 +637,8 @@ app.get(
             balance,
             reserved_balance,
             (
-              balance + reserved_balance
+              balance +
+              reserved_balance
             ) AS total_balance,
             created_at
           FROM users
@@ -552,7 +647,9 @@ app.get(
           [userId]
         );
 
-      if (result.rows.length === 0) {
+      if (
+        result.rows.length === 0
+      ) {
         return res.status(404).json({
           ok: false,
           message:
@@ -566,14 +663,22 @@ app.get(
       return res.json({
         ok: true,
         user: {
-          id: user.id,
-          username: user.username,
+          id:
+            user.id,
+          username:
+            user.username,
           balance:
-            Number(user.balance || 0),
+            Number(
+              user.balance || 0
+            ),
           reservedBalance:
-            Number(user.reserved_balance || 0),
+            Number(
+              user.reserved_balance || 0
+            ),
           totalBalance:
-            Number(user.total_balance || 0),
+            Number(
+              user.total_balance || 0
+            ),
           createdAt:
             user.created_at
         }
@@ -621,12 +726,15 @@ app.post(
         Number(amount);
 
       if (
-        !Number.isInteger(userIdNumber) ||
+        !Number.isInteger(
+          userIdNumber
+        ) ||
         userIdNumber <= 0
       ) {
         return res.status(400).json({
           ok: false,
-          message: "Usuário inválido."
+          message:
+            "Usuário inválido."
         });
       }
 
@@ -748,12 +856,15 @@ app.post(
         Number(amount);
 
       if (
-        !Number.isInteger(userIdNumber) ||
+        !Number.isInteger(
+          userIdNumber
+        ) ||
         userIdNumber <= 0
       ) {
         return res.status(400).json({
           ok: false,
-          message: "Usuário inválido."
+          message:
+            "Usuário inválido."
         });
       }
 
@@ -770,7 +881,8 @@ app.post(
 
       if (
         !pixKey ||
-        String(pixKey).trim().length === 0
+        String(pixKey).trim()
+          .length === 0
       ) {
         return res.status(400).json({
           ok: false,
@@ -779,12 +891,9 @@ app.post(
         });
       }
 
-      await client.query("BEGIN");
-
-      /*
-        Bloqueia o usuário durante a operação
-        para impedir dois saques simultâneos.
-      */
+      await client.query(
+        "BEGIN"
+      );
 
       const userResult =
         await client.query(
@@ -804,7 +913,10 @@ app.post(
       if (
         userResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -817,20 +929,22 @@ app.post(
         userResult.rows[0];
 
       const saldoDisponivel =
-        Number(user.balance || 0);
+        Number(
+          user.balance || 0
+        );
 
       const saldoReservado =
-        Number(user.reserved_balance || 0);
-
-      /*
-        O valor precisa sair do saldo disponível
-        e entrar no saldo reservado.
-      */
+        Number(
+          user.reserved_balance || 0
+        );
 
       if (
         saldoDisponivel < valor
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(400).json({
           ok: false,
@@ -844,10 +958,12 @@ app.post(
       }
 
       const novoSaldo =
-        saldoDisponivel - valor;
+        saldoDisponivel -
+        valor;
 
       const novaReserva =
-        saldoReservado + valor;
+        saldoReservado +
+        valor;
 
       await client.query(
         `
@@ -910,7 +1026,11 @@ app.post(
           amount
         )
         VALUES
-        ($1, 'withdrawal_reserved', $2)
+        (
+          $1,
+          'withdrawal_reserved',
+          $2
+        )
         `,
         [
           userIdNumber,
@@ -918,7 +1038,9 @@ app.post(
         ]
       );
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.status(201).json({
         ok: true,
@@ -927,7 +1049,8 @@ app.post(
         withdrawal:
           withdrawalResult.rows[0],
         user: {
-          id: user.id,
+          id:
+            user.id,
           username:
             user.username,
           balance:
@@ -935,14 +1058,17 @@ app.post(
           reservedBalance:
             novaReserva,
           totalBalance:
-            novoSaldo + novaReserva
+            novoSaldo +
+            novaReserva
         }
       });
 
     } catch (error) {
 
       try {
-        await client.query("ROLLBACK");
+        await client.query(
+          "ROLLBACK"
+        );
       } catch (_) {}
 
       console.error(
@@ -973,7 +1099,9 @@ app.get(
     try {
 
       const userId =
-        Number(req.params.userId);
+        Number(
+          req.params.userId
+        );
 
       if (
         !Number.isInteger(userId) ||
@@ -981,7 +1109,8 @@ app.get(
       ) {
         return res.status(400).json({
           ok: false,
-          message: "Usuário inválido."
+          message:
+            "Usuário inválido."
         });
       }
 
@@ -995,7 +1124,9 @@ app.get(
             created_at
           FROM transactions
           WHERE user_id = $1
-          ORDER BY created_at DESC, id DESC
+          ORDER BY
+            created_at DESC,
+            id DESC
           `,
           [userId]
         );
@@ -1018,6 +1149,449 @@ app.get(
         message:
           "Erro interno ao consultar histórico."
       });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - ADICIONAR CRÉDITOS AO USUÁRIO
+========================================================= */
+
+app.post(
+  "/api/admin/users/:id/add-credits",
+  exigirAdmin,
+  async (req, res) => {
+
+    const client =
+      await pool.connect();
+
+    try {
+
+      const userId =
+        Number(req.params.id);
+
+      const valor =
+        Number(req.body.amount);
+
+      const reason =
+        String(
+          req.body.reason || ""
+        ).trim();
+
+      if (
+        !Number.isInteger(userId) ||
+        userId <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Usuário inválido."
+        });
+      }
+
+      if (
+        !Number.isFinite(valor) ||
+        valor <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Informe um valor de créditos válido."
+        });
+      }
+
+      if (!reason) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Informe o motivo da alteração."
+        });
+      }
+
+      await client.query(
+        "BEGIN"
+      );
+
+      const userResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            username,
+            balance,
+            reserved_balance
+          FROM users
+          WHERE id = $1
+          FOR UPDATE
+          `,
+          [userId]
+        );
+
+      if (
+        userResult.rows.length === 0
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+          ok: false,
+          message:
+            "Usuário não encontrado."
+        });
+      }
+
+      const user =
+        userResult.rows[0];
+
+      const saldoAntes =
+        Number(
+          user.balance || 0
+        );
+
+      const saldoReservado =
+        Number(
+          user.reserved_balance || 0
+        );
+
+      const saldoDepois =
+        saldoAntes + valor;
+
+      await client.query(
+        `
+        UPDATE users
+        SET balance = $1
+        WHERE id = $2
+        `,
+        [
+          saldoDepois,
+          userId
+        ]
+      );
+
+      await client.query(
+        `
+        INSERT INTO transactions
+        (
+          user_id,
+          type,
+          amount
+        )
+        VALUES
+        (
+          $1,
+          'admin_credit_added',
+          $2
+        )
+        `,
+        [
+          userId,
+          valor
+        ]
+      );
+
+      await registrarAuditoria(
+        client,
+        req.admin.username,
+        "credits_added",
+        "user",
+        userId,
+        "Créditos adicionados manualmente pelo administrador.",
+        {
+          username:
+            user.username,
+          amount:
+            valor,
+          balanceBefore:
+            saldoAntes,
+          balanceAfter:
+            saldoDepois,
+          reservedBalance:
+            saldoReservado,
+          reason
+        }
+      );
+
+      await client.query(
+        "COMMIT"
+      );
+
+      return res.json({
+        ok: true,
+        message:
+          "Créditos adicionados com sucesso.",
+        user: {
+          id:
+            user.id,
+          username:
+            user.username,
+          balance:
+            saldoDepois,
+          reservedBalance:
+            saldoReservado,
+          totalBalance:
+            saldoDepois +
+            saldoReservado
+        }
+      });
+
+    } catch (error) {
+
+      try {
+        await client.query(
+          "ROLLBACK"
+        );
+      } catch (_) {}
+
+      console.error(
+        "Erro ao adicionar créditos:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        message:
+          "Erro interno ao adicionar créditos."
+      });
+
+    } finally {
+      client.release();
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - REMOVER CRÉDITOS DO USUÁRIO
+========================================================= */
+
+app.post(
+  "/api/admin/users/:id/remove-credits",
+  exigirAdmin,
+  async (req, res) => {
+
+    const client =
+      await pool.connect();
+
+    try {
+
+      const userId =
+        Number(req.params.id);
+
+      const valor =
+        Number(req.body.amount);
+
+      const reason =
+        String(
+          req.body.reason || ""
+        ).trim();
+
+      if (
+        !Number.isInteger(userId) ||
+        userId <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Usuário inválido."
+        });
+      }
+
+      if (
+        !Number.isFinite(valor) ||
+        valor <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Informe um valor de créditos válido."
+        });
+      }
+
+      if (!reason) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Informe o motivo da alteração."
+        });
+      }
+
+      await client.query(
+        "BEGIN"
+      );
+
+      const userResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            username,
+            balance,
+            reserved_balance
+          FROM users
+          WHERE id = $1
+          FOR UPDATE
+          `,
+          [userId]
+        );
+
+      if (
+        userResult.rows.length === 0
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+          ok: false,
+          message:
+            "Usuário não encontrado."
+        });
+      }
+
+      const user =
+        userResult.rows[0];
+
+      const saldoAntes =
+        Number(
+          user.balance || 0
+        );
+
+      const saldoReservado =
+        Number(
+          user.reserved_balance || 0
+        );
+
+      /*
+        Somente saldo disponível
+        pode ser removido.
+
+        Créditos reservados para saque
+        ficam protegidos.
+      */
+
+      if (
+        saldoAntes < valor
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(400).json({
+          ok: false,
+          message:
+            "O usuário não possui saldo disponível suficiente para essa remoção.",
+          balance:
+            saldoAntes,
+          reservedBalance:
+            saldoReservado
+        });
+      }
+
+      const saldoDepois =
+        saldoAntes - valor;
+
+      await client.query(
+        `
+        UPDATE users
+        SET balance = $1
+        WHERE id = $2
+        `,
+        [
+          saldoDepois,
+          userId
+        ]
+      );
+
+      await client.query(
+        `
+        INSERT INTO transactions
+        (
+          user_id,
+          type,
+          amount
+        )
+        VALUES
+        (
+          $1,
+          'admin_credit_removed',
+          $2
+        )
+        `,
+        [
+          userId,
+          -valor
+        ]
+      );
+
+      await registrarAuditoria(
+        client,
+        req.admin.username,
+        "credits_removed",
+        "user",
+        userId,
+        "Créditos removidos manualmente pelo administrador.",
+        {
+          username:
+            user.username,
+          amount:
+            valor,
+          balanceBefore:
+            saldoAntes,
+          balanceAfter:
+            saldoDepois,
+          reservedBalance:
+            saldoReservado,
+          reason
+        }
+      );
+
+      await client.query(
+        "COMMIT"
+      );
+
+      return res.json({
+        ok: true,
+        message:
+          "Créditos removidos com sucesso.",
+        user: {
+          id:
+            user.id,
+          username:
+            user.username,
+          balance:
+            saldoDepois,
+          reservedBalance:
+            saldoReservado,
+          totalBalance:
+            saldoDepois +
+            saldoReservado
+        }
+      });
+
+    } catch (error) {
+
+      try {
+        await client.query(
+          "ROLLBACK"
+        );
+      } catch (_) {}
+
+      console.error(
+        "Erro ao remover créditos:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        message:
+          "Erro interno ao remover créditos."
+      });
+
+    } finally {
+      client.release();
     }
   }
 );
@@ -1047,9 +1621,13 @@ app.get(
             w.player_note,
             w.admin_note,
             w.rejection_reason,
+            w.approved_by,
             w.approved_at,
+            w.paid_by,
             w.paid_at,
+            w.rejected_by,
             w.rejected_at,
+            w.refunded_by,
             w.refunded_at,
             w.created_at,
             w.updated_at
@@ -1102,7 +1680,9 @@ app.post(
         Number(req.params.id);
 
       if (
-        !Number.isInteger(withdrawalId) ||
+        !Number.isInteger(
+          withdrawalId
+        ) ||
         withdrawalId <= 0
       ) {
         return res.status(400).json({
@@ -1112,7 +1692,9 @@ app.post(
         });
       }
 
-      await client.query("BEGIN");
+      await client.query(
+        "BEGIN"
+      );
 
       const result =
         await client.query(
@@ -1132,7 +1714,10 @@ app.post(
       if (
         result.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1145,9 +1730,13 @@ app.post(
         result.rows[0];
 
       if (
-        withdrawal.status !== "pending"
+        withdrawal.status !==
+        "pending"
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(400).json({
           ok: false,
@@ -1156,21 +1745,11 @@ app.post(
         });
       }
 
-      const adminResult =
-        await client.query(
-          `
-          SELECT id
-          FROM admins
-          WHERE username = $1
-          LIMIT 1
-          `,
-          [req.admin.username]
-        );
-
       const adminId =
-        adminResult.rows.length
-          ? adminResult.rows[0].id
-          : null;
+        await obterAdminId(
+          client,
+          req.admin.username
+        );
 
       await client.query(
         `
@@ -1197,13 +1776,17 @@ app.post(
         "Saque aprovado pelo administrador.",
         {
           amount:
-            Number(withdrawal.amount),
+            Number(
+              withdrawal.amount
+            ),
           userId:
             withdrawal.user_id
         }
       );
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.json({
         ok: true,
@@ -1214,7 +1797,9 @@ app.post(
     } catch (error) {
 
       try {
-        await client.query("ROLLBACK");
+        await client.query(
+          "ROLLBACK"
+        );
       } catch (_) {}
 
       console.error(
@@ -1235,7 +1820,8 @@ app.post(
 );
 
 /* =========================================================
-   ADMIN - REJEITAR SAQUE E DEVOLVER AO SALDO
+   ADMIN - REJEITAR SAQUE
+   DEVOLVER VALOR AO SALDO
 ========================================================= */
 
 app.post(
@@ -1251,12 +1837,15 @@ app.post(
       const withdrawalId =
         Number(req.params.id);
 
-      const {
-        reason
-      } = req.body;
+      const reason =
+        String(
+          req.body.reason || ""
+        ).trim();
 
       if (
-        !Number.isInteger(withdrawalId) ||
+        !Number.isInteger(
+          withdrawalId
+        ) ||
         withdrawalId <= 0
       ) {
         return res.status(400).json({
@@ -1266,7 +1855,9 @@ app.post(
         });
       }
 
-      await client.query("BEGIN");
+      await client.query(
+        "BEGIN"
+      );
 
       const withdrawalResult =
         await client.query(
@@ -1286,7 +1877,10 @@ app.post(
       if (
         withdrawalResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1299,9 +1893,13 @@ app.post(
         withdrawalResult.rows[0];
 
       if (
-        withdrawal.status !== "pending"
+        withdrawal.status !==
+        "pending"
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(400).json({
           ok: false,
@@ -1327,7 +1925,10 @@ app.post(
       if (
         userResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1340,18 +1941,27 @@ app.post(
         userResult.rows[0];
 
       const valor =
-        Number(withdrawal.amount);
+        Number(
+          withdrawal.amount
+        );
 
       const saldoAtual =
-        Number(user.balance || 0);
+        Number(
+          user.balance || 0
+        );
 
       const reservadoAtual =
-        Number(user.reserved_balance || 0);
+        Number(
+          user.reserved_balance || 0
+        );
 
       if (
         reservadoAtual < valor
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(409).json({
           ok: false,
@@ -1366,21 +1976,11 @@ app.post(
       const novaReserva =
         reservadoAtual - valor;
 
-      const adminResult =
-        await client.query(
-          `
-          SELECT id
-          FROM admins
-          WHERE username = $1
-          LIMIT 1
-          `,
-          [req.admin.username]
-        );
-
       const adminId =
-        adminResult.rows.length
-          ? adminResult.rows[0].id
-          : null;
+        await obterAdminId(
+          client,
+          req.admin.username
+        );
 
       await client.query(
         `
@@ -1405,11 +2005,14 @@ app.post(
           rejection_reason = $1,
           rejected_by = $2,
           rejected_at = CURRENT_TIMESTAMP,
+          refunded_by = $2,
+          refunded_at = CURRENT_TIMESTAMP,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = $3
         `,
         [
-          reason || "Saque rejeitado.",
+          reason ||
+            "Saque rejeitado.",
           adminId,
           withdrawalId
         ]
@@ -1424,7 +2027,11 @@ app.post(
           amount
         )
         VALUES
-        ($1, 'withdrawal_refunded', $2)
+        (
+          $1,
+          'withdrawal_refunded',
+          $2
+        )
         `,
         [
           withdrawal.user_id,
@@ -1440,32 +2047,49 @@ app.post(
         withdrawalId,
         "Saque rejeitado e valor devolvido ao saldo disponível.",
         {
-          amount: valor,
+          amount:
+            valor,
           userId:
             withdrawal.user_id,
           reason:
-            reason || "Saque rejeitado."
+            reason ||
+            "Saque rejeitado.",
+          balanceBefore:
+            saldoAtual,
+          balanceAfter:
+            novoSaldo,
+          reservedBefore:
+            reservadoAtual,
+          reservedAfter:
+            novaReserva
         }
       );
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.json({
         ok: true,
         message:
           "Saque rejeitado e valor devolvido ao saldo disponível.",
         user: {
-          balance: novoSaldo,
-          reservedBalance: novaReserva,
+          balance:
+            novoSaldo,
+          reservedBalance:
+            novaReserva,
           totalBalance:
-            novoSaldo + novaReserva
+            novoSaldo +
+            novaReserva
         }
       });
 
     } catch (error) {
 
       try {
-        await client.query("ROLLBACK");
+        await client.query(
+          "ROLLBACK"
+        );
       } catch (_) {}
 
       console.error(
@@ -1503,7 +2127,9 @@ app.post(
         Number(req.params.id);
 
       if (
-        !Number.isInteger(withdrawalId) ||
+        !Number.isInteger(
+          withdrawalId
+        ) ||
         withdrawalId <= 0
       ) {
         return res.status(400).json({
@@ -1513,7 +2139,9 @@ app.post(
         });
       }
 
-      await client.query("BEGIN");
+      await client.query(
+        "BEGIN"
+      );
 
       const withdrawalResult =
         await client.query(
@@ -1533,7 +2161,10 @@ app.post(
       if (
         withdrawalResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1546,9 +2177,13 @@ app.post(
         withdrawalResult.rows[0];
 
       if (
-        withdrawal.status !== "approved"
+        withdrawal.status !==
+        "approved"
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(400).json({
           ok: false,
@@ -1574,7 +2209,10 @@ app.post(
       if (
         userResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1587,18 +2225,27 @@ app.post(
         userResult.rows[0];
 
       const valor =
-        Number(withdrawal.amount);
+        Number(
+          withdrawal.amount
+        );
 
       const saldoAtual =
-        Number(user.balance || 0);
+        Number(
+          user.balance || 0
+        );
 
       const reservadoAtual =
-        Number(user.reserved_balance || 0);
+        Number(
+          user.reserved_balance || 0
+        );
 
       if (
         reservadoAtual < valor
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(409).json({
           ok: false,
@@ -1608,32 +2255,21 @@ app.post(
       }
 
       /*
-        Aqui ocorre a BAIXA definitiva.
-
-        O valor já havia saído do saldo disponível
+        O valor já foi retirado do saldo disponível
         quando o saque foi solicitado.
 
-        Agora somente removemos a reserva.
+        Neste momento ocorre somente a baixa
+        definitiva da reserva.
       */
 
       const novaReserva =
         reservadoAtual - valor;
 
-      const adminResult =
-        await client.query(
-          `
-          SELECT id
-          FROM admins
-          WHERE username = $1
-          LIMIT 1
-          `,
-          [req.admin.username]
-        );
-
       const adminId =
-        adminResult.rows.length
-          ? adminResult.rows[0].id
-          : null;
+        await obterAdminId(
+          client,
+          req.admin.username
+        );
 
       await client.query(
         `
@@ -1673,7 +2309,11 @@ app.post(
           amount
         )
         VALUES
-        ($1, 'withdrawal_paid', $2)
+        (
+          $1,
+          'withdrawal_paid',
+          $2
+        )
         `,
         [
           withdrawal.user_id,
@@ -1689,31 +2329,44 @@ app.post(
         withdrawalId,
         "Saque concluído e valor reservado baixado definitivamente.",
         {
-          amount: valor,
+          amount:
+            valor,
           userId:
-            withdrawal.user_id
+            withdrawal.user_id,
+          balance:
+            saldoAtual,
+          reservedBefore:
+            reservadoAtual,
+          reservedAfter:
+            novaReserva
         }
       );
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.json({
         ok: true,
         message:
           "Saque concluído. O valor reservado foi baixado.",
         user: {
-          balance: saldoAtual,
+          balance:
+            saldoAtual,
           reservedBalance:
             novaReserva,
           totalBalance:
-            saldoAtual + novaReserva
+            saldoAtual +
+            novaReserva
         }
       });
 
     } catch (error) {
 
       try {
-        await client.query("ROLLBACK");
+        await client.query(
+          "ROLLBACK"
+        );
       } catch (_) {}
 
       console.error(
@@ -1756,7 +2409,9 @@ app.get(
             d.payment_method,
             d.player_note,
             d.admin_note,
+            d.approved_by,
             d.approved_at,
+            d.rejected_by,
             d.rejected_at,
             d.created_at,
             d.updated_at
@@ -1809,7 +2464,9 @@ app.post(
         Number(req.params.id);
 
       if (
-        !Number.isInteger(depositId) ||
+        !Number.isInteger(
+          depositId
+        ) ||
         depositId <= 0
       ) {
         return res.status(400).json({
@@ -1819,7 +2476,9 @@ app.post(
         });
       }
 
-      await client.query("BEGIN");
+      await client.query(
+        "BEGIN"
+      );
 
       const depositResult =
         await client.query(
@@ -1839,7 +2498,10 @@ app.post(
       if (
         depositResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1852,9 +2514,13 @@ app.post(
         depositResult.rows[0];
 
       if (
-        deposit.status !== "pending"
+        deposit.status !==
+        "pending"
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(400).json({
           ok: false,
@@ -1880,7 +2546,10 @@ app.post(
       if (
         userResult.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -1893,29 +2562,23 @@ app.post(
         userResult.rows[0];
 
       const saldoAtual =
-        Number(user.balance || 0);
+        Number(
+          user.balance || 0
+        );
 
       const valor =
-        Number(deposit.amount);
+        Number(
+          deposit.amount
+        );
 
       const novoSaldo =
         saldoAtual + valor;
 
-      const adminResult =
-        await client.query(
-          `
-          SELECT id
-          FROM admins
-          WHERE username = $1
-          LIMIT 1
-          `,
-          [req.admin.username]
-        );
-
       const adminId =
-        adminResult.rows.length
-          ? adminResult.rows[0].id
-          : null;
+        await obterAdminId(
+          client,
+          req.admin.username
+        );
 
       await client.query(
         `
@@ -1954,7 +2617,11 @@ app.post(
           amount
         )
         VALUES
-        ($1, 'deposit_approved', $2)
+        (
+          $1,
+          'deposit_approved',
+          $2
+        )
         `,
         [
           deposit.user_id,
@@ -1970,13 +2637,20 @@ app.post(
         depositId,
         "Depósito aprovado e créditos adicionados ao saldo disponível.",
         {
-          amount: valor,
+          amount:
+            valor,
           userId:
-            deposit.user_id
+            deposit.user_id,
+          balanceBefore:
+            saldoAtual,
+          balanceAfter:
+            novoSaldo
         }
       );
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.json({
         ok: true,
@@ -1989,7 +2663,9 @@ app.post(
     } catch (error) {
 
       try {
-        await client.query("ROLLBACK");
+        await client.query(
+          "ROLLBACK"
+        );
       } catch (_) {}
 
       console.error(
@@ -2026,12 +2702,15 @@ app.post(
       const depositId =
         Number(req.params.id);
 
-      const {
-        reason
-      } = req.body;
+      const reason =
+        String(
+          req.body.reason || ""
+        ).trim();
 
       if (
-        !Number.isInteger(depositId) ||
+        !Number.isInteger(
+          depositId
+        ) ||
         depositId <= 0
       ) {
         return res.status(400).json({
@@ -2041,7 +2720,9 @@ app.post(
         });
       }
 
-      await client.query("BEGIN");
+      await client.query(
+        "BEGIN"
+      );
 
       const result =
         await client.query(
@@ -2061,7 +2742,10 @@ app.post(
       if (
         result.rows.length === 0
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(404).json({
           ok: false,
@@ -2074,9 +2758,13 @@ app.post(
         result.rows[0];
 
       if (
-        deposit.status !== "pending"
+        deposit.status !==
+        "pending"
       ) {
-        await client.query("ROLLBACK");
+
+        await client.query(
+          "ROLLBACK"
+        );
 
         return res.status(400).json({
           ok: false,
@@ -2085,21 +2773,11 @@ app.post(
         });
       }
 
-      const adminResult =
-        await client.query(
-          `
-          SELECT id
-          FROM admins
-          WHERE username = $1
-          LIMIT 1
-          `,
-          [req.admin.username]
-        );
-
       const adminId =
-        adminResult.rows.length
-          ? adminResult.rows[0].id
-          : null;
+        await obterAdminId(
+          client,
+          req.admin.username
+        );
 
       await client.query(
         `
@@ -2113,7 +2791,8 @@ app.post(
         WHERE id = $3
         `,
         [
-          reason || "Depósito rejeitado.",
+          reason ||
+            "Depósito rejeitado.",
           adminId,
           depositId
         ]
@@ -2128,15 +2807,20 @@ app.post(
         "Depósito rejeitado pelo administrador.",
         {
           amount:
-            Number(deposit.amount),
+            Number(
+              deposit.amount
+            ),
           userId:
             deposit.user_id,
           reason:
-            reason || "Depósito rejeitado."
+            reason ||
+            "Depósito rejeitado."
         }
       );
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.json({
         ok: true,
@@ -2147,7 +2831,9 @@ app.post(
     } catch (error) {
 
       try {
-        await client.query("ROLLBACK");
+        await client.query(
+          "ROLLBACK"
+        );
       } catch (_) {}
 
       console.error(
@@ -2187,7 +2873,8 @@ app.get(
             balance,
             reserved_balance,
             (
-              balance + reserved_balance
+              balance +
+              reserved_balance
             ) AS total_balance,
             created_at
           FROM users
@@ -2284,8 +2971,11 @@ const PORT =
     process.env.PORT || 3000
   );
 
-app.listen(PORT, () => {
-  console.log(
-    `JPBET rodando na porta ${PORT}`
-  );
-});
+app.listen(
+  PORT,
+  () => {
+    console.log(
+      `JPBET rodando na porta ${PORT}`
+    );
+  }
+);
