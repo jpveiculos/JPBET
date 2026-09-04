@@ -186,6 +186,37 @@ const configuracoesPadrao = [
   [
     "virtual_credits_disclaimer",
     "Os créditos desta versão não representam dinheiro real."
+  ],
+  /* =========================
+     PIX / DEPÓSITOS
+  ========================= */
+  [
+    "pix_enabled",
+    "true"
+  ],
+  [
+    "pix_key",
+    "38135fb2-dd1f-44aa-ab51-d2670ee36c7d"
+  ],
+  [
+    "pix_key_type",
+    "aleatoria"
+  ],
+  [
+    "pix_receiver_name",
+    "João Paulo da Silva"
+  ],
+  [
+    "pix_city",
+    "Paramirim"
+  ],
+  [
+    "pix_description",
+    "JPBET"
+  ],
+  [
+    "pix_instructions",
+    "Após realizar o Pix, clique em JÁ FIZ O PIX. O crédito será liberado somente após a conferência do administrador."
   ]
 ];
 /* =========================
