@@ -2432,4 +2432,4 @@ app.listen(
       `JPBET iniciado na porta ${PORT}`
     );
   }
-);t
+);
