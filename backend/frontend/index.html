@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>JPBET</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+
+  <main id="app">
+
+    <section class="hero">
+
+      <div class="container">
+
+        <h1>JPBET</h1>
+
+        <p>
+          Sua plataforma de jogos.
+        </p>
+
+        <div class="actions">
+
+          <button
+            type="button"
+            onclick="abrirLogin()"
+          >
+            Entrar
+          </button>
+
+          <button
+            type="button"
+            onclick="abrirLogin(); setTimeout(mostrarCadastro, 50)"
+          >
+            Criar conta
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- LOGIN / CADASTRO -->
+
+  <div
+    id="loginModal"
+    class="modal"
+  >
+
+    <div class="modal-content">
+
+      <button
+        type="button"
+        class="close"
+        onclick="fecharLogin()"
+      >
+        ×
+      </button>
+
+
+      <!-- LOGIN -->
+
+      <div id="loginForm">
+
+        <h2>Entrar</h2>
+
+        <input
+          type="text"
+          id="username"
+          placeholder="Usuário"
+          autocomplete="username"
+        >
+
+        <input
+          type="password"
+          id="password"
+          placeholder="Senha"
+          autocomplete="current-password"
+        >
+
+        <button
+          type="button"
+          onclick="entrar()"
+        >
+          Entrar
+        </button>
+
+        <p id="loginMessage"></p>
+
+        <p>
+          Ainda não possui uma conta?
+        </p>
+
+        <button
+          type="button"
+          onclick="mostrarCadastro()"
+        >
+          Criar conta
+        </button>
+
+      </div>
+
+
+      <!-- CADASTRO -->
+
+      <div
+        id="registerForm"
+        style="display: none;"
+      >
+
+        <h2>Criar conta</h2>
+
+        <input
+          type="text"
+          id="registerUsername"
+          placeholder="Usuário"
+          autocomplete="username"
+        >
+
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Senha"
+          autocomplete="new-password"
+        >
+
+        <input
+          type="password"
+          id="registerPasswordConfirm"
+          placeholder="Confirme a senha"
+          autocomplete="new-password"
+        >
+
+        <button
+          type="button"
+          onclick="cadastrar()"
+        >
+          Criar conta
+        </button>
+
+        <p id="registerMessage"></p>
+
+        <p>
+          Já possui uma conta?
+        </p>
+
+        <button
+          type="button"
+          onclick="mostrarLogin()"
+        >
+          Voltar para login
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="app.js"></script>
+
+</body>
+</html>
