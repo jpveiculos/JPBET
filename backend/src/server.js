@@ -30,7 +30,9 @@ import {
    SISTEMA DE JOGOS
 ========================= */
 
-import gamesRouter from "./games.js";
+import gamesRouter, {
+  garantirTabelasJogos
+} from "./games.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,6 +60,7 @@ app.use(
 ========================= */
 
 await garantirConfiguracoes();
+await garantirTabelasJogos();
 
 /* =========================
    FUNÇÕES AUXILIARES
