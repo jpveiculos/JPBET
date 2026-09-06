@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import crypto from "crypto";
+import authRouter from "./auth.js";
 
 import { pool } from "./db.js";
 
@@ -42,6 +43,10 @@ const app = express();
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+app.use(
+  "/api",
+  authRouter
+);
 /* =========================
    ARQUIVOS FRONTEND
 ========================= */
