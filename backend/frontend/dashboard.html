@@ -1,20 +1,14 @@
 const API_URL = "/api";
 
 /* =========================
-   DADOS DO USUÁRIO
+   USUÁRIO
 ========================= */
 
-function obterUsuario() {
+function getUser() {
   try {
-    const usuario =
-      localStorage.getItem("jpbet_user");
+    const user = localStorage.getItem("jpbet_user");
 
-    if (!usuario) {
-      return null;
-    }
-
-    return JSON.parse(usuario);
-
+    return user ? JSON.parse(user) : null;
   } catch (error) {
     console.error(error);
     return null;
@@ -26,28 +20,21 @@ function obterUsuario() {
    TOKEN
 ========================= */
 
-function obterToken() {
-  return localStorage.getItem(
-    "jpbet_token"
-  );
+function getToken() {
+  return localStorage.getItem("jpbet_token");
 }
 
 
 /* =========================
-   VERIFICAR LOGIN
+   VERIFICAR SESSÃO
 ========================= */
 
-function verificarLogin() {
-  const usuario =
-    obterUsuario();
+function verificarSessao() {
+  const user = getUser();
+  const token = getToken();
 
-  const token =
-    obterToken();
-
-  if (!usuario || !token) {
-    window.location.href =
-      "index.html";
-
+  if (!user || !token) {
+    window.location.href = "index.html";
     return false;
   }
 
@@ -56,36 +43,53 @@ function verificarLogin() {
 
 
 /* =========================
-   MOSTRAR USUÁRIO
+   FORMATAR DINHEIRO
 ========================= */
 
-function mostrarUsuario() {
-  const usuario =
-    obterUsuario();
+function formatarDinheiro(valor) {
+  const numero = Number(valor) || 0;
 
-  if (!usuario) {
+  return numero.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+
+/* =========================
+   MOSTRAR DADOS
+========================= */
+
+function mostrarDadosUsuario() {
+  const user = getUser();
+
+  if (!user) {
     return;
   }
 
   const nome =
-    usuario.username ||
-    usuario.name ||
-    usuario.nome ||
-    "---";
+    user.username ||
+    user.nome ||
+    user.name ||
+    "Usuário";
+
+  const saldo =
+    user.balance ??
+    user.saldo ??
+    user.balanceAmount ??
+    0;
 
   const userName =
-    document.getElementById(
-      "userName"
-    );
+    document.getElementById("userName");
 
   const welcomeMessage =
-    document.getElementById(
-      "welcomeMessage"
-    );
+    document.getElementById("welcomeMessage");
+
+  const userBalance =
+    document.getElementById("userBalance");
 
   if (userName) {
-    userName.textContent =
-      nome;
+    userName.textContent = nome;
   }
 
   if (welcomeMessage) {
@@ -93,240 +97,70 @@ function mostrarUsuario() {
       `Bem-vindo, ${nome}!`;
   }
 
-  atualizarSaldo(usuario);
-}
-
-
-/* =========================
-   SALDO
-========================= */
-
-function atualizarSaldo(usuario) {
-  const saldoElement =
-    document.getElementById(
-      "userBalance"
-    );
-
-  if (!saldoElement) {
-    return;
+  if (userBalance) {
+    userBalance.textContent =
+      formatarDinheiro(saldo);
   }
-
-  const saldo =
-    Number(
-      usuario.balance ??
-      usuario.saldo ??
-      0
-    );
-
-  saldoElement.textContent =
-    saldo.toLocaleString(
-      "pt-BR",
-      {
-        style: "currency",
-        currency: "BRL"
-      }
-    );
 }
 
 
 /* =========================
-   CARREGAR PERFIL
+   ATUALIZAR PERFIL
 ========================= */
 
-async function carregarPerfil() {
-  const token =
-    obterToken();
+async function atualizarPerfil() {
+  const token = getToken();
 
   if (!token) {
     return;
   }
 
   try {
-    const response =
-      await fetch(
-        `${API_URL}/auth/me`,
-        {
-          method: "GET",
+    const response = await fetch(
+      `${API_URL}/auth/me`,
+      {
+        method: "GET",
 
-          headers: {
-            "Authorization":
-              `Bearer ${token}`
-          }
+        headers: {
+          "Authorization": `Bearer ${token}`
         }
-      );
+      }
+    );
 
     if (!response.ok) {
       return;
     }
 
-    const data =
-      await response
-        .json()
-        .catch(() => ({}));
+    const data = await response
+      .json()
+      .catch(() => null);
 
-    const usuario =
+    if (!data) {
+      return;
+    }
+
+    const user =
       data.user ||
       data.usuario ||
       data;
 
     if (
-      usuario &&
-      typeof usuario === "object"
+      user &&
+      typeof user === "object"
     ) {
       localStorage.setItem(
         "jpbet_user",
-        JSON.stringify(usuario)
+        JSON.stringify(user)
       );
 
-      mostrarUsuario();
+      mostrarDadosUsuario();
     }
 
   } catch (error) {
     console.error(
-      "Erro ao carregar perfil:",
+      "Erro ao atualizar perfil:",
       error
     );
-  }
-}
-
-
-/* =========================
-   CARREGAR JOGOS
-========================= */
-
-async function carregarJogos() {
-  const container =
-    document.getElementById(
-      "gamesContainer"
-    );
-
-  const message =
-    document.getElementById(
-      "gamesMessage"
-    );
-
-  if (!container) {
-    return;
-  }
-
-  try {
-    const token =
-      obterToken();
-
-    const headers = {};
-
-    if (token) {
-      headers.Authorization =
-        `Bearer ${token}`;
-    }
-
-    const response =
-      await fetch(
-        `${API_URL}/games`,
-        {
-          method: "GET",
-          headers
-        }
-      );
-
-    if (!response.ok) {
-      throw new Error(
-        "Não foi possível carregar os jogos."
-      );
-    }
-
-    const data =
-      await response
-        .json()
-        .catch(() => []);
-
-    const jogos =
-      Array.isArray(data)
-        ? data
-        : (
-            data.games ||
-            data.jogos ||
-            []
-          );
-
-    container.innerHTML = "";
-
-    if (!jogos.length) {
-      if (message) {
-        message.textContent =
-          "Nenhum jogo disponível no momento.";
-      }
-
-      return;
-    }
-
-    if (message) {
-      message.textContent = "";
-    }
-
-    jogos.forEach(
-      (jogo) => {
-        const card =
-          document.createElement(
-            "div"
-          );
-
-        card.className =
-          "game-card";
-
-        const nome =
-          jogo.name ||
-          jogo.nome ||
-          "Jogo";
-
-        card.innerHTML = `
-          <h3>${escaparHTML(nome)}</h3>
-          <button
-            type="button"
-            onclick="abrirJogo('${escaparAtributo(
-              jogo.id ||
-              jogo._id ||
-              ""
-            )}')"
-          >
-            Jogar
-          </button>
-        `;
-
-        container.appendChild(
-          card
-        );
-      }
-    );
-
-  } catch (error) {
-    console.error(error);
-
-    if (message) {
-      message.textContent =
-        "Os jogos ainda não estão disponíveis.";
-    }
-  }
-}
-
-
-/* =========================
-   ABRIR JOGO
-========================= */
-
-function abrirJogo(id) {
-  if (!id) {
-    return;
-  }
-
-  const mensagem =
-    document.getElementById(
-      "dashboardMessage"
-    );
-
-  if (mensagem) {
-    mensagem.textContent =
-      "O jogo será disponibilizado em breve.";
   }
 }
 
@@ -350,42 +184,19 @@ function sair() {
 
 
 /* =========================
-   SEGURANÇA HTML
-========================= */
-
-function escaparHTML(valor) {
-  return String(valor)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function escaparAtributo(valor) {
-  return String(valor)
-    .replaceAll("\\", "\\\\")
-    .replaceAll("'", "\\'")
-    .replaceAll('"', "&quot;");
-}
-
-
-/* =========================
-   INICIALIZAÇÃO
+   INICIAR DASHBOARD
 ========================= */
 
 document.addEventListener(
   "DOMContentLoaded",
-  async () => {
+  () => {
 
-    if (!verificarLogin()) {
+    if (!verificarSessao()) {
       return;
     }
 
-    mostrarUsuario();
+    mostrarDadosUsuario();
 
-    await carregarPerfil();
-
-    await carregarJogos();
+    atualizarPerfil();
   }
 );
