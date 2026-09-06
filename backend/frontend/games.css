@@ -1,0 +1,435 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background:
+    radial-gradient(
+      circle at top,
+      #242424,
+      #080808 70%
+    );
+  color: white;
+}
+
+button {
+  font-family: inherit;
+}
+
+.topbar {
+  min-height: 70px;
+  padding: 15px 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #111;
+  border-bottom: 1px solid #333;
+}
+
+.brand {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.balance {
+  background: #1d1d1d;
+  padding: 10px 15px;
+  border-radius: 10px;
+}
+
+main {
+  width: min(1100px, 94%);
+  margin: 30px auto;
+}
+
+.games-list {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
+  gap: 18px;
+}
+
+.game-card {
+  border: 1px solid #333;
+  border-radius: 18px;
+  padding: 20px;
+
+  min-height: 180px;
+
+  color: white;
+  background:
+    linear-gradient(
+      145deg,
+      #252525,
+      #111
+    );
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    transform .2s,
+    border-color .2s;
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+  border-color: #777;
+}
+
+.game-icon {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+.game-info h2 {
+  margin: 0 0 8px;
+}
+
+.game-info p {
+  color: #bbb;
+}
+
+.game-info small {
+  color: #888;
+}
+
+.play {
+  display: inline-block;
+
+  margin-top: 15px;
+  padding: 10px 16px;
+
+  border-radius: 9px;
+
+  background: #fff;
+  color: #000;
+
+  font-weight: 800;
+}
+
+.machine {
+  max-width: 850px;
+  margin: auto;
+
+  padding: 20px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #1c1c1c,
+      #090909
+    );
+
+  border: 1px solid #444;
+
+  box-shadow:
+    0 20px 60px
+    rgba(0,0,0,.5);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.back {
+  background: none;
+  border: 0;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.machine-header {
+  text-align: center;
+  margin: 15px 0 20px;
+}
+
+.machine-header h1 {
+  margin-bottom: 8px;
+}
+
+.machine-header div {
+  color: #aaa;
+}
+
+.reels {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      var(--reels, 5),
+      1fr
+    );
+
+  gap: 8px;
+
+  background: #050505;
+
+  padding: 12px;
+
+  border-radius: 15px;
+
+  border: 2px solid #444;
+
+  overflow: hidden;
+}
+
+.reel {
+  min-height: 120px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.symbol {
+  min-height: 110px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fff,
+      #ddd
+    );
+
+  color: #111;
+
+  border-radius: 8px;
+
+  font-size: clamp(
+    18px,
+    4vw,
+    40px
+  );
+
+  font-weight: 900;
+
+  box-shadow:
+    inset 0 0 15px
+    rgba(0,0,0,.25);
+}
+
+.spinning {
+  animation:
+    slotSpin
+    .12s
+    linear infinite;
+}
+
+@keyframes slotSpin {
+
+  0% {
+    transform:
+      translateY(-4px);
+  }
+
+  50% {
+    transform:
+      translateY(4px);
+  }
+
+  100% {
+    transform:
+      translateY(-4px);
+  }
+}
+
+.win {
+  text-align: center;
+
+  margin: 20px 0;
+
+  min-height: 40px;
+
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.controls {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 25px;
+
+  flex-wrap: wrap;
+}
+
+.bet-control {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 10px 15px;
+
+  border-radius: 12px;
+
+  background: #171717;
+}
+
+.bet-control button {
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+  border-radius: 50%;
+
+  font-size: 25px;
+
+  cursor: pointer;
+}
+
+.bet-control div {
+  min-width: 100px;
+  text-align: center;
+}
+
+.bet-control small {
+  display: block;
+  color: #888;
+}
+
+.bet-control strong {
+  font-size: 18px;
+}
+
+.spin {
+  min-width: 180px;
+
+  padding: 17px 30px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: #fff;
+  color: #000;
+
+  font-size: 20px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.spin:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.paytable {
+  margin-top: 30px;
+
+  padding: 18px;
+
+  background: #111;
+
+  border-radius: 15px;
+}
+
+.paytable h2 {
+  margin-top: 0;
+}
+
+.pay-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 9px 0;
+
+  border-bottom: 1px solid #292929;
+
+  color: #ccc;
+}
+
+.history {
+  margin-top: 30px;
+}
+
+.history h2 {
+  font-size: 20px;
+}
+
+.history-item {
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 10px;
+
+  margin-bottom: 5px;
+
+  background: #141414;
+
+  border-radius: 8px;
+}
+
+.error {
+  padding: 20px;
+
+  border-radius: 12px;
+
+  background: #321414;
+
+  color: #ffb0b0;
+}
+
+@media (
+  max-width: 600px
+) {
+
+  .topbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reels {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .symbol {
+    min-height: 85px;
+    font-size: 22px;
+  }
+
+  .controls {
+    gap: 12px;
+  }
+
+  .spin {
+    width: 100%;
+  }
+
+  .pay-row {
+    font-size: 13px;
+  }
+}
