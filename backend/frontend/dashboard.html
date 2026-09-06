@@ -1,202 +1,97 @@
-const API_URL = "/api";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
 
-/* =========================
-   USUÁRIO
-========================= */
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-function getUser() {
-  try {
-    const user = localStorage.getItem("jpbet_user");
+  <title>JPBET - Dashboard</title>
 
-    return user ? JSON.parse(user) : null;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
 
+<body>
 
-/* =========================
-   TOKEN
-========================= */
+  <main class="dashboard">
 
-function getToken() {
-  return localStorage.getItem("jpbet_token");
-}
+    <section class="container">
 
+      <header class="dashboard-header">
 
-/* =========================
-   VERIFICAR SESSÃO
-========================= */
+        <div>
+          <h1>JPBET</h1>
 
-function verificarSessao() {
-  const user = getUser();
-  const token = getToken();
+          <p id="welcomeMessage">
+            Bem-vindo!
+          </p>
+        </div>
 
-  if (!user || !token) {
-    window.location.href = "index.html";
-    return false;
-  }
+        <button
+          type="button"
+          onclick="sair()"
+        >
+          Sair
+        </button>
 
-  return true;
-}
-
-
-/* =========================
-   FORMATAR DINHEIRO
-========================= */
-
-function formatarDinheiro(valor) {
-  const numero = Number(valor) || 0;
-
-  return numero.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  });
-}
+      </header>
 
 
-/* =========================
-   MOSTRAR DADOS
-========================= */
+      <section class="dashboard-card">
 
-function mostrarDadosUsuario() {
-  const user = getUser();
+        <h2>Minha conta</h2>
 
-  if (!user) {
-    return;
-  }
+        <div class="account-info">
 
-  const nome =
-    user.username ||
-    user.nome ||
-    user.name ||
-    "Usuário";
+          <p>
+            <strong>Usuário:</strong>
+            <span id="userName">---</span>
+          </p>
 
-  const saldo =
-    user.balance ??
-    user.saldo ??
-    user.balanceAmount ??
-    0;
+          <p>
+            <strong>Saldo:</strong>
+            <span id="userBalance">
+              R$ 0,00
+            </span>
+          </p>
 
-  const userName =
-    document.getElementById("userName");
+        </div>
 
-  const welcomeMessage =
-    document.getElementById("welcomeMessage");
-
-  const userBalance =
-    document.getElementById("userBalance");
-
-  if (userName) {
-    userName.textContent = nome;
-  }
-
-  if (welcomeMessage) {
-    welcomeMessage.textContent =
-      `Bem-vindo, ${nome}!`;
-  }
-
-  if (userBalance) {
-    userBalance.textContent =
-      formatarDinheiro(saldo);
-  }
-}
+      </section>
 
 
-/* =========================
-   ATUALIZAR PERFIL
-========================= */
+      <section class="dashboard-card">
 
-async function atualizarPerfil() {
-  const token = getToken();
+        <h2>Jogos</h2>
 
-  if (!token) {
-    return;
-  }
+        <p id="gamesMessage">
+          Carregando jogos...
+        </p>
 
-  try {
-    const response = await fetch(
-      `${API_URL}/auth/me`,
-      {
-        method: "GET",
+        <div
+          id="gamesContainer"
+          class="games-container"
+        ></div>
 
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      }
-    );
-
-    if (!response.ok) {
-      return;
-    }
-
-    const data = await response
-      .json()
-      .catch(() => null);
-
-    if (!data) {
-      return;
-    }
-
-    const user =
-      data.user ||
-      data.usuario ||
-      data;
-
-    if (
-      user &&
-      typeof user === "object"
-    ) {
-      localStorage.setItem(
-        "jpbet_user",
-        JSON.stringify(user)
-      );
-
-      mostrarDadosUsuario();
-    }
-
-  } catch (error) {
-    console.error(
-      "Erro ao atualizar perfil:",
-      error
-    );
-  }
-}
+      </section>
 
 
-/* =========================
-   SAIR
-========================= */
+      <p
+        id="dashboardMessage"
+        class="dashboard-message"
+      ></p>
 
-function sair() {
-  localStorage.removeItem(
-    "jpbet_user"
-  );
+    </section>
 
-  localStorage.removeItem(
-    "jpbet_token"
-  );
-
-  window.location.href =
-    "index.html";
-}
+  </main>
 
 
-/* =========================
-   INICIAR DASHBOARD
-========================= */
+  <script src="dashboard.js"></script>
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    if (!verificarSessao()) {
-      return;
-    }
-
-    mostrarDadosUsuario();
-
-    atualizarPerfil();
-  }
-);
+</body>
+</html>
