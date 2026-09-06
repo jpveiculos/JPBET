@@ -1,0 +1,707 @@
+const API = "/api";
+
+let games = [];
+let currentGame = null;
+let currentBet = 0.10;
+let spinning = false;
+
+const user =
+  JSON.parse(
+    localStorage.getItem("jpbet_user") ||
+    "null"
+  );
+
+if (!user || !user.id) {
+  window.location.href = "index.html";
+}
+
+const gamesList =
+  document.getElementById("gamesList");
+
+const machine =
+  document.getElementById("machine");
+
+const machineName =
+  document.getElementById("machineName");
+
+const reels =
+  document.getElementById("reels");
+
+const balance =
+  document.getElementById("balance");
+
+const username =
+  document.getElementById("username");
+
+const betValue =
+  document.getElementById("betValue");
+
+const spinButton =
+  document.getElementById("spinButton");
+
+const win =
+  document.getElementById("win");
+
+const machineMessage =
+  document.getElementById("machineMessage");
+
+const paytable =
+  document.getElementById("paytable");
+
+const historyList =
+  document.getElementById("historyList");
+
+username.textContent =
+  user.username || "Jogador";
+
+function dinheiro(valor) {
+  return Number(valor || 0)
+    .toLocaleString(
+      "pt-BR",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    );
+}
+
+function atualizarSaldo(valor) {
+  balance.textContent =
+    dinheiro(valor);
+
+  const novoUser = {
+    ...user,
+    balance: Number(valor)
+  };
+
+  localStorage.setItem(
+    "jpbet_user",
+    JSON.stringify(novoUser)
+  );
+}
+
+/*
+========================================================
+CARREGAR MÁQUINAS
+========================================================
+*/
+
+async function carregarGames() {
+
+  const response =
+    await fetch(
+      `${API}/games/config`
+    );
+
+  const data =
+    await response.json();
+
+  if (!data.ok) {
+    throw new Error(
+      data.message ||
+      "Erro ao carregar máquinas."
+    );
+  }
+
+  games =
+    data.games || [];
+
+  renderGames();
+}
+
+function renderGames() {
+
+  gamesList.innerHTML = "";
+
+  games
+    .filter(game => game.enabled)
+    .forEach(game => {
+
+      const card =
+        document.createElement("button");
+
+      card.className =
+        "game-card";
+
+      card.innerHTML = `
+        <div class="game-icon">
+          ${iconeDaMaquina(game.id)}
+        </div>
+
+        <div class="game-info">
+          <h2>${game.name}</h2>
+
+          <p>
+            ${game.reels} rolos
+            • ${game.paylines.length} linha(s)
+          </p>
+
+          <small>
+            Apostas de R$ ${dinheiro(game.minBet)}
+            até R$ ${dinheiro(game.maxBet)}
+          </small>
+        </div>
+
+        <span class="play">
+          JOGAR
+        </span>
+      `;
+
+      card.onclick = () =>
+        abrirGame(game);
+
+      gamesList.appendChild(card);
+    });
+}
+
+function iconeDaMaquina(id) {
+
+  if (id === "fortune7") {
+    return "7️⃣";
+  }
+
+  if (id === "lucky7") {
+    return "🍒7️⃣";
+  }
+
+  if (id === "diamondGold") {
+    return "💎";
+  }
+
+  if (id === "royalJackpot") {
+    return "👑";
+  }
+
+  return "🎰";
+}
+
+/*
+========================================================
+ABRIR MÁQUINA
+========================================================
+*/
+
+function abrirGame(game) {
+
+  currentGame =
+    game;
+
+  currentBet =
+    Number(game.minBet);
+
+  gamesList.classList.add(
+    "hidden"
+  );
+
+  machine.classList.remove(
+    "hidden"
+  );
+
+  machineName.textContent =
+    game.name;
+
+  machineMessage.textContent =
+    "Boa sorte!";
+
+  atualizarBet();
+
+  montarPaytable();
+
+  criarReels();
+
+  carregarHistorico();
+}
+
+function criarReels() {
+
+  reels.innerHTML = "";
+
+  for (
+    let r = 0;
+    r < currentGame.reels;
+    r++
+  ) {
+
+    const reel =
+      document.createElement("div");
+
+    reel.className =
+      "reel";
+
+    for (
+      let row = 0;
+      row < currentGame.rows;
+      row++
+    ) {
+
+      const cell =
+        document.createElement("div");
+
+      cell.className =
+        "symbol";
+
+      cell.textContent =
+        "?";
+
+      reel.appendChild(cell);
+    }
+
+    reels.appendChild(reel);
+  }
+}
+
+/*
+========================================================
+APOSTA
+========================================================
+*/
+
+function atualizarBet() {
+
+  currentBet =
+    Math.max(
+      Number(currentGame.minBet),
+      Math.min(
+        Number(currentGame.maxBet),
+        Number(currentBet)
+      )
+    );
+
+  betValue.textContent =
+    `R$ ${dinheiro(currentBet)}`;
+}
+
+document
+  .getElementById("betMinus")
+  .onclick = () => {
+
+    if (spinning) return;
+
+    currentBet =
+      Math.max(
+        currentGame.minBet,
+        Number(
+          (
+            currentBet -
+            currentGame.minBet
+          ).toFixed(2)
+        )
+      );
+
+    atualizarBet();
+  };
+
+document
+  .getElementById("betPlus")
+  .onclick = () => {
+
+    if (spinning) return;
+
+    currentBet =
+      Math.min(
+        currentGame.maxBet,
+        Number(
+          (
+            currentBet +
+            currentGame.minBet
+          ).toFixed(2)
+        )
+      );
+
+    atualizarBet();
+  };
+
+/*
+========================================================
+SPIN
+========================================================
+*/
+
+spinButton.onclick =
+  girar;
+
+async function girar() {
+
+  if (spinning) return;
+
+  const saldo =
+    Number(
+      user.balance ||
+      0
+    );
+
+  if (
+    saldo <
+    currentBet
+  ) {
+
+    machineMessage.textContent =
+      "Saldo insuficiente.";
+
+    return;
+  }
+
+  spinning = true;
+
+  spinButton.disabled =
+    true;
+
+  win.textContent =
+    "GIRANDO...";
+
+  machineMessage.textContent =
+    "Os rolos estão girando...";
+
+  animarReels();
+
+  try {
+
+    const response =
+      await fetch(
+        `${API}/games/${currentGame.id}/spin`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            userId: user.id,
+            bet: currentBet
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+        "Erro ao girar."
+      );
+    }
+
+    setTimeout(
+      () => mostrarResultado(data),
+      900
+    );
+
+  } catch (error) {
+
+    spinning = false;
+
+    spinButton.disabled =
+      false;
+
+    machineMessage.textContent =
+      error.message;
+
+    win.textContent =
+      "-";
+  }
+}
+
+/*
+========================================================
+ANIMAÇÃO
+========================================================
+*/
+
+function animarReels() {
+
+  const cells =
+    document.querySelectorAll(
+      ".symbol"
+    );
+
+  cells.forEach(
+    cell => {
+
+      cell.classList.add(
+        "spinning"
+      );
+
+      cell.textContent =
+        simboloAleatorio();
+
+    }
+  );
+
+  const interval =
+    setInterval(
+      () => {
+
+        if (!spinning) {
+          clearInterval(interval);
+          return;
+        }
+
+        cells.forEach(
+          cell => {
+            cell.textContent =
+              simboloAleatorio();
+          }
+        );
+
+      },
+      90
+    );
+}
+
+function simboloAleatorio() {
+
+  const symbols =
+    currentGame.symbols;
+
+  const item =
+    symbols[
+      Math.floor(
+        Math.random() *
+        symbols.length
+      )
+    ];
+
+  return item.label;
+}
+
+/*
+========================================================
+RESULTADO
+========================================================
+*/
+
+function mostrarResultado(data) {
+
+  const cells =
+    document.querySelectorAll(
+      ".symbol"
+    );
+
+  cells.forEach(
+    cell =>
+      cell.classList.remove(
+        "spinning"
+      )
+  );
+
+  for (
+    let reel = 0;
+    reel < data.result.length;
+    reel++
+  ) {
+
+    for (
+      let row = 0;
+      row < data.result[reel].length;
+      row++
+    ) {
+
+      const index =
+        reel *
+        currentGame.rows +
+        row;
+
+      const cell =
+        cells[index];
+
+      if (!cell) continue;
+
+      cell.textContent =
+        data.result[reel][row].label;
+    }
+  }
+
+  atualizarSaldo(
+    data.balance
+  );
+
+  user.balance =
+    data.balance;
+
+  if (data.win > 0) {
+
+    win.textContent =
+      `GANHOU R$ ${dinheiro(data.win)}`;
+
+    machineMessage.textContent =
+      data.jackpotWin > 0
+        ? "JACKPOT!"
+        : "VOCÊ GANHOU!";
+
+  } else {
+
+    win.textContent =
+      "R$ 0,00";
+
+    machineMessage.textContent =
+      "Boa sorte na próxima!";
+  }
+
+  spinning = false;
+
+  spinButton.disabled =
+    false;
+
+  carregarHistorico();
+}
+
+/*
+========================================================
+PAYTABLE
+========================================================
+*/
+
+function montarPaytable() {
+
+  paytable.innerHTML = `
+    <h2>
+      Tabela de pagamentos
+    </h2>
+  `;
+
+  Object.entries(
+    currentGame.payouts
+  ).forEach(
+    ([symbol, payments]) => {
+
+      const info =
+        currentGame.symbols
+          .find(
+            item =>
+              item.id === symbol
+          );
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "pay-row";
+
+      row.innerHTML = `
+        <span>
+          ${info?.label || symbol}
+        </span>
+
+        <span>
+          ${Object.entries(payments)
+            .map(
+              ([count, multiplier]) =>
+                `${count}x = ${multiplier}x`
+            )
+            .join(" • ")
+          }
+        </span>
+      `;
+
+      paytable.appendChild(row);
+    }
+  );
+}
+
+/*
+========================================================
+HISTÓRICO
+========================================================
+*/
+
+async function carregarHistorico() {
+
+  if (!currentGame) return;
+
+  try {
+
+    const response =
+      await fetch(
+        `${API}/games/history/${user.id}`
+      );
+
+    const data =
+      await response.json();
+
+    if (!data.ok) return;
+
+    historyList.innerHTML =
+      "";
+
+    data.rounds
+      .filter(
+        round =>
+          round.game_id ===
+          currentGame.id
+      )
+      .slice(0, 10)
+      .forEach(
+        round => {
+
+          const item =
+            document.createElement(
+              "div"
+            );
+
+          item.className =
+            "history-item";
+
+          item.innerHTML = `
+            <span>
+              Aposta:
+              R$ ${dinheiro(round.bet)}
+            </span>
+
+            <strong>
+              ${
+                Number(round.win) > 0
+                  ? `+ R$ ${dinheiro(round.win)}`
+                  : "PERDEU"
+              }
+            </strong>
+          `;
+
+          historyList.appendChild(
+            item
+          );
+        }
+      );
+
+  } catch (_) {}
+}
+
+/*
+========================================================
+VOLTAR
+========================================================
+*/
+
+document
+  .getElementById("backButton")
+  .onclick = () => {
+
+    if (spinning) return;
+
+    machine.classList.add(
+      "hidden"
+    );
+
+    gamesList.classList.remove(
+      "hidden"
+    );
+
+    currentGame =
+      null;
+  };
+
+carregarGames()
+  .catch(
+    error => {
+
+      gamesList.innerHTML = `
+        <div class="error">
+          ${error.message}
+        </div>
+      `;
+    }
+  );
