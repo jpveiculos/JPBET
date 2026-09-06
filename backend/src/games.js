@@ -1,1879 +1,1252 @@
-const API = "/api";
+import express from "express";
 
-let jogos = [];
-let jogoAtual = null;
-let configuracaoAtual = null;
-let girando = false;
+import { pool } from "./db.js";
+import { validarSessaoAdmin } from "./adminSession.js";
 
-const usuarioSalvo =
-  localStorage.getItem("jpbet_user");
+import {
+  executarSpin,
+  obterJogoPadrao,
+  normalizarConfiguracaoJogo,
+  listarJogosPadrao
+} from "./gameEngine.js";
 
-const token =
-  localStorage.getItem("jpbet_token");
-
-let usuario = null;
-
-try {
-  usuario = usuarioSalvo
-    ? JSON.parse(usuarioSalvo)
-    : null;
-} catch (_) {
-  usuario = null;
-}
-
+const router = express.Router();
 
 /* =========================================================
-   ELEMENTOS
+   FUNÇÕES AUXILIARES
 ========================================================= */
 
-const gamesContainer =
-  document.getElementById(
-    "gamesContainer"
-  );
-
-const gamesMessage =
-  document.getElementById(
-    "gamesMessage"
-  );
-
-const balanceElement =
-  document.getElementById(
-    "balance"
-  );
-
-const gameModal =
-  document.getElementById(
-    "gameModal"
-  );
-
-const gameTitle =
-  document.getElementById(
-    "gameTitle"
-  );
-
-const gameEyebrow =
-  document.getElementById(
-    "gameEyebrow"
-  );
-
-const gameBalance =
-  document.getElementById(
-    "gameBalance"
-  );
-
-const slotReels =
-  document.getElementById(
-    "slotReels"
-  );
-
-const betInput =
-  document.getElementById(
-    "betInput"
-  );
-
-const spinButton =
-  document.getElementById(
-    "spinButton"
-  );
-
-const winMessage =
-  document.getElementById(
-    "winMessage"
-  );
-
-const paytable =
-  document.getElementById(
-    "paytable"
-  );
-
-const minBet =
-  document.getElementById(
-    "minBet"
-  );
-
-const maxBet =
-  document.getElementById(
-    "maxBet"
-  );
-
-const closeGameButton =
-  document.getElementById(
-    "closeGameButton"
-  );
-
-const backButton =
-  document.getElementById(
-    "backButton"
-  );
-
-
-/* =========================================================
-   FORMATAÇÃO
-========================================================= */
-
-function moeda(valor) {
-  const numero =
-    Number(valor);
-
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      style: "currency",
-      currency: "BRL"
-    }
-  ).format(
-    Number.isFinite(numero)
-      ? numero
-      : 0
-  );
-}
-
-function numero(
-  valor,
-  padrao = 0
-) {
-  const n =
-    Number(valor);
+function numero(valor, padrao = 0) {
+  const n = Number(valor);
 
   return Number.isFinite(n)
     ? n
     : padrao;
 }
 
-function escaparHTML(valor) {
-  return String(
-    valor ?? ""
-  )
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function arredondar(valor) {
+  return Math.round(
+    (Number(valor) + Number.EPSILON) * 100
+  ) / 100;
 }
-
 
 /* =========================================================
-   MENSAGENS
+   ADMIN
 ========================================================= */
 
-function mostrarMensagem(
-  mensagem
-) {
-  if (!gamesMessage) {
-    return;
-  }
+function obterTokenAdmin(req) {
+  const cookies =
+    req.headers.cookie || "";
 
-  gamesMessage.textContent =
-    mensagem;
-
-  gamesMessage.hidden =
-    false;
-}
-
-function esconderMensagem() {
-  if (!gamesMessage) {
-    return;
-  }
-
-  gamesMessage.hidden =
-    true;
-
-  gamesMessage.textContent =
-    "";
-}
-
-
-/* =========================================================
-   USUÁRIO
-========================================================= */
-
-function atualizarUsuario(
-  novoUsuario
-) {
-  if (!novoUsuario) {
-    return;
-  }
-
-  usuario = {
-    ...usuario,
-    ...novoUsuario
-  };
-
-  localStorage.setItem(
-    "jpbet_user",
-    JSON.stringify(usuario)
-  );
-
-  atualizarSaldo();
-}
-
-function obterSaldo() {
-  if (!usuario) {
-    return 0;
-  }
-
-  if (
-    usuario.balance !== undefined
-  ) {
-    return numero(
-      usuario.balance
-    );
-  }
-
-  const bonus =
-    numero(
-      usuario.bonusBalance
+  const match =
+    cookies.match(
+      /(?:^|;\s*)jpbet_admin_session=([^;]+)/
     );
 
-  const cash =
-    numero(
-      usuario.cashBalance
-    );
-
-  return bonus + cash;
+  return match
+    ? match[1]
+    : null;
 }
 
-function atualizarSaldo() {
-  const saldo =
-    obterSaldo();
+function exigirAdmin(req, res, next) {
+  const token =
+    obterTokenAdmin(req);
 
-  if (balanceElement) {
-    balanceElement.textContent =
-      moeda(saldo);
+  const sessao =
+    validarSessaoAdmin(token);
+
+  if (!sessao) {
+    return res.status(401).json({
+      message:
+        "Sessão administrativa inválida ou expirada."
+    });
   }
 
-  if (gameBalance) {
-    gameBalance.textContent =
-      moeda(saldo);
-  }
+  req.adminSession =
+    sessao;
+
+  next();
 }
-
 
 /* =========================================================
-   REQUISIÇÃO
+   CONFIGURAÇÃO PÚBLICA
 ========================================================= */
 
-async function apiFetch(
-  url,
-  options = {}
-) {
-  const headers = {
-    ...(options.headers || {})
-  };
-
-  if (
-    options.body &&
-    !headers["Content-Type"]
-  ) {
-    headers["Content-Type"] =
-      "application/json";
+function limparConfigPublica(config) {
+  if (!config) {
+    return null;
   }
 
-  if (token) {
-    headers.Authorization =
-      `Bearer ${token}`;
-  }
-
-  const response =
-    await fetch(
-      `${API}${url}`,
-      {
-        ...options,
-        headers
-      }
-    );
-
-  let data = null;
-
-  try {
-    data =
-      await response.json();
-  } catch (_) {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const erro =
-      new Error(
-        data?.message ||
-        "Não foi possível concluir a operação."
-      );
-
-    erro.status =
-      response.status;
-
-    erro.data =
-      data;
-
-    throw erro;
-  }
-
-  return data;
-}
-
-
-/* =========================================================
-   VERIFICAR LOGIN
-========================================================= */
-
-function verificarUsuario() {
-  if (!usuario) {
-    window.location.href =
-      "/index.html";
-    return false;
-  }
-
-  return true;
-}
-
-
-/* =========================================================
-   ÍCONES DOS JOGOS
-========================================================= */
-
-function obterIconeJogo(
-  gameId
-) {
-  const id =
-    String(gameId || "")
-      .toLowerCase();
-
-  if (
-    id.includes("fortune")
-  ) {
-    return "🎰";
-  }
-
-  if (
-    id.includes("diamond")
-  ) {
-    return "💎";
-  }
-
-  if (
-    id.includes("royal")
-  ) {
-    return "👑";
-  }
-
-  if (
-    id.includes("lucky")
-  ) {
-    return "7️⃣";
-  }
-
-  return "🎰";
-}
-
-
-/* =========================================================
-   DESCRIÇÃO DOS JOGOS
-========================================================= */
-
-function obterDescricaoJogo(
-  game
-) {
-  const id =
-    String(game?.id || "")
-      .toLowerCase();
-
-  if (
-    id === "fortune7"
-  ) {
-    return "Máquina clássica de 3 rolos com símbolos 7, BAR e cerejas.";
-  }
-
-  if (
-    id === "diamondgold"
-  ) {
-    return "Máquina de 5 rolos com diamantes, ouro, coroas e bônus.";
-  }
-
-  if (
-    id === "royaljackpot"
-  ) {
-    return "Máquina de 5 rolos com símbolos Royal, Jackpot e bônus.";
-  }
-
-  if (
-    id === "lucky7"
-  ) {
-    return "Clássico Lucky 7 de 3 rolos com símbolos tradicionais.";
-  }
-
-  return "Escolha sua aposta e gire os rolos.";
-}
-
-
-/* =========================================================
-   CARDS
-========================================================= */
-
-function renderizarJogos() {
-  if (!gamesContainer) {
-    return;
-  }
-
-  gamesContainer.innerHTML =
-    "";
-
-  if (
-    !Array.isArray(jogos) ||
-    jogos.length === 0
-  ) {
-    gamesContainer.innerHTML = `
-      <div class="loading">
-        Nenhum jogo disponível no momento.
-      </div>
-    `;
-
-    return;
-  }
-
-  jogos.forEach(
-    (game) => {
-      const card =
-        document.createElement(
-          "article"
-        );
-
-      card.className =
-        "game-card";
-
-      const nome =
-        escaparHTML(
-          game.name ||
-          game.id
-        );
-
-      const descricao =
-        escaparHTML(
-          obterDescricaoJogo(
-            game
-          )
-        );
-
-      card.innerHTML = `
-        <div>
-          <div class="game-icon">
-            ${obterIconeJogo(
-              game.id
-            )}
-          </div>
-
-          <h3>
-            ${nome}
-          </h3>
-
-          <p>
-            ${descricao}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="game-card-button"
-        >
-          JOGAR
-        </button>
-      `;
-
-      const button =
-        card.querySelector(
-          ".game-card-button"
-        );
-
-      button.addEventListener(
-        "click",
-        () => {
-          abrirJogo(
-            game.id
-          );
-        }
-      );
-
-      gamesContainer.appendChild(
-        card
-      );
-    }
-  );
-}
-
-
-/* =========================================================
-   CARREGAR JOGOS
-========================================================= */
-
-async function carregarJogos() {
-  try {
-    esconderMensagem();
-
-    if (gamesContainer) {
-      gamesContainer.innerHTML = `
-        <div class="loading">
-          Carregando jogos...
-        </div>
-      `;
-    }
-
-    const data =
-      await apiFetch(
-        "/games"
-      );
-
-    jogos =
-      Array.isArray(
-        data?.games
-      )
-        ? data.games
-        : [];
-
-    renderizarJogos();
-  } catch (error) {
-    console.error(
-      "Erro ao carregar jogos:",
-      error
-    );
-
-    if (gamesContainer) {
-      gamesContainer.innerHTML =
-        "";
-    }
-
-    mostrarMensagem(
-      error.message ||
-      "Não foi possível carregar os jogos."
-    );
-  }
-}
-
-
-/* =========================================================
-   ABRIR JOGO
-========================================================= */
-
-async function abrirJogo(
-  gameId
-) {
-  if (girando) {
-    return;
-  }
-
-  try {
-    esconderMensagem();
-
-    const data =
-      await apiFetch(
-        `/games/${encodeURIComponent(
-          gameId
-        )}`
-      );
-
-    configuracaoAtual =
-      data?.game || null;
-
-    if (!configuracaoAtual) {
-      throw new Error(
-        "Configuração do jogo não encontrada."
-      );
-    }
-
-    jogoAtual =
-      gameId;
-
-    gameTitle.textContent =
-      configuracaoAtual.name ||
-      gameId;
-
-    gameEyebrow.textContent =
-      "JPBET";
-
-    minBet.textContent =
-      moeda(
-        configuracaoAtual.minBet
-      );
-
-    maxBet.textContent =
-      moeda(
-        configuracaoAtual.maxBet
-      );
-
-    const apostaMinima =
-      numero(
-        configuracaoAtual.minBet,
-        1
-      );
-
-    const apostaAtual =
-      numero(
-        betInput.value,
-        apostaMinima
-      );
-
-    betInput.min =
-      apostaMinima;
-
-    betInput.max =
-      numero(
-        configuracaoAtual.maxBet,
-        1000
-      );
-
-    betInput.step =
-      "0.01";
-
-    betInput.value =
+  return {
+    ...config,
+
+    minBet:
+      arredondar(
+        numero(
+          config.minBet,
+          1
+        )
+      ),
+
+    maxBet:
+      arredondar(
+        numero(
+          config.maxBet,
+          1000
+        )
+      ),
+
+    reels:
       Math.max(
-        apostaMinima,
-        Math.min(
-          apostaAtual,
+        1,
+        Math.floor(
           numero(
-            configuracaoAtual.maxBet,
-            1000
+            config.reels,
+            3
           )
         )
-      );
+      ),
 
-    slotReels.style
-      .setProperty(
-        "--reels",
-        configuracaoAtual.reels
-      );
-
-    renderizarGradeInicial();
-
-    renderizarTabelaPremios();
-
-    limparMensagemPremio();
-
-    atualizarSaldo();
-
-    gameModal.hidden =
-      false;
-
-    document.body.style.overflow =
-      "hidden";
-  } catch (error) {
-    console.error(
-      "Erro ao abrir jogo:",
-      error
-    );
-
-    mostrarMensagem(
-      error.message ||
-      "Não foi possível abrir o jogo."
-    );
-  }
-}
-
-
-/* =========================================================
-   FECHAR JOGO
-========================================================= */
-
-function fecharJogo() {
-  if (girando) {
-    return;
-  }
-
-  gameModal.hidden =
-    true;
-
-  document.body.style.overflow =
-    "";
-
-  jogoAtual =
-    null;
-
-  configuracaoAtual =
-    null;
-}
-
-
-/* =========================================================
-   GRADE INICIAL
-========================================================= */
-
-function criarSimboloVisual(
-  symbol
-) {
-  const element =
-    document.createElement(
-      "div"
-    );
-
-  element.className =
-    "slot-symbol";
-
-  const label =
-    symbol?.label ??
-    symbol?.id ??
-    "?";
-
-  const texto =
-    String(label);
-
-  if (
-    texto.length > 7
-  ) {
-    element.classList.add(
-      "small"
-    );
-  }
-
-  element.textContent =
-    texto;
-
-  return element;
-}
-
-function renderizarGradeInicial() {
-  if (!slotReels) {
-    return;
-  }
-
-  const reels =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          configuracaoAtual?.reels,
-          5
-        )
-      )
-    );
-
-  const rows =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          configuracaoAtual?.rows,
-          3
-        )
-      )
-    );
-
-  const symbols =
-    Array.isArray(
-      configuracaoAtual?.symbols
-    )
-      ? configuracaoAtual.symbols
-      : [];
-
-  slotReels.innerHTML =
-    "";
-
-  slotReels.style
-    .setProperty(
-      "--reels",
-      reels
-    );
-
-  for (
-    let reel = 0;
-    reel < reels;
-    reel++
-  ) {
-    const reelElement =
-      document.createElement(
-        "div"
-      );
-
-    reelElement.className =
-      "reel";
-
-    for (
-      let row = 0;
-      row < rows;
-      row++
-    ) {
-      const symbol =
-        symbols.length > 0
-          ? symbols[
-              Math.floor(
-                Math.random() *
-                symbols.length
-              )
-            ]
-          : {
-              id: "blank",
-              label: "?"
-            };
-
-      reelElement.appendChild(
-        criarSimboloVisual(
-          symbol
-        )
-      );
-    }
-
-    slotReels.appendChild(
-      reelElement
-    );
-  }
-}
-
-
-/* =========================================================
-   RENDERIZAR RESULTADO
-========================================================= */
-
-function renderizarResultado(
-  resultado
-) {
-  if (!resultado) {
-    return;
-  }
-
-  const grid =
-    Array.isArray(
-      resultado.grid
-    )
-      ? resultado.grid
-      : [];
-
-  slotReels.innerHTML =
-    "";
-
-  const reels =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          resultado.reels,
-          configuracaoAtual?.reels ||
-          5
-        )
-      )
-    );
-
-  const rows =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          resultado.rows,
-          configuracaoAtual?.rows ||
-          3
-        )
-      )
-    );
-
-  slotReels.style
-    .setProperty(
-      "--reels",
-      reels
-    );
-
-  const winningPositions =
-    new Set();
-
-  if (
-    Array.isArray(
-      resultado.prizes
-    )
-  ) {
-    resultado.prizes.forEach(
-      (prize) => {
-        if (
-          Array.isArray(
-            prize.positions
+    rows:
+      Math.max(
+        1,
+        Math.floor(
+          numero(
+            config.rows,
+            3
           )
-        ) {
-          /*
-           * positions informa a posição
-           * na linha, então aqui apenas
-           * destacamos os símbolos
-           * vencedores da linha central
-           * quando possível.
-           */
-        }
-      }
-    );
-  }
+        )
+      ),
 
-  for (
-    let reel = 0;
-    reel < reels;
-    reel++
-  ) {
-    const reelElement =
-      document.createElement(
-        "div"
-      );
-
-    reelElement.className =
-      "reel";
-
-    const coluna =
+    lines:
       Array.isArray(
-        grid[reel]
+        config.lines
       )
-        ? grid[reel]
-        : [];
+        ? config.lines
+        : [],
 
-    for (
-      let row = 0;
-      row < rows;
-      row++
-    ) {
-      const symbol =
-        coluna[row] || {
-          id: "blank",
-          label: "?"
-        };
+    symbols:
+      Array.isArray(
+        config.symbols
+      )
+        ? config.symbols
+        : [],
 
-      const element =
-        criarSimboloVisual(
-          symbol
-        );
+    bonus:
+      config.bonus &&
+      typeof config.bonus === "object"
+        ? config.bonus
+        : {}
+  };
+}
 
-      if (
-        winningPositions.has(
-          `${reel}:${row}`
+/* =========================================================
+   TABELAS
+========================================================= */
+
+async function garantirTabelasJogos() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS game_settings (
+      game_id TEXT PRIMARY KEY,
+      config JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS game_rounds (
+      id BIGSERIAL PRIMARY KEY,
+
+      round_id TEXT NOT NULL UNIQUE,
+
+      user_id TEXT NOT NULL,
+
+      game_id TEXT NOT NULL,
+
+      bet NUMERIC(14,2)
+        NOT NULL DEFAULT 0,
+
+      win NUMERIC(14,2)
+        NOT NULL DEFAULT 0,
+
+      free_spin BOOLEAN
+        NOT NULL DEFAULT FALSE,
+
+      result JSONB NOT NULL,
+
+      created_at TIMESTAMPTZ
+        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+    idx_game_rounds_user_created
+    ON game_rounds (
+      user_id,
+      created_at DESC
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+    idx_game_rounds_game_created
+    ON game_rounds (
+      game_id,
+      created_at DESC
+    )
+  `);
+
+  const padroes =
+    listarJogosPadrao();
+
+  for (const config of padroes) {
+    const normalizada =
+      normalizarConfiguracaoJogo(
+        config
+      );
+
+    await pool.query(
+      `
+      INSERT INTO game_settings (
+        game_id,
+        config
+      )
+      VALUES (
+        $1,
+        $2::jsonb
+      )
+      ON CONFLICT (game_id)
+      DO NOTHING
+      `,
+      [
+        normalizada.id,
+        JSON.stringify(
+          normalizada
         )
-      ) {
-        element.classList.add(
-          "win"
-        );
-      }
-
-      reelElement.appendChild(
-        element
-      );
-    }
-
-    slotReels.appendChild(
-      reelElement
-    );
-  }
-
-  /*
-   * Destaca as posições dos prêmios.
-   */
-  if (
-    Array.isArray(
-      resultado.prizes
-    ) &&
-    Array.isArray(
-      resultado.lines
-    )
-  ) {
-    resultado.prizes.forEach(
-      (prize) => {
-        const linhaIndex =
-          numero(
-            prize.line,
-            1
-          ) - 1;
-
-        const linha =
-          resultado.lines[
-            linhaIndex
-          ];
-
-        if (
-          !Array.isArray(
-            linha
-          )
-        ) {
-          return;
-        }
-
-        const positions =
-          Array.isArray(
-            prize.positions
-          )
-            ? prize.positions
-            : [];
-
-        positions.forEach(
-          (reelIndex) => {
-            const row =
-              numero(
-                linha[
-                  reelIndex
-                ],
-                0
-              );
-
-            const reelElement =
-              slotReels.children[
-                reelIndex
-              ];
-
-            if (
-              !reelElement
-            ) {
-              return;
-            }
-
-            const symbolElement =
-              reelElement.children[
-                row
-              ];
-
-            if (
-              symbolElement
-            ) {
-              symbolElement.classList.add(
-                "win"
-              );
-            }
-          }
-        );
-      }
+      ]
     );
   }
 }
-
 
 /* =========================================================
-   MENSAGEM DE PRÊMIO
+   OBTER CONFIGURAÇÃO
 ========================================================= */
 
-function limparMensagemPremio() {
-  if (!winMessage) {
-    return;
-  }
-
-  winMessage.hidden =
-    true;
-
-  winMessage.classList.remove(
-    "lose"
-  );
-
-  winMessage.textContent =
-    "";
-}
-
-function mostrarResultadoPremio(
-  resultado
+async function obterConfiguracaoJogo(
+  gameId
 ) {
-  if (!winMessage) {
-    return;
+  const result =
+    await pool.query(
+      `
+      SELECT config
+      FROM game_settings
+      WHERE game_id = $1
+      LIMIT 1
+      `,
+      [gameId]
+    );
+
+  if (
+    result.rows.length > 0
+  ) {
+    return normalizarConfiguracaoJogo(
+      result.rows[0].config
+    );
   }
 
-  const premio =
-    numero(
-      resultado?.win,
-      0
+  const padrao =
+    obterJogoPadrao(
+      gameId
     );
 
-  const scatter =
-    numero(
-      resultado?.scatterCount,
-      0
+  if (!padrao) {
+    return null;
+  }
+
+  const normalizada =
+    normalizarConfiguracaoJogo(
+      padrao
     );
 
-  const freeSpins =
-    numero(
-      resultado?.freeSpinsAwarded,
-      0
-    );
-
-  winMessage.hidden =
-    false;
-
-  winMessage.classList.remove(
-    "lose"
+  await pool.query(
+    `
+    INSERT INTO game_settings (
+      game_id,
+      config
+    )
+    VALUES (
+      $1,
+      $2::jsonb
+    )
+    ON CONFLICT (game_id)
+    DO NOTHING
+    `,
+    [
+      gameId,
+      JSON.stringify(
+        normalizada
+      )
+    ]
   );
 
-  if (premio > 0) {
-    let texto =
-      `Você ganhou ${moeda(
-        premio
-      )}!`;
-
-    if (
-      freeSpins > 0
-    ) {
-      texto +=
-        ` + ${freeSpins} giros grátis`;
-    }
-
-    winMessage.textContent =
-      texto;
-
-    return;
-  }
-
-  if (
-    freeSpins > 0
-  ) {
-    winMessage.textContent =
-      `Você ganhou ${freeSpins} giros grátis!`;
-
-    return;
-  }
-
-  if (
-    scatter > 0
-  ) {
-    winMessage.textContent =
-      "Boa! Você conseguiu símbolos bônus.";
-  } else {
-    winMessage.classList.add(
-      "lose"
-    );
-
-    winMessage.textContent =
-      "Não foi dessa vez. Tente novamente.";
-  }
+  return normalizada;
 }
 
-
 /* =========================================================
-   TABELA DE PRÊMIOS
+   LISTAR CONFIGURAÇÕES
 ========================================================= */
 
-function renderizarTabelaPremios() {
-  if (!paytable) {
-    return;
-  }
+async function listarConfiguracoesJogos() {
+  const padroes =
+    listarJogosPadrao();
 
-  paytable.innerHTML =
-    "";
+  const result =
+    await pool.query(
+      `
+      SELECT
+        game_id,
+        config
+      FROM game_settings
+      ORDER BY game_id
+      `
+    );
 
-  const tabela =
-    configuracaoAtual?.paytable;
+  const mapa =
+    new Map(
+      result.rows.map(
+        (row) => [
+          row.game_id,
+          normalizarConfiguracaoJogo(
+            row.config
+          )
+        ]
+      )
+    );
 
-  const symbols =
-    Array.isArray(
-      configuracaoAtual?.symbols
-    )
-      ? configuracaoAtual.symbols
-      : [];
+  return padroes
+    .map(
+      (padrao) => {
+        const config =
+          mapa.get(
+            padrao.id
+          ) ||
+          normalizarConfiguracaoJogo(
+            padrao
+          );
 
-  if (
-    !tabela ||
-    typeof tabela !== "object"
-  ) {
-    paytable.innerHTML = `
-      <div class="paytable-item">
-        Consulte os pagamentos disponíveis.
-      </div>
-    `;
-
-    return;
-  }
-
-  Object.entries(
-    tabela
-  ).forEach(
-    ([symbolId, valores]) => {
-      const symbol =
-        symbols.find(
-          (item) =>
-            item?.id ===
-            symbolId
-        );
-
-      const label =
-        symbol?.label ||
-        symbolId;
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-      item.className =
-        "paytable-item";
-
-      const pagamentos =
-        [];
-
-      if (
-        valores &&
-        typeof valores ===
-          "object"
-      ) {
-        Object.entries(
-          valores
-        ).forEach(
-          ([quantidade, multiplicador]) => {
-            pagamentos.push(
-              `${quantidade} = ${numero(
-                multiplicador
-              )}x`
-            );
-          }
+        return limparConfigPublica(
+          config
         );
       }
-
-      item.innerHTML = `
-        <div class="paytable-symbol">
-          ${escaparHTML(
-            label
-          )}
-        </div>
-
-        <div class="paytable-values">
-          ${escaparHTML(
-            pagamentos.join(
-              " • "
-            )
-          )}
-        </div>
-      `;
-
-      paytable.appendChild(
-        item
-      );
-    }
-  );
+    )
+    .filter(Boolean);
 }
 
-
 /* =========================================================
-   APOSTA
+   VALIDAR APOSTA
 ========================================================= */
 
-function obterAposta() {
-  let valor =
-    Number(
-      String(
-        betInput.value
-      ).replace(
-        ",",
-        "."
+function validarAposta(
+  aposta,
+  config
+) {
+  const valor =
+    arredondar(
+      numero(
+        aposta,
+        NaN
       )
     );
 
   if (
     !Number.isFinite(
       valor
-    )
+    ) ||
+    valor <= 0
   ) {
-    valor =
-      numero(
-        configuracaoAtual?.minBet,
-        1
-      );
+    return {
+      ok: false,
+      message:
+        "Informe uma aposta válida."
+    };
   }
 
-  return Math.round(
-    valor *
-      100
-  ) / 100;
+  const min =
+    arredondar(
+      numero(
+        config.minBet,
+        1
+      )
+    );
+
+  const max =
+    arredondar(
+      numero(
+        config.maxBet,
+        1000
+      )
+    );
+
+  if (
+    valor < min
+  ) {
+    return {
+      ok: false,
+      message:
+        `A aposta mínima é ${min.toFixed(2)}.`
+    };
+  }
+
+  if (
+    valor > max
+  ) {
+    return {
+      ok: false,
+      message:
+        `A aposta máxima é ${max.toFixed(2)}.`
+    };
+  }
+
+  return {
+    ok: true,
+    value: valor
+  };
 }
 
-function definirAposta(
+/* =========================================================
+   USUÁRIO
+========================================================= */
+
+async function obterUsuarioBloqueado(
+  client,
+  userId
+) {
+  const result =
+    await client.query(
+      `
+      SELECT
+        id,
+        username,
+        balance,
+        bonus_balance,
+        cash_balance,
+        reserved_balance,
+        bonus_wager_progress
+      FROM users
+      WHERE id = $1
+      FOR UPDATE
+      `,
+      [userId]
+    );
+
+  return (
+    result.rows[0] ||
+    null
+  );
+}
+
+function saldoUsuario(user) {
+  return arredondar(
+    numero(
+      user?.bonus_balance,
+      0
+    ) +
+    numero(
+      user?.cash_balance,
+      0
+    )
+  );
+}
+
+/* =========================================================
+   CONSUMIR SALDO
+========================================================= */
+
+function consumirSaldo(
+  user,
+  valor
+) {
+  let bonus =
+    numero(
+      user.bonus_balance,
+      0
+    );
+
+  let cash =
+    numero(
+      user.cash_balance,
+      0
+    );
+
+  let restante =
+    arredondar(
+      valor
+    );
+
+  const usadoBonus =
+    Math.min(
+      bonus,
+      restante
+    );
+
+  bonus =
+    arredondar(
+      bonus -
+      usadoBonus
+    );
+
+  restante =
+    arredondar(
+      restante -
+      usadoBonus
+    );
+
+  const usadoCash =
+    Math.min(
+      cash,
+      restante
+    );
+
+  cash =
+    arredondar(
+      cash -
+      usadoCash
+    );
+
+  restante =
+    arredondar(
+      restante -
+      usadoCash
+    );
+
+  if (
+    restante > 0.001
+  ) {
+    return null;
+  }
+
+  return {
+    bonus,
+    cash,
+
+    usadoBonus:
+      arredondar(
+        usadoBonus
+      ),
+
+    usadoCash:
+      arredondar(
+        usadoCash
+      )
+  };
+}
+
+/* =========================================================
+   CREDITAR PRÊMIO
+========================================================= */
+
+async function creditarPremio(
+  client,
+  userId,
   valor
 ) {
   if (
-    !configuracaoAtual
+    valor <= 0
   ) {
     return;
   }
 
-  const minimo =
-    numero(
-      configuracaoAtual.minBet,
-      1
-    );
+  await client.query(
+    `
+    UPDATE users
+    SET
+      cash_balance =
+        COALESCE(
+          cash_balance,
+          0
+        ) + $1,
 
-  const maximo =
-    numero(
-      configuracaoAtual.maxBet,
-      1000
-    );
+      balance =
+        COALESCE(
+          bonus_balance,
+          0
+        ) +
+        COALESCE(
+          cash_balance,
+          0
+        ) +
+        $1
 
-  const novoValor =
-    Math.max(
-      minimo,
-      Math.min(
-        maximo,
-        numero(
-          valor,
-          minimo
-        )
-      )
-    );
-
-  betInput.value =
-    novoValor.toFixed(
-      2
-    );
-}
-
-function ajustarAposta(
-  direcao
-) {
-  const atual =
-    obterAposta();
-
-  const minimo =
-    numero(
-      configuracaoAtual?.minBet,
-      1
-    );
-
-  const maximo =
-    numero(
-      configuracaoAtual?.maxBet,
-      1000
-    );
-
-  const incremento =
-    atual < 10
-      ? 1
-      : atual < 100
-        ? 5
-        : 10;
-
-  definirAposta(
-    direcao ===
-      "increase"
-      ? atual +
-          incremento
-      : atual -
-          incremento
+    WHERE id = $2
+    `,
+    [
+      valor,
+      userId
+    ]
   );
-
-  if (
-    numero(
-      betInput.value
-    ) < minimo
-  ) {
-    definirAposta(
-      minimo
-    );
-  }
-
-  if (
-    numero(
-      betInput.value
-    ) > maximo
-  ) {
-    definirAposta(
-      maximo
-    );
-  }
 }
-
 
 /* =========================================================
-   ANIMAÇÃO
+   MONTAR USUÁRIO
 ========================================================= */
 
-function iniciarAnimacao() {
-  slotReels.classList.add(
-    "spinning"
-  );
-}
-
-function pararAnimacao() {
-  slotReels.classList.remove(
-    "spinning"
-  );
-}
-
-function gerarGradeAnimacao() {
-  if (
-    !configuracaoAtual
-  ) {
-    return;
-  }
-
-  const reels =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          configuracaoAtual.reels,
-          5
-        )
-      )
+function montarUsuarioAtualizado(
+  user,
+  bonus,
+  cash
+) {
+  const bonusValue =
+    arredondar(
+      bonus
     );
 
-  const rows =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          configuracaoAtual.rows,
-          3
-        )
-      )
+  const cashValue =
+    arredondar(
+      cash
     );
 
-  const symbols =
-    Array.isArray(
-      configuracaoAtual.symbols
-    )
-      ? configuracaoAtual.symbols
-      : [];
+  return {
+    id:
+      user.id,
 
-  if (
-    symbols.length === 0
-  ) {
-    return;
-  }
+    username:
+      user.username,
 
-  slotReels.innerHTML =
-    "";
+    balance:
+      arredondar(
+        bonusValue +
+        cashValue
+      ),
 
-  for (
-    let reel = 0;
-    reel < reels;
-    reel++
-  ) {
-    const reelElement =
-      document.createElement(
-        "div"
-      );
+    bonusBalance:
+      bonusValue,
 
-    reelElement.className =
-      "reel";
+    cashBalance:
+      cashValue,
 
-    for (
-      let row = 0;
-      row < rows;
-      row++
-    ) {
-      const symbol =
-        symbols[
-          Math.floor(
-            Math.random() *
-            symbols.length
+    reservedBalance:
+      arredondar(
+        numero(
+          user.reserved_balance,
+          0
+        )
+      ),
+
+    bonusWagerProgress:
+      arredondar(
+        numero(
+          user.bonus_wager_progress,
+          0
+        )
+      )
+  };
+}
+
+/* =========================================================
+   GET /api/games
+========================================================= */
+
+router.get(
+  "/",
+  async (
+    req,
+    res
+  ) => {
+    try {
+      await garantirTabelasJogos();
+
+      const games =
+        await listarConfiguracoesJogos();
+
+      res.json({
+        ok: true,
+
+        games:
+          games.filter(
+            (game) =>
+              game.enabled !== false
           )
-        ];
-
-      reelElement.appendChild(
-        criarSimboloVisual(
-          symbol
-        )
-      );
-    }
-
-    slotReels.appendChild(
-      reelElement
-    );
-  }
-}
-
-let animationTimer =
-  null;
-
-function iniciarVisualizacao() {
-  if (
-    animationTimer
-  ) {
-    clearInterval(
-      animationTimer
-    );
-  }
-
-  animationTimer =
-    setInterval(
-      gerarGradeAnimacao,
-      90
-    );
-}
-
-function pararVisualizacao() {
-  if (
-    animationTimer
-  ) {
-    clearInterval(
-      animationTimer
-    );
-
-    animationTimer =
-      null;
-  }
-}
-
-
-/* =========================================================
-   GIRAR
-========================================================= */
-
-async function girar() {
-  if (
-    girando ||
-    !configuracaoAtual ||
-    !jogoAtual
-  ) {
-    return;
-  }
-
-  const aposta =
-    obterAposta();
-
-  const minimo =
-    numero(
-      configuracaoAtual.minBet,
-      1
-    );
-
-  const maximo =
-    numero(
-      configuracaoAtual.maxBet,
-      1000
-    );
-
-  if (
-    aposta < minimo
-  ) {
-    mostrarMensagem(
-      `A aposta mínima é ${moeda(
-        minimo
-      )}.`
-    );
-
-    definirAposta(
-      minimo
-    );
-
-    return;
-  }
-
-  if (
-    aposta > maximo
-  ) {
-    mostrarMensagem(
-      `A aposta máxima é ${moeda(
-        maximo
-      )}.`
-    );
-
-    definirAposta(
-      maximo
-    );
-
-    return;
-  }
-
-  const saldo =
-    obterSaldo();
-
-  if (
-    saldo < aposta
-  ) {
-    mostrarMensagem(
-      "Saldo insuficiente para realizar esta aposta."
-    );
-
-    return;
-  }
-
-  girando =
-    true;
-
-  spinButton.disabled =
-    true;
-
-  betInput.disabled =
-    true;
-
-  document
-    .querySelectorAll(
-      ".bet-adjust, .quick-bets button"
-    )
-    .forEach(
-      (button) => {
-        button.disabled =
-          true;
-      }
-    );
-
-  esconderMensagem();
-
-  limparMensagemPremio();
-
-  iniciarAnimacao();
-
-  iniciarVisualizacao();
-
-  try {
-    /*
-     * Mantemos a animação por alguns segundos
-     * para que a máquina tenha aparência real
-     * antes de revelar o resultado vindo do servidor.
-     */
-    const requisicao =
-      apiFetch(
-        "/games/spin",
-        {
-          method:
-            "POST",
-
-          body:
-            JSON.stringify({
-              userId:
-                usuario.id,
-
-              gameId:
-                jogoAtual,
-
-              bet:
-                aposta,
-
-              freeSpin:
-                false
-            })
-        }
+      });
+    } catch (error) {
+      console.error(
+        "Erro ao listar jogos:",
+        error
       );
 
-    const minimoAnimacao =
-      new Promise(
-        (resolve) =>
-          setTimeout(
-            resolve,
-            1300
-          )
-      );
-
-    const [
-      data
-    ] =
-      await Promise.all([
-        requisicao,
-        minimoAnimacao
-      ]);
-
-    pararVisualizacao();
-
-    pararAnimacao();
-
-    const resultado =
-      data?.round;
-
-    if (!resultado) {
-      throw new Error(
-        "O servidor não retornou o resultado da rodada."
-      );
-    }
-
-    renderizarResultado(
-      resultado
-    );
-
-    if (
-      data.user
-    ) {
-      atualizarUsuario(
-        data.user
-      );
-    } else {
-      /*
-       * Compatibilidade com respostas
-       * que retornem apenas saldo.
-       */
-      if (
-        data.balance !==
-        undefined
-      ) {
-        atualizarUsuario({
-          balance:
-            data.balance
-        });
-      }
-    }
-
-    mostrarResultadoPremio(
-      resultado
-    );
-  } catch (error) {
-    console.error(
-      "Erro ao girar:",
-      error
-    );
-
-    pararVisualizacao();
-
-    pararAnimacao();
-
-    /*
-     * Se a operação falhou,
-     * voltamos a mostrar a grade.
-     */
-    renderizarGradeInicial();
-
-    if (
-      error.status === 401
-    ) {
-      mostrarMensagem(
-        "Sua sessão não está mais disponível. Faça login novamente."
-      );
-    } else {
-      mostrarMensagem(
-        error.message ||
-        "Não foi possível realizar a aposta."
-      );
-    }
-  } finally {
-    girando =
-      false;
-
-    spinButton.disabled =
-      false;
-
-    betInput.disabled =
-      false;
-
-    document
-      .querySelectorAll(
-        ".bet-adjust, .quick-bets button"
-      )
-      .forEach(
-        (button) => {
-          button.disabled =
-            false;
-        }
-      );
-
-    atualizarSaldo();
-  }
-}
-
-
-/* =========================================================
-   EVENTOS
-========================================================= */
-
-if (
-  spinButton
-) {
-  spinButton.addEventListener(
-    "click",
-    girar
-  );
-}
-
-if (
-  closeGameButton
-) {
-  closeGameButton.addEventListener(
-    "click",
-    fecharJogo
-  );
-}
-
-if (
-  gameModal
-) {
-  const backdrop =
-    gameModal.querySelector(
-      ".modal-backdrop"
-    );
-
-  if (backdrop) {
-    backdrop.addEventListener(
-      "click",
-      fecharJogo
-    );
-  }
-}
-
-if (
-  backButton
-) {
-  backButton.addEventListener(
-    "click",
-    () => {
-      window.location.href =
-        "/dashboard";
-    }
-  );
-}
-
-document
-  .querySelectorAll(
-    ".bet-adjust"
-  )
-  .forEach(
-    (button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          ajustarAposta(
-            button.dataset.action
-          );
-        }
-      );
-    }
-  );
-
-document
-  .querySelectorAll(
-    ".quick-bets button"
-  )
-  .forEach(
-    (button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          definirAposta(
-            numero(
-              button.dataset.bet,
-              1
-            )
-          );
-        }
-      );
-    }
-  );
-
-if (
-  betInput
-) {
-  betInput.addEventListener(
-    "change",
-    () => {
-      definirAposta(
-        obterAposta()
-      );
-    }
-  );
-}
-
-document.addEventListener(
-  "keydown",
-  (event) => {
-    if (
-      event.key === "Escape" &&
-      gameModal &&
-      !gameModal.hidden &&
-      !girando
-    ) {
-      fecharJogo();
-    }
-
-    if (
-      event.code ===
-        "Space" &&
-      gameModal &&
-      !gameModal.hidden &&
-      !girando
-    ) {
-      event.preventDefault();
-
-      girar();
+      res.status(500).json({
+        message:
+          "Não foi possível carregar os jogos."
+      });
     }
   }
 );
 
-
 /* =========================================================
-   INICIALIZAÇÃO
+   GET /api/games/admin
 ========================================================= */
 
-async function iniciar() {
-  if (
-    !verificarUsuario()
-  ) {
-    return;
+router.get(
+  "/admin",
+  exigirAdmin,
+  async (
+    req,
+    res
+  ) => {
+    try {
+      await garantirTabelasJogos();
+
+      res.json({
+        ok: true,
+
+        games:
+          await listarConfiguracoesJogos()
+      });
+    } catch (error) {
+      console.error(
+        "Erro ao carregar configurações:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Não foi possível carregar as configurações dos jogos."
+      });
+    }
   }
+);
 
-  atualizarSaldo();
+/* =========================================================
+   GET /api/games/admin/:gameId
+========================================================= */
 
-  await carregarJogos();
-}
+router.get(
+  "/admin/:gameId",
+  exigirAdmin,
+  async (
+    req,
+    res
+  ) => {
+    try {
+      await garantirTabelasJogos();
 
-iniciar();
+      const game =
+        await obterConfiguracaoJogo(
+          req.params.gameId
+        );
+
+      if (!game) {
+        return res.status(404).json({
+          message:
+            "Jogo não encontrado."
+        });
+      }
+
+      res.json({
+        ok: true,
+        game
+      });
+    } catch (error) {
+      console.error(
+        "Erro ao carregar configuração:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Não foi possível carregar a configuração."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   PUT /api/games/admin/:gameId
+========================================================= */
+
+router.put(
+  "/admin/:gameId",
+  exigirAdmin,
+  async (
+    req,
+    res
+  ) => {
+    try {
+      await garantirTabelasJogos();
+
+      const gameId =
+        String(
+          req.params.gameId ||
+          ""
+        ).trim();
+
+      const existente =
+        await obterConfiguracaoJogo(
+          gameId
+        );
+
+      if (!existente) {
+        return res.status(404).json({
+          message:
+            "Jogo não encontrado."
+        });
+      }
+
+      const recebido =
+        req.body?.game ||
+        req.body;
+
+      if (
+        !recebido ||
+        typeof recebido !== "object" ||
+        Array.isArray(
+          recebido
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "Configuração inválida."
+        });
+      }
+
+      const configuracao =
+        normalizarConfiguracaoJogo({
+          ...existente,
+          ...recebido,
+          id: gameId
+        });
+
+      const min =
+        numero(
+          configuracao.minBet,
+          1
+        );
+
+      const max =
+        numero(
+          configuracao.maxBet,
+          1000
+        );
+
+      if (
+        min <= 0 ||
+        max < min
+      ) {
+        return res.status(400).json({
+          message:
+            "Os limites de aposta são inválidos."
+        });
+      }
+
+      await pool.query(
+        `
+        INSERT INTO game_settings (
+          game_id,
+          config,
+          updated_at
+        )
+        VALUES (
+          $1,
+          $2::jsonb,
+          CURRENT_TIMESTAMP
+        )
+
+        ON CONFLICT (
+          game_id
+        )
+
+        DO UPDATE SET
+          config =
+            EXCLUDED.config,
+
+          updated_at =
+            CURRENT_TIMESTAMP
+        `,
+        [
+          gameId,
+          JSON.stringify(
+            configuracao
+          )
+        ]
+      );
+
+      res.json({
+        ok: true,
+        game:
+          configuracao
+      });
+    } catch (error) {
+      console.error(
+        "Erro ao salvar configuração:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Não foi possível salvar a configuração do jogo."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   POST /api/games/spin
+========================================================= */
+
+router.post(
+  "/spin",
+  async (
+    req,
+    res
+  ) => {
+    const userId =
+      req.body?.userId;
+
+    const gameId =
+      String(
+        req.body?.gameId ||
+        ""
+      ).trim();
+
+    if (
+      !userId ||
+      !gameId
+    ) {
+      return res.status(400).json({
+        message:
+          "Usuário e jogo são obrigatórios."
+      });
+    }
+
+    let client;
+
+    try {
+      await garantirTabelasJogos();
+
+      const config =
+        await obterConfiguracaoJogo(
+          gameId
+        );
+
+      if (
+        !config ||
+        config.enabled === false
+      ) {
+        return res.status(404).json({
+          message:
+            "Jogo indisponível."
+        });
+      }
+
+      const validacao =
+        validarAposta(
+          req.body?.bet,
+          config
+        );
+
+      if (
+        !validacao.ok
+      ) {
+        return res.status(400).json({
+          message:
+            validacao.message
+        });
+      }
+
+      const aposta =
+        validacao.value;
+
+      client =
+        await pool.connect();
+
+      await client.query(
+        "BEGIN"
+      );
+
+      const user =
+        await obterUsuarioBloqueado(
+          client,
+          userId
+        );
+
+      if (!user) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+          message:
+            "Usuário não encontrado."
+        });
+      }
+
+      const saldoAntes =
+        saldoUsuario(
+          user
+        );
+
+      if (
+        saldoAntes + 0.001 <
+        aposta
+      ) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(400).json({
+          message:
+            "Saldo insuficiente."
+        });
+      }
+
+      const consumo =
+        consumirSaldo(
+          user,
+          aposta
+        );
+
+      if (!consumo) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(400).json({
+          message:
+            "Saldo insuficiente."
+        });
+      }
+
+      /*
+       * O servidor nunca confia em
+       * freeSpin enviado pelo navegador.
+       */
+      const resultado =
+        executarSpin({
+          config,
+          bet: aposta,
+          freeSpin: false
+        });
+
+      const premio =
+        arredondar(
+          numero(
+            resultado.win,
+            0
+          )
+        );
+
+      /*
+       * Primeiro retira a aposta.
+       */
+      await client.query(
+        `
+        UPDATE users
+        SET
+          bonus_balance = $1,
+          cash_balance = $2,
+          balance = $1 + $2
+        WHERE id = $3
+        `,
+        [
+          consumo.bonus,
+          consumo.cash,
+          userId
+        ]
+      );
+
+      /*
+       * Depois acrescenta o prêmio.
+       */
+      if (
+        premio > 0
+      ) {
+        await creditarPremio(
+          client,
+          userId,
+          premio
+        );
+      }
+
+      const userDepoisResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            username,
+            balance,
+            bonus_balance,
+            cash_balance,
+            reserved_balance,
+            bonus_wager_progress
+          FROM users
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [userId]
+        );
+
+      const userDepois =
+        userDepoisResult
+          .rows[0];
+
+      /*
+       * Registra a rodada.
+       */
+      await client.query(
+        `
+        INSERT INTO game_rounds (
+          round_id,
+          user_id,
+          game_id,
+          bet,
+          win,
+          free_spin,
+          result
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7::jsonb
+        )
+        `,
+        [
+          resultado.roundId,
+
+          String(
+            userId
+          ),
+
+          gameId,
+
+          aposta,
+
+          premio,
+
+          false,
+
+          JSON.stringify(
+            resultado
+          )
+        ]
+      );
+
+      await client.query(
+        "COMMIT"
+      );
+
+      res.json({
+        ok: true,
+
+        round:
+          resultado,
+
+        user:
+          montarUsuarioAtualizado(
+            userDepois,
+            numero(
+              userDepois.bonus_balance,
+              0
+            ),
+            numero(
+              userDepois.cash_balance,
+              0
+            )
+          ),
+
+        saldoAntes,
+
+        saldoDepois:
+          saldoUsuario(
+            userDepois
+          )
+      });
+    } catch (error) {
+      if (client) {
+        try {
+          await client.query(
+            "ROLLBACK"
+          );
+        } catch (_) {}
+      }
+
+      console.error(
+        "Erro ao executar jogo:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Não foi possível concluir a rodada."
+      });
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+);
+
+/* =========================================================
+   GET /api/games/:gameId
+========================================================= */
+
+router.get(
+  "/:gameId",
+  async (
+    req,
+    res
+  ) => {
+    try {
+      await garantirTabelasJogos();
+
+      const game =
+        await obterConfiguracaoJogo(
+          req.params.gameId
+        );
+
+      if (
+        !game ||
+        game.enabled === false
+      ) {
+        return res.status(404).json({
+          message:
+            "Jogo não encontrado."
+        });
+      }
+
+      res.json({
+        ok: true,
+
+        game:
+          limparConfigPublica(
+            game
+          )
+      });
+    } catch (error) {
+      console.error(
+        "Erro ao carregar jogo:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Não foi possível carregar o jogo."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   EXPORTAÇÃO
+========================================================= */
+
+export {
+  garantirTabelasJogos
+};
+
+export default router;
