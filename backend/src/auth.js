@@ -2,25 +2,21 @@ const express = require("express");
 const router = express.Router();
 
 const pool = require("./db");
+
 const {
   criarSessaoAdmin,
+  validarSessaoAdmin,
   removerSessaoAdmin
 } = require("./adminSession");
 
-/*
-|--------------------------------------------------------------------------
-| CONFIGURAÇÃO
-|--------------------------------------------------------------------------
-*/
+const COOKIE_NAME = "jpbet_admin_session";
 
 const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-const COOKIE_NAME = "jpbet_admin_session";
-
 /*
 |--------------------------------------------------------------------------
-| AUXILIARES
+| COOKIE
 |--------------------------------------------------------------------------
 */
 
@@ -32,24 +28,40 @@ function enviarCookieAdmin(res, token) {
 
   res.setHeader(
     "Set-Cookie",
-    `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict${secure}`
+    `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax${secure}`
   );
 }
 
 function obterCookieAdmin(req) {
-  const cookies = req.headers.cookie;
+  const cookieHeader = req.headers.cookie;
 
-  if (!cookies) {
+  if (!cookieHeader) {
     return null;
   }
 
-  const partes = cookies.split(";");
+  const cookies = cookieHeader.split(";");
 
-  for (const parte of partes) {
-    const [nome, ...resto] = parte.trim().split("=");
+  for (const cookie of cookies) {
+    const separador = cookie.indexOf("=");
+
+    if (separador === -1) {
+      continue;
+    }
+
+    const nome = cookie
+      .substring(0, separador)
+      .trim();
+
+    const valor = cookie
+      .substring(separador + 1)
+      .trim();
 
     if (nome === COOKIE_NAME) {
-      return decodeURIComponent(resto.join("="));
+      try {
+        return decodeURIComponent(valor);
+      } catch {
+        return valor;
+      }
     }
   }
 
@@ -64,139 +76,9 @@ function expirarCookieAdmin(res) {
 
   res.setHeader(
     "Set-Cookie",
-    `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Strict${secure}; Max-Age=0`
+    `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=0`
   );
 }
-
-/*
-|--------------------------------------------------------------------------
-| CADASTRO DE USUÁRIO
-|--------------------------------------------------------------------------
-*/
-
-router.post("/register", async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Usuário e senha são obrigatórios."
-      });
-    }
-
-    const usuario = String(username).trim();
-
-    if (usuario.length < 3) {
-      return res.status(400).json({
-        success: false,
-        message: "O usuário deve possuir pelo menos 3 caracteres."
-      });
-    }
-
-    if (String(password).length < 4) {
-      return res.status(400).json({
-        success: false,
-        message: "A senha deve possuir pelo menos 4 caracteres."
-      });
-    }
-
-    const existente = await pool.query(
-      "SELECT id FROM users WHERE username = $1 LIMIT 1",
-      [usuario]
-    );
-
-    if (existente.rows.length > 0) {
-      return res.status(409).json({
-        success: false,
-        message: "Usuário já cadastrado."
-      });
-    }
-
-    const resultado = await pool.query(
-      `INSERT INTO users (username, password_hash)
-       VALUES ($1, $2)
-       RETURNING id, username`,
-      [usuario, password]
-    );
-
-    return res.status(201).json({
-      success: true,
-      message: "Usuário cadastrado com sucesso.",
-      user: resultado.rows[0]
-    });
-
-  } catch (error) {
-    console.error("Erro no registro:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erro interno ao cadastrar usuário."
-    });
-  }
-});
-
-/*
-|--------------------------------------------------------------------------
-| LOGIN DE USUÁRIO
-|--------------------------------------------------------------------------
-*/
-
-router.post("/login", async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Usuário e senha são obrigatórios."
-      });
-    }
-
-    const usuario = String(username).trim();
-
-    const resultado = await pool.query(
-      `SELECT id, username, password_hash
-       FROM users
-       WHERE username = $1
-       LIMIT 1`,
-      [usuario]
-    );
-
-    if (resultado.rows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: "Usuário ou senha inválidos."
-      });
-    }
-
-    const user = resultado.rows[0];
-
-    if (String(user.password_hash) !== String(password)) {
-      return res.status(401).json({
-        success: false,
-        message: "Usuário ou senha inválidos."
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: "Login realizado com sucesso.",
-      user: {
-        id: user.id,
-        username: user.username
-      }
-    });
-
-  } catch (error) {
-    console.error("Erro no login:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erro interno ao realizar login."
-    });
-  }
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -206,7 +88,7 @@ router.post("/login", async (req, res) => {
 
 router.post("/admin-login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body || {};
 
     if (!username || !password) {
       return res.status(400).json({
@@ -222,8 +104,7 @@ router.post("/admin-login", async (req, res) => {
     let adminId = null;
 
     /*
-     * Primeiro tenta verificar o administrador cadastrado
-     * na tabela admins.
+     * Primeiro verifica a tabela admins.
      */
     try {
       const resultado = await pool.query(
@@ -244,19 +125,16 @@ router.post("/admin-login", async (req, res) => {
           adminId = admin.id;
         }
       }
-    } catch (dbError) {
-      /*
-       * Caso a tabela admins ainda não exista,
-       * continua verificando as variáveis de ambiente.
-       */
+    } catch (error) {
       console.warn(
-        "Não foi possível consultar a tabela admins:",
-        dbError.message
+        "Tabela admins não pôde ser consultada:",
+        error.message
       );
     }
 
     /*
-     * Administrador definido nas variáveis de ambiente.
+     * Também permite administrador configurado
+     * pelas variáveis de ambiente do Render.
      */
     if (
       !adminValido &&
@@ -272,26 +150,26 @@ router.post("/admin-login", async (req, res) => {
     if (!adminValido) {
       return res.status(401).json({
         success: false,
-        message: "Credenciais de administrador inválidas."
+        message: "Usuário ou senha de administrador inválidos."
       });
     }
 
     /*
-     * Cria a sessão administrativa.
+     * Cria o token da sessão.
      */
-    const token = await criarSessaoAdmin({
+    const token = criarSessaoAdmin({
       adminId,
       username: usuario
     });
 
     /*
-     * IMPORTANTE:
-     * O cookie precisa ser exatamente jpbet_admin_session.
+     * Grava exatamente o cookie esperado pelo painel.
      */
     enviarCookieAdmin(res, token);
 
     return res.json({
       success: true,
+      authenticated: true,
       message: "Login administrativo realizado com sucesso.",
       admin: {
         id: adminId,
@@ -300,7 +178,10 @@ router.post("/admin-login", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Erro no login administrativo:", error);
+    console.error(
+      "Erro no login administrativo:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -311,11 +192,11 @@ router.post("/admin-login", async (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| VERIFICAR SESSÃO DO ADMIN
+| VERIFICAR SESSÃO DO ADMINISTRADOR
 |--------------------------------------------------------------------------
 */
 
-router.get("/admin-session", async (req, res) => {
+router.get("/admin-session", (req, res) => {
   try {
     const token = obterCookieAdmin(req);
 
@@ -327,13 +208,7 @@ router.get("/admin-session", async (req, res) => {
       });
     }
 
-    /*
-     * A validação da sessão fica centralizada
-     * no adminSession.js.
-     */
-    const sessao = await criarSessaoAdmin.validar
-      ? await criarSessaoAdmin.validar(token)
-      : null;
+    const sessao = validarSessaoAdmin(token);
 
     if (!sessao) {
       expirarCookieAdmin(res);
@@ -348,11 +223,17 @@ router.get("/admin-session", async (req, res) => {
     return res.json({
       success: true,
       authenticated: true,
-      admin: sessao
+      admin: {
+        id: sessao.adminId,
+        username: sessao.username
+      }
     });
 
   } catch (error) {
-    console.error("Erro ao verificar sessão administrativa:", error);
+    console.error(
+      "Erro ao validar sessão administrativa:",
+      error
+    );
 
     expirarCookieAdmin(res);
 
@@ -370,37 +251,36 @@ router.get("/admin-session", async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-router.post("/admin-logout", async (req, res) => {
+router.post("/admin-logout", (req, res) => {
   try {
     const token = obterCookieAdmin(req);
 
     if (token) {
-      await removerSessaoAdmin(token);
+      removerSessaoAdmin(token);
     }
 
     expirarCookieAdmin(res);
 
     return res.json({
       success: true,
+      authenticated: false,
       message: "Logout administrativo realizado com sucesso."
     });
 
   } catch (error) {
-    console.error("Erro no logout administrativo:", error);
+    console.error(
+      "Erro no logout administrativo:",
+      error
+    );
 
     expirarCookieAdmin(res);
 
     return res.json({
       success: true,
+      authenticated: false,
       message: "Sessão administrativa encerrada."
     });
   }
 });
-
-/*
-|--------------------------------------------------------------------------
-| EXPORTAÇÃO
-|--------------------------------------------------------------------------
-*/
 
 module.exports = router;
