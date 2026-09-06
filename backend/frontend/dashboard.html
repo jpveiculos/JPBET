@@ -1,94 +1,391 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
+const API_URL = "/api";
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+/* =========================
+   DADOS DO USUÁRIO
+========================= */
 
-  <title>JPBET - Dashboard</title>
+function obterUsuario() {
+  try {
+    const usuario =
+      localStorage.getItem("jpbet_user");
 
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-</head>
+    if (!usuario) {
+      return null;
+    }
 
-<body>
+    return JSON.parse(usuario);
 
-  <main class="dashboard">
-
-    <section class="container">
-
-      <header class="dashboard-header">
-
-        <div>
-          <h1>JPBET</h1>
-          <p id="welcomeMessage">
-            Bem-vindo!
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onclick="sair()"
-        >
-          Sair
-        </button>
-
-      </header>
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
 
-      <section class="dashboard-card">
+/* =========================
+   TOKEN
+========================= */
 
-        <h2>Minha conta</h2>
-
-        <div class="account-info">
-
-          <p>
-            <strong>Usuário:</strong>
-            <span id="userName">---</span>
-          </p>
-
-          <p>
-            <strong>Saldo:</strong>
-            <span id="userBalance">R$ 0,00</span>
-          </p>
-
-        </div>
-
-      </section>
+function obterToken() {
+  return localStorage.getItem(
+    "jpbet_token"
+  );
+}
 
 
-      <section class="dashboard-card">
+/* =========================
+   VERIFICAR LOGIN
+========================= */
 
-        <h2>Jogos</h2>
+function verificarLogin() {
+  const usuario =
+    obterUsuario();
 
-        <p id="gamesMessage">
-          Carregando jogos...
-        </p>
+  const token =
+    obterToken();
 
-        <div
-          id="gamesContainer"
-          class="games-container"
-        ></div>
+  if (!usuario || !token) {
+    window.location.href =
+      "index.html";
 
-      </section>
+    return false;
+  }
 
-
-      <p
-        id="dashboardMessage"
-        class="dashboard-message"
-      ></p>
-
-    </section>
-
-  </main>
+  return true;
+}
 
 
-  <script src="dashboard.js"></script>
+/* =========================
+   MOSTRAR USUÁRIO
+========================= */
 
-</body>
-</html>
+function mostrarUsuario() {
+  const usuario =
+    obterUsuario();
+
+  if (!usuario) {
+    return;
+  }
+
+  const nome =
+    usuario.username ||
+    usuario.name ||
+    usuario.nome ||
+    "---";
+
+  const userName =
+    document.getElementById(
+      "userName"
+    );
+
+  const welcomeMessage =
+    document.getElementById(
+      "welcomeMessage"
+    );
+
+  if (userName) {
+    userName.textContent =
+      nome;
+  }
+
+  if (welcomeMessage) {
+    welcomeMessage.textContent =
+      `Bem-vindo, ${nome}!`;
+  }
+
+  atualizarSaldo(usuario);
+}
+
+
+/* =========================
+   SALDO
+========================= */
+
+function atualizarSaldo(usuario) {
+  const saldoElement =
+    document.getElementById(
+      "userBalance"
+    );
+
+  if (!saldoElement) {
+    return;
+  }
+
+  const saldo =
+    Number(
+      usuario.balance ??
+      usuario.saldo ??
+      0
+    );
+
+  saldoElement.textContent =
+    saldo.toLocaleString(
+      "pt-BR",
+      {
+        style: "currency",
+        currency: "BRL"
+      }
+    );
+}
+
+
+/* =========================
+   CARREGAR PERFIL
+========================= */
+
+async function carregarPerfil() {
+  const token =
+    obterToken();
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    const response =
+      await fetch(
+        `${API_URL}/auth/me`,
+        {
+          method: "GET",
+
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    if (!response.ok) {
+      return;
+    }
+
+    const data =
+      await response
+        .json()
+        .catch(() => ({}));
+
+    const usuario =
+      data.user ||
+      data.usuario ||
+      data;
+
+    if (
+      usuario &&
+      typeof usuario === "object"
+    ) {
+      localStorage.setItem(
+        "jpbet_user",
+        JSON.stringify(usuario)
+      );
+
+      mostrarUsuario();
+    }
+
+  } catch (error) {
+    console.error(
+      "Erro ao carregar perfil:",
+      error
+    );
+  }
+}
+
+
+/* =========================
+   CARREGAR JOGOS
+========================= */
+
+async function carregarJogos() {
+  const container =
+    document.getElementById(
+      "gamesContainer"
+    );
+
+  const message =
+    document.getElementById(
+      "gamesMessage"
+    );
+
+  if (!container) {
+    return;
+  }
+
+  try {
+    const token =
+      obterToken();
+
+    const headers = {};
+
+    if (token) {
+      headers.Authorization =
+        `Bearer ${token}`;
+    }
+
+    const response =
+      await fetch(
+        `${API_URL}/games`,
+        {
+          method: "GET",
+          headers
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Não foi possível carregar os jogos."
+      );
+    }
+
+    const data =
+      await response
+        .json()
+        .catch(() => []);
+
+    const jogos =
+      Array.isArray(data)
+        ? data
+        : (
+            data.games ||
+            data.jogos ||
+            []
+          );
+
+    container.innerHTML = "";
+
+    if (!jogos.length) {
+      if (message) {
+        message.textContent =
+          "Nenhum jogo disponível no momento.";
+      }
+
+      return;
+    }
+
+    if (message) {
+      message.textContent = "";
+    }
+
+    jogos.forEach(
+      (jogo) => {
+        const card =
+          document.createElement(
+            "div"
+          );
+
+        card.className =
+          "game-card";
+
+        const nome =
+          jogo.name ||
+          jogo.nome ||
+          "Jogo";
+
+        card.innerHTML = `
+          <h3>${escaparHTML(nome)}</h3>
+          <button
+            type="button"
+            onclick="abrirJogo('${escaparAtributo(
+              jogo.id ||
+              jogo._id ||
+              ""
+            )}')"
+          >
+            Jogar
+          </button>
+        `;
+
+        container.appendChild(
+          card
+        );
+      }
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    if (message) {
+      message.textContent =
+        "Os jogos ainda não estão disponíveis.";
+    }
+  }
+}
+
+
+/* =========================
+   ABRIR JOGO
+========================= */
+
+function abrirJogo(id) {
+  if (!id) {
+    return;
+  }
+
+  const mensagem =
+    document.getElementById(
+      "dashboardMessage"
+    );
+
+  if (mensagem) {
+    mensagem.textContent =
+      "O jogo será disponibilizado em breve.";
+  }
+}
+
+
+/* =========================
+   SAIR
+========================= */
+
+function sair() {
+  localStorage.removeItem(
+    "jpbet_user"
+  );
+
+  localStorage.removeItem(
+    "jpbet_token"
+  );
+
+  window.location.href =
+    "index.html";
+}
+
+
+/* =========================
+   SEGURANÇA HTML
+========================= */
+
+function escaparHTML(valor) {
+  return String(valor)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escaparAtributo(valor) {
+  return String(valor)
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'")
+    .replaceAll('"', "&quot;");
+}
+
+
+/* =========================
+   INICIALIZAÇÃO
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    if (!verificarLogin()) {
+      return;
+    }
+
+    mostrarUsuario();
+
+    await carregarPerfil();
+
+    await carregarJogos();
+  }
+);
