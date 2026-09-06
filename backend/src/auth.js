@@ -1,70 +1,78 @@
-import express from "express";
-import { pool } from "./db.js";
-import {
-  criarSessaoAdmin,
-  removerSessaoAdmin
-} from "./adminSession.js";
-import { registrarAuditoria } from "./audit.js";
-
+const express = require("express");
 const router = express.Router();
 
-/* =========================
-   INICIALIZAÇÃO DOS ADMINS
-========================= */
+const pool = require("./db");
+const {
+  criarSessaoAdmin,
+  removerSessaoAdmin
+} = require("./adminSession");
 
-async function inicializarAdmins() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+/*
+|--------------------------------------------------------------------------
+| CONFIGURAÇÃO
+|--------------------------------------------------------------------------
+*/
 
-    await pool.query(`
-      INSERT INTO admins (username, password_hash)
-      VALUES ('admin', '123456')
-      ON CONFLICT (username) DO NOTHING;
-    `);
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-    console.log("Tabela admins inicializada com sucesso.");
-  } catch (error) {
-    console.error(
-      "Erro ao inicializar tabela admins:",
-      error
-    );
-  }
+const COOKIE_NAME = "jpbet_admin_session";
+
+/*
+|--------------------------------------------------------------------------
+| AUXILIARES
+|--------------------------------------------------------------------------
+*/
+
+function enviarCookieAdmin(res, token) {
+  const secure =
+    process.env.NODE_ENV === "production"
+      ? "; Secure"
+      : "";
+
+  res.setHeader(
+    "Set-Cookie",
+    `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict${secure}`
+  );
 }
 
-inicializarAdmins();
+function obterCookieAdmin(req) {
+  const cookies = req.headers.cookie;
 
-/* =========================
-   VERIFICAÇÃO DO BANCO
-========================= */
-
-router.get("/health", async (req, res) => {
-  try {
-    await pool.query("SELECT 1");
-
-    res.json({
-      ok: true,
-      database: "connected"
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      ok: false,
-      database: "error"
-    });
+  if (!cookies) {
+    return null;
   }
-});
 
-/* =========================
-   CADASTRO DE USUÁRIO
-========================= */
+  const partes = cookies.split(";");
+
+  for (const parte of partes) {
+    const [nome, ...resto] = parte.trim().split("=");
+
+    if (nome === COOKIE_NAME) {
+      return decodeURIComponent(resto.join("="));
+    }
+  }
+
+  return null;
+}
+
+function expirarCookieAdmin(res) {
+  const secure =
+    process.env.NODE_ENV === "production"
+      ? "; Secure"
+      : "";
+
+  res.setHeader(
+    "Set-Cookie",
+    `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Strict${secure}; Max-Age=0`
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| CADASTRO DE USUÁRIO
+|--------------------------------------------------------------------------
+*/
 
 router.post("/register", async (req, res) => {
   try {
@@ -72,521 +80,327 @@ router.post("/register", async (req, res) => {
 
     if (!username || !password) {
       return res.status(400).json({
-        message: "Informe usuário e senha."
+        success: false,
+        message: "Usuário e senha são obrigatórios."
       });
     }
 
-    if (username.length < 3) {
+    const usuario = String(username).trim();
+
+    if (usuario.length < 3) {
       return res.status(400).json({
-        message:
-          "O usuário deve ter pelo menos 3 caracteres."
+        success: false,
+        message: "O usuário deve possuir pelo menos 3 caracteres."
       });
     }
 
-    if (password.length < 4) {
+    if (String(password).length < 4) {
       return res.status(400).json({
-        message:
-          "A senha deve ter pelo menos 4 caracteres."
+        success: false,
+        message: "A senha deve possuir pelo menos 4 caracteres."
       });
     }
 
-    const existingUser = await pool.query(
-      `
-      SELECT id
-      FROM users
-      WHERE username = $1
-      LIMIT 1
-      `,
-      [username]
+    const existente = await pool.query(
+      "SELECT id FROM users WHERE username = $1 LIMIT 1",
+      [usuario]
     );
 
-    if (existingUser.rows.length > 0) {
+    if (existente.rows.length > 0) {
       return res.status(409).json({
-        message: "Esse usuário já existe."
+        success: false,
+        message: "Usuário já cadastrado."
       });
     }
 
-    let initialBonus = 100;
-
-    try {
-      const bonusSetting = await pool.query(`
-        SELECT setting_key, setting_value
-        FROM site_settings
-        WHERE setting_key IN (
-          'initial_bonus_amount',
-          'bonus_system_enabled'
-        )
-      `);
-
-      const bonusRow = bonusSetting.rows.find(
-        row =>
-          row.setting_key === "initial_bonus_amount"
-      );
-
-      const enabledRow = bonusSetting.rows.find(
-        row =>
-          row.setting_key === "bonus_system_enabled"
-      );
-
-      const configuredBonus =
-        Number(bonusRow?.setting_value);
-
-      const bonusEnabled =
-        String(
-          enabledRow?.setting_value ?? "true"
-        ).toLowerCase() !== "false";
-
-      if (
-        Number.isFinite(configuredBonus) &&
-        configuredBonus >= 0
-      ) {
-        initialBonus = bonusEnabled
-          ? configuredBonus
-          : 0;
-      }
-    } catch (_) {}
-
-    const result = await pool.query(
-      `
-      INSERT INTO users
-      (
-        username,
-        password_hash,
-        balance,
-        bonus_balance,
-        cash_balance,
-        bonus_wager_progress
-      )
-      VALUES ($1, $2, $3, $3, 0, 0)
-      RETURNING
-        id,
-        username,
-        balance,
-        bonus_balance,
-        cash_balance,
-        bonus_wager_progress
-      `,
-      [
-        username,
-        password,
-        initialBonus
-      ]
+    const resultado = await pool.query(
+      `INSERT INTO users (username, password_hash)
+       VALUES ($1, $2)
+       RETURNING id, username`,
+      [usuario, password]
     );
 
-    /* =========================
-       AUDITORIA — CADASTRO
-    ========================= */
-
-    await registrarAuditoria({
-      userId: result.rows[0].id,
-      action: "CADASTRO_USUARIO",
-      module: "AUTENTICACAO",
-      targetType: "USER",
-      targetId: result.rows[0].id,
-      newValue: {
-        username: result.rows[0].username
-      },
-      details: "Novo usuário cadastrado.",
-      result: "SUCCESS",
-      ipAddress: obterIp(req),
-      userAgent:
-        req.headers["user-agent"] || null
+    return res.status(201).json({
+      success: true,
+      message: "Usuário cadastrado com sucesso.",
+      user: resultado.rows[0]
     });
 
-    res.status(201).json({
-      ok: true,
-      message: "Usuário criado com sucesso.",
-      user: result.rows[0]
-    });
   } catch (error) {
-    console.error(error);
+    console.error("Erro no registro:", error);
 
-    res.status(500).json({
-      message: "Erro interno do servidor."
+    return res.status(500).json({
+      success: false,
+      message: "Erro interno ao cadastrar usuário."
     });
   }
 });
 
-/* =========================
-   LOGIN DE USUÁRIO
-========================= */
+/*
+|--------------------------------------------------------------------------
+| LOGIN DE USUÁRIO
+|--------------------------------------------------------------------------
+*/
 
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      await registrarAuditoria({
-        action: "LOGIN_FALHA",
-        module: "AUTENTICACAO",
-        targetType: "USER",
-        targetId: username || null,
-        details:
-          "Tentativa de login sem usuário ou senha.",
-        result: "FAILURE",
-        ipAddress: obterIp(req),
-        userAgent:
-          req.headers["user-agent"] || null
-      });
-
       return res.status(400).json({
-        message: "Informe usuário e senha."
+        success: false,
+        message: "Usuário e senha são obrigatórios."
       });
     }
 
-    const result = await pool.query(
-      `
-      SELECT
-        id,
-        username,
-        password_hash,
-        balance,
-        bonus_balance,
-        cash_balance,
-        bonus_wager_progress,
-        reserved_balance
-      FROM users
-      WHERE username = $1
-      LIMIT 1
-      `,
-      [username]
+    const usuario = String(username).trim();
+
+    const resultado = await pool.query(
+      `SELECT id, username, password_hash
+       FROM users
+       WHERE username = $1
+       LIMIT 1`,
+      [usuario]
     );
 
-    if (result.rows.length === 0) {
-      await registrarAuditoria({
-        action: "LOGIN_FALHA",
-        module: "AUTENTICACAO",
-        targetType: "USER",
-        targetId: username,
-        details: "Usuário não encontrado.",
-        result: "FAILURE",
-        ipAddress: obterIp(req),
-        userAgent:
-          req.headers["user-agent"] || null
-      });
-
+    if (resultado.rows.length === 0) {
       return res.status(401).json({
-        message:
-          "Usuário ou senha inválidos."
+        success: false,
+        message: "Usuário ou senha inválidos."
       });
     }
 
-    const user = result.rows[0];
+    const user = resultado.rows[0];
 
-    if (user.password_hash !== password) {
-      await registrarAuditoria({
-        userId: user.id,
-        action: "LOGIN_FALHA",
-        module: "AUTENTICACAO",
-        targetType: "USER",
-        targetId: user.id,
-        details: "Senha inválida.",
-        result: "FAILURE",
-        ipAddress: obterIp(req),
-        userAgent:
-          req.headers["user-agent"] || null
-      });
-
+    if (String(user.password_hash) !== String(password)) {
       return res.status(401).json({
-        message:
-          "Usuário ou senha inválidos."
+        success: false,
+        message: "Usuário ou senha inválidos."
       });
     }
 
-    /* =========================
-       AUDITORIA — LOGIN SUCESSO
-    ========================= */
-
-    await registrarAuditoria({
-      userId: user.id,
-      action: "LOGIN_SUCESSO",
-      module: "AUTENTICACAO",
-      targetType: "USER",
-      targetId: user.id,
-      details:
-        "Login realizado com sucesso.",
-      result: "SUCCESS",
-      ipAddress: obterIp(req),
-      userAgent:
-        req.headers["user-agent"] || null
-    });
-
-    res.json({
-      ok: true,
+    return res.json({
+      success: true,
+      message: "Login realizado com sucesso.",
       user: {
         id: user.id,
-        username: user.username,
-        balance: Number(user.balance || 0),
-        bonusBalance: Number(
-          user.bonus_balance || 0
-        ),
-        cashBalance: Number(
-          user.cash_balance || 0
-        ),
-        bonusWagerProgress: Number(
-          user.bonus_wager_progress || 0
-        ),
-        reservedBalance: Number(
-          user.reserved_balance || 0
-        )
+        username: user.username
       }
     });
-  } catch (error) {
-    console.error(error);
 
-    res.status(500).json({
-      message: "Erro interno do servidor."
+  } catch (error) {
+    console.error("Erro no login:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Erro interno ao realizar login."
     });
   }
 });
 
-/* =========================
-   LOGIN ADMINISTRATIVO
-========================= */
+/*
+|--------------------------------------------------------------------------
+| LOGIN DO ADMINISTRADOR
+|--------------------------------------------------------------------------
+*/
 
 router.post("/admin-login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const result = await pool.query(
-      `
-      SELECT
-        id,
-        username,
-        password_hash
-      FROM admins
-      WHERE username = $1
-      LIMIT 1
-      `,
-      [username]
-    );
-
-    if (result.rows.length > 0) {
-      const admin = result.rows[0];
-
-      if (admin.password_hash === password) {
-        const token =
-          criarSessaoAdmin(admin.username);
-
-        res.setHeader(
-          "Set-Cookie",
-          `jpbet_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
-        );
-
-        await registrarAuditoria({
-          action: "ADMIN_LOGIN_SUCESSO",
-          module: "ADMINISTRACAO",
-          targetType: "ADMIN",
-          targetId: admin.id,
-          details:
-            "Login administrativo realizado com sucesso.",
-          result: "SUCCESS",
-          ipAddress: obterIp(req),
-          userAgent:
-            req.headers["user-agent"] || null
-        });
-
-        return res.json({
-          ok: true,
-          admin: true,
-          username: admin.username
-        });
-      }
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Usuário e senha são obrigatórios."
+      });
     }
 
-    /* Administrador definido pelas variáveis do Render */
+    const usuario = String(username).trim();
+    const senha = String(password);
 
-    const adminUser =
-      process.env.ADMIN_USER || "admin";
+    let adminValido = false;
+    let adminId = null;
 
-    const adminPassword =
-      process.env.ADMIN_PASSWORD;
-
-    if (
-      adminPassword &&
-      username === adminUser &&
-      password === adminPassword
-    ) {
-      const token =
-        criarSessaoAdmin(adminUser);
-
-      res.setHeader(
-        "Set-Cookie",
-        `jpbet_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
+    /*
+     * Primeiro tenta verificar o administrador cadastrado
+     * na tabela admins.
+     */
+    try {
+      const resultado = await pool.query(
+        `SELECT id, username, password_hash
+         FROM admins
+         WHERE username = $1
+         LIMIT 1`,
+        [usuario]
       );
 
-      await registrarAuditoria({
-        action: "ADMIN_LOGIN_SUCESSO",
-        module: "ADMINISTRACAO",
-        targetType: "ADMIN",
-        targetId: adminUser,
-        details:
-          "Login administrativo realizado com credenciais do Render.",
-        result: "SUCCESS",
-        ipAddress: obterIp(req),
-        userAgent:
-          req.headers["user-agent"] || null
-      });
+      if (resultado.rows.length > 0) {
+        const admin = resultado.rows[0];
 
-      return res.json({
-        ok: true,
-        admin: true,
-        username: adminUser
+        if (
+          String(admin.password_hash) === senha
+        ) {
+          adminValido = true;
+          adminId = admin.id;
+        }
+      }
+    } catch (dbError) {
+      /*
+       * Caso a tabela admins ainda não exista,
+       * continua verificando as variáveis de ambiente.
+       */
+      console.warn(
+        "Não foi possível consultar a tabela admins:",
+        dbError.message
+      );
+    }
+
+    /*
+     * Administrador definido nas variáveis de ambiente.
+     */
+    if (
+      !adminValido &&
+      ADMIN_USER &&
+      ADMIN_PASSWORD &&
+      usuario === String(ADMIN_USER) &&
+      senha === String(ADMIN_PASSWORD)
+    ) {
+      adminValido = true;
+      adminId = "env-admin";
+    }
+
+    if (!adminValido) {
+      return res.status(401).json({
+        success: false,
+        message: "Credenciais de administrador inválidas."
       });
     }
 
-    /* =========================
-       AUDITORIA — LOGIN ADMIN FALHO
-    ========================= */
-
-    await registrarAuditoria({
-      action: "ADMIN_LOGIN_FALHA",
-      module: "ADMINISTRACAO",
-      targetType: "ADMIN",
-      targetId: username || null,
-      details:
-        "Credenciais administrativas inválidas.",
-      result: "FAILURE",
-      ipAddress: obterIp(req),
-      userAgent:
-        req.headers["user-agent"] || null
+    /*
+     * Cria a sessão administrativa.
+     */
+    const token = await criarSessaoAdmin({
+      adminId,
+      username: usuario
     });
 
-    return res.status(401).json({
-      message:
-        "Credenciais administrativas inválidas."
+    /*
+     * IMPORTANTE:
+     * O cookie precisa ser exatamente jpbet_admin_session.
+     */
+    enviarCookieAdmin(res, token);
+
+    return res.json({
+      success: true,
+      message: "Login administrativo realizado com sucesso.",
+      admin: {
+        id: adminId,
+        username: usuario
+      }
     });
+
   } catch (error) {
-    console.error(error);
+    console.error("Erro no login administrativo:", error);
 
-    res.status(500).json({
-      message:
-        "Erro ao realizar login administrativo."
+    return res.status(500).json({
+      success: false,
+      message: "Erro interno ao realizar login administrativo."
     });
   }
 });
 
-/* =========================
-   LOGOUT ADMINISTRATIVO
-========================= */
+/*
+|--------------------------------------------------------------------------
+| VERIFICAR SESSÃO DO ADMIN
+|--------------------------------------------------------------------------
+*/
+
+router.get("/admin-session", async (req, res) => {
+  try {
+    const token = obterCookieAdmin(req);
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        authenticated: false,
+        message: "Sessão administrativa não encontrada."
+      });
+    }
+
+    /*
+     * A validação da sessão fica centralizada
+     * no adminSession.js.
+     */
+    const sessao = await criarSessaoAdmin.validar
+      ? await criarSessaoAdmin.validar(token)
+      : null;
+
+    if (!sessao) {
+      expirarCookieAdmin(res);
+
+      return res.status(401).json({
+        success: false,
+        authenticated: false,
+        message: "Sessão administrativa inválida ou expirada."
+      });
+    }
+
+    return res.json({
+      success: true,
+      authenticated: true,
+      admin: sessao
+    });
+
+  } catch (error) {
+    console.error("Erro ao verificar sessão administrativa:", error);
+
+    expirarCookieAdmin(res);
+
+    return res.status(401).json({
+      success: false,
+      authenticated: false,
+      message: "Sessão administrativa inválida."
+    });
+  }
+});
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT DO ADMINISTRADOR
+|--------------------------------------------------------------------------
+*/
 
 router.post("/admin-logout", async (req, res) => {
   try {
-    const cookies = req.headers.cookie || "";
+    const token = obterCookieAdmin(req);
 
-    const match = cookies.match(
-      /(?:^|;\s*)jpbet_admin_session=([^;]+)/
-    );
-
-    if (match) {
-      removerSessaoAdmin(match[1]);
+    if (token) {
+      await removerSessaoAdmin(token);
     }
 
-    res.setHeader(
-      "Set-Cookie",
-      "jpbet_admin_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; Secure"
-    );
+    expirarCookieAdmin(res);
 
-    res.json({
-      ok: true,
-      message:
-        "Sessão administrativa encerrada."
+    return res.json({
+      success: true,
+      message: "Logout administrativo realizado com sucesso."
     });
-  } catch (error) {
-    console.error(error);
 
-    res.status(500).json({
-      message: "Erro ao sair."
+  } catch (error) {
+    console.error("Erro no logout administrativo:", error);
+
+    expirarCookieAdmin(res);
+
+    return res.json({
+      success: true,
+      message: "Sessão administrativa encerrada."
     });
   }
 });
 
-/* =========================
-   CADASTRAR ADMINISTRADOR
-========================= */
+/*
+|--------------------------------------------------------------------------
+| EXPORTAÇÃO
+|--------------------------------------------------------------------------
+*/
 
-router.post("/admin-register", async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({
-        message: "Informe usuário e senha."
-      });
-    }
-
-    if (username.length < 3) {
-      return res.status(400).json({
-        message:
-          "O usuário deve ter pelo menos 3 caracteres."
-      });
-    }
-
-    if (password.length < 4) {
-      return res.status(400).json({
-        message:
-          "A senha deve ter pelo menos 4 caracteres."
-      });
-    }
-
-    const existingAdmin = await pool.query(
-      `
-      SELECT id
-      FROM admins
-      WHERE username = $1
-      LIMIT 1
-      `,
-      [username]
-    );
-
-    if (existingAdmin.rows.length > 0) {
-      return res.status(409).json({
-        message:
-          "Esse administrador já existe."
-      });
-    }
-
-    const result = await pool.query(
-      `
-      INSERT INTO admins
-      (username, password_hash)
-      VALUES ($1, $2)
-      RETURNING
-        id,
-        username,
-        created_at
-      `,
-      [username, password]
-    );
-
-    res.status(201).json({
-      ok: true,
-      message:
-        "Administrador criado com sucesso.",
-      admin: result.rows[0]
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message:
-        "Erro interno do servidor."
-    });
-  }
-});
-
-/* =========================
-   FUNÇÃO AUXILIAR — IP
-========================= */
-
-function obterIp(req) {
-  return (
-    req.headers["x-forwarded-for"]
-      ?.split(",")[0]
-      ?.trim() ||
-    req.socket?.remoteAddress ||
-    null
-  );
-}
-
-export default router;
+module.exports = router;
