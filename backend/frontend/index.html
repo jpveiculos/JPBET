@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
 
@@ -8,7 +9,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>JPBET</title>
+  <title>JPBET - Jogos Online</title>
 
   <link
     rel="stylesheet"
@@ -18,19 +19,39 @@
 
 <body>
 
-  <main id="app">
+  <!-- =========================
+       PÁGINA PRINCIPAL
+  ========================= -->
 
-    <section class="hero">
+  <main id="home">
 
-      <div class="container">
+    <!-- HEADER -->
 
-        <h1>JPBET</h1>
+    <header class="site-header">
 
-        <p>
-          Sua plataforma de jogos.
-        </p>
+      <div class="header-container">
 
-        <div class="actions">
+        <div class="logo">
+          JPBET
+        </div>
+
+        <nav class="main-nav">
+
+          <a href="#home">
+            Início
+          </a>
+
+          <a href="#jogos">
+            Jogos
+          </a>
+
+          <a href="#sobre">
+            Sobre
+          </a>
+
+        </nav>
+
+        <div class="header-actions">
 
           <button
             type="button"
@@ -41,7 +62,7 @@
 
           <button
             type="button"
-            onclick="abrirLogin(); setTimeout(mostrarCadastro, 50)"
+            onclick="abrirCadastro()"
           >
             Criar conta
           </button>
@@ -50,12 +71,266 @@
 
       </div>
 
+    </header>
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content">
+
+        <p class="hero-label">
+          BEM-VINDO À JPBET
+        </p>
+
+        <h1>
+          Sua diversão<br>
+          começa aqui.
+        </h1>
+
+        <p class="hero-description">
+          Entre na JPBET e descubra uma experiência
+          de jogos feita para você.
+        </p>
+
+        <div class="hero-actions">
+
+          <button
+            type="button"
+            class="primary-button"
+            onclick="jogarAgora()"
+          >
+            JOGAR AGORA
+          </button>
+
+          <button
+            type="button"
+            class="secondary-button"
+            onclick="abrirLogin()"
+          >
+            ENTRAR
+          </button>
+
+        </div>
+
+      </div>
+
     </section>
+
+
+    <!-- JOGOS -->
+
+    <section
+      id="jogos"
+      class="games-section"
+    >
+
+      <div class="section-container">
+
+        <div class="section-title">
+
+          <p>
+            ESCOLHA SUA DIVERSÃO
+          </p>
+
+          <h2>
+            Jogos
+          </h2>
+
+        </div>
+
+
+        <div class="games-grid">
+
+          <!-- ROULETTE -->
+
+          <article class="game-card">
+
+            <div class="game-image roulette-image">
+
+              <div class="game-overlay">
+
+                <span>
+                  JPBET
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="game-content">
+
+              <h3>
+                Roleta
+              </h3>
+
+              <p>
+                Entre na mesa e teste sua sorte.
+              </p>
+
+              <button
+                type="button"
+                onclick="jogarAgora()"
+              >
+                Jogar agora
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- EM BREVE -->
+
+          <article class="game-card">
+
+            <div class="game-image coming-soon-image">
+
+              <div class="game-overlay">
+
+                <span>
+                  EM BREVE
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="game-content">
+
+              <h3>
+                Novos jogos
+              </h3>
+
+              <p>
+                Novidades serão adicionadas em breve.
+              </p>
+
+              <button
+                type="button"
+                onclick="jogarAgora()"
+              >
+                Começar
+              </button>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SOBRE -->
+
+    <section
+      id="sobre"
+      class="about-section"
+    >
+
+      <div class="section-container">
+
+        <div class="about-content">
+
+          <p class="section-label">
+            SOBRE A JPBET
+          </p>
+
+          <h2>
+            Uma nova experiência
+            de jogos.
+          </h2>
+
+          <p>
+            A JPBET foi criada para oferecer uma
+            experiência simples, moderna e agradável
+            para quem gosta de jogos online.
+          </p>
+
+          <button
+            type="button"
+            class="primary-button"
+            onclick="jogarAgora()"
+          >
+            COMEÇAR AGORA
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CTA -->
+
+    <section class="cta-section">
+
+      <div class="section-container">
+
+        <h2>
+          Pronto para começar?
+        </h2>
+
+        <p>
+          Crie sua conta ou entre para continuar.
+        </p>
+
+        <div class="cta-actions">
+
+          <button
+            type="button"
+            class="primary-button"
+            onclick="abrirCadastro()"
+          >
+            CRIAR CONTA
+          </button>
+
+          <button
+            type="button"
+            class="secondary-button"
+            onclick="abrirLogin()"
+          >
+            ENTRAR
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer class="site-footer">
+
+      <div class="section-container">
+
+        <strong>
+          JPBET
+        </strong>
+
+        <p>
+          © 2026 JPBET. Todos os direitos reservados.
+        </p>
+
+      </div>
+
+    </footer>
 
   </main>
 
 
-  <!-- LOGIN / CADASTRO -->
+  <!-- =========================
+       LOGIN / CADASTRO
+  ========================= -->
 
   <div
     id="loginModal"
@@ -77,7 +352,9 @@
 
       <div id="loginForm">
 
-        <h2>Entrar</h2>
+        <h2>
+          Entrar
+        </h2>
 
         <input
           type="text"
@@ -123,7 +400,9 @@
         style="display: none;"
       >
 
-        <h2>Criar conta</h2>
+        <h2>
+          Criar conta
+        </h2>
 
         <input
           type="text"
@@ -174,6 +453,39 @@
 
 
   <script src="app.js"></script>
+
+  <script>
+    function abrirCadastro() {
+      const modal =
+        document.getElementById("loginModal");
+
+      if (!modal) {
+        return;
+      }
+
+      modal.classList.add("show");
+
+      mostrarCadastro();
+    }
+
+
+    function jogarAgora() {
+      const token =
+        localStorage.getItem("jpbet_token");
+
+      const user =
+        localStorage.getItem("jpbet_user");
+
+      if (token && user) {
+        window.location.href =
+          "dashboard.html";
+
+        return;
+      }
+
+      abrirCadastro();
+    }
+  </script>
 
 </body>
 </html>
