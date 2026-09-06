@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import crypto from "crypto";
 
 import { pool } from "./db.js";
+
 import {
   garantirConfiguracoes,
   obterConfiguracao,
@@ -12,15 +13,24 @@ import {
   salvarConfiguracoes,
   obterSegmentosPadrao
 } from "./settings.js";
+
 import {
   enviarNotificacao
 } from "./notifications.js";
+
 import {
   validarSessaoAdmin
 } from "./adminSession.js";
+
 import {
   registrarAuditoria
 } from "./audit.js";
+
+/* =========================
+   SISTEMA DE JOGOS
+========================= */
+
+import gamesRouter from "./games.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +65,10 @@ await garantirConfiguracoes();
 
 function numero(valor, padrao = 0) {
   const n = Number(valor);
-  return Number.isFinite(n) ? n : padrao;
+
+  return Number.isFinite(n)
+    ? n
+    : padrao;
 }
 
 function arredondar(valor) {
@@ -75,18 +88,28 @@ function obterIp(req) {
 }
 
 function obterTokenAdmin(req) {
-  const cookies = req.headers.cookie || "";
+  const cookies =
+    req.headers.cookie || "";
 
   const match = cookies.match(
     /(?:^|;\s*)jpbet_admin_session=([^;]+)/
   );
 
-  return match ? match[1] : null;
+  return match
+    ? match[1]
+    : null;
 }
 
-function exigirAdmin(req, res, next) {
-  const token = obterTokenAdmin(req);
-  const sessao = validarSessaoAdmin(token);
+function exigirAdmin(
+  req,
+  res,
+  next
+) {
+  const token =
+    obterTokenAdmin(req);
+
+  const sessao =
+    validarSessaoAdmin(token);
 
   if (!sessao) {
     return res.status(401).json({
@@ -95,31 +118,39 @@ function exigirAdmin(req, res, next) {
     });
   }
 
-  req.adminSession = sessao;
+  req.adminSession =
+    sessao;
+
   next();
 }
 
-async function obterUsuario(userId) {
-  const result = await pool.query(
-    `
-    SELECT
-      id,
-      username,
-      balance,
-      bonus_balance,
-      cash_balance,
-      reserved_balance,
-      bonus_wager_progress,
-      roulette_free_spins,
-      roulette_free_spin_bet
-    FROM users
-    WHERE id = $1
-    LIMIT 1
-    `,
-    [userId]
-  );
+async function obterUsuario(
+  userId
+) {
+  const result =
+    await pool.query(
+      `
+      SELECT
+        id,
+        username,
+        balance,
+        bonus_balance,
+        cash_balance,
+        reserved_balance,
+        bonus_wager_progress,
+        roulette_free_spins,
+        roulette_free_spin_bet
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [userId]
+    );
 
-  return result.rows[0] || null;
+  return (
+    result.rows[0] ||
+    null
+  );
 }
 
 async function obterRequisitoBonus() {
@@ -129,46 +160,68 @@ async function obterRequisitoBonus() {
       "100"
     );
 
-  return numero(valor, 100);
+  return numero(
+    valor,
+    100
+  );
 }
 
-function montarDadosUsuario(user) {
-  const bonus = numero(
-    user.bonus_balance
-  );
+function montarDadosUsuario(
+  user
+) {
+  const bonus =
+    numero(
+      user.bonus_balance
+    );
 
-  const cash = numero(
-    user.cash_balance
-  );
+  const cash =
+    numero(
+      user.cash_balance
+    );
 
-  const reserved = numero(
-    user.reserved_balance
-  );
+  const reserved =
+    numero(
+      user.reserved_balance
+    );
 
-  const balance = arredondar(
-    bonus + cash
-  );
+  const balance =
+    arredondar(
+      bonus + cash
+    );
 
   return {
     id: user.id,
-    username: user.username,
+
+    username:
+      user.username,
+
     balance,
-    bonusBalance: arredondar(bonus),
-    cashBalance: arredondar(cash),
-    reservedBalance: arredondar(
-      reserved
-    ),
-    bonusWagerProgress: arredondar(
+
+    bonusBalance:
+      arredondar(bonus),
+
+    cashBalance:
+      arredondar(cash),
+
+    reservedBalance:
+      arredondar(reserved),
+
+    bonusWagerProgress:
+      arredondar(
+        numero(
+          user.bonus_wager_progress
+        )
+      ),
+
+    rouletteFreeSpins:
       numero(
-        user.bonus_wager_progress
+        user.roulette_free_spins
+      ),
+
+    rouletteFreeSpinBet:
+      numero(
+        user.roulette_free_spin_bet
       )
-    ),
-    rouletteFreeSpins: numero(
-      user.roulette_free_spins
-    ),
-    rouletteFreeSpinBet: numero(
-      user.roulette_free_spin_bet
-    )
   };
 }
 
@@ -176,23 +229,30 @@ function montarDadosUsuario(user) {
    HEALTH
 ========================= */
 
-app.get("/api/health", async (req, res) => {
-  try {
-    await pool.query("SELECT 1");
+app.get(
+  "/api/health",
+  async (req, res) => {
+    try {
+      await pool.query(
+        "SELECT 1"
+      );
 
-    res.json({
-      ok: true,
-      database: "connected"
-    });
-  } catch (error) {
-    console.error(error);
+      res.json({
+        ok: true,
+        database:
+          "connected"
+      });
+    } catch (error) {
+      console.error(error);
 
-    res.status(500).json({
-      ok: false,
-      database: "error"
-    });
+      res.status(500).json({
+        ok: false,
+        database:
+          "error"
+      });
+    }
   }
-});
+);
 
 /* =========================
    CONFIGURAÇÕES PÚBLICAS
@@ -203,7 +263,9 @@ app.get(
   async (req, res) => {
     try {
       const settings =
-        await obterConfiguracoes(false);
+        await obterConfiguracoes(
+          false
+        );
 
       res.json({
         ok: true,
@@ -230,7 +292,9 @@ app.get(
   async (req, res) => {
     try {
       const settings =
-        await obterConfiguracoes(true);
+        await obterConfiguracoes(
+          true
+        );
 
       res.json({
         ok: true,
@@ -258,7 +322,9 @@ app.put(
         {};
 
       const oldSettings =
-        await obterConfiguracoes(true);
+        await obterConfiguracoes(
+          true
+        );
 
       await salvarConfiguracoes(
         settings
@@ -266,17 +332,33 @@ app.put(
 
       await registrarAuditoria({
         adminId:
-          req.adminSession?.username || null,
+          req.adminSession?.username ||
+          null,
+
         action:
           "ALTERACAO_CONFIGURACOES",
-        module: "CONFIGURACOES",
-        targetType: "SETTINGS",
-        oldValue: oldSettings,
-        newValue: settings,
+
+        module:
+          "CONFIGURACOES",
+
+        targetType:
+          "SETTINGS",
+
+        oldValue:
+          oldSettings,
+
+        newValue:
+          settings,
+
         details:
           "Configurações do sistema alteradas pelo administrador.",
-        result: "SUCCESS",
-        ipAddress: obterIp(req),
+
+        result:
+          "SUCCESS",
+
+        ipAddress:
+          obterIp(req),
+
         userAgent:
           req.headers["user-agent"] ||
           null
@@ -320,8 +402,11 @@ app.get(
 
       res.json({
         ok: true,
+
         user:
-          montarDadosUsuario(user)
+          montarDadosUsuario(
+            user
+          )
       });
     } catch (error) {
       console.error(error);
@@ -352,11 +437,15 @@ app.post(
       } = req.body;
 
       const valor =
-        arredondar(numero(amount));
+        arredondar(
+          numero(amount)
+        );
 
       if (
         !userId ||
-        !Number.isFinite(valor) ||
+        !Number.isFinite(
+          valor
+        ) ||
         valor <= 0
       ) {
         return res.status(400).json({
@@ -366,7 +455,9 @@ app.post(
       }
 
       const user =
-        await obterUsuario(userId);
+        await obterUsuario(
+          userId
+        );
 
       if (!user) {
         return res.status(404).json({
@@ -389,7 +480,8 @@ app.post(
             method,
             status
           )
-          VALUES ($1, $2, $3, 'pending')
+          VALUES
+          ($1, $2, $3, 'pending')
           RETURNING *
           `,
           [
@@ -406,19 +498,30 @@ app.post(
       await enviarNotificacao(
         "deposit_requested",
         {
-          id: result.rows[0].id,
-          userId: user.id,
-          username: user.username,
-          amount: valor,
+          id:
+            result.rows[0].id,
+
+          userId:
+            user.id,
+
+          username:
+            user.username,
+
+          amount:
+            valor,
+
           method
         }
       );
 
       res.status(201).json({
         ok: true,
+
         message:
           "Depósito solicitado com sucesso.",
-        deposit: result.rows[0]
+
+        deposit:
+          result.rows[0]
       });
     } catch (error) {
       await client.query(
@@ -456,11 +559,15 @@ app.post(
       } = req.body;
 
       const valor =
-        arredondar(numero(amount));
+        arredondar(
+          numero(amount)
+        );
 
       if (
         !userId ||
-        !Number.isFinite(valor) ||
+        !Number.isFinite(
+          valor
+        ) ||
         valor <= 0
       ) {
         return res.status(400).json({
@@ -470,7 +577,9 @@ app.post(
       }
 
       const user =
-        await obterUsuario(userId);
+        await obterUsuario(
+          userId
+        );
 
       if (!user) {
         return res.status(404).json({
@@ -504,11 +613,18 @@ app.post(
 
       const disponivel =
         arredondar(
-          numero(user.cash_balance) -
-          numero(user.reserved_balance)
+          numero(
+            user.cash_balance
+          ) -
+          numero(
+            user.reserved_balance
+          )
         );
 
-      if (valor > disponivel) {
+      if (
+        valor >
+        disponivel
+      ) {
         return res.status(400).json({
           message:
             "Saldo disponível insuficiente."
@@ -545,12 +661,18 @@ app.post(
       await client.query(
         `
         UPDATE users
-        SET reserved_balance =
-          COALESCE(reserved_balance, 0)
-          + $1
+        SET
+          reserved_balance =
+            COALESCE(
+              reserved_balance,
+              0
+            ) + $1
         WHERE id = $2
         `,
-        [valor, userId]
+        [
+          valor,
+          userId
+        ]
       );
 
       await client.query(
@@ -562,17 +684,26 @@ app.post(
         {
           id:
             withdrawal.rows[0].id,
-          userId: user.id,
-          username: user.username,
-          amount: valor,
+
+          userId:
+            user.id,
+
+          username:
+            user.username,
+
+          amount:
+            valor,
+
           method
         }
       );
 
       res.status(201).json({
         ok: true,
+
         message:
           "Saque solicitado com sucesso.",
+
         withdrawal:
           withdrawal.rows[0]
       });
@@ -611,12 +742,14 @@ app.get(
           FROM deposits d
           JOIN users u
             ON u.id = d.user_id
-          ORDER BY d.created_at DESC
+          ORDER BY
+            d.created_at DESC
           `
         );
 
       res.json({
         ok: true,
+
         deposits:
           result.rows
       });
@@ -649,12 +782,14 @@ app.get(
           FROM withdrawals w
           JOIN users u
             ON u.id = w.user_id
-          ORDER BY w.created_at DESC
+          ORDER BY
+            w.created_at DESC
           `
         );
 
       res.json({
         ok: true,
+
         withdrawals:
           result.rows
       });
@@ -697,7 +832,9 @@ app.post(
           WHERE d.id = $1
           FOR UPDATE
           `,
-          [req.params.id]
+          [
+            req.params.id
+          ]
         );
 
       if (
@@ -717,7 +854,8 @@ app.post(
         depositResult.rows[0];
 
       if (
-        deposit.status !== "pending"
+        deposit.status !==
+        "pending"
       ) {
         await client.query(
           "ROLLBACK"
@@ -738,7 +876,9 @@ app.post(
             CURRENT_TIMESTAMP
         WHERE id = $1
         `,
-        [deposit.id]
+        [
+          deposit.id
+        ]
       );
 
       await client.query(
@@ -746,15 +886,24 @@ app.post(
         UPDATE users
         SET
           cash_balance =
-            COALESCE(cash_balance, 0)
-            + $1,
+            COALESCE(
+              cash_balance,
+              0
+            ) + $1,
+
           balance =
-            COALESCE(balance, 0)
-            + $1
+            COALESCE(
+              balance,
+              0
+            ) + $1
+
         WHERE id = $2
         `,
         [
-          numero(deposit.amount),
+          numero(
+            deposit.amount
+          ),
+
           deposit.user_id
         ]
       );
@@ -766,18 +915,25 @@ app.post(
       await enviarNotificacao(
         "deposit_approved",
         {
-          id: deposit.id,
+          id:
+            deposit.id,
+
           userId:
             deposit.user_id,
+
           username:
             deposit.username,
+
           amount:
-            numero(deposit.amount)
+            numero(
+              deposit.amount
+            )
         }
       );
 
       res.json({
         ok: true,
+
         message:
           "Depósito aprovado com sucesso."
       });
@@ -819,7 +975,9 @@ app.post(
           WHERE d.id = $1
           LIMIT 1
           `,
-          [req.params.id]
+          [
+            req.params.id
+          ]
         );
 
       if (
@@ -835,7 +993,8 @@ app.post(
         result.rows[0];
 
       if (
-        deposit.status !== "pending"
+        deposit.status !==
+        "pending"
       ) {
         return res.status(400).json({
           message:
@@ -852,9 +1011,13 @@ app.post(
         UPDATE deposits
         SET
           status = 'rejected',
-          rejection_reason = $1,
+
+          rejection_reason =
+            $1,
+
           processed_at =
             CURRENT_TIMESTAMP
+
         WHERE id = $2
         `,
         [
@@ -866,19 +1029,27 @@ app.post(
       await enviarNotificacao(
         "deposit_rejected",
         {
-          id: deposit.id,
+          id:
+            deposit.id,
+
           userId:
             deposit.user_id,
+
           username:
             deposit.username,
+
           amount:
-            numero(deposit.amount),
+            numero(
+              deposit.amount
+            ),
+
           reason
         }
       );
 
       res.json({
         ok: true,
+
         message:
           "Depósito rejeitado."
       });
@@ -923,7 +1094,9 @@ app.post(
           WHERE w.id = $1
           FOR UPDATE
           `,
-          [req.params.id]
+          [
+            req.params.id
+          ]
         );
 
       if (
@@ -943,7 +1116,8 @@ app.post(
         result.rows[0];
 
       if (
-        withdrawal.status !== "pending"
+        withdrawal.status !==
+        "pending"
       ) {
         await client.query(
           "ROLLBACK"
@@ -956,7 +1130,9 @@ app.post(
       }
 
       const valor =
-        numero(withdrawal.amount);
+        numero(
+          withdrawal.amount
+        );
 
       const cash =
         numero(
@@ -991,7 +1167,9 @@ app.post(
             CURRENT_TIMESTAMP
         WHERE id = $1
         `,
-        [withdrawal.id]
+        [
+          withdrawal.id
+        ]
       );
 
       await client.query(
@@ -999,17 +1177,26 @@ app.post(
         UPDATE users
         SET
           cash_balance =
-            COALESCE(cash_balance, 0)
-            - $1,
+            COALESCE(
+              cash_balance,
+              0
+            ) - $1,
+
           balance =
-            COALESCE(balance, 0)
-            - $1,
+            COALESCE(
+              balance,
+              0
+            ) - $1,
+
           reserved_balance =
             GREATEST(
               0,
-              COALESCE(reserved_balance, 0)
-              - $1
+              COALESCE(
+                reserved_balance,
+                0
+              ) - $1
             )
+
         WHERE id = $2
         `,
         [
@@ -1027,16 +1214,21 @@ app.post(
         {
           id:
             withdrawal.id,
+
           userId:
             withdrawal.user_id,
+
           username:
             withdrawal.username,
-          amount: valor
+
+          amount:
+            valor
         }
       );
 
       res.json({
         ok: true,
+
         message:
           "Saque aprovado."
       });
@@ -1085,7 +1277,9 @@ app.post(
           WHERE w.id = $1
           FOR UPDATE
           `,
-          [req.params.id]
+          [
+            req.params.id
+          ]
         );
 
       if (
@@ -1105,7 +1299,8 @@ app.post(
         result.rows[0];
 
       if (
-        withdrawal.status !== "pending"
+        withdrawal.status !==
+        "pending"
       ) {
         await client.query(
           "ROLLBACK"
@@ -1126,9 +1321,13 @@ app.post(
         UPDATE withdrawals
         SET
           status = 'rejected',
-          rejection_reason = $1,
+
+          rejection_reason =
+            $1,
+
           processed_at =
             CURRENT_TIMESTAMP
+
         WHERE id = $2
         `,
         [
@@ -1144,13 +1343,19 @@ app.post(
           reserved_balance =
             GREATEST(
               0,
-              COALESCE(reserved_balance, 0)
-              - $1
+              COALESCE(
+                reserved_balance,
+                0
+              ) - $1
             )
+
         WHERE id = $2
         `,
         [
-          numero(withdrawal.amount),
+          numero(
+            withdrawal.amount
+          ),
+
           withdrawal.user_id
         ]
       );
@@ -1164,20 +1369,25 @@ app.post(
         {
           id:
             withdrawal.id,
+
           userId:
             withdrawal.user_id,
+
           username:
             withdrawal.username,
+
           amount:
             numero(
               withdrawal.amount
             ),
+
           reason
         }
       );
 
       res.json({
         ok: true,
+
         message:
           "Saque rejeitado."
       });
@@ -1219,7 +1429,9 @@ app.post(
           WHERE w.id = $1
           LIMIT 1
           `,
-          [req.params.id]
+          [
+            req.params.id
+          ]
         );
 
       if (
@@ -1236,7 +1448,7 @@ app.post(
 
       if (
         withdrawal.status !==
-          "approved"
+        "approved"
       ) {
         return res.status(400).json({
           message:
@@ -1253,7 +1465,9 @@ app.post(
             CURRENT_TIMESTAMP
         WHERE id = $1
         `,
-        [withdrawal.id]
+        [
+          withdrawal.id
+        ]
       );
 
       await enviarNotificacao(
@@ -1261,10 +1475,13 @@ app.post(
         {
           id:
             withdrawal.id,
+
           userId:
             withdrawal.user_id,
+
           username:
             withdrawal.username,
+
           amount:
             numero(
               withdrawal.amount
@@ -1274,6 +1491,7 @@ app.post(
 
       res.json({
         ok: true,
+
         message:
           "Saque marcado como concluído."
       });
@@ -1296,7 +1514,9 @@ function validarSegmentosRoleta(
   segmentos
 ) {
   if (
-    !Array.isArray(segmentos) ||
+    !Array.isArray(
+      segmentos
+    ) ||
     segmentos.length < 12 ||
     segmentos.length > 40
   ) {
@@ -1309,7 +1529,10 @@ function validarSegmentosRoleta(
 
   const normalizados =
     segmentos.map(
-      (segmento, index) => {
+      (
+        segmento,
+        index
+      ) => {
         const tipo =
           segmento.type ||
           (
@@ -1323,7 +1546,9 @@ function validarSegmentosRoleta(
             "zero",
             "sorte",
             "prize"
-          ].includes(tipo)
+          ].includes(
+            tipo
+          )
         ) {
           throw new Error(
             `Tipo inválido no segmento ${index + 1}.`
@@ -1378,8 +1603,12 @@ function validarSegmentosRoleta(
                   ? "🍀"
                   : `${multiplier}×`
             ),
-          type: tipo,
+
+          type:
+            tipo,
+
           multiplier,
+
           probability
         };
       }
@@ -1387,7 +1616,8 @@ function validarSegmentosRoleta(
 
   if (
     Math.abs(
-      totalProbabilidade - 100
+      totalProbabilidade -
+      100
     ) > 0.0001
   ) {
     throw new Error(
@@ -1411,7 +1641,9 @@ async function carregarSegmentosRoleta() {
 
   try {
     const segmentos =
-      JSON.parse(configuracao);
+      JSON.parse(
+        configuracao
+      );
 
     return validarSegmentosRoleta(
       segmentos
@@ -1446,7 +1678,8 @@ function sortearResultadoRoleta(
       );
 
     if (
-      aleatorio < acumulado
+      aleatorio <
+      acumulado
     ) {
       return segmento;
     }
@@ -1532,7 +1765,9 @@ app.post(
           WHERE id = $1
           FOR UPDATE
           `,
-          [userId]
+          [
+            userId
+          ]
         );
 
       if (
@@ -1581,7 +1816,9 @@ app.post(
       ========================= */
 
       if (freeSpin) {
-        if (freeSpins <= 0) {
+        if (
+          freeSpins <= 0
+        ) {
           await client.query(
             "ROLLBACK"
           );
@@ -1595,9 +1832,7 @@ app.post(
         if (
           freeSpinBet > 0
         ) {
-          /* O giro grátis usa
-             a aposta do giro que
-             gerou a sorte. */
+          /* usa aposta original */
         } else {
           freeSpinBet =
             valorAposta;
@@ -1641,12 +1876,14 @@ app.post(
 
         bonus =
           arredondar(
-            bonus - usadoBonus
+            bonus -
+            usadoBonus
           );
 
         restante =
           arredondar(
-            restante - usadoBonus
+            restante -
+            usadoBonus
           );
 
         const usadoCash =
@@ -1657,7 +1894,8 @@ app.post(
 
         cash =
           arredondar(
-            cash - usadoCash
+            cash -
+            usadoCash
           );
 
         if (
@@ -1691,18 +1929,21 @@ app.post(
         );
 
       const multiplicador =
-        resultado.type === "prize"
+        resultado.type ===
+        "prize"
           ? numero(
               resultado.multiplier
             )
           : 0;
 
       const ganhou =
-        resultado.type === "prize" &&
+        resultado.type ===
+          "prize" &&
         multiplicador >= 2;
 
       const ganhouSorte =
-        resultado.type === "sorte";
+        resultado.type ===
+        "sorte";
 
       const valorBase =
         freeSpin
@@ -1721,14 +1962,18 @@ app.post(
             )
           : 0;
 
-      if (premio > 0) {
+      if (
+        premio > 0
+      ) {
         cash =
           arredondar(
             cash + premio
           );
       }
 
-      if (ganhouSorte) {
+      if (
+        ganhouSorte
+      ) {
         freeSpins += 1;
 
         freeSpinBet =
@@ -1772,10 +2017,6 @@ app.post(
         ]
       );
 
-      /* =========================
-         HISTÓRICO DA APOSTA
-      ========================= */
-
       try {
         await client.query(
           `
@@ -1790,7 +2031,15 @@ app.post(
             created_at
           )
           VALUES
-          ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+          (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            CURRENT_TIMESTAMP
+          )
           `,
           [
             userId,
@@ -1802,10 +2051,7 @@ app.post(
           ]
         );
       } catch (_) {
-        /*
-         * Compatibilidade com
-         * bancos antigos sem a tabela.
-         */
+        /* compatibilidade */
       }
 
       await client.query(
@@ -1823,18 +2069,26 @@ app.post(
         result: {
           label:
             resultado.label,
+
           type:
             resultado.type,
+
           resultType:
             resultado.type,
+
           multiplier:
             multiplicador,
+
           prize:
             premio,
+
           ganhou,
+
           sorte:
             ganhouSorte,
+
           replay: false,
+
           freeSpin
         },
 
@@ -1869,6 +2123,19 @@ app.post(
   }
 );
 
+/* =====================================================
+   SISTEMA CENTRAL DAS MÁQUINAS
+   FORTUNE 7
+   DIAMOND GOLD
+   ROYAL JACKPOT
+   LUCKY 7
+===================================================== */
+
+app.use(
+  "/api/games",
+  gamesRouter
+);
+
 /* =========================
    HISTÓRICO DO USUÁRIO
 ========================= */
@@ -1877,16 +2144,18 @@ app.get(
   "/api/history/:userId",
   async (req, res) => {
     try {
-      const limit = Math.min(
-        100,
-        Math.max(
-          1,
-          parseInt(
-            req.query.limit || "50",
-            10
+      const limit =
+        Math.min(
+          100,
+          Math.max(
+            1,
+            parseInt(
+              req.query.limit ||
+                "50",
+              10
+            )
           )
-        )
-      );
+        );
 
       const result =
         await pool.query(
@@ -1902,7 +2171,8 @@ app.get(
             created_at
           FROM roulette_spins
           WHERE user_id = $1
-          ORDER BY created_at DESC
+          ORDER BY
+            created_at DESC
           LIMIT $2
           `,
           [
@@ -1913,6 +2183,7 @@ app.get(
 
       res.json({
         ok: true,
+
         history:
           result.rows
       });
@@ -1951,12 +2222,14 @@ app.get(
             roulette_free_spin_bet,
             created_at
           FROM users
-          ORDER BY created_at DESC
+          ORDER BY
+            created_at DESC
           `
         );
 
       res.json({
         ok: true,
+
         users:
           result.rows
       });
@@ -1982,11 +2255,15 @@ app.post(
     try {
       const valor =
         arredondar(
-          numero(req.body?.amount)
+          numero(
+            req.body?.amount
+          )
         );
 
       if (
-        !Number.isFinite(valor) ||
+        !Number.isFinite(
+          valor
+        ) ||
         valor <= 0
       ) {
         return res.status(400).json({
@@ -2001,12 +2278,19 @@ app.post(
           UPDATE users
           SET
             bonus_balance =
-              COALESCE(bonus_balance, 0)
-              + $1,
+              COALESCE(
+                bonus_balance,
+                0
+              ) + $1,
+
             balance =
-              COALESCE(balance, 0)
-              + $1
+              COALESCE(
+                balance,
+                0
+              ) + $1
+
           WHERE id = $2
+
           RETURNING *
           `,
           [
@@ -2028,23 +2312,33 @@ app.post(
         adminId:
           req.adminSession?.username ||
           null,
+
         action:
           "ADICIONAR_CREDITOS",
+
         module:
           "USUARIOS",
+
         targetType:
           "USER",
+
         targetId:
           req.params.id,
+
         newValue: {
-          amount: valor
+          amount:
+            valor
         },
+
         details:
           "Créditos adicionados manualmente pelo administrador.",
+
         result:
           "SUCCESS",
+
         ipAddress:
           obterIp(req),
+
         userAgent:
           req.headers["user-agent"] ||
           null
@@ -2052,8 +2346,10 @@ app.post(
 
       res.json({
         ok: true,
+
         message:
           "Créditos adicionados com sucesso.",
+
         user:
           montarDadosUsuario(
             result.rows[0]
@@ -2081,11 +2377,15 @@ app.post(
     try {
       const valor =
         arredondar(
-          numero(req.body?.amount)
+          numero(
+            req.body?.amount
+          )
         );
 
       if (
-        !Number.isFinite(valor) ||
+        !Number.isFinite(
+          valor
+        ) ||
         valor <= 0
       ) {
         return res.status(400).json({
@@ -2127,7 +2427,8 @@ app.post(
 
       bonus =
         arredondar(
-          bonus - retirarBonus
+          bonus -
+          retirarBonus
         );
 
       restante =
@@ -2144,11 +2445,13 @@ app.post(
 
       cash =
         arredondar(
-          cash - retirarCash
+          cash -
+          retirarCash
         );
 
       if (
-        restante > 0.009
+        restante >
+        0.009
       ) {
         return res.status(400).json({
           message:
@@ -2184,23 +2487,33 @@ app.post(
         adminId:
           req.adminSession?.username ||
           null,
+
         action:
           "REMOVER_CREDITOS",
+
         module:
           "USUARIOS",
+
         targetType:
           "USER",
+
         targetId:
           req.params.id,
+
         newValue: {
-          amount: valor
+          amount:
+            valor
         },
+
         details:
           "Créditos removidos manualmente pelo administrador.",
+
         result:
           "SUCCESS",
+
         ipAddress:
           obterIp(req),
+
         userAgent:
           req.headers["user-agent"] ||
           null
@@ -2208,8 +2521,10 @@ app.post(
 
       res.json({
         ok: true,
+
         message:
           "Créditos removidos com sucesso.",
+
         user:
           montarDadosUsuario(
             result.rows[0]
@@ -2248,14 +2563,17 @@ app.post(
       if (!result.ok) {
         return res.status(400).json({
           ok: false,
+
           message:
             "Não foi possível enviar a notificação de teste.",
+
           result
         });
       }
 
       res.json({
         ok: true,
+
         message:
           "Notificação de teste enviada com sucesso."
       });
@@ -2279,30 +2597,36 @@ app.get(
   exigirAdmin,
   async (req, res) => {
     try {
-      const limit = Math.min(
-        500,
-        Math.max(
-          1,
-          parseInt(
-            req.query.limit || "200",
-            10
+      const limit =
+        Math.min(
+          500,
+          Math.max(
+            1,
+            parseInt(
+              req.query.limit ||
+                "200",
+              10
+            )
           )
-        )
-      );
+        );
 
       const result =
         await pool.query(
           `
           SELECT *
           FROM audit_logs
-          ORDER BY created_at DESC
+          ORDER BY
+            created_at DESC
           LIMIT $1
           `,
-          [limit]
+          [
+            limit
+          ]
         );
 
       res.json({
         ok: true,
+
         logs:
           result.rows
       });
@@ -2321,41 +2645,65 @@ app.get(
    ROTAS HTML
 ========================= */
 
-app.get("/", (req, res) => {
-  res.sendFile(
-    path.join(
-      frontendPath,
-      "index.html"
-    )
-  );
-});
+app.get(
+  "/",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        frontendPath,
+        "index.html"
+      )
+    );
+  }
+);
 
-app.get("/app", (req, res) => {
-  res.sendFile(
-    path.join(
-      frontendPath,
-      "dashboard.html"
-    )
-  );
-});
+app.get(
+  "/app",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        frontendPath,
+        "dashboard.html"
+      )
+    );
+  }
+);
 
-app.get("/dashboard", (req, res) => {
-  res.sendFile(
-    path.join(
-      frontendPath,
-      "dashboard.html"
-    )
-  );
-});
+app.get(
+  "/dashboard",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        frontendPath,
+        "dashboard.html"
+      )
+    );
+  }
+);
 
-app.get("/admin", (req, res) => {
-  res.sendFile(
-    path.join(
-      frontendPath,
-      "admin.html"
-    )
-  );
-});
+app.get(
+  "/games",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        frontendPath,
+        "games.html"
+      )
+    );
+  }
+);
+
+app.get(
+  "/admin",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        frontendPath,
+        "admin.html"
+      )
+    );
+  }
+);
 
 app.get(
   "/admin-settings",
@@ -2403,7 +2751,9 @@ app.use(
   (req, res, next) => {
     if (
       req.method === "GET" &&
-      !req.path.startsWith("/api/")
+      !req.path.startsWith(
+        "/api/"
+      )
     ) {
       return res.sendFile(
         path.join(
@@ -2422,7 +2772,8 @@ app.use(
 ========================= */
 
 const PORT =
-  process.env.PORT || 10000;
+  process.env.PORT ||
+  10000;
 
 app.listen(
   PORT,
