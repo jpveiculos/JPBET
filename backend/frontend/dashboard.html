@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>JPBET - Dashboard</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+
+  <main class="dashboard">
+
+    <section class="container">
+
+      <header class="dashboard-header">
+
+        <div>
+          <h1>JPBET</h1>
+          <p id="welcomeMessage">
+            Bem-vindo!
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onclick="sair()"
+        >
+          Sair
+        </button>
+
+      </header>
+
+
+      <section class="dashboard-card">
+
+        <h2>Minha conta</h2>
+
+        <div class="account-info">
+
+          <p>
+            <strong>Usuário:</strong>
+            <span id="userName">---</span>
+          </p>
+
+          <p>
+            <strong>Saldo:</strong>
+            <span id="userBalance">R$ 0,00</span>
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <section class="dashboard-card">
+
+        <h2>Jogos</h2>
+
+        <p id="gamesMessage">
+          Carregando jogos...
+        </p>
+
+        <div
+          id="gamesContainer"
+          class="games-container"
+        ></div>
+
+      </section>
+
+
+      <p
+        id="dashboardMessage"
+        class="dashboard-message"
+      ></p>
+
+    </section>
+
+  </main>
+
+
+  <script src="dashboard.js"></script>
+
+</body>
+</html>
