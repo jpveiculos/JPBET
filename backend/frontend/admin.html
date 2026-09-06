@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>JPBET - Administração</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+
+  <main class="dashboard">
+
+    <section class="container">
+
+      <header class="dashboard-header">
+
+        <div>
+          <h1>JPBET</h1>
+          <p>Painel administrativo</p>
+        </div>
+
+        <button
+          type="button"
+          onclick="sairAdmin()"
+        >
+          Sair
+        </button>
+
+      </header>
+
+
+      <section class="dashboard-card">
+
+        <h2>Administração</h2>
+
+        <p id="adminMessage">
+          Carregando painel...
+        </p>
+
+      </section>
+
+
+      <section
+        id="adminContent"
+        class="dashboard-card"
+      >
+
+        <h2>Visão geral</h2>
+
+        <div class="account-info">
+
+          <p>
+            <strong>Usuários:</strong>
+            <span id="totalUsers">0</span>
+          </p>
+
+          <p>
+            <strong>Saldo total:</strong>
+            <span id="totalBalance">
+              R$ 0,00
+            </span>
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <section class="dashboard-card">
+
+        <h2>Configurações</h2>
+
+        <div id="settingsContainer">
+          <p>
+            As configurações administrativas
+            serão carregadas aqui.
+          </p>
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+
+  <script src="admin.js"></script>
+
+</body>
+</html>
