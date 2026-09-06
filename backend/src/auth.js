@@ -1,64 +1,55 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const pool = require("./db");
-
-const {
+import {
   criarSessaoAdmin,
   validarSessaoAdmin,
   removerSessaoAdmin
-} = require("./adminSession");
+} from "./adminSession.js";
+
+const router = express.Router();
 
 const COOKIE_NAME = "jpbet_admin_session";
 
-const ADMIN_USER = process.env.ADMIN_USER;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_USER =
+  process.env.ADMIN_USER;
 
-/*
-|--------------------------------------------------------------------------
-| COOKIE
-|--------------------------------------------------------------------------
-*/
+const ADMIN_PASSWORD =
+  process.env.ADMIN_PASSWORD;
 
-function enviarCookieAdmin(res, token) {
-  const secure =
-    process.env.NODE_ENV === "production"
-      ? "; Secure"
-      : "";
+/* =========================
+   COOKIE
+========================= */
 
-  res.setHeader(
-    "Set-Cookie",
-    `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax${secure}`
-  );
-}
+function obterCookie(req) {
+  const cookies =
+    req.headers.cookie || "";
 
-function obterCookieAdmin(req) {
-  const cookieHeader = req.headers.cookie;
+  const partes =
+    cookies.split(";");
 
-  if (!cookieHeader) {
-    return null;
-  }
-
-  const cookies = cookieHeader.split(";");
-
-  for (const cookie of cookies) {
-    const separador = cookie.indexOf("=");
+  for (const parte of partes) {
+    const separador =
+      parte.indexOf("=");
 
     if (separador === -1) {
       continue;
     }
 
-    const nome = cookie
-      .substring(0, separador)
-      .trim();
+    const nome =
+      parte
+        .substring(0, separador)
+        .trim();
 
-    const valor = cookie
-      .substring(separador + 1)
-      .trim();
+    const valor =
+      parte
+        .substring(separador + 1)
+        .trim();
 
     if (nome === COOKIE_NAME) {
       try {
-        return decodeURIComponent(valor);
+        return decodeURIComponent(
+          valor
+        );
       } catch {
         return valor;
       }
@@ -68,219 +59,260 @@ function obterCookieAdmin(req) {
   return null;
 }
 
-function expirarCookieAdmin(res) {
+function criarCookie(
+  token
+) {
   const secure =
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV ===
+    "production"
       ? "; Secure"
       : "";
 
-  res.setHeader(
-    "Set-Cookie",
-    `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=0`
+  return (
+    `${COOKIE_NAME}=${encodeURIComponent(token)}` +
+    `; Path=/` +
+    `; HttpOnly` +
+    `; SameSite=Lax` +
+    secure
   );
 }
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN DO ADMINISTRADOR
-|--------------------------------------------------------------------------
-*/
+function expirarCookie() {
+  const secure =
+    process.env.NODE_ENV ===
+    "production"
+      ? "; Secure"
+      : "";
 
-router.post("/admin-login", async (req, res) => {
-  try {
-    const { username, password } = req.body || {};
+  return (
+    `${COOKIE_NAME}=` +
+    `; Path=/` +
+    `; HttpOnly` +
+    `; SameSite=Lax` +
+    secure +
+    `; Max-Age=0`
+  );
+}
 
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Usuário e senha são obrigatórios."
-      });
-    }
+/* =========================
+   LOGIN ADMIN
+========================= */
 
-    const usuario = String(username).trim();
-    const senha = String(password);
-
-    let adminValido = false;
-    let adminId = null;
-
-    /*
-     * Primeiro verifica a tabela admins.
-     */
+router.post(
+  "/admin-login",
+  async (req, res) => {
     try {
-      const resultado = await pool.query(
-        `SELECT id, username, password_hash
-         FROM admins
-         WHERE username = $1
-         LIMIT 1`,
-        [usuario]
+      const username =
+        String(
+          req.body?.username ||
+          ""
+        ).trim();
+
+      const password =
+        String(
+          req.body?.password ||
+          ""
+        );
+
+      if (
+        !username ||
+        !password
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Usuário e senha são obrigatórios."
+        });
+      }
+
+      if (
+        !ADMIN_USER ||
+        !ADMIN_PASSWORD
+      ) {
+        console.error(
+          "ADMIN_USER ou ADMIN_PASSWORD não configurados no ambiente."
+        );
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Credenciais administrativas não configuradas no servidor."
+        });
+      }
+
+      if (
+        username !==
+          String(ADMIN_USER) ||
+        password !==
+          String(ADMIN_PASSWORD)
+      ) {
+        return res.status(401).json({
+          success: false,
+          message:
+            "Usuário ou senha de administrador inválidos."
+        });
+      }
+
+      const token =
+        criarSessaoAdmin({
+          adminId:
+            "env-admin",
+
+          username
+        });
+
+      res.setHeader(
+        "Set-Cookie",
+        criarCookie(token)
       );
 
-      if (resultado.rows.length > 0) {
-        const admin = resultado.rows[0];
+      return res.json({
+        success: true,
+        authenticated: true,
 
-        if (
-          String(admin.password_hash) === senha
-        ) {
-          adminValido = true;
-          adminId = admin.id;
-        }
-      }
+        admin: {
+          id: "env-admin",
+          username
+        },
+
+        message:
+          "Login administrativo realizado com sucesso."
+      });
+
     } catch (error) {
-      console.warn(
-        "Tabela admins não pôde ser consultada:",
-        error.message
+      console.error(
+        "Erro no login administrativo:",
+        error
       );
-    }
 
-    /*
-     * Também permite administrador configurado
-     * pelas variáveis de ambiente do Render.
-     */
-    if (
-      !adminValido &&
-      ADMIN_USER &&
-      ADMIN_PASSWORD &&
-      usuario === String(ADMIN_USER) &&
-      senha === String(ADMIN_PASSWORD)
-    ) {
-      adminValido = true;
-      adminId = "env-admin";
-    }
-
-    if (!adminValido) {
-      return res.status(401).json({
+      return res.status(500).json({
         success: false,
-        message: "Usuário ou senha de administrador inválidos."
+        message:
+          "Erro interno ao realizar login administrativo."
       });
     }
-
-    /*
-     * Cria o token da sessão.
-     */
-    const token = criarSessaoAdmin({
-      adminId,
-      username: usuario
-    });
-
-    /*
-     * Grava exatamente o cookie esperado pelo painel.
-     */
-    enviarCookieAdmin(res, token);
-
-    return res.json({
-      success: true,
-      authenticated: true,
-      message: "Login administrativo realizado com sucesso.",
-      admin: {
-        id: adminId,
-        username: usuario
-      }
-    });
-
-  } catch (error) {
-    console.error(
-      "Erro no login administrativo:",
-      error
-    );
-
-    return res.status(500).json({
-      success: false,
-      message: "Erro interno ao realizar login administrativo."
-    });
   }
-});
+);
 
-/*
-|--------------------------------------------------------------------------
-| VERIFICAR SESSÃO DO ADMINISTRADOR
-|--------------------------------------------------------------------------
-*/
+/* =========================
+   VERIFICAR SESSÃO
+========================= */
 
-router.get("/admin-session", (req, res) => {
-  try {
-    const token = obterCookieAdmin(req);
+router.get(
+  "/admin-session",
+  (req, res) => {
+    try {
+      const token =
+        obterCookie(req);
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        authenticated: false,
-        message: "Sessão administrativa não encontrada."
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          authenticated: false,
+          message:
+            "Sessão administrativa não encontrada."
+        });
+      }
+
+      const sessao =
+        validarSessaoAdmin(
+          token
+        );
+
+      if (!sessao) {
+        res.setHeader(
+          "Set-Cookie",
+          expirarCookie()
+        );
+
+        return res.status(401).json({
+          success: false,
+          authenticated: false,
+          message:
+            "Sessão administrativa inválida ou expirada."
+        });
+      }
+
+      return res.json({
+        success: true,
+        authenticated: true,
+
+        admin: {
+          id:
+            sessao.adminId,
+
+          username:
+            sessao.username
+        }
       });
-    }
 
-    const sessao = validarSessaoAdmin(token);
+    } catch (error) {
+      console.error(
+        "Erro ao verificar sessão:",
+        error
+      );
 
-    if (!sessao) {
-      expirarCookieAdmin(res);
+      res.setHeader(
+        "Set-Cookie",
+        expirarCookie()
+      );
 
       return res.status(401).json({
         success: false,
         authenticated: false,
-        message: "Sessão administrativa inválida ou expirada."
+        message:
+          "Sessão administrativa inválida."
       });
     }
+  }
+);
 
-    return res.json({
-      success: true,
-      authenticated: true,
-      admin: {
-        id: sessao.adminId,
-        username: sessao.username
+/* =========================
+   LOGOUT ADMIN
+========================= */
+
+router.post(
+  "/admin-logout",
+  (req, res) => {
+    try {
+      const token =
+        obterCookie(req);
+
+      if (token) {
+        removerSessaoAdmin(
+          token
+        );
       }
-    });
 
-  } catch (error) {
-    console.error(
-      "Erro ao validar sessão administrativa:",
-      error
-    );
+      res.setHeader(
+        "Set-Cookie",
+        expirarCookie()
+      );
 
-    expirarCookieAdmin(res);
+      return res.json({
+        success: true,
+        authenticated: false,
+        message:
+          "Logout administrativo realizado com sucesso."
+      });
 
-    return res.status(401).json({
-      success: false,
-      authenticated: false,
-      message: "Sessão administrativa inválida."
-    });
-  }
-});
+    } catch (error) {
+      console.error(
+        "Erro no logout:",
+        error
+      );
 
-/*
-|--------------------------------------------------------------------------
-| LOGOUT DO ADMINISTRADOR
-|--------------------------------------------------------------------------
-*/
+      res.setHeader(
+        "Set-Cookie",
+        expirarCookie()
+      );
 
-router.post("/admin-logout", (req, res) => {
-  try {
-    const token = obterCookieAdmin(req);
-
-    if (token) {
-      removerSessaoAdmin(token);
+      return res.json({
+        success: true,
+        authenticated: false
+      });
     }
-
-    expirarCookieAdmin(res);
-
-    return res.json({
-      success: true,
-      authenticated: false,
-      message: "Logout administrativo realizado com sucesso."
-    });
-
-  } catch (error) {
-    console.error(
-      "Erro no logout administrativo:",
-      error
-    );
-
-    expirarCookieAdmin(res);
-
-    return res.json({
-      success: true,
-      authenticated: false,
-      message: "Sessão administrativa encerrada."
-    });
   }
-});
+);
 
-module.exports = router;
+export default router;
