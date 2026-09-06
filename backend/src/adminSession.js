@@ -1,16 +1,10 @@
-const crypto = require("crypto");
+import crypto from "crypto";
 
 const sessoes = new Map();
 
 const TEMPO_SESSAO = 1000 * 60 * 60 * 24; // 24 horas
 
-/*
-|--------------------------------------------------------------------------
-| CRIAR SESSÃO DO ADMINISTRADOR
-|--------------------------------------------------------------------------
-*/
-
-function criarSessaoAdmin(dadosAdmin) {
+export function criarSessaoAdmin(dadosAdmin) {
   const token = crypto.randomBytes(32).toString("hex");
 
   let username;
@@ -37,13 +31,7 @@ function criarSessaoAdmin(dadosAdmin) {
   return token;
 }
 
-/*
-|--------------------------------------------------------------------------
-| VALIDAR SESSÃO DO ADMINISTRADOR
-|--------------------------------------------------------------------------
-*/
-
-function validarSessaoAdmin(token) {
+export function validarSessaoAdmin(token) {
   if (!token || typeof token !== "string") {
     return null;
   }
@@ -54,10 +42,7 @@ function validarSessaoAdmin(token) {
     return null;
   }
 
-  if (
-    !sessao.expiraEm ||
-    Date.now() > sessao.expiraEm
-  ) {
+  if (Date.now() > sessao.expiraEm) {
     sessoes.delete(token);
     return null;
   }
@@ -70,28 +55,10 @@ function validarSessaoAdmin(token) {
   };
 }
 
-/*
-|--------------------------------------------------------------------------
-| REMOVER SESSÃO
-|--------------------------------------------------------------------------
-*/
-
-function removerSessaoAdmin(token) {
+export function removerSessaoAdmin(token) {
   if (!token || typeof token !== "string") {
     return false;
   }
 
   return sessoes.delete(token);
 }
-
-/*
-|--------------------------------------------------------------------------
-| EXPORTAÇÃO
-|--------------------------------------------------------------------------
-*/
-
-module.exports = {
-  criarSessaoAdmin,
-  validarSessaoAdmin,
-  removerSessaoAdmin
-};
