@@ -3,98 +3,532 @@
 <head>
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<meta
+name=“viewport”
+content=“width=device-width, initial-scale=1.0”
 
   <title>JPBET - Administração</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080b10;
+      color: #ffffff;
+    }
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #11161d;
+      border: 1px solid #252d38;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+    .login-logo {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .login-subtitle {
+      text-align: center;
+      color: #9ba5b2;
+      margin-bottom: 30px;
+    }
+    .login-field {
+      margin-bottom: 18px;
+    }
+    .login-field label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .login-field input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #303945;
+      border-radius: 9px;
+      background: #0b0f14;
+      color: #ffffff;
+      outline: none;
+    }
+    .login-field input:focus {
+      border-color: #ffffff;
+    }
+    .login-button {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 14px;
+      background: #ffffff;
+      color: #080b10;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .login-button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+    .login-message {
+      min-height: 22px;
+      margin-top: 16px;
+      text-align: center;
+      color: #ff7373;
+      font-size: 14px;
+    }
+    .admin-page {
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .admin-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 25px;
+      padding: 20px;
+      background: #11161d;
+      border: 1px solid #252d38;
+      border-radius: 14px;
+    }
+    .admin-title {
+      margin: 0;
+      font-size: 25px;
+    }
+    .admin-subtitle {
+      margin: 5px 0 0;
+      color: #9ba5b2;
+      font-size: 14px;
+    }
+    .logout-button {
+      border: 1px solid #303945;
+      border-radius: 8px;
+      padding: 11px 18px;
+      background: transparent;
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .logout-button:hover {
+      background: #1a2028;
+    }
+    .admin-message {
+      margin-bottom: 20px;
+      color: #9ba5b2;
+    }
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+      );
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .overview-card {
+      background: #11161d;
+      border: 1px solid #252d38;
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .overview-card-title {
+      color: #9ba5b2;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .overview-card-value {
+      font-size: 28px;
+      font-weight: 900;
+    }
+    .settings {
+      background: #11161d;
+      border: 1px solid #252d38;
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .settings h2 {
+      margin-top: 0;
+    }
+    .setting-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 600px) {
+      .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .logout-button {
+        width: 100%;
+      }
+      .login-card {
+        padding: 24px;
+      }
+    }
+  </style>
 </head>
-
 <body>
-
-  <main class="dashboard">
-
-    <section class="container">
-
-      <header class="dashboard-header">
-
-        <div>
-          <h1>JPBET</h1>
-          <p>Painel administrativo</p>
-        </div>
-
-        <button
-          type="button"
-          onclick="sairAdmin()"
-        >
-          Sair
-        </button>
-
-      </header>
-
-
-      <section class="dashboard-card">
-
-        <h2>Administração</h2>
-
-        <p id="adminMessage">
-          Carregando painel...
-        </p>
-
-      </section>
-
-
-      <section
-        id="adminContent"
-        class="dashboard-card"
+  <!-- =========================
+       LOGIN ADMINISTRATIVO
+  ========================== -->
+  <section
+    id="loginContainer"
+    class="login-page"
+  >
+<div class="login-card">
+  <div class="login-logo">
+    JPBET
+  </div>
+  <div class="login-subtitle">
+    Acesso administrativo
+  </div>
+  <form id="adminLoginForm">
+    <div class="login-field">
+      <label for="adminUsername">
+        Usuário
+      </label>
+      <input
+        id="adminUsername"
+        name="username"
+        type="text"
+        autocomplete="username"
+        placeholder="Digite o usuário"
+        required
       >
-
-        <h2>Visão geral</h2>
-
-        <div class="account-info">
-
-          <p>
-            <strong>Usuários:</strong>
-            <span id="totalUsers">0</span>
-          </p>
-
-          <p>
-            <strong>Saldo total:</strong>
-            <span id="totalBalance">
-              R$ 0,00
-            </span>
-          </p>
-
-        </div>
-
-      </section>
-
-
-      <section class="dashboard-card">
-
-        <h2>Configurações</h2>
-
-        <div id="settingsContainer">
-          <p>
-            As configurações administrativas
-            serão carregadas aqui.
-          </p>
-        </div>
-
-      </section>
-
-    </section>
-
-  </main>
-
-
+    </div>
+    <div class="login-field">
+      <label for="adminPassword">
+        Senha
+      </label>
+      <input
+        id="adminPassword"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Digite a senha"
+        required
+      >
+    </div>
+    <button
+      id="loginButton"
+      class="login-button"
+      type="submit"
+    >
+      Entrar
+    </button>
+    <div
+      id="loginMessage"
+      class="login-message"
+    ></div>
+  </form>
+</div>
+  </section>
+  <!-- =========================
+       PAINEL ADMINISTRATIVO
+  ========================== -->
+  <section
+    id="dashboardContainer"
+    class="admin-page"
+    style="display: none;"
+  >
+<div class="admin-container">
+  <header class="admin-header">
+    <div>
+      <h1 class="admin-title">
+        JPBET
+      </h1>
+      <p class="admin-subtitle">
+        Painel administrativo
+      </p>
+    </div>
+    <button
+      type="button"
+      class="logout-button"
+      onclick="sairAdmin()"
+    >
+      Sair
+    </button>
+  </header>
+  <p
+    id="adminMessage"
+    class="admin-message"
+  >
+    Verificando sessão...
+  </p>
+  <!-- =========================
+       VISÃO GERAL
+  ========================== -->
+  <section class="overview">
+    <div class="overview-card">
+      <div class="overview-card-title">
+        Total de jogadores
+      </div>
+      <div
+        id="totalUsers"
+        class="overview-card-value"
+      >
+        0
+      </div>
+    </div>
+    <div class="overview-card">
+      <div class="overview-card-title">
+        Saldo total
+      </div>
+      <div
+        id="totalBalance"
+        class="overview-card-value"
+      >
+        R$ 0,00
+      </div>
+    </div>
+  </section>
+  <!-- =========================
+       CONFIGURAÇÕES
+  ========================== -->
+  <section class="settings">
+    <h2>
+      Configurações
+    </h2>
+    <div id="settingsContainer">
+      Carregando configurações...
+    </div>
+  </section>
+</div>
+  </section>
+  <!-- =========================
+       JAVASCRIPT DO PAINEL
+  ========================== -->
   <script src="admin.js"></script>
-
+  <!-- =========================
+       LOGIN / SESSÃO
+  ========================== -->
+  <script>
+    document.addEventListener(
+      "DOMContentLoaded",
+      async () => {
+        const loginContainer =
+          document.getElementById(
+            "loginContainer"
+          );
+        const dashboardContainer =
+          document.getElementById(
+            "dashboardContainer"
+          );
+        const loginForm =
+          document.getElementById(
+            "adminLoginForm"
+          );
+        const loginButton =
+          document.getElementById(
+            "loginButton"
+          );
+        const loginMessage =
+          document.getElementById(
+            "loginMessage"
+          );
+        /*
+         * Mostra o painel e esconde o login.
+         */
+        function mostrarPainel() {
+          loginContainer.style.display =
+            "none";
+          dashboardContainer.style.display =
+            "block";
+        }
+        /*
+         * Mostra o login e esconde o painel.
+         */
+        function mostrarLogin() {
+          loginContainer.style.display =
+            "flex";
+          dashboardContainer.style.display =
+            "none";
+        }
+        /*
+         * Verifica se já existe uma sessão
+         * administrativa válida.
+         */
+        async function verificarSessao() {
+          try {
+            const response =
+              await fetch(
+                "/api/admin-session",
+                {
+                  method: "GET",
+                  credentials: "include"
+                }
+              );
+            const data =
+              await response
+                .json()
+                .catch(() => ({}));
+            if (
+              response.ok &&
+              data.authenticated === true
+            ) {
+              mostrarPainel();
+              return true;
+            }
+            mostrarLogin();
+            return false;
+          } catch (error) {
+            console.error(
+              "Erro ao verificar sessão:",
+              error
+            );
+            mostrarLogin();
+            return false;
+          }
+        }
+        /*
+         * Login administrativo.
+         */
+        loginForm.addEventListener(
+          "submit",
+          async (event) => {
+            event.preventDefault();
+            const username =
+              document
+                .getElementById(
+                  "adminUsername"
+                )
+                .value
+                .trim();
+            const password =
+              document
+                .getElementById(
+                  "adminPassword"
+                )
+                .value;
+            loginMessage.textContent =
+              "";
+            if (
+              !username ||
+              !password
+            ) {
+              loginMessage.textContent =
+                "Digite o usuário e a senha.";
+              return;
+            }
+            loginButton.disabled =
+              true;
+            loginButton.textContent =
+              "Entrando...";
+            try {
+              const response =
+                await fetch(
+                  "/api/admin-login",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type":
+                        "application/json"
+                    },
+                    credentials:
+                      "include",
+                    body:
+                      JSON.stringify({
+                        username,
+                        password
+                      })
+                  }
+                );
+              const data =
+                await response
+                  .json()
+                  .catch(() => ({}));
+              if (
+                !response.ok ||
+                data.success !== true ||
+                data.authenticated !== true
+              ) {
+                throw new Error(
+                  data.message ||
+                  "Usuário ou senha inválidos."
+                );
+              }
+              loginMessage.style.color =
+                "#7ee787";
+              loginMessage.textContent =
+                "Login realizado com sucesso.";
+              /*
+               * Aguardar o navegador registrar
+               * o cookie da sessão antes de
+               * acessar as rotas protegidas.
+               */
+              await new Promise(
+                resolve =>
+                  setTimeout(
+                    resolve,
+                    100
+                  )
+              );
+              mostrarPainel();
+              /*
+               * Atualiza imediatamente
+               * o painel após o login.
+               */
+              if (
+                typeof carregarDashboardAdmin ===
+                "function"
+              ) {
+                await carregarDashboardAdmin();
+              }
+              if (
+                typeof carregarConfiguracoes ===
+                "function"
+              ) {
+                await carregarConfiguracoes();
+              }
+            } catch (error) {
+              console.error(
+                "Erro no login administrativo:",
+                error
+              );
+              loginMessage.style.color =
+                "#ff7373";
+              loginMessage.textContent =
+                error.message ||
+                "Não foi possível realizar o login.";
+            } finally {
+              loginButton.disabled =
+                false;
+              loginButton.textContent =
+                "Entrar";
+            }
+          }
+        );
+        /*
+         * Verifica automaticamente
+         * uma sessão já existente.
+         */
+        await verificarSessao();
+      }
+    );
+  </script>
 </body>
 </html>
