@@ -1,359 +1,218 @@
 import { pool } from "./db.js";
-
-const DEFAULT_SETTINGS = {
+/* =========================
+   CONFIGURAÇÕES PADRÃO
+========================= */
+const CONFIGURACOES_PADRAO = {
+  /* =========================
+     PÁGINA INICIAL
+  ========================= */
   site_name: "JPBET",
-  site_description:
-    "Plataforma JPBET — experiência premium de entretenimento.",
-  site_logo: "",
-  site_favicon: "",
-
-  initial_bonus_amount: "100",
-  bonus_system_enabled: "true",
-  bonus_wager_requirement: "100",
-
-  roulette_min_bet: "0.50",
-  roulette_max_bet: "100",
-  roulette_max_multiplier: "100",
-
-  roulette_rtp: "96",
-  roulette_replay_probability: "0",
-
-  roulette_segments_json: JSON.stringify([
-    {
-      label: "❌",
-      type: "zero",
-      multiplier: 0,
-      probability: 5
-    },
-    {
-      label: "❌",
-      type: "zero",
-      multiplier: 0,
-      probability: 5
-    },
-    {
-      label: "❌",
-      type: "zero",
-      multiplier: 0,
-      probability: 5
-    },
-    {
-      label: "❌",
-      type: "zero",
-      multiplier: 0,
-      probability: 5
-    },
-    {
-      label: "❌",
-      type: "zero",
-      multiplier: 0,
-      probability: 5
-    },
-    {
-      label: "2×",
-      type: "prize",
-      multiplier: 2,
-      probability: 5
-    },
-    {
-      label: "2×",
-      type: "prize",
-      multiplier: 2,
-      probability: 5
-    },
-    {
-      label: "2×",
-      type: "prize",
-      multiplier: 2,
-      probability: 5
-    },
-    {
-      label: "3×",
-      type: "prize",
-      multiplier: 3,
-      probability: 5
-    },
-    {
-      label: "3×",
-      type: "prize",
-      multiplier: 3,
-      probability: 5
-    },
-    {
-      label: "3×",
-      type: "prize",
-      multiplier: 3,
-      probability: 5
-    },
-    {
-      label: "5×",
-      type: "prize",
-      multiplier: 5,
-      probability: 5
-    },
-    {
-      label: "5×",
-      type: "prize",
-      multiplier: 5,
-      probability: 5
-    },
-    {
-      label: "10×",
-      type: "prize",
-      multiplier: 10,
-      probability: 5
-    },
-    {
-      label: "20×",
-      type: "prize",
-      multiplier: 20,
-      probability: 5
-    },
-    {
-      label: "30×",
-      type: "prize",
-      multiplier: 30,
-      probability: 5
-    },
-    {
-      label: "50×",
-      type: "prize",
-      multiplier: 50,
-      probability: 5
-    },
-    {
-      label: "75×",
-      type: "prize",
-      multiplier: 75,
-      probability: 5
-    },
-    {
-      label: "100×",
-      type: "prize",
-      multiplier: 100,
-      probability: 5
-    },
-    {
-      label: "🍀",
-      type: "sorte",
-      multiplier: 0,
-      probability: 5
-    }
-  ]),
-
-  notification_enabled: "false",
-
-  notification_deposit_requested: "true",
-  notification_withdrawal_requested: "true",
-  notification_deposit_approved: "true",
-  notification_deposit_rejected: "true",
-  notification_withdrawal_approved: "true",
-  notification_withdrawal_rejected: "true",
-  notification_withdrawal_completed: "true",
-
-  notification_webhook_url: "",
-  notification_webhook_token: "",
-  notification_recipient: ""
+  home_hero_label:
+    "BEM-VINDO À JPBET",
+  home_hero_title:
+    "Sua diversão começa aqui.",
+  home_hero_description:
+    "Entre na JPBET e descubra uma experiência de jogos feita para você.",
+  home_games_label:
+    "ESCOLHA SUA DIVERSÃO",
+  home_games_title:
+    "Jogos",
+  home_roulette_title:
+    "Roleta",
+  home_roulette_description:
+    "Entre na mesa e teste sua sorte.",
+  home_coming_title:
+    "Novos jogos",
+  home_coming_description:
+    "Novidades serão adicionadas em breve.",
+  home_about_label:
+    "SOBRE A JPBET",
+  home_about_title:
+    "Uma nova experiência de jogos.",
+  home_about_description:
+    "A JPBET foi criada para oferecer uma experiência simples, moderna e agradável para quem gosta de jogos online.",
+  home_cta_title:
+    "Pronto para começar?",
+  home_cta_description:
+    "Entre na sua conta para continuar.",
+  home_cta_button:
+    "JOGAR AGORA",
+  home_footer:
+    "© 2026 JPBET. Todos os direitos reservados.",
+  /* =========================
+     IMAGEM DA PÁGINA INICIAL
+  ========================= */
+  home_hero_image:
+    "assets/lamborghini.png"
 };
-
+/* =========================
+   GARANTIR TABELA
+========================= */
+async function garantirTabelaConfiguracoes() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )
+  `);
+}
+/* =========================
+   GARANTIR CONFIGURAÇÕES
+========================= */
 export async function garantirConfiguracoes() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS site_settings (
-        setting_key TEXT PRIMARY KEY,
-        setting_value TEXT NOT NULL DEFAULT ''
+  await garantirTabelaConfiguracoes();
+  for (
+    const [key, value]
+    of Object.entries(
+      CONFIGURACOES_PADRAO
+    )
+  ) {
+    await pool.query(
+      `
+      INSERT INTO settings (
+        key,
+        value
       )
-    `);
-
-    for (const [key, value] of Object.entries(
-      DEFAULT_SETTINGS
-    )) {
-      await pool.query(
-        `
-        INSERT INTO site_settings
-          (setting_key, setting_value)
-        VALUES ($1, $2)
-        ON CONFLICT (setting_key)
-        DO NOTHING
-        `,
-        [key, value]
-      );
-    }
-
-    /*
-     * Migração da configuração antiga da roleta.
-     * Se a configuração anterior ainda possuir
-     * "JOGUE NOVAMENTE" ou multiplicador 1×,
-     * substitui pela nova configuração.
-     */
-
-    const rouletteResult = await pool.query(
-      `
-      SELECT setting_value
-      FROM site_settings
-      WHERE setting_key = 'roulette_segments_json'
-      LIMIT 1
-      `
-    );
-
-    if (rouletteResult.rows.length) {
-      const current =
-        rouletteResult.rows[0].setting_value || "";
-
-      if (
-        current.includes("JOGUE NOVAMENTE") ||
-        current.includes('"multiplier":1')
-      ) {
-        await pool.query(
-          `
-          UPDATE site_settings
-          SET setting_value = $1
-          WHERE setting_key = 'roulette_segments_json'
-          `,
-          [
-            DEFAULT_SETTINGS
-              .roulette_segments_json
-          ]
-        );
-      }
-    }
-
-    console.log(
-      "Configurações do site inicializadas."
-    );
-  } catch (error) {
-    console.error(
-      "Erro ao inicializar configurações:",
-      error
+      VALUES ($1, $2)
+      ON CONFLICT (key)
+      DO NOTHING
+      `,
+      [
+        key,
+        String(value)
+      ]
     );
   }
 }
-
+/* =========================
+   OBTER CONFIGURAÇÃO
+========================= */
 export async function obterConfiguracao(
-  chave,
-  valorPadrao = null
+  key,
+  padrao = null
 ) {
-  try {
-    const result = await pool.query(
+  const result =
+    await pool.query(
       `
-      SELECT setting_value
-      FROM site_settings
-      WHERE setting_key = $1
+      SELECT value
+      FROM settings
+      WHERE key = $1
       LIMIT 1
       `,
-      [chave]
+      [key]
     );
-
-    if (!result.rows.length) {
-      return valorPadrao;
-    }
-
-    return result.rows[0].setting_value;
-  } catch (error) {
-    console.error(
-      `Erro ao obter configuração ${chave}:`,
-      error
-    );
-
-    return valorPadrao;
+  if (
+    result.rows.length === 0
+  ) {
+    return padrao;
   }
+  return result.rows[0].value;
 }
-
-export async function obterConfiguracoes(
-  incluirPrivadas = false
-) {
-  try {
-    const result = await pool.query(`
+/* =========================
+   OBTER TODAS
+========================= */
+export async function obterConfiguracoes() {
+  const result =
+    await pool.query(
+      `
       SELECT
-        setting_key,
-        setting_value
-      FROM site_settings
-      ORDER BY setting_key
-    `);
-
-    const settings = {};
-
-    for (const row of result.rows) {
-      if (
-        !incluirPrivadas &&
-        row.setting_key.startsWith(
-          "notification_"
-        )
-      ) {
-        continue;
-      }
-
-      settings[row.setting_key] =
-        row.setting_value;
-    }
-
-    return settings;
-  } catch (error) {
-    console.error(
-      "Erro ao obter configurações:",
-      error
+        key,
+        value
+      FROM settings
+      ORDER BY key
+      `
     );
-
-    return {};
+  const configuracoes = {};
+  for (
+    const row
+    of result.rows
+  ) {
+    configuracoes[row.key] =
+      row.value;
   }
+  return configuracoes;
 }
-
+/* =========================
+   SALVAR CONFIGURAÇÃO
+========================= */
 export async function salvarConfiguracao(
-  chave,
-  valor
+  key,
+  value
 ) {
   await pool.query(
     `
-    INSERT INTO site_settings
-      (setting_key, setting_value)
+    INSERT INTO settings (
+      key,
+      value
+    )
     VALUES ($1, $2)
-    ON CONFLICT (setting_key)
+    ON CONFLICT (key)
     DO UPDATE SET
-      setting_value = EXCLUDED.setting_value
+      value = EXCLUDED.value
     `,
     [
-      chave,
-      String(valor ?? "")
+      key,
+      String(value ?? "")
     ]
   );
+  return obterConfiguracao(
+    key,
+    ""
+  );
 }
-
+/* =========================
+   SALVAR VÁRIAS
+========================= */
 export async function salvarConfiguracoes(
   configuracoes = {}
 ) {
-  for (const [chave, valor] of Object.entries(
-    configuracoes
-  )) {
+  for (
+    const [key, value]
+    of Object.entries(
+      configuracoes
+    )
+  ) {
     await salvarConfiguracao(
-      chave,
-      valor
+      key,
+      value
     );
   }
+  return obterConfiguracoes();
 }
-
-export function obterConfiguracoesPadrao() {
-  return {
-    ...DEFAULT_SETTINGS
-  };
-}
-
+/* =========================
+   SEGMENTOS PADRÃO
+========================= */
 export function obterSegmentosPadrao() {
-  try {
-    return JSON.parse(
-      DEFAULT_SETTINGS
-        .roulette_segments_json
-    );
-  } catch (_) {
-    return [];
-  }
+  return [
+    {
+      type: "prize",
+      label: "2X",
+      multiplier: 2
+    },
+    {
+      type: "prize",
+      label: "3X",
+      multiplier: 3
+    },
+    {
+      type: "prize",
+      label: "5X",
+      multiplier: 5
+    },
+    {
+      type: "prize",
+      label: "10X",
+      multiplier: 10
+    },
+    {
+      type: "lose",
+      label: "PERDEU",
+      multiplier: 0
+    },
+    {
+      type: "lose",
+      label: "PERDEU",
+      multiplier: 0
+    }
+  ];
 }
-
-export default {
-  garantirConfiguracoes,
-  obterConfiguracao,
-  obterConfiguracoes,
-  salvarConfiguracao,
-  salvarConfiguracoes,
-  obterConfiguracoesPadrao,
-  obterSegmentosPadrao
-};
