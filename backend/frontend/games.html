@@ -1,707 +1,320 @@
-const API = "/api";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
 
-let games = [];
-let currentGame = null;
-let currentBet = 0.10;
-let spinning = false;
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-const user =
-  JSON.parse(
-    localStorage.getItem("jpbet_user") ||
-    "null"
-  );
+  <title>JPBET - Jogos</title>
 
-if (!user || !user.id) {
-  window.location.href = "index.html";
-}
+  <link
+    rel="stylesheet"
+    href="/games.css"
+  >
+</head>
 
-const gamesList =
-  document.getElementById("gamesList");
+<body>
 
-const machine =
-  document.getElementById("machine");
+  <header class="topbar">
 
-const machineName =
-  document.getElementById("machineName");
+    <div class="brand">
+      <span class="brand-main">JP</span>
+      <span class="brand-sub">BET</span>
+    </div>
 
-const reels =
-  document.getElementById("reels");
+    <div class="topbar-right">
 
-const balance =
-  document.getElementById("balance");
+      <div class="balance-box">
+        <span class="balance-label">
+          Saldo
+        </span>
 
-const username =
-  document.getElementById("username");
+        <strong id="balance">
+          R$ 0,00
+        </strong>
+      </div>
 
-const betValue =
-  document.getElementById("betValue");
+      <button
+        id="backButton"
+        class="back-button"
+        type="button"
+      >
+        Voltar
+      </button>
 
-const spinButton =
-  document.getElementById("spinButton");
+    </div>
 
-const win =
-  document.getElementById("win");
+  </header>
 
-const machineMessage =
-  document.getElementById("machineMessage");
 
-const paytable =
-  document.getElementById("paytable");
+  <main class="page">
 
-const historyList =
-  document.getElementById("historyList");
+    <section class="hero">
 
-username.textContent =
-  user.username || "Jogador";
+      <div>
+        <p class="eyebrow">
+          JPBET
+        </p>
 
-function dinheiro(valor) {
-  return Number(valor || 0)
-    .toLocaleString(
-      "pt-BR",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    );
-}
+        <h1>
+          Jogos
+        </h1>
 
-function atualizarSaldo(valor) {
-  balance.textContent =
-    dinheiro(valor);
+        <p class="hero-description">
+          Escolha sua máquina e faça sua aposta.
+        </p>
+      </div>
 
-  const novoUser = {
-    ...user,
-    balance: Number(valor)
-  };
+    </section>
 
-  localStorage.setItem(
-    "jpbet_user",
-    JSON.stringify(novoUser)
-  );
-}
 
-/*
-========================================================
-CARREGAR MÁQUINAS
-========================================================
-*/
+    <section
+      id="gamesContainer"
+      class="games-container"
+    >
 
-async function carregarGames() {
+      <div class="loading">
+        Carregando jogos...
+      </div>
 
-  const response =
-    await fetch(
-      `${API}/games/config`
-    );
+    </section>
 
-  const data =
-    await response.json();
 
-  if (!data.ok) {
-    throw new Error(
-      data.message ||
-      "Erro ao carregar máquinas."
-    );
-  }
+    <div
+      id="gamesMessage"
+      class="message"
+      hidden
+    ></div>
 
-  games =
-    data.games || [];
+  </main>
 
-  renderGames();
-}
 
-function renderGames() {
+  <!-- MODAL DO JOGO -->
 
-  gamesList.innerHTML = "";
+  <div
+    id="gameModal"
+    class="modal"
+    hidden
+  >
 
-  games
-    .filter(game => game.enabled)
-    .forEach(game => {
+    <div class="modal-backdrop"></div>
 
-      const card =
-        document.createElement("button");
+    <div
+      class="game-modal-content"
+      role="dialog"
+      aria-modal="true"
+    >
 
-      card.className =
-        "game-card";
+      <button
+        id="closeGameButton"
+        class="close-button"
+        type="button"
+        aria-label="Fechar"
+      >
+        ×
+      </button>
 
-      card.innerHTML = `
-        <div class="game-icon">
-          ${iconeDaMaquina(game.id)}
-        </div>
 
-        <div class="game-info">
-          <h2>${game.name}</h2>
+      <div class="game-header">
 
-          <p>
-            ${game.reels} rolos
-            • ${game.paylines.length} linha(s)
+        <div>
+          <p
+            id="gameEyebrow"
+            class="eyebrow"
+          >
+            JOGO
           </p>
 
-          <small>
-            Apostas de R$ ${dinheiro(game.minBet)}
-            até R$ ${dinheiro(game.maxBet)}
-          </small>
+          <h2 id="gameTitle">
+            Jogo
+          </h2>
         </div>
 
-        <span class="play">
-          JOGAR
-        </span>
-      `;
+        <div class="game-balance">
 
-      card.onclick = () =>
-        abrirGame(game);
+          <span>
+            Saldo
+          </span>
 
-      gamesList.appendChild(card);
-    });
-}
+          <strong id="gameBalance">
+            R$ 0,00
+          </strong>
 
-function iconeDaMaquina(id) {
+        </div>
 
-  if (id === "fortune7") {
-    return "7️⃣";
-  }
+      </div>
 
-  if (id === "lucky7") {
-    return "🍒7️⃣";
-  }
 
-  if (id === "diamondGold") {
-    return "💎";
-  }
+      <!-- MÁQUINA -->
 
-  if (id === "royalJackpot") {
-    return "👑";
-  }
+      <div
+        id="slotMachine"
+        class="slot-machine"
+      >
 
-  return "🎰";
-}
+        <div
+          id="slotReels"
+          class="slot-reels"
+        ></div>
 
-/*
-========================================================
-ABRIR MÁQUINA
-========================================================
-*/
+      </div>
 
-function abrirGame(game) {
 
-  currentGame =
-    game;
+      <!-- RESULTADO -->
 
-  currentBet =
-    Number(game.minBet);
+      <div
+        id="winMessage"
+        class="win-message"
+        hidden
+      ></div>
 
-  gamesList.classList.add(
-    "hidden"
-  );
 
-  machine.classList.remove(
-    "hidden"
-  );
+      <!-- CONTROLES -->
 
-  machineName.textContent =
-    game.name;
+      <div class="game-controls">
 
-  machineMessage.textContent =
-    "Boa sorte!";
+        <div class="bet-control">
 
-  atualizarBet();
+          <label for="betInput">
+            Valor da aposta
+          </label>
 
-  montarPaytable();
+          <div class="bet-input-row">
 
-  criarReels();
+            <button
+              type="button"
+              class="bet-adjust"
+              data-action="decrease"
+            >
+              −
+            </button>
 
-  carregarHistorico();
-}
+            <div class="bet-input-wrapper">
 
-function criarReels() {
+              <span>
+                R$
+              </span>
 
-  reels.innerHTML = "";
+              <input
+                id="betInput"
+                type="number"
+                min="0.01"
+                step="0.01"
+                inputmode="decimal"
+                value="1"
+              >
 
-  for (
-    let r = 0;
-    r < currentGame.reels;
-    r++
-  ) {
+            </div>
 
-    const reel =
-      document.createElement("div");
+            <button
+              type="button"
+              class="bet-adjust"
+              data-action="increase"
+            >
+              +
+            </button>
 
-    reel.className =
-      "reel";
+          </div>
 
-    for (
-      let row = 0;
-      row < currentGame.rows;
-      row++
-    ) {
+        </div>
 
-      const cell =
-        document.createElement("div");
 
-      cell.className =
-        "symbol";
+        <div class="quick-bets">
 
-      cell.textContent =
-        "?";
+          <button
+            type="button"
+            data-bet="1"
+          >
+            R$ 1
+          </button>
 
-      reel.appendChild(cell);
-    }
-
-    reels.appendChild(reel);
-  }
-}
-
-/*
-========================================================
-APOSTA
-========================================================
-*/
-
-function atualizarBet() {
+          <button
+            type="button"
+            data-bet="5"
+          >
+            R$ 5
+          </button>
 
-  currentBet =
-    Math.max(
-      Number(currentGame.minBet),
-      Math.min(
-        Number(currentGame.maxBet),
-        Number(currentBet)
-      )
-    );
-
-  betValue.textContent =
-    `R$ ${dinheiro(currentBet)}`;
-}
-
-document
-  .getElementById("betMinus")
-  .onclick = () => {
-
-    if (spinning) return;
-
-    currentBet =
-      Math.max(
-        currentGame.minBet,
-        Number(
-          (
-            currentBet -
-            currentGame.minBet
-          ).toFixed(2)
-        )
-      );
-
-    atualizarBet();
-  };
-
-document
-  .getElementById("betPlus")
-  .onclick = () => {
-
-    if (spinning) return;
-
-    currentBet =
-      Math.min(
-        currentGame.maxBet,
-        Number(
-          (
-            currentBet +
-            currentGame.minBet
-          ).toFixed(2)
-        )
-      );
-
-    atualizarBet();
-  };
-
-/*
-========================================================
-SPIN
-========================================================
-*/
-
-spinButton.onclick =
-  girar;
-
-async function girar() {
-
-  if (spinning) return;
-
-  const saldo =
-    Number(
-      user.balance ||
-      0
-    );
-
-  if (
-    saldo <
-    currentBet
-  ) {
+          <button
+            type="button"
+            data-bet="10"
+          >
+            R$ 10
+          </button>
 
-    machineMessage.textContent =
-      "Saldo insuficiente.";
-
-    return;
-  }
-
-  spinning = true;
-
-  spinButton.disabled =
-    true;
-
-  win.textContent =
-    "GIRANDO...";
-
-  machineMessage.textContent =
-    "Os rolos estão girando...";
-
-  animarReels();
-
-  try {
-
-    const response =
-      await fetch(
-        `${API}/games/${currentGame.id}/spin`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body: JSON.stringify({
-            userId: user.id,
-            bet: currentBet
-          })
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message ||
-        "Erro ao girar."
-      );
-    }
-
-    setTimeout(
-      () => mostrarResultado(data),
-      900
-    );
-
-  } catch (error) {
-
-    spinning = false;
-
-    spinButton.disabled =
-      false;
-
-    machineMessage.textContent =
-      error.message;
-
-    win.textContent =
-      "-";
-  }
-}
-
-/*
-========================================================
-ANIMAÇÃO
-========================================================
-*/
-
-function animarReels() {
-
-  const cells =
-    document.querySelectorAll(
-      ".symbol"
-    );
-
-  cells.forEach(
-    cell => {
-
-      cell.classList.add(
-        "spinning"
-      );
-
-      cell.textContent =
-        simboloAleatorio();
-
-    }
-  );
-
-  const interval =
-    setInterval(
-      () => {
-
-        if (!spinning) {
-          clearInterval(interval);
-          return;
-        }
-
-        cells.forEach(
-          cell => {
-            cell.textContent =
-              simboloAleatorio();
-          }
-        );
-
-      },
-      90
-    );
-}
-
-function simboloAleatorio() {
-
-  const symbols =
-    currentGame.symbols;
-
-  const item =
-    symbols[
-      Math.floor(
-        Math.random() *
-        symbols.length
-      )
-    ];
-
-  return item.label;
-}
-
-/*
-========================================================
-RESULTADO
-========================================================
-*/
-
-function mostrarResultado(data) {
-
-  const cells =
-    document.querySelectorAll(
-      ".symbol"
-    );
-
-  cells.forEach(
-    cell =>
-      cell.classList.remove(
-        "spinning"
-      )
-  );
-
-  for (
-    let reel = 0;
-    reel < data.result.length;
-    reel++
-  ) {
-
-    for (
-      let row = 0;
-      row < data.result[reel].length;
-      row++
-    ) {
-
-      const index =
-        reel *
-        currentGame.rows +
-        row;
-
-      const cell =
-        cells[index];
-
-      if (!cell) continue;
-
-      cell.textContent =
-        data.result[reel][row].label;
-    }
-  }
-
-  atualizarSaldo(
-    data.balance
-  );
-
-  user.balance =
-    data.balance;
-
-  if (data.win > 0) {
-
-    win.textContent =
-      `GANHOU R$ ${dinheiro(data.win)}`;
-
-    machineMessage.textContent =
-      data.jackpotWin > 0
-        ? "JACKPOT!"
-        : "VOCÊ GANHOU!";
-
-  } else {
-
-    win.textContent =
-      "R$ 0,00";
-
-    machineMessage.textContent =
-      "Boa sorte na próxima!";
-  }
-
-  spinning = false;
-
-  spinButton.disabled =
-    false;
-
-  carregarHistorico();
-}
-
-/*
-========================================================
-PAYTABLE
-========================================================
-*/
-
-function montarPaytable() {
-
-  paytable.innerHTML = `
-    <h2>
-      Tabela de pagamentos
-    </h2>
-  `;
-
-  Object.entries(
-    currentGame.payouts
-  ).forEach(
-    ([symbol, payments]) => {
-
-      const info =
-        currentGame.symbols
-          .find(
-            item =>
-              item.id === symbol
-          );
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "pay-row";
-
-      row.innerHTML = `
+          <button
+            type="button"
+            data-bet="25"
+          >
+            R$ 25
+          </button>
+
+          <button
+            type="button"
+            data-bet="50"
+          >
+            R$ 50
+          </button>
+
+        </div>
+
+
+        <button
+          id="spinButton"
+          class="spin-button"
+          type="button"
+        >
+          GIRAR
+        </button>
+
+      </div>
+
+
+      <!-- TABELA DE PRÊMIOS -->
+
+      <section class="paytable-section">
+
+        <div class="section-title">
+          Tabela de prêmios
+        </div>
+
+        <div
+          id="paytable"
+          class="paytable"
+        ></div>
+
+      </section>
+
+
+      <!-- INFORMAÇÕES -->
+
+      <div class="game-info">
+
         <span>
-          ${info?.label || symbol}
+          Aposta mínima:
+          <strong id="minBet">
+            R$ 0,00
+          </strong>
         </span>
 
         <span>
-          ${Object.entries(payments)
-            .map(
-              ([count, multiplier]) =>
-                `${count}x = ${multiplier}x`
-            )
-            .join(" • ")
-          }
+          Aposta máxima:
+          <strong id="maxBet">
+            R$ 0,00
+          </strong>
         </span>
-      `;
 
-      paytable.appendChild(row);
-    }
-  );
-}
+      </div>
 
-/*
-========================================================
-HISTÓRICO
-========================================================
-*/
+    </div>
 
-async function carregarHistorico() {
+  </div>
 
-  if (!currentGame) return;
 
-  try {
+  <script src="/games.js"></script>
 
-    const response =
-      await fetch(
-        `${API}/games/history/${user.id}`
-      );
-
-    const data =
-      await response.json();
-
-    if (!data.ok) return;
-
-    historyList.innerHTML =
-      "";
-
-    data.rounds
-      .filter(
-        round =>
-          round.game_id ===
-          currentGame.id
-      )
-      .slice(0, 10)
-      .forEach(
-        round => {
-
-          const item =
-            document.createElement(
-              "div"
-            );
-
-          item.className =
-            "history-item";
-
-          item.innerHTML = `
-            <span>
-              Aposta:
-              R$ ${dinheiro(round.bet)}
-            </span>
-
-            <strong>
-              ${
-                Number(round.win) > 0
-                  ? `+ R$ ${dinheiro(round.win)}`
-                  : "PERDEU"
-              }
-            </strong>
-          `;
-
-          historyList.appendChild(
-            item
-          );
-        }
-      );
-
-  } catch (_) {}
-}
-
-/*
-========================================================
-VOLTAR
-========================================================
-*/
-
-document
-  .getElementById("backButton")
-  .onclick = () => {
-
-    if (spinning) return;
-
-    machine.classList.add(
-      "hidden"
-    );
-
-    gamesList.classList.remove(
-      "hidden"
-    );
-
-    currentGame =
-      null;
-  };
-
-carregarGames()
-  .catch(
-    error => {
-
-      gamesList.innerHTML = `
-        <div class="error">
-          ${error.message}
-        </div>
-      `;
-    }
-  );
+</body>
+</html>
