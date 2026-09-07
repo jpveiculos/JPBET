@@ -43,7 +43,12 @@ const CONFIGURACOES_PADRAO = {
      IMAGEM DA PÁGINA INICIAL
   ========================= */
   home_hero_image:
-    "assets/lamborghini.png"
+    "assets/lamborghini.png",
+  /* =========================
+     BÔNUS DE CADASTRO
+  ========================= */
+  signup_bonus:
+    "100"
 };
 /* =========================
    GARANTIR TABELA
