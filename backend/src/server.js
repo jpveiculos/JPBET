@@ -39,6 +39,33 @@ app.use(
   "/api/auth",
   authRouter
 );
+/* =========================================================
+   ATALHOS DE AUTENTICAÇÃO ADMINISTRATIVA
+========================================================= */
+
+app.post(
+  "/api/admin-login",
+  (req, res, next) => {
+    req.url = "/admin-login";
+    authRouter.handle(req, res, next);
+  }
+);
+
+app.get(
+  "/api/admin-session",
+  (req, res, next) => {
+    req.url = "/admin-session";
+    authRouter.handle(req, res, next);
+  }
+);
+
+app.post(
+  "/api/admin-logout",
+  (req, res, next) => {
+    req.url = "/admin-logout";
+    authRouter.handle(req, res, next);
+  }
+);
 /* =========================
    ARQUIVOS FRONTEND
 ========================= */
