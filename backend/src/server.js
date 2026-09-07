@@ -4,7 +4,10 @@ import { fileURLToPath } from "url";
 import crypto from "crypto";
 import authRouter from "./auth.js";
 
-import { pool } from "./db.js";
+import {
+  pool,
+  garantirEstruturaBanco
+} from "./db.js";
 
 import {
   garantirConfiguracoes,
