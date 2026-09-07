@@ -5,7 +5,10 @@ let jogoAtual = null;
 let configuracaoAtual = null;
 let girando = false;
 
-const usuarioSalvo = localStorage.getItem("jpbet_user");
+let rouletteSelectedNumber = 0;
+
+const usuarioSalvo =
+  localStorage.getItem("jpbet_user");
 
 let usuario = null;
 
@@ -16,6 +19,7 @@ try {
 } catch {
   usuario = null;
 }
+
 
 /* =========================================================
    ELEMENTOS
@@ -36,8 +40,62 @@ const gameTitle =
 const gameBalance =
   document.getElementById("gameBalance");
 
+const slotMachine =
+  document.getElementById("slotMachine");
+
 const slotReels =
   document.getElementById("slotReels");
+
+const rouletteMachine =
+  document.getElementById("rouletteMachine");
+
+const rouletteWheel =
+  document.getElementById("rouletteWheel");
+
+const rouletteWheelNumbers =
+  document.getElementById(
+    "rouletteWheelNumbers"
+  );
+
+const rouletteResult =
+  document.getElementById(
+    "rouletteResult"
+  );
+
+const rouletteBetType =
+  document.getElementById(
+    "rouletteBetType"
+  );
+
+const rouletteNumberGrid =
+  document.getElementById(
+    "rouletteNumberGrid"
+  );
+
+const rouletteMultiplier =
+  document.getElementById(
+    "rouletteMultiplier"
+  );
+
+const rouletteControls =
+  document.getElementById(
+    "rouletteControls"
+  );
+
+const rouletteBetInput =
+  document.getElementById(
+    "rouletteBetInput"
+  );
+
+const rouletteSpinButton =
+  document.getElementById(
+    "rouletteSpinButton"
+  );
+
+const slotControls =
+  document.getElementById(
+    "slotControls"
+  );
 
 const winMessage =
   document.getElementById("winMessage");
@@ -58,15 +116,20 @@ const spinButton =
   document.getElementById("spinButton");
 
 const closeGameButton =
-  document.getElementById("closeGameButton");
+  document.getElementById(
+    "closeGameButton"
+  );
 
 const backButton =
-  document.getElementById("backButton");
+  document.getElementById(
+    "backButton"
+  );
 
 const quickBetButtons =
   document.querySelectorAll(
     "[data-bet]"
   );
+
 
 /* =========================================================
    API
@@ -84,7 +147,6 @@ async function apiFetch(
   const headers = {
     "Content-Type":
       "application/json",
-
     ...(options.headers || {})
   };
 
@@ -122,6 +184,7 @@ async function apiFetch(
   return data;
 }
 
+
 /* =========================================================
    UTILITÁRIOS
 ========================================================= */
@@ -138,17 +201,11 @@ function numero(
     : padrao;
 }
 
-function dinheiro(
-  valor
-) {
-  return numero(
-    valor
-  ).toFixed(2);
+function dinheiro(valor) {
+  return numero(valor).toFixed(2);
 }
 
-function escaparHtml(
-  valor
-) {
+function escaparHtml(valor) {
   return String(
     valor ?? ""
   )
@@ -194,12 +251,8 @@ function obterSaldo() {
   }
 
   return (
-    numero(
-      usuario.bonusBalance
-    ) +
-    numero(
-      usuario.cashBalance
-    )
+    numero(usuario.bonusBalance) +
+    numero(usuario.cashBalance)
   );
 }
 
@@ -226,14 +279,28 @@ function atualizarSaldo(
     gameBalance.textContent =
       `R$ ${dinheiro(valor)}`;
   }
+
+  const balance =
+    document.getElementById(
+      "balance"
+    );
+
+  if (balance) {
+    balance.textContent =
+      `R$ ${dinheiro(valor)}`;
+  }
 }
+
 
 /* =========================================================
    LOGIN
 ========================================================= */
 
 function verificarUsuario() {
-  if (!usuario || !usuario.id) {
+  if (
+    !usuario ||
+    !usuario.id
+  ) {
     window.location.href =
       "index.html";
 
@@ -245,6 +312,7 @@ function verificarUsuario() {
   return true;
 }
 
+
 /* =========================================================
    CARREGAR JOGOS
 ========================================================= */
@@ -254,24 +322,20 @@ async function carregarJogos() {
     return;
   }
 
-  gamesContainer.innerHTML =
-    "";
+  gamesContainer.innerHTML = "";
 
   if (gamesMessage) {
     gamesMessage.textContent =
       "Carregando jogos...";
+    gamesMessage.hidden = false;
   }
 
   try {
     const data =
-      await apiFetch(
-        "/games"
-      );
+      await apiFetch("/games");
 
     jogos =
-      Array.isArray(
-        data.games
-      )
+      Array.isArray(data.games)
         ? data.games
         : [];
 
@@ -282,7 +346,49 @@ async function carregarJogos() {
         jogos.length
           ? ""
           : "Nenhum jogo disponível.";
+
+      gamesMessage.hidden =
+        Boolean(jogos.length);
     }
+
+    /*
+     * IMPORTANTE:
+     *
+     * Sem ?game=...
+     * → permanece na página de seleção.
+     *
+     * Com ?game=roulette
+     * → abre diretamente a roleta.
+     *
+     * Com ?game=fortune7 etc.
+     * → abre diretamente a máquina.
+     */
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const gameId =
+      params.get("game");
+
+    if (gameId) {
+      const jogoExiste =
+        jogos.some(
+          (jogo) =>
+            String(jogo.id) ===
+            String(gameId)
+        );
+
+      if (jogoExiste) {
+        await abrirJogo(gameId);
+      } else {
+        mostrarMensagem(
+          "O jogo selecionado não está disponível.",
+          "error"
+        );
+      }
+    }
+
   } catch (error) {
     console.error(
       "Erro ao carregar jogos:",
@@ -290,12 +396,14 @@ async function carregarJogos() {
     );
 
     if (gamesMessage) {
+      gamesMessage.hidden = false;
       gamesMessage.textContent =
         error.message ||
         "Não foi possível carregar os jogos.";
     }
   }
 }
+
 
 /* =========================================================
    RENDERIZAR LISTA
@@ -306,18 +414,22 @@ function renderizarJogos() {
     return;
   }
 
-  gamesContainer.innerHTML =
-    "";
+  gamesContainer.innerHTML = "";
 
-  jogos.forEach(
-    (jogo) => {
+  jogos
+    .filter(
+      (jogo) =>
+        jogo &&
+        jogo.enabled !== false
+    )
+    .forEach((jogo) => {
+
       const card =
         document.createElement(
           "button"
         );
 
       card.type = "button";
-
       card.className =
         "game-card";
 
@@ -353,24 +465,26 @@ function renderizarJogos() {
 
       card.addEventListener(
         "click",
-        () => abrirJogo(jogo.id)
+        () =>
+          abrirJogo(jogo.id)
       );
 
       gamesContainer.appendChild(
         card
       );
-    }
-  );
+    });
 }
 
+
 /* =========================================================
-   ÍCONES DOS JOGOS
+   ÍCONES
 ========================================================= */
 
 function obterIconeJogo(
   gameId
 ) {
   const icones = {
+    roulette: "🎡",
     fortune7: "7️⃣",
     diamondGold: "💎",
     royalJackpot: "👑",
@@ -382,6 +496,7 @@ function obterIconeJogo(
     "🎰"
   );
 }
+
 
 /* =========================================================
    ABRIR JOGO
@@ -412,6 +527,8 @@ async function abrirJogo(
     renderizarConfiguracaoJogo();
 
     if (gameModal) {
+      gameModal.hidden = false;
+
       gameModal.classList.add(
         "active"
       );
@@ -419,6 +536,10 @@ async function abrirJogo(
       gameModal.setAttribute(
         "aria-hidden",
         "false"
+      );
+
+      document.body.classList.add(
+        "game-modal-open"
       );
     }
   } catch (error) {
@@ -435,8 +556,9 @@ async function abrirJogo(
   }
 }
 
+
 /* =========================================================
-   CONFIGURAÇÃO DO JOGO
+   CONFIGURAÇÃO
 ========================================================= */
 
 function renderizarConfiguracaoJogo() {
@@ -447,11 +569,54 @@ function renderizarConfiguracaoJogo() {
   const config =
     configuracaoAtual;
 
+  const ehRoleta =
+    config.type === "roulette" ||
+    config.id === "roulette";
+
   if (gameTitle) {
     gameTitle.textContent =
       config.name ||
       config.nome ||
-      "Jogo";
+      (ehRoleta
+        ? "Roleta Europeia"
+        : "Jogo");
+  }
+
+  if (ehRoleta) {
+    prepararRoleta(config);
+  } else {
+    prepararSlot(config);
+  }
+
+  atualizarSaldo();
+}
+
+
+/* =========================================================
+   PREPARAR SLOT
+========================================================= */
+
+function prepararSlot(config) {
+  if (slotMachine) {
+    slotMachine.hidden = false;
+  }
+
+  if (slotControls) {
+    slotControls.hidden = false;
+  }
+
+  if (rouletteMachine) {
+    rouletteMachine.hidden = true;
+  }
+
+  if (rouletteControls) {
+    rouletteControls.hidden = true;
+  }
+
+  if (paytable) {
+    paytable.closest(
+      ".paytable-section"
+    )?.removeAttribute("hidden");
   }
 
   if (minBet) {
@@ -470,10 +635,7 @@ function renderizarConfiguracaoJogo() {
 
   if (betInput) {
     const minimo =
-      numero(
-        config.minBet,
-        1
-      );
+      numero(config.minBet, 1);
 
     const maximo =
       numero(
@@ -490,16 +652,13 @@ function renderizarConfiguracaoJogo() {
     betInput.step =
       "0.01";
 
-    const apostaAtual =
-      numero(
-        betInput.value,
-        minimo
-      );
-
     betInput.value =
       Math.min(
         Math.max(
-          apostaAtual,
+          numero(
+            betInput.value,
+            minimo
+          ),
           minimo
         ),
         maximo
@@ -507,13 +666,616 @@ function renderizarConfiguracaoJogo() {
   }
 
   renderizarTabelaPremios();
-
   renderizarGradeInicial();
-  atualizarSaldo();
 }
 
+
 /* =========================================================
-   GRADE INICIAL
+   PREPARAR ROLETA
+========================================================= */
+
+function prepararRoleta(config) {
+  if (slotMachine) {
+    slotMachine.hidden = true;
+  }
+
+  if (slotControls) {
+    slotControls.hidden = true;
+  }
+
+  if (rouletteMachine) {
+    rouletteMachine.hidden = false;
+  }
+
+  if (rouletteControls) {
+    rouletteControls.hidden = false;
+  }
+
+  const secaoTabela =
+    paytable?.closest(
+      ".paytable-section"
+    );
+
+  if (secaoTabela) {
+    secaoTabela.hidden = true;
+  }
+
+  if (minBet) {
+    minBet.textContent =
+      `R$ ${dinheiro(
+        config.minBet ?? 1
+      )}`;
+  }
+
+  if (maxBet) {
+    maxBet.textContent =
+      `R$ ${dinheiro(
+        config.maxBet ?? 1000
+      )}`;
+  }
+
+  if (rouletteBetInput) {
+    rouletteBetInput.min =
+      numero(config.minBet, 1);
+
+    rouletteBetInput.max =
+      numero(
+        config.maxBet,
+        1000
+      );
+
+    rouletteBetInput.step =
+      "0.01";
+
+    rouletteBetInput.value =
+      numero(
+        rouletteBetInput.value,
+        numero(config.minBet, 1)
+      ).toFixed(2);
+  }
+
+  rouletteSelectedNumber = 0;
+
+  criarRoletaVisual();
+  criarSelecaoNumeros();
+  atualizarTipoApostaRoleta();
+
+  if (rouletteResult) {
+    rouletteResult.textContent =
+      "Faça sua aposta";
+  }
+}
+
+
+/* =========================================================
+   ROLETA VISUAL
+========================================================= */
+
+function corRoleta(numero) {
+  if (numero === 0) {
+    return "green";
+  }
+
+  const vermelhos = new Set([
+    1, 3, 5, 7, 9,
+    12, 14, 16, 18,
+    19, 21, 23, 25,
+    27, 30, 32, 34, 36
+  ]);
+
+  return vermelhos.has(numero)
+    ? "red"
+    : "black";
+}
+
+function criarRoletaVisual() {
+  if (!rouletteWheelNumbers) {
+    return;
+  }
+
+  rouletteWheelNumbers.innerHTML = "";
+
+  const numeros = [
+    0,
+    32, 15, 19, 4, 21, 2,
+    25, 17, 34, 6, 27, 13,
+    36, 11, 30, 8, 23, 10,
+    5, 24, 16, 33, 1, 20,
+    14, 31, 9, 22, 18, 29,
+    7, 28, 12, 35, 3, 26
+  ];
+
+  numeros.forEach(
+    (numero, index) => {
+      const elemento =
+        document.createElement(
+          "div"
+        );
+
+      elemento.className =
+        `roulette-wheel-number ${corRoleta(
+          numero
+        )}`;
+
+      elemento.textContent =
+        numero;
+
+      const angulo =
+        index *
+        (360 / numeros.length);
+
+      elemento.style.setProperty(
+        "--angle",
+        `${angulo}deg`
+      );
+
+      rouletteWheelNumbers.appendChild(
+        elemento
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   NÚMEROS DA ROLETA
+========================================================= */
+
+function criarSelecaoNumeros() {
+  if (!rouletteNumberGrid) {
+    return;
+  }
+
+  rouletteNumberGrid.innerHTML = "";
+
+  for (
+    let numeroAtual = 0;
+    numeroAtual <= 36;
+    numeroAtual++
+  ) {
+    const button =
+      document.createElement(
+        "button"
+      );
+
+    button.type = "button";
+
+    button.className =
+      `roulette-number ${corRoleta(
+        numeroAtual
+      )}`;
+
+    button.textContent =
+      numeroAtual;
+
+    button.dataset.number =
+      numeroAtual;
+
+    button.addEventListener(
+      "click",
+      () => {
+        rouletteSelectedNumber =
+          numeroAtual;
+
+        rouletteNumberGrid
+          .querySelectorAll(
+            ".selected"
+          )
+          .forEach(
+            (item) =>
+              item.classList.remove(
+                "selected"
+              )
+          );
+
+        button.classList.add(
+          "selected"
+        );
+
+        if (
+          rouletteBetType?.value ===
+          "straight"
+        ) {
+          atualizarTipoApostaRoleta();
+        }
+      }
+    );
+
+    if (numeroAtual === 0) {
+      button.classList.add(
+        "selected"
+      );
+    }
+
+    rouletteNumberGrid.appendChild(
+      button
+    );
+  }
+}
+
+
+/* =========================================================
+   TIPO DE APOSTA
+========================================================= */
+
+function obterSelecaoRoleta() {
+  const tipo =
+    rouletteBetType?.value ||
+    "straight";
+
+  if (tipo === "straight") {
+    return String(
+      rouletteSelectedNumber
+    );
+  }
+
+  return tipo;
+}
+
+function obterMultiplicadorRoleta() {
+  const tipo =
+    rouletteBetType?.value ||
+    "straight";
+
+  const payouts =
+    configuracaoAtual?.payouts ||
+    {};
+
+  return numero(
+    payouts[tipo],
+    tipo === "straight"
+      ? 35
+      : (
+        tipo === "dozen1" ||
+        tipo === "dozen2" ||
+        tipo === "dozen3" ||
+        tipo === "column1" ||
+        tipo === "column2" ||
+        tipo === "column3"
+          ? 2
+          : 1
+      )
+  );
+}
+
+function atualizarTipoApostaRoleta() {
+  const tipo =
+    rouletteBetType?.value ||
+    "straight";
+
+  if (
+    rouletteMultiplier
+  ) {
+    rouletteMultiplier.textContent =
+      `${obterMultiplicadorRoleta()}x`;
+  }
+
+  const area =
+    document.getElementById(
+      "rouletteSelectionArea"
+    );
+
+  if (area) {
+    area.style.display =
+      tipo === "straight"
+        ? ""
+        : "none";
+  }
+}
+
+
+/* =========================================================
+   ROLETA - GIRO
+========================================================= */
+
+async function girarRoleta() {
+  if (girando) {
+    return;
+  }
+
+  if (!verificarUsuario()) {
+    return;
+  }
+
+  if (
+    !configuracaoAtual ||
+    configuracaoAtual.id !==
+      "roulette"
+  ) {
+    return;
+  }
+
+  const aposta =
+    numero(
+      rouletteBetInput?.value,
+      0
+    );
+
+  const minimo =
+    numero(
+      configuracaoAtual.minBet,
+      1
+    );
+
+  const maximo =
+    numero(
+      configuracaoAtual.maxBet,
+      1000
+    );
+
+  if (
+    aposta <= 0 ||
+    aposta < minimo ||
+    aposta > maximo
+  ) {
+    mostrarMensagem(
+      `A aposta deve estar entre R$ ${dinheiro(
+        minimo
+      )} e R$ ${dinheiro(maximo)}.`,
+      "error"
+    );
+
+    return;
+  }
+
+  if (
+    aposta >
+    obterSaldo()
+  ) {
+    mostrarMensagem(
+      "Saldo insuficiente.",
+      "error"
+    );
+
+    return;
+  }
+
+  const betType =
+    rouletteBetType?.value ||
+    "straight";
+
+  const selection =
+    obterSelecaoRoleta();
+
+  girando = true;
+
+  bloquearControlesRoleta(
+    true
+  );
+
+  limparMensagem();
+
+  try {
+    const resultado =
+      await apiFetch(
+        "/games/roulette/spin",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              userId:
+                usuario.id,
+
+              bet:
+                Number(
+                  aposta.toFixed(2)
+                ),
+
+              betType,
+
+              selection
+            })
+        }
+      );
+
+    if (resultado.user) {
+      atualizarUsuario(
+        resultado.user
+      );
+    } else if (
+      resultado.usuario
+    ) {
+      atualizarUsuario(
+        resultado.usuario
+      );
+    } else if (
+      resultado.saldoDepois !==
+      undefined
+    ) {
+      atualizarSaldo(
+        resultado.saldoDepois
+      );
+    } else if (
+      resultado.balance !==
+      undefined
+    ) {
+      atualizarSaldo(
+        resultado.balance
+      );
+    }
+
+    const numeroSorteado =
+      numero(
+        resultado.number ??
+        resultado.result?.number,
+        0
+      );
+
+    animarRoleta(
+      numeroSorteado
+    );
+
+    setTimeout(
+      () => {
+        mostrarResultadoRoleta(
+          resultado
+        );
+      },
+      900
+    );
+
+  } catch (error) {
+    console.error(
+      "Erro ao girar roleta:",
+      error
+    );
+
+    mostrarMensagem(
+      error.message ||
+      "Não foi possível realizar o giro.",
+      "error"
+    );
+  } finally {
+    setTimeout(
+      () => {
+        girando = false;
+
+        bloquearControlesRoleta(
+          false
+        );
+      },
+      950
+    );
+  }
+}
+
+
+/* =========================================================
+   ANIMAÇÃO ROLETA
+========================================================= */
+
+function animarRoleta(
+  numeroSorteado
+) {
+  if (!rouletteWheel) {
+    return;
+  }
+
+  rouletteWheel.classList.remove(
+    "roulette-spinning"
+  );
+
+  void rouletteWheel.offsetWidth;
+
+  rouletteWheel.classList.add(
+    "roulette-spinning"
+  );
+
+  if (rouletteResult) {
+    rouletteResult.textContent =
+      "A roleta está girando...";
+  }
+
+  setTimeout(
+    () => {
+      if (rouletteResult) {
+        rouletteResult.textContent =
+          `Resultado: ${numeroSorteado}`;
+      }
+    },
+    900
+  );
+}
+
+
+/* =========================================================
+   RESULTADO ROLETA
+========================================================= */
+
+function mostrarResultadoRoleta(
+  resultado
+) {
+  const win =
+    numero(
+      resultado.win ??
+      resultado.premio ??
+      resultado.result?.win,
+      0
+    );
+
+  const numeroSorteado =
+    numero(
+      resultado.number ??
+      resultado.result?.number,
+      0
+    );
+
+  const cor =
+    resultado.color ||
+    resultado.result?.color ||
+    corRoleta(numeroSorteado);
+
+  if (rouletteResult) {
+    rouletteResult.textContent =
+      `🎯 ${numeroSorteado} • ${cor}`;
+  }
+
+  if (win > 0) {
+    mostrarMensagem(
+      `🎉 Você ganhou R$ ${dinheiro(
+        win
+      )}!`,
+      "win"
+    );
+  } else {
+    mostrarMensagem(
+      "Aposta realizada. Boa sorte na próxima!",
+      ""
+    );
+  }
+}
+
+
+/* =========================================================
+   CONTROLES ROLETA
+========================================================= */
+
+function bloquearControlesRoleta(
+  bloqueado
+) {
+  if (rouletteSpinButton) {
+    rouletteSpinButton.disabled =
+      bloqueado;
+
+    rouletteSpinButton.textContent =
+      bloqueado
+        ? "GIRANDO..."
+        : "GIRAR ROLETA";
+  }
+
+  if (rouletteBetInput) {
+    rouletteBetInput.disabled =
+      bloqueado;
+  }
+
+  document
+    .querySelectorAll(
+      "[data-roulette-bet]"
+    )
+    .forEach((button) => {
+      button.disabled =
+        bloqueado;
+    });
+
+  if (rouletteBetType) {
+    rouletteBetType.disabled =
+      bloqueado;
+  }
+
+  document
+    .querySelectorAll(
+      ".roulette-number"
+    )
+    .forEach((button) => {
+      button.disabled =
+        bloqueado;
+    });
+}
+
+
+/* =========================================================
+   GRADE INICIAL SLOT
 ========================================================= */
 
 function renderizarGradeInicial() {
@@ -574,13 +1336,10 @@ function renderizarGradeInicial() {
       row < rows;
       row++
     ) {
-      let simbolo =
-        "7";
+      let simbolo = "7";
 
       if (
-        Array.isArray(
-          grade
-        ) &&
+        Array.isArray(grade) &&
         Array.isArray(
           grade[reel]
         ) &&
@@ -591,9 +1350,7 @@ function renderizarGradeInicial() {
       }
 
       coluna.appendChild(
-        criarSimbolo(
-          simbolo
-        )
+        criarSimbolo(simbolo)
       );
     }
 
@@ -602,6 +1359,7 @@ function renderizarGradeInicial() {
     );
   }
 }
+
 
 /* =========================================================
    CRIAR SÍMBOLO
@@ -618,18 +1376,13 @@ function criarSimbolo(
   elemento.className =
     "slot-symbol";
 
-  const valor =
+  elemento.dataset.symbol =
+    String(simbolo ?? "");
+
+  elemento.textContent =
     obterValorSimbolo(
       simbolo
     );
-
-  elemento.dataset.symbol =
-    String(
-      simbolo ?? ""
-    );
-
-  elemento.textContent =
-    valor;
 
   return elemento;
 }
@@ -639,8 +1392,7 @@ function obterValorSimbolo(
 ) {
   if (
     simbolo &&
-    typeof simbolo ===
-      "object"
+    typeof simbolo === "object"
   ) {
     if (
       simbolo.icon !==
@@ -699,8 +1451,9 @@ function obterValorSimbolo(
   );
 }
 
+
 /* =========================================================
-   TABELA DE PRÊMIOS
+   TABELA
 ========================================================= */
 
 function renderizarTabelaPremios() {
@@ -708,8 +1461,7 @@ function renderizarTabelaPremios() {
     return;
   }
 
-  paytable.innerHTML =
-    "";
+  paytable.innerHTML = "";
 
   const simbolos =
     Array.isArray(
@@ -766,17 +1518,7 @@ function renderizarTabelaPremios() {
         );
 
       linha.className =
-        "paytable-row";
-
-      const valores =
-        Object.entries(
-          payouts
-        )
-          .map(
-            ([quantidade, multiplicador]) =>
-              `${quantidade}x: ${multiplicador}x`
-          )
-          .join(" • ");
+        "paytable-item";
 
       linha.innerHTML = `
         <div class="paytable-symbol">
@@ -789,8 +1531,15 @@ function renderizarTabelaPremios() {
 
         <div class="paytable-values">
           ${escaparHtml(
-            valores ||
-            "Sem prêmio configurado"
+            Object.entries(
+              payouts
+            )
+              .map(
+                ([quantidade, multiplicador]) =>
+                  `${quantidade}x: ${multiplicador}x`
+              )
+              .join(" • ") ||
+              "Sem prêmio configurado"
           )}
         </div>
       `;
@@ -806,17 +1555,14 @@ function renderizarTabelaPremios() {
   );
 }
 
+
 /* =========================================================
-   APOSTA
+   APOSTA SLOT
 ========================================================= */
 
 function obterAposta() {
-  if (!betInput) {
-    return 0;
-  }
-
   return numero(
-    betInput.value,
+    betInput?.value,
     0
   );
 }
@@ -842,9 +1588,7 @@ function validarApostaLocal() {
     );
 
   if (
-    !Number.isFinite(
-      aposta
-    ) ||
+    !Number.isFinite(aposta) ||
     aposta <= 0
   ) {
     mostrarMensagem(
@@ -855,9 +1599,7 @@ function validarApostaLocal() {
     return false;
   }
 
-  if (
-    aposta < minimo
-  ) {
+  if (aposta < minimo) {
     mostrarMensagem(
       `A aposta mínima é R$ ${dinheiro(
         minimo
@@ -868,9 +1610,7 @@ function validarApostaLocal() {
     return false;
   }
 
-  if (
-    aposta > maximo
-  ) {
+  if (aposta > maximo) {
     mostrarMensagem(
       `A aposta máxima é R$ ${dinheiro(
         maximo
@@ -881,9 +1621,7 @@ function validarApostaLocal() {
     return false;
   }
 
-  if (
-    aposta > obterSaldo()
-  ) {
+  if (aposta > obterSaldo()) {
     mostrarMensagem(
       "Saldo insuficiente.",
       "error"
@@ -895,8 +1633,9 @@ function validarApostaLocal() {
   return true;
 }
 
+
 /* =========================================================
-   APOSTAS RÁPIDAS
+   APOSTAS RÁPIDAS SLOT
 ========================================================= */
 
 quickBetButtons.forEach(
@@ -913,12 +1652,6 @@ quickBetButtons.forEach(
             button.dataset.bet,
             0
           );
-
-        if (
-          valor <= 0
-        ) {
-          return;
-        }
 
         const minimo =
           numero(
@@ -945,8 +1678,9 @@ quickBetButtons.forEach(
   }
 );
 
+
 /* =========================================================
-   GIRO
+   GIRO SLOT
 ========================================================= */
 
 async function girar() {
@@ -958,12 +1692,11 @@ async function girar() {
     return;
   }
 
-  if (!configuracaoAtual) {
-    mostrarMensagem(
-      "Nenhum jogo selecionado.",
-      "error"
-    );
-
+  if (
+    !configuracaoAtual ||
+    configuracaoAtual.type ===
+      "roulette"
+  ) {
     return;
   }
 
@@ -1006,9 +1739,7 @@ async function girar() {
         }
       );
 
-    if (
-      resultado.user
-    ) {
+    if (resultado.user) {
       atualizarUsuario(
         resultado.user
       );
@@ -1034,6 +1765,7 @@ async function girar() {
     mostrarResultado(
       resultado
     );
+
   } catch (error) {
     console.error(
       "Erro ao girar:",
@@ -1052,8 +1784,9 @@ async function girar() {
   }
 }
 
+
 /* =========================================================
-   ANIMAÇÃO
+   ANIMAÇÃO SLOT
 ========================================================= */
 
 function animarResultado(
@@ -1073,9 +1806,7 @@ function animarResultado(
     grade.length;
 
   const rows =
-    Array.isArray(
-      grade[0]
-    )
+    Array.isArray(grade[0])
       ? grade[0].length
       : 1;
 
@@ -1088,8 +1819,7 @@ function animarResultado(
     reels
   );
 
-  slotReels.innerHTML =
-    "";
+  slotReels.innerHTML = "";
 
   const colunas = [];
 
@@ -1111,12 +1841,9 @@ function animarResultado(
       row < rows;
       row++
     ) {
-      const simbolo =
-        grade[reel]?.[row];
-
       coluna.appendChild(
         criarSimbolo(
-          simbolo
+          grade[reel]?.[row]
         )
       );
     }
@@ -1125,9 +1852,7 @@ function animarResultado(
       coluna
     );
 
-    colunas.push(
-      coluna
-    );
+    colunas.push(coluna);
   }
 
   return new Promise(
@@ -1153,6 +1878,7 @@ function animarResultado(
     }
   );
 }
+
 
 /* =========================================================
    DESTACAR PRÊMIOS
@@ -1215,8 +1941,9 @@ function destacarPremios(
   }
 }
 
+
 /* =========================================================
-   RESULTADO
+   RESULTADO SLOT
 ========================================================= */
 
 function mostrarResultado(
@@ -1274,6 +2001,11 @@ function mostrarResultado(
   );
 }
 
+
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
 function mostrarMensagem(
   mensagem,
   tipo = ""
@@ -1281,6 +2013,8 @@ function mostrarMensagem(
   if (!winMessage) {
     return;
   }
+
+  winMessage.hidden = false;
 
   winMessage.textContent =
     mensagem;
@@ -1294,8 +2028,9 @@ function mostrarMensagem(
     tipo === "error"
   );
 
-  winMessage.classList.remove(
-    "win"
+  winMessage.classList.toggle(
+    "win",
+    tipo === "win"
   );
 }
 
@@ -1304,8 +2039,9 @@ function limparMensagem() {
     return;
   }
 
-  winMessage.textContent =
-    "";
+  winMessage.textContent = "";
+
+  winMessage.hidden = true;
 
   winMessage.classList.remove(
     "show",
@@ -1314,8 +2050,9 @@ function limparMensagem() {
   );
 }
 
+
 /* =========================================================
-   CONTROLES
+   CONTROLES SLOT
 ========================================================= */
 
 function bloquearControles(
@@ -1344,8 +2081,9 @@ function bloquearControles(
   );
 }
 
+
 /* =========================================================
-   FECHAR JOGO
+   FECHAR
 ========================================================= */
 
 function fecharJogo() {
@@ -1362,16 +2100,20 @@ function fecharJogo() {
       "aria-hidden",
       "true"
     );
+
+    gameModal.hidden = true;
   }
 
-  jogoAtual =
-    null;
+  document.body.classList.remove(
+    "game-modal-open"
+  );
 
-  configuracaoAtual =
-    null;
+  jogoAtual = null;
+  configuracaoAtual = null;
 
   limparMensagem();
 }
+
 
 /* =========================================================
    EVENTOS
@@ -1383,6 +2125,181 @@ if (spinButton) {
     girar
   );
 }
+
+if (rouletteSpinButton) {
+  rouletteSpinButton.addEventListener(
+    "click",
+    girarRoleta
+  );
+}
+
+if (rouletteBetType) {
+  rouletteBetType.addEventListener(
+    "change",
+    atualizarTipoApostaRoleta
+  );
+}
+
+document
+  .querySelectorAll(
+    "[data-roulette-bet]"
+  )
+  .forEach((button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        if (!rouletteBetInput) {
+          return;
+        }
+
+        const valor =
+          numero(
+            button.dataset.rouletteBet,
+            0
+          );
+
+        const minimo =
+          numero(
+            configuracaoAtual?.minBet,
+            1
+          );
+
+        const maximo =
+          numero(
+            configuracaoAtual?.maxBet,
+            1000
+          );
+
+        rouletteBetInput.value =
+          Math.min(
+            Math.max(
+              valor,
+              minimo
+            ),
+            maximo
+          ).toFixed(2);
+      }
+    );
+  });
+
+document
+  .querySelectorAll(
+    ".roulette-bet-adjust"
+  )
+  .forEach((button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        if (!rouletteBetInput) {
+          return;
+        }
+
+        const atual =
+          numero(
+            rouletteBetInput.value,
+            1
+          );
+
+        const minimo =
+          numero(
+            configuracaoAtual?.minBet,
+            1
+          );
+
+        const maximo =
+          numero(
+            configuracaoAtual?.maxBet,
+            1000
+          );
+
+        const passo =
+          numero(
+            rouletteBetInput.step,
+            1
+          );
+
+        const acao =
+          button.dataset
+            .rouletteAction;
+
+        let novo =
+          acao === "increase"
+            ? atual + passo
+            : atual - passo;
+
+        novo =
+          Math.min(
+            Math.max(
+              novo,
+              minimo
+            ),
+            maximo
+          );
+
+        rouletteBetInput.value =
+          novo.toFixed(2);
+      }
+    );
+  });
+
+document
+  .querySelectorAll(
+    ".bet-adjust:not(.roulette-bet-adjust)"
+  )
+  .forEach((button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        if (!betInput) {
+          return;
+        }
+
+        const atual =
+          numero(
+            betInput.value,
+            1
+          );
+
+        const minimo =
+          numero(
+            configuracaoAtual?.minBet,
+            1
+          );
+
+        const maximo =
+          numero(
+            configuracaoAtual?.maxBet,
+            1000
+          );
+
+        const passo =
+          numero(
+            betInput.step,
+            1
+          );
+
+        const acao =
+          button.dataset.action;
+
+        let novo =
+          acao === "increase"
+            ? atual + passo
+            : atual - passo;
+
+        novo =
+          Math.min(
+            Math.max(
+              novo,
+              minimo
+            ),
+            maximo
+          );
+
+        betInput.value =
+          novo.toFixed(2);
+      }
+    );
+  });
 
 if (closeGameButton) {
   closeGameButton.addEventListener(
@@ -1411,7 +2328,10 @@ if (gameModal) {
     (event) => {
       if (
         event.target ===
-        gameModal
+        gameModal ||
+        event.target.classList.contains(
+          "modal-backdrop"
+        )
       ) {
         fecharJogo();
       }
@@ -1436,8 +2356,17 @@ document.addEventListener(
     ) {
       girar();
     }
+
+    if (
+      event.key === "Enter" &&
+      document.activeElement ===
+        rouletteBetInput
+    ) {
+      girarRoleta();
+    }
   }
 );
+
 
 /* =========================================================
    INICIALIZAÇÃO
