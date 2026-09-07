@@ -1,484 +1,676 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
 
-<meta
-name=“viewport”
-content=“width=device-width, initial-scale=1.0”
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>JPBET - Jogos Online</title>
+
   <link
     rel="stylesheet"
-    href="style.css"
+    href="style.css?v=20260906-02"
   >
 </head>
+
 <body>
+
   <main id="home">
-<!-- =========================
-     HEADER
-========================= -->
-<header class="site-header">
-  <div class="header-container">
-    <div
-      class="logo"
-      id="siteName"
-    >
-      JPBET
-    </div>
-    <nav class="main-nav">
-      <a href="#home">
-        Início
-      </a>
-      <a href="#jogos">
-        Jogos
-      </a>
-      <a href="#sobre">
-        Sobre
-      </a>
-    </nav>
-    <div class="header-actions">
-      <button
-        type="button"
-        onclick="abrirLogin()"
-      >
-        Entrar
-      </button>
-      <button
-        type="button"
-        onclick="abrirCadastro()"
-      >
-        Criar conta
-      </button>
-    </div>
-  </div>
-</header>
-<!-- =========================
-     HERO
-========================= -->
-<section
-  class="hero"
-  id="heroSection"
->
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p
-      class="hero-label"
-      id="heroLabel"
-    >
-      BEM-VINDO À JPBET
-    </p>
-    <h1 id="heroTitle">
-      Sua diversão<br>
-      começa aqui.
-    </h1>
-    <p
-      class="hero-description"
-      id="heroDescription"
-    >
-      Entre na JPBET e descubra uma experiência
-      de jogos feita para você.
-    </p>
-  </div>
-</section>
-<!-- =========================
-     JOGOS
-========================= -->
-<section
-  id="jogos"
-  class="games-section"
->
-  <div class="section-container">
-    <div class="section-title">
-      <p id="gamesLabel">
-        ESCOLHA SUA DIVERSÃO
-      </p>
-      <h2 id="gamesTitle">
-        Jogos
-      </h2>
-    </div>
-    <div class="games-grid">
-      <!-- ROULETTE -->
-      <article class="game-card">
-        <div class="game-image roulette-image">
-          <div class="game-overlay">
-            <span>
-              JPBET
-            </span>
-          </div>
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <header class="site-header">
+
+      <div class="header-container">
+
+        <div
+          class="logo"
+          id="siteName"
+        >
+          JPBET
         </div>
-        <div class="game-content">
-          <h3 id="rouletteTitle">
-            Roleta
-          </h3>
-          <p id="rouletteDescription">
-            Entre na mesa e teste sua sorte.
+
+        <nav class="main-nav">
+
+          <a href="#home">
+            Início
+          </a>
+
+          <a href="#jogos">
+            Jogos
+          </a>
+
+          <a href="#sobre">
+            Sobre
+          </a>
+
+        </nav>
+
+        <div class="header-actions">
+
+          <button
+            type="button"
+            onclick="abrirLogin()"
+          >
+            Entrar
+          </button>
+
+          <button
+            type="button"
+            onclick="abrirCadastro()"
+          >
+            Criar conta
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================
+         HERO
+    ========================= -->
+
+    <section
+      class="hero"
+      id="heroSection"
+    >
+
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content">
+
+        <p
+          class="hero-label"
+          id="heroLabel"
+        >
+          BEM-VINDO À JPBET
+        </p>
+
+        <h1 id="heroTitle">
+          Sua diversão<br>
+          começa aqui.
+        </h1>
+
+        <p
+          class="hero-description"
+          id="heroDescription"
+        >
+          Entre na JPBET e descubra uma experiência
+          de jogos feita para você.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         JOGOS
+    ========================= -->
+
+    <section
+      id="jogos"
+      class="games-section"
+    >
+
+      <div class="section-container">
+
+        <div class="section-title">
+
+          <p id="gamesLabel">
+            ESCOLHA SUA DIVERSÃO
           </p>
+
+          <h2 id="gamesTitle">
+            Jogos
+          </h2>
+
         </div>
-      </article>
-      <!-- EM BREVE -->
-      <article class="game-card">
-        <div class="game-image coming-soon-image">
-          <div class="game-overlay">
-            <span>
-              EM BREVE
-            </span>
-          </div>
+
+        <div class="games-grid">
+
+          <!-- ROULETTE -->
+
+          <article class="game-card">
+
+            <div class="game-image roulette-image">
+
+              <div class="game-overlay">
+
+                <span>
+                  JPBET
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="game-content">
+
+              <h3 id="rouletteTitle">
+                Roleta
+              </h3>
+
+              <p id="rouletteDescription">
+                Entre na mesa e teste sua sorte.
+              </p>
+
+            </div>
+
+          </article>
+
+
+          <!-- EM BREVE -->
+
+          <article class="game-card">
+
+            <div class="game-image coming-soon-image">
+
+              <div class="game-overlay">
+
+                <span>
+                  EM BREVE
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="game-content">
+
+              <h3 id="comingTitle">
+                Novos jogos
+              </h3>
+
+              <p id="comingDescription">
+                Novidades serão adicionadas em breve.
+              </p>
+
+            </div>
+
+          </article>
+
         </div>
-        <div class="game-content">
-          <h3 id="comingTitle">
-            Novos jogos
-          </h3>
-          <p id="comingDescription">
-            Novidades serão adicionadas em breve.
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         SOBRE
+    ========================= -->
+
+    <section
+      id="sobre"
+      class="about-section"
+    >
+
+      <div class="section-container">
+
+        <div class="about-content">
+
+          <p
+            class="section-label"
+            id="aboutLabel"
+          >
+            SOBRE A JPBET
           </p>
+
+          <h2 id="aboutTitle">
+            Uma nova experiência
+            de jogos.
+          </h2>
+
+          <p id="aboutDescription">
+            A JPBET foi criada para oferecer uma
+            experiência simples, moderna e agradável
+            para quem gosta de jogos online.
+          </p>
+
         </div>
-      </article>
-    </div>
-  </div>
-</section>
-<!-- =========================
-     SOBRE
-========================= -->
-<section
-  id="sobre"
-  class="about-section"
->
-  <div class="section-container">
-    <div class="about-content">
-      <p
-        class="section-label"
-        id="aboutLabel"
-      >
-        SOBRE A JPBET
-      </p>
-      <h2 id="aboutTitle">
-        Uma nova experiência
-        de jogos.
-      </h2>
-      <p id="aboutDescription">
-        A JPBET foi criada para oferecer uma
-        experiência simples, moderna e agradável
-        para quem gosta de jogos online.
-      </p>
-    </div>
-  </div>
-</section>
-<!-- =========================
-     CTA FINAL
-========================= -->
-<section class="cta-section">
-  <div class="section-container">
-    <h2 id="ctaTitle">
-      Pronto para começar?
-    </h2>
-    <p id="ctaDescription">
-      Entre na sua conta para continuar.
-    </p>
-    <div class="cta-actions">
-      <button
-        type="button"
-        class="primary-button cta-main-button"
-        id="ctaButton"
-        onclick="abrirLogin()"
-      >
-        JOGAR AGORA
-      </button>
-    </div>
-  </div>
-</section>
-<!-- =========================
-     FOOTER
-========================= -->
-<footer class="site-footer">
-  <div class="section-container">
-    <strong id="footerSiteName">
-      JPBET
-    </strong>
-    <p id="homeFooter">
-      © 2026 JPBET. Todos os direitos reservados.
-    </p>
-  </div>
-</footer>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         CTA FINAL
+    ========================= -->
+
+    <section class="cta-section">
+
+      <div class="section-container">
+
+        <h2 id="ctaTitle">
+          Pronto para começar?
+        </h2>
+
+        <p id="ctaDescription">
+          Entre na sua conta para continuar.
+        </p>
+
+        <div class="cta-actions">
+
+          <button
+            type="button"
+            class="primary-button cta-main-button"
+            id="ctaButton"
+            onclick="abrirLogin()"
+          >
+            JOGAR AGORA
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer class="site-footer">
+
+      <div class="section-container">
+
+        <strong id="footerSiteName">
+          JPBET
+        </strong>
+
+        <p id="homeFooter">
+          © 2026 JPBET. Todos os direitos reservados.
+        </p>
+
+      </div>
+
+    </footer>
+
   </main>
+
+
   <!-- =========================
        LOGIN / CADASTRO
   ========================= -->
+
   <div
     id="loginModal"
     class="modal"
   >
-<div class="modal-content">
-  <button
-    type="button"
-    class="close"
-    onclick="fecharLogin()"
-  >
-    ×
-  </button>
-  <!-- LOGIN -->
-  <div id="loginForm">
-    <h2>
-      Entrar
-    </h2>
-    <input
-      type="text"
-      id="username"
-      placeholder="Usuário"
-      autocomplete="username"
-    >
-    <input
-      type="password"
-      id="password"
-      placeholder="Senha"
-      autocomplete="current-password"
-    >
-    <button
-      type="button"
-      onclick="entrar()"
-    >
-      Entrar
-    </button>
-    <p id="loginMessage"></p>
-    <p>
-      Ainda não possui uma conta?
-    </p>
-    <button
-      type="button"
-      onclick="mostrarCadastro()"
-    >
-      Criar conta
-    </button>
+
+    <div class="modal-content">
+
+      <button
+        type="button"
+        class="close"
+        onclick="fecharLogin()"
+      >
+        ×
+      </button>
+
+
+      <!-- LOGIN -->
+
+      <div id="loginForm">
+
+        <h2>
+          Entrar
+        </h2>
+
+        <input
+          type="text"
+          id="username"
+          placeholder="Usuário"
+          autocomplete="username"
+        >
+
+        <input
+          type="password"
+          id="password"
+          placeholder="Senha"
+          autocomplete="current-password"
+        >
+
+        <button
+          type="button"
+          onclick="entrar()"
+        >
+          Entrar
+        </button>
+
+        <p id="loginMessage"></p>
+
+        <p>
+          Ainda não possui uma conta?
+        </p>
+
+        <button
+          type="button"
+          onclick="mostrarCadastro()"
+        >
+          Criar conta
+        </button>
+
+      </div>
+
+
+      <!-- CADASTRO -->
+
+      <div
+        id="registerForm"
+        style="display: none;"
+      >
+
+        <h2>
+          Criar conta
+        </h2>
+
+        <input
+          type="text"
+          id="registerUsername"
+          placeholder="Usuário"
+          autocomplete="username"
+        >
+
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Senha"
+          autocomplete="new-password"
+        >
+
+        <input
+          type="password"
+          id="registerPasswordConfirm"
+          placeholder="Confirme a senha"
+          autocomplete="new-password"
+        >
+
+        <button
+          type="button"
+          onclick="cadastrar()"
+        >
+          Criar conta
+        </button>
+
+        <p id="registerMessage"></p>
+
+        <p>
+          Já possui uma conta?
+        </p>
+
+        <button
+          type="button"
+          onclick="mostrarLogin()"
+        >
+          Voltar para login
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
-  <!-- CADASTRO -->
-  <div
-    id="registerForm"
-    style="display: none;"
-  >
-    <h2>
-      Criar conta
-    </h2>
-    <input
-      type="text"
-      id="registerUsername"
-      placeholder="Usuário"
-      autocomplete="username"
-    >
-    <input
-      type="password"
-      id="registerPassword"
-      placeholder="Senha"
-      autocomplete="new-password"
-    >
-    <input
-      type="password"
-      id="registerPasswordConfirm"
-      placeholder="Confirme a senha"
-      autocomplete="new-password"
-    >
-    <button
-      type="button"
-      onclick="cadastrar()"
-    >
-      Criar conta
-    </button>
-    <p id="registerMessage"></p>
-    <p>
-      Já possui uma conta?
-    </p>
-    <button
-      type="button"
-      onclick="mostrarLogin()"
-    >
-      Voltar para login
-    </button>
-  </div>
-</div>
-  </div>
+
+
   <script src="app.js"></script>
+
+
   <!-- =========================
        CONFIGURAÇÕES DA HOME
   ========================= -->
+
   <script>
+
     async function carregarConfiguracoesHome() {
+
       try {
+
         const response =
           await fetch("/api/settings");
+
         if (!response.ok) {
           return;
         }
+
         const data =
           await response.json();
+
         const settings =
           data.settings ||
           data.config ||
           data.configuracoes ||
           {};
+
         if (
           !settings ||
           typeof settings !== "object"
         ) {
           return;
         }
+
+
         /* =========================
            TEXTOS
         ========================= */
+
         aplicarTexto(
           "siteName",
           settings.site_name
         );
+
         aplicarTexto(
           "footerSiteName",
           settings.site_name
         );
+
         aplicarTexto(
           "heroLabel",
           settings.home_hero_label
         );
+
         aplicarTexto(
           "heroTitle",
           settings.home_hero_title
         );
+
         aplicarTexto(
           "heroDescription",
           settings.home_hero_description
         );
+
         aplicarTexto(
           "gamesLabel",
           settings.home_games_label
         );
+
         aplicarTexto(
           "gamesTitle",
           settings.home_games_title
         );
+
         aplicarTexto(
           "rouletteTitle",
           settings.home_roulette_title
         );
+
         aplicarTexto(
           "rouletteDescription",
           settings.home_roulette_description
         );
+
         aplicarTexto(
           "comingTitle",
           settings.home_coming_title
         );
+
         aplicarTexto(
           "comingDescription",
           settings.home_coming_description
         );
+
         aplicarTexto(
           "aboutLabel",
           settings.home_about_label
         );
+
         aplicarTexto(
           "aboutTitle",
           settings.home_about_title
         );
+
         aplicarTexto(
           "aboutDescription",
           settings.home_about_description
         );
+
         aplicarTexto(
           "ctaTitle",
           settings.home_cta_title
         );
+
         aplicarTexto(
           "ctaDescription",
           settings.home_cta_description
         );
+
         aplicarTexto(
           "ctaButton",
           settings.home_cta_button
         );
+
         aplicarTexto(
           "homeFooter",
           settings.home_footer
         );
+
+
         /* =========================
            TÍTULO DO NAVEGADOR
         ========================= */
+
         if (
           settings.site_name
         ) {
+
           document.title =
             `${settings.site_name} - Jogos Online`;
+
         }
+
+
         /* =========================
            IMAGEM PRINCIPAL
         ========================= */
+
         if (
           settings.home_hero_image
         ) {
+
           aplicarImagemHero(
             settings.home_hero_image
           );
+
         }
+
       } catch (error) {
+
         console.error(
           "Erro ao carregar configurações da página inicial:",
           error
         );
+
       }
+
     }
+
+
     /* =========================
        APLICAR TEXTO
     ========================= */
+
     function aplicarTexto(
       id,
       valor
     ) {
+
       const elemento =
         document.getElementById(id);
+
       if (
         !elemento ||
         valor === undefined ||
         valor === null ||
         valor === ""
       ) {
+
         return;
+
       }
+
       elemento.textContent =
         valor;
+
     }
+
+
     /* =========================
        APLICAR IMAGEM
     ========================= */
+
     function aplicarImagemHero(
       caminho
     ) {
+
       const hero =
         document.getElementById(
           "heroSection"
         );
+
       if (!hero) {
         return;
       }
+
       let caminhoImagem =
         String(caminho).trim();
+
       if (!caminhoImagem) {
         return;
       }
-      /*
-        Permite usar:
-        assets/lamborghini.png
-        /assets/lamborghini.png
-        ou uma URL completa.
-      */
+
       let urlImagem;
+
       try {
+
         urlImagem =
           new URL(
             caminhoImagem,
             window.location.origin + "/"
           ).href;
+
       } catch (error) {
+
         console.error(
           "URL da imagem inválida:",
           caminhoImagem
         );
+
         return;
+
       }
+
       hero.style.backgroundImage =
         `
         linear-gradient(
@@ -489,30 +681,46 @@ content=“width=device-width, initial-scale=1.0”
         ),
         url("${urlImagem}")
         `;
+
     }
+
+
     /* =========================
        INICIAR
     ========================= */
+
     document.addEventListener(
       "DOMContentLoaded",
       () => {
+
         carregarConfiguracoesHome();
+
       }
     );
+
+
     /* =========================
        CADASTRO PELO MENU
     ========================= */
+
     function abrirCadastro() {
+
       const modal =
         document.getElementById(
           "loginModal"
         );
+
       if (!modal) {
         return;
       }
+
       modal.classList.add("show");
+
       mostrarCadastro();
+
     }
+
   </script>
+
 </body>
 </html>
