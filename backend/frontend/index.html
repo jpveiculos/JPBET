@@ -13,7 +13,7 @@
 
   <link
     rel="stylesheet"
-    href="style.css?v=20260907-01"
+    href="style.css?v=20260907-02"
   >
 </head>
 
@@ -29,17 +29,14 @@
 
       <div class="header-container">
 
-        <div
+        <a
+          href="index.html"
           class="logo"
           id="siteName"
+          aria-label="Página inicial JPBET"
         >
           JPBET
-        </div>
-
-        <!--
-          Menu removido:
-          Início / Jogos / Sobre
-        -->
+        </a>
 
         <div class="header-actions">
 
@@ -127,8 +124,6 @@
 
         <div class="games-grid">
 
-          <!-- ROULETTE -->
-
           <article class="game-card">
 
             <div class="game-image roulette-image">
@@ -157,8 +152,6 @@
 
           </article>
 
-
-          <!-- EM BREVE -->
 
           <article class="game-card">
 
@@ -450,11 +443,6 @@
           return;
         }
 
-
-        /* =========================
-           TEXTOS
-        ========================= */
-
         aplicarTexto(
           "siteName",
           settings.site_name
@@ -545,11 +533,6 @@
           settings.home_footer
         );
 
-
-        /* =========================
-           TÍTULO DO NAVEGADOR
-        ========================= */
-
         if (
           settings.site_name
         ) {
@@ -558,11 +541,6 @@
             `${settings.site_name} - Jogos Online`;
 
         }
-
-
-        /* =========================
-           IMAGEM PRINCIPAL
-        ========================= */
 
         if (
           settings.home_hero_image
@@ -585,10 +563,6 @@
 
     }
 
-
-    /* =========================
-       APLICAR TEXTO
-    ========================= */
 
     function aplicarTexto(
       id,
@@ -615,10 +589,6 @@
     }
 
 
-    /* =========================
-       APLICAR IMAGEM
-    ========================= */
-
     function aplicarImagemHero(
       caminho
     ) {
@@ -632,7 +602,7 @@
         return;
       }
 
-      let caminhoImagem =
+      const caminhoImagem =
         String(caminho).trim();
 
       if (!caminhoImagem) {
@@ -674,13 +644,18 @@
     }
 
 
-    /* =========================
-       INICIAR
-    ========================= */
-
     document.addEventListener(
       "DOMContentLoaded",
       () => {
+
+        /*
+          Sempre iniciar a página inicial
+          no topo.
+        */
+        window.scrollTo(
+          0,
+          0
+        );
 
         carregarConfiguracoesHome();
 
@@ -688,9 +663,23 @@
     );
 
 
-    /* =========================
-       CADASTRO PELO CABEÇALHO
-    ========================= */
+    /*
+      Também garante o topo quando
+      o navegador restaura a página
+      pelo histórico.
+    */
+    window.addEventListener(
+      "pageshow",
+      () => {
+
+        window.scrollTo(
+          0,
+          0
+        );
+
+      }
+    );
+
 
     function abrirCadastro() {
 
