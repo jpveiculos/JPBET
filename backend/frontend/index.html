@@ -15,48 +15,6 @@
     rel="stylesheet"
     href="style.css?v=20260907-01"
   >
-
-  <script>
-    /*
-      FORÇA A PÁGINA INICIAL A ABRIR NO TOPO.
-      Isso evita que o Safari/iPhone restaure
-      automaticamente uma posição antiga de rolagem.
-    */
-
-    if ("scrollRestoration" in history) {
-      history.scrollRestoration = "manual";
-    }
-
-    window.scrollTo(0, 0);
-
-    window.addEventListener("beforeunload", function () {
-      window.scrollTo(0, 0);
-    });
-
-    window.addEventListener("pageshow", function () {
-      window.scrollTo(0, 0);
-
-      setTimeout(function () {
-        window.scrollTo(0, 0);
-      }, 50);
-
-      setTimeout(function () {
-        window.scrollTo(0, 0);
-      }, 200);
-
-      setTimeout(function () {
-        window.scrollTo(0, 0);
-      }, 500);
-    });
-
-    window.addEventListener("load", function () {
-      window.scrollTo(0, 0);
-
-      setTimeout(function () {
-        window.scrollTo(0, 0);
-      }, 100);
-    });
-  </script>
 </head>
 
 <body>
@@ -78,21 +36,10 @@
           JPBET
         </div>
 
-        <nav class="main-nav">
-
-          <a href="#home">
-            Início
-          </a>
-
-          <a href="#jogos">
-            Jogos
-          </a>
-
-          <a href="#sobre">
-            Sobre
-          </a>
-
-        </nav>
+        <!--
+          Menu removido:
+          Início / Jogos / Sobre
+        -->
 
         <div class="header-actions">
 
@@ -735,25 +682,14 @@
       "DOMContentLoaded",
       () => {
 
-        /*
-          Garante novamente que a HOME
-          comece exatamente no topo.
-        */
-
-        window.scrollTo(0, 0);
-
         carregarConfiguracoesHome();
-
-        setTimeout(function () {
-          window.scrollTo(0, 0);
-        }, 100);
 
       }
     );
 
 
     /* =========================
-       CADASTRO PELO MENU
+       CADASTRO PELO CABEÇALHO
     ========================= */
 
     function abrirCadastro() {
