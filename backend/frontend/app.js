@@ -204,11 +204,13 @@ async function entrar() {
 
     setTimeout(() => {
       if (data.redirect) {
-        window.location.href =
-          data.redirect;
+        window.location.replace(
+          data.redirect
+        );
       } else {
-        window.location.href =
-          "dashboard.html";
+        window.location.replace(
+          "dashboard.html"
+        );
       }
     }, 500);
 
@@ -334,10 +336,31 @@ async function cadastrar() {
       );
     }
 
+    /* =========================
+       SALVAR USUÁRIO
+    ========================= */
+
     if (data.user) {
       localStorage.setItem(
         "jpbet_user",
         JSON.stringify(data.user)
+      );
+    }
+
+    /* =========================
+       SALVAR TOKEN DA SESSÃO
+       IMPORTANTE PARA ENTRAR
+       AUTOMATICAMENTE
+    ========================= */
+
+    if (data.token) {
+      localStorage.setItem(
+        "jpbet_token",
+        data.token
+      );
+    } else {
+      throw new Error(
+        "A conta foi criada, mas a sessão não foi criada. Tente entrar novamente."
       );
     }
 
@@ -346,15 +369,26 @@ async function cadastrar() {
         "Conta criada com sucesso! Entrando...";
     }
 
+    /* =========================
+       IR DIRETO PARA A CONTA
+    ========================= */
+
     setTimeout(() => {
-      if (data.redirect) {
-        window.location.href =
-          data.redirect;
+      if (
+        data.redirect &&
+        String(data.redirect).includes(
+          "dashboard"
+        )
+      ) {
+        window.location.replace(
+          data.redirect
+        );
       } else {
-        window.location.href =
-          "dashboard.html";
+        window.location.replace(
+          "dashboard.html"
+        );
       }
-    }, 700);
+    }, 500);
 
   } catch (error) {
     console.error(error);
