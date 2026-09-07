@@ -50,6 +50,7 @@ app.use(
   "/api/auth",
   authRouter
 );
+
 /* =========================
    ARQUIVOS FRONTEND
 ========================= */
@@ -60,7 +61,10 @@ const frontendPath = path.join(
 );
 
 app.use(
-  express.static(/* =========================
+  express.static(frontendPath)
+);
+
+/* =========================
    CONFIGURAÇÃO INICIAL
 ========================= */
 
@@ -375,6 +379,7 @@ app.put(
 
       res.json({
         ok: true,
+
         message:
           "Configurações salvas com sucesso."
       });
