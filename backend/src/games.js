@@ -5,6 +5,7 @@ import { validarSessaoAdmin } from "./adminSession.js";
 
 import {
   executarSpin,
+  executarRoleta,
   obterJogoPadrao,
   normalizarConfiguracaoJogo,
   listarJogosPadrao
@@ -889,7 +890,287 @@ router.put(
     }
   }
 );
+/* =========================================================
+   POST /api/games/roulette/spin
+========================================================= */
 
+router.post(
+  "/roulette/spin",
+  async (
+    req,
+    res
+  ) => {
+    const userId =
+      req.body?.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message:
+          "Usuário é obrigatório."
+      });
+    }
+
+    let client;
+
+    try {
+      await garantirTabelasJogos();
+
+      const config =
+        await obterConfiguracaoJogo(
+          "roulette"
+        );
+
+      if (
+        !config ||
+        config.enabled === false
+      ) {
+        return res.status(404).json({
+          message:
+            "Roleta indisponível."
+        });
+      }
+
+      const validacao =
+        validarAposta(
+          req.body?.bet,
+          config
+        );
+
+      if (!validacao.ok) {
+        return res.status(400).json({
+          message:
+            validacao.message
+        });
+      }
+
+      const aposta =
+        validacao.value;
+
+      const betType =
+        String(
+          req.body?.betType || ""
+        ).trim();
+
+      const selection =
+        req.body?.selection;
+
+      client =
+        await pool.connect();
+
+      await client.query(
+        "BEGIN"
+      );
+
+      const user =
+        await obterUsuarioBloqueado(
+          client,
+          userId
+        );
+
+      if (!user) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+          message:
+            "Usuário não encontrado."
+        });
+      }
+
+      const saldoAntes =
+        saldoUsuario(user);
+
+      if (
+        saldoAntes + 0.001 <
+        aposta
+      ) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(400).json({
+          message:
+            "Saldo insuficiente."
+        });
+      }
+
+      const consumo =
+        consumirSaldo(
+          user,
+          aposta
+        );
+
+      if (!consumo) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(400).json({
+          message:
+            "Saldo insuficiente."
+        });
+      }
+
+      const resultado =
+        executarRoleta({
+          bet:
+            aposta,
+
+          betType:
+            betType,
+
+          selection:
+            selection
+        });
+
+      const premio =
+        arredondar(
+          numero(
+            resultado.win,
+            0
+          )
+        );
+
+      await client.query(
+        `
+        UPDATE users
+        SET
+          bonus_balance = $1,
+          cash_balance = $2,
+          balance = $1 + $2
+        WHERE id = $3
+        `,
+        [
+          consumo.bonus,
+          consumo.cash,
+          userId
+        ]
+      );
+
+      if (premio > 0) {
+        await creditarPremio(
+          client,
+          userId,
+          premio
+        );
+      }
+
+      const userDepoisResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            username,
+            balance,
+            bonus_balance,
+            cash_balance,
+            reserved_balance,
+            bonus_wager_progress
+          FROM users
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [userId]
+        );
+
+      const userDepois =
+        userDepoisResult.rows[0];
+
+      await client.query(
+        `
+        INSERT INTO game_rounds (
+          round_id,
+          user_id,
+          game_id,
+          bet,
+          win,
+          free_spin,
+          result
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          FALSE,
+          $6::jsonb
+        )
+        `,
+        [
+          resultado.roundId,
+
+          String(userId),
+
+          "roulette",
+
+          aposta,
+
+          premio,
+
+          JSON.stringify(
+            resultado
+          )
+        ]
+      );
+
+      await client.query(
+        "COMMIT"
+      );
+
+      res.json({
+        ok: true,
+
+        round:
+          resultado,
+
+        user:
+          montarUsuarioAtualizado(
+            userDepois,
+            numero(
+              userDepois.bonus_balance,
+              0
+            ),
+            numero(
+              userDepois.cash_balance,
+              0
+            )
+          ),
+
+        saldoAntes,
+
+        saldoDepois:
+          saldoUsuario(
+            userDepois
+          )
+      });
+    } catch (error) {
+      if (client) {
+        try {
+          await client.query(
+            "ROLLBACK"
+          );
+        } catch (_) {}
+      }
+
+      console.error(
+        "Erro ao executar roleta:",
+        error
+      );
+
+      res.status(400).json({
+        message:
+          error.message ||
+          "Não foi possível concluir a rodada da roleta."
+      });
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+);
 /* =========================================================
    POST /api/games/spin
 ========================================================= */
