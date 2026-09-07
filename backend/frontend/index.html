@@ -15,6 +15,40 @@
     rel="stylesheet"
     href="style.css?v=20260906-02"
   >
+
+  <script>
+    /*
+      =========================
+      INICIAR SEMPRE NO TOPO
+      =========================
+
+      Impede o navegador/Safari de
+      restaurar automaticamente uma
+      posição antiga de rolagem.
+    */
+
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    window.addEventListener(
+      "pageshow",
+      function () {
+        if (!window.location.hash) {
+          window.scrollTo(0, 0);
+        }
+      }
+    );
+
+    window.addEventListener(
+      "load",
+      function () {
+        if (!window.location.hash) {
+          window.scrollTo(0, 0);
+        }
+      }
+    );
+  </script>
 </head>
 
 <body>
