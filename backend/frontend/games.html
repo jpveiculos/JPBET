@@ -12,7 +12,7 @@
 
   <link
     rel="stylesheet"
-    href="/games.css"
+    href="/games.css?v=20260907-03"
   >
 </head>
 
@@ -75,11 +75,9 @@
       id="gamesContainer"
       class="games-container"
     >
-
       <div class="loading">
         Carregando jogos...
       </div>
-
     </section>
 
 
@@ -92,7 +90,9 @@
   </main>
 
 
-  <!-- MODAL DO JOGO -->
+  <!-- =====================================================
+       MODAL DO JOGO
+  ====================================================== -->
 
   <div
     id="gameModal"
@@ -148,7 +148,9 @@
       </div>
 
 
-      <!-- MÁQUINA -->
+      <!-- =================================================
+           MÁQUINA
+      ================================================== -->
 
       <div
         id="slotMachine"
@@ -163,7 +165,151 @@
       </div>
 
 
-      <!-- RESULTADO -->
+      <!-- =================================================
+           ROLETA EUROPEIA
+      ================================================== -->
+
+      <div
+        id="rouletteMachine"
+        class="roulette-machine"
+        hidden
+      >
+
+        <div class="roulette-wheel-area">
+
+          <div
+            id="rouletteWheel"
+            class="roulette-wheel"
+          >
+
+            <div
+              id="rouletteWheelNumbers"
+              class="roulette-wheel-numbers"
+            ></div>
+
+            <div class="roulette-wheel-center">
+              <span>JP</span>
+              <small>BET</small>
+            </div>
+
+          </div>
+
+          <div
+            id="rouletteResult"
+            class="roulette-result"
+          >
+            Faça sua aposta
+          </div>
+
+        </div>
+
+
+        <div class="roulette-controls">
+
+          <div class="roulette-bet-type">
+
+            <label for="rouletteBetType">
+              Tipo de aposta
+            </label>
+
+            <select
+              id="rouletteBetType"
+            >
+
+              <option value="straight">
+                Número
+              </option>
+
+              <option value="red">
+                Vermelho
+              </option>
+
+              <option value="black">
+                Preto
+              </option>
+
+              <option value="odd">
+                Ímpar
+              </option>
+
+              <option value="even">
+                Par
+              </option>
+
+              <option value="low">
+                1 - 18
+              </option>
+
+              <option value="high">
+                19 - 36
+              </option>
+
+              <option value="dozen1">
+                1ª Dúzia
+              </option>
+
+              <option value="dozen2">
+                2ª Dúzia
+              </option>
+
+              <option value="dozen3">
+                3ª Dúzia
+              </option>
+
+              <option value="column1">
+                Coluna 1
+              </option>
+
+              <option value="column2">
+                Coluna 2
+              </option>
+
+              <option value="column3">
+                Coluna 3
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div
+            id="rouletteSelectionArea"
+            class="roulette-selection-area"
+          >
+
+            <label>
+              Escolha o número
+            </label>
+
+            <div
+              id="rouletteNumberGrid"
+              class="roulette-number-grid"
+            ></div>
+
+          </div>
+
+
+          <div class="roulette-bet-summary">
+
+            <span>
+              Multiplicador:
+            </span>
+
+            <strong id="rouletteMultiplier">
+              35x
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           RESULTADO
+      ================================================== -->
 
       <div
         id="winMessage"
@@ -172,9 +318,14 @@
       ></div>
 
 
-      <!-- CONTROLES -->
+      <!-- =================================================
+           CONTROLES DE APOSTA
+      ================================================== -->
 
-      <div class="game-controls">
+      <div
+        id="slotControls"
+        class="game-controls"
+      >
 
         <div class="bet-control">
 
@@ -273,9 +424,121 @@
       </div>
 
 
-      <!-- TABELA DE PRÊMIOS -->
+      <!-- =================================================
+           CONTROLES DA ROLETA
+      ================================================== -->
 
-      <section class="paytable-section">
+      <div
+        id="rouletteControls"
+        class="game-controls roulette-game-controls"
+        hidden
+      >
+
+        <div class="bet-control">
+
+          <label for="rouletteBetInput">
+            Valor da aposta
+          </label>
+
+          <div class="bet-input-row">
+
+            <button
+              type="button"
+              class="bet-adjust roulette-bet-adjust"
+              data-roulette-action="decrease"
+            >
+              −
+            </button>
+
+            <div class="bet-input-wrapper">
+
+              <span>
+                R$
+              </span>
+
+              <input
+                id="rouletteBetInput"
+                type="number"
+                min="0.01"
+                step="0.01"
+                inputmode="decimal"
+                value="1"
+              >
+
+            </div>
+
+            <button
+              type="button"
+              class="bet-adjust roulette-bet-adjust"
+              data-roulette-action="increase"
+            >
+              +
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="quick-bets">
+
+          <button
+            type="button"
+            data-roulette-bet="1"
+          >
+            R$ 1
+          </button>
+
+          <button
+            type="button"
+            data-roulette-bet="5"
+          >
+            R$ 5
+          </button>
+
+          <button
+            type="button"
+            data-roulette-bet="10"
+          >
+            R$ 10
+          </button>
+
+          <button
+            type="button"
+            data-roulette-bet="25"
+          >
+            R$ 25
+          </button>
+
+          <button
+            type="button"
+            data-roulette-bet="50"
+          >
+            R$ 50
+          </button>
+
+        </div>
+
+
+        <button
+          id="rouletteSpinButton"
+          class="spin-button"
+          type="button"
+        >
+          GIRAR ROLETA
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           TABELA DE PRÊMIOS
+      ================================================== -->
+
+      <section
+        id="paytableSection"
+        class="paytable-section"
+      >
 
         <div class="section-title">
           Tabela de prêmios
@@ -289,7 +552,9 @@
       </section>
 
 
-      <!-- INFORMAÇÕES -->
+      <!-- =================================================
+           INFORMAÇÕES
+      ================================================== -->
 
       <div class="game-info">
 
@@ -314,7 +579,7 @@
   </div>
 
 
-  <script src="/games.js"></script>
+  <script src="/games.js?v=20260907-03"></script>
 
 </body>
 </html>
