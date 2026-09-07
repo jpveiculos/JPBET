@@ -67,6 +67,7 @@ app.use(
    CONFIGURAÇÃO INICIAL
 ========================= */
 
+await garantirEstruturaBanco();
 await garantirConfiguracoes();
 await garantirTabelasJogos();
 
