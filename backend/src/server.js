@@ -44,7 +44,7 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
-  "/api",
+  "/api/auth",
   authRouter
 );
 /* =========================
