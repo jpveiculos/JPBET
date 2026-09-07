@@ -60,10 +60,7 @@ const frontendPath = path.join(
 );
 
 app.use(
-  express.static(frontendPath)
-);
-
-/* =========================
+  express.static(/* =========================
    CONFIGURAÇÃO INICIAL
 ========================= */
 
