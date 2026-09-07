@@ -13,127 +13,50 @@
 
   <link
     rel="stylesheet"
-    href="style.css?v=20260906-03"
+    href="style.css?v=20260907-01"
   >
 
   <script>
     /*
-      ==========================================
-      FORÇAR A PÁGINA INICIAL NO TOPO
-      ==========================================
+      FORÇA A PÁGINA INICIAL A ABRIR NO TOPO.
+      Isso evita que o Safari/iPhone restaure
+      automaticamente uma posição antiga de rolagem.
     */
 
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
 
-    function voltarParaOTopo() {
+    window.scrollTo(0, 0);
+
+    window.addEventListener("beforeunload", function () {
+      window.scrollTo(0, 0);
+    });
+
+    window.addEventListener("pageshow", function () {
       window.scrollTo(0, 0);
 
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    }
+      setTimeout(function () {
+        window.scrollTo(0, 0);
+      }, 50);
 
-    /*
-      Executa imediatamente
-    */
-    voltarParaOTopo();
+      setTimeout(function () {
+        window.scrollTo(0, 0);
+      }, 200);
 
-    /*
-      Executa quando o DOM estiver pronto
-    */
-    document.addEventListener(
-      "DOMContentLoaded",
-      function () {
+      setTimeout(function () {
+        window.scrollTo(0, 0);
+      }, 500);
+    });
 
-        voltarParaOTopo();
+    window.addEventListener("load", function () {
+      window.scrollTo(0, 0);
 
-        setTimeout(
-          voltarParaOTopo,
-          50
-        );
-
-        setTimeout(
-          voltarParaOTopo,
-          200
-        );
-
-        setTimeout(
-          voltarParaOTopo,
-          500
-        );
-      }
-    );
-
-    /*
-      Executa quando todos os arquivos
-      terminarem de carregar
-    */
-    window.addEventListener(
-      "load",
-      function () {
-
-        voltarParaOTopo();
-
-        setTimeout(
-          voltarParaOTopo,
-          100
-        );
-
-        setTimeout(
-          voltarParaOTopo,
-          500
-        );
-
-        setTimeout(
-          voltarParaOTopo,
-          1000
-        );
-      }
-    );
-
-    /*
-      Corrige o comportamento do Safari
-      ao restaurar páginas do histórico
-    */
-    window.addEventListener(
-      "pageshow",
-      function () {
-
-        voltarParaOTopo();
-
-        setTimeout(
-          voltarParaOTopo,
-          50
-        );
-
-        setTimeout(
-          voltarParaOTopo,
-          300
-        );
-
-        setTimeout(
-          voltarParaOTopo,
-          800
-        );
-      }
-    );
-
-    /*
-      Se voltar para a página inicial
-      pelo histórico, também retorna
-      ao topo.
-    */
-    window.addEventListener(
-      "popstate",
-      function () {
-
-        voltarParaOTopo();
-
-      }
-    );
+      setTimeout(function () {
+        window.scrollTo(0, 0);
+      }, 100);
+    });
   </script>
-
 </head>
 
 <body>
@@ -812,26 +735,18 @@
       "DOMContentLoaded",
       () => {
 
+        /*
+          Garante novamente que a HOME
+          comece exatamente no topo.
+        */
+
+        window.scrollTo(0, 0);
+
         carregarConfiguracoesHome();
 
-        /*
-          Garante novamente que a home
-          permaneça no início após as
-          configurações serem carregadas.
-        */
-        setTimeout(
-          () => {
-            window.scrollTo(0, 0);
-          },
-          100
-        );
-
-        setTimeout(
-          () => {
-            window.scrollTo(0, 0);
-          },
-          500
-        );
+        setTimeout(function () {
+          window.scrollTo(0, 0);
+        }, 100);
 
       }
     );
