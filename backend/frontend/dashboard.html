@@ -1,146 +1,242 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
+
   <title>JPBET - Área do Jogador</title>
+
   <link
     rel="stylesheet"
-    href="style.css"
+    href="style.css?v=20260907-02"
   >
+
 </head>
+
 <body>
+
   <main class="dashboard">
+
     <section class="container">
+
       <!-- =========================
            CABEÇALHO
       ========================== -->
+
       <header class="dashboard-header">
+
         <div>
-          <h1>JPBET</h1>
+
+          <a
+            href="index.html"
+            class="dashboard-logo"
+            aria-label="Página inicial JPBET"
+          >
+            JPBET
+          </a>
+
           <p id="welcomeMessage">
             Bem-vindo!
           </p>
+
         </div>
-        <button
-          type="button"
-          id="logoutButton"
-          onclick="sair()"
-        >
-          Sair
-        </button>
+
+        <div class="dashboard-actions">
+
+          <a
+            href="index.html"
+            class="home-button"
+          >
+            🏠 Início
+          </a>
+
+          <button
+            type="button"
+            id="logoutButton"
+            onclick="sair()"
+          >
+            Sair
+          </button>
+
+        </div>
+
       </header>
+
+
       <!-- =========================
            CONTA
       ========================== -->
+
       <section class="dashboard-card">
-        <h2>Minha conta</h2>
+
+        <h2>
+          Minha conta
+        </h2>
+
         <div class="account-info">
+
           <p>
             <strong>Usuário:</strong>
-            <span id="userName">---</span>
+            <span id="userName">
+              ---
+            </span>
           </p>
+
           <p>
             <strong>Saldo disponível:</strong>
             <span id="userBalance">
               R$ 0,00
             </span>
           </p>
+
           <p>
             <strong>Saldo em dinheiro:</strong>
             <span id="cashBalance">
               R$ 0,00
             </span>
           </p>
+
           <p>
             <strong>Saldo de bônus:</strong>
             <span id="bonusBalance">
               R$ 0,00
             </span>
           </p>
+
           <p>
             <strong>Saldo reservado:</strong>
             <span id="reservedBalance">
               R$ 0,00
             </span>
           </p>
+
         </div>
+
       </section>
+
+
       <!-- =========================
            BÔNUS
       ========================== -->
+
       <section class="dashboard-card">
-        <h2>🎁 Meu bônus</h2>
+
+        <h2>
+          🎁 Meu bônus
+        </h2>
+
         <p>
           Bônus de cadastro
         </p>
+
         <div
           id="bonusAmount"
           class="bonus-amount"
         >
           R$ 0,00
         </div>
+
         <p>
           Progresso para liberação:
         </p>
+
         <div
           id="bonusWagerProgress"
           class="bonus-progress"
         >
           R$ 0,00
         </div>
+
         <p
           id="bonusMessage"
           class="dashboard-message"
         >
           Seu bônus aparecerá aqui.
         </p>
+
       </section>
+
+
       <!-- =========================
            ROLETA
       ========================== -->
+
       <section class="dashboard-card">
-        <h2>🎡 Roleta</h2>
+
+        <h2>
+          🎡 Roleta
+        </h2>
+
         <div class="account-info">
+
           <p>
             <strong>Giros grátis:</strong>
             <span id="rouletteFreeSpins">
               0
             </span>
           </p>
+
           <p>
             <strong>Valor por giro grátis:</strong>
             <span id="rouletteFreeSpinBet">
               R$ 0,00
             </span>
           </p>
+
         </div>
+
       </section>
+
+
       <!-- =========================
            JOGOS
       ========================== -->
-      <section class="dashboard-card">
-        <h2>🎰 Jogos</h2>
-        <p id="gamesMessage">
+
+      <section
+        class="dashboard-card"
+        id="jogos"
+      >
+
+        <h2>
+          🎰 Jogos
+        </h2>
+
+        <p
+          id="gamesMessage"
+          class="dashboard-message"
+        >
           Carregando jogos...
         </p>
+
         <div
           id="gamesContainer"
           class="games-container"
         ></div>
+
       </section>
+
+
       <!-- =========================
            MENSAGEM
       ========================== -->
+
       <p
         id="dashboardMessage"
         class="dashboard-message"
       ></p>
+
     </section>
+
   </main>
+
+
   <script src="dashboard.js"></script>
+
 </body>
 </html>
