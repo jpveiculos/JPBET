@@ -37,7 +37,221 @@ export function arredondar(valor, casas = 2) {
 export function gerarIdRodada(prefixo = "SPIN") {
   return `${prefixo}-${Date.now()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 }
+/* =========================================================
+   ROLETA EUROPEIA
+========================================================= */
 
+const NUMEROS_VERMELHOS_ROLETA = new Set([
+  1, 3, 5, 7, 9,
+  12, 14, 16, 18,
+  19, 21, 23, 25, 27,
+  30, 32, 34, 36
+]);
+
+const NUMEROS_PRETOS_ROLETA = new Set([
+  2, 4, 6, 8, 10,
+  11, 13, 15, 17,
+  20, 22, 24, 26,
+  28, 29, 31, 33, 35
+]);
+
+export function executarRoleta({
+  bet,
+  betType,
+  selection
+}) {
+  const aposta = arredondar(
+    Math.max(0, numero(bet, 0))
+  );
+
+  const tiposValidos = new Set([
+    "straight",
+    "red",
+    "black",
+    "odd",
+    "even",
+    "low",
+    "high",
+    "dozen1",
+    "dozen2",
+    "dozen3",
+    "column1",
+    "column2",
+    "column3"
+  ]);
+
+  const tipo = String(
+    betType || ""
+  ).trim();
+
+  if (!tiposValidos.has(tipo)) {
+    throw new Error(
+      "Tipo de aposta da roleta inválido."
+    );
+  }
+
+  let selecao = selection;
+
+  if (tipo === "straight") {
+    selecao = Math.floor(
+      numero(selection, -1)
+    );
+
+    if (
+      selecao < 0 ||
+      selecao > 36
+    ) {
+      throw new Error(
+        "Número da roleta inválido."
+      );
+    }
+  }
+
+  const numeroSorteado =
+    crypto.randomInt(0, 37);
+
+  const cor =
+    numeroSorteado === 0
+      ? "green"
+      : NUMEROS_VERMELHOS_ROLETA.has(
+          numeroSorteado
+        )
+        ? "red"
+        : "black";
+
+  let ganhou = false;
+  let multiplicador = 0;
+
+  switch (tipo) {
+    case "straight":
+      ganhou =
+        numeroSorteado === selecao;
+      multiplicador = 35;
+      break;
+
+    case "red":
+      ganhou = cor === "red";
+      multiplicador = 1;
+      break;
+
+    case "black":
+      ganhou = cor === "black";
+      multiplicador = 1;
+      break;
+
+    case "odd":
+      ganhou =
+        numeroSorteado !== 0 &&
+        numeroSorteado % 2 === 1;
+      multiplicador = 1;
+      break;
+
+    case "even":
+      ganhou =
+        numeroSorteado !== 0 &&
+        numeroSorteado % 2 === 0;
+      multiplicador = 1;
+      break;
+
+    case "low":
+      ganhou =
+        numeroSorteado >= 1 &&
+        numeroSorteado <= 18;
+      multiplicador = 1;
+      break;
+
+    case "high":
+      ganhou =
+        numeroSorteado >= 19 &&
+        numeroSorteado <= 36;
+      multiplicador = 1;
+      break;
+
+    case "dozen1":
+      ganhou =
+        numeroSorteado >= 1 &&
+        numeroSorteado <= 12;
+      multiplicador = 2;
+      break;
+
+    case "dozen2":
+      ganhou =
+        numeroSorteado >= 13 &&
+        numeroSorteado <= 24;
+      multiplicador = 2;
+      break;
+
+    case "dozen3":
+      ganhou =
+        numeroSorteado >= 25 &&
+        numeroSorteado <= 36;
+      multiplicador = 2;
+      break;
+
+    case "column1":
+      ganhou =
+        numeroSorteado !== 0 &&
+        numeroSorteado % 3 === 1;
+      multiplicador = 2;
+      break;
+
+    case "column2":
+      ganhou =
+        numeroSorteado !== 0 &&
+        numeroSorteado % 3 === 2;
+      multiplicador = 2;
+      break;
+
+    case "column3":
+      ganhou =
+        numeroSorteado !== 0 &&
+        numeroSorteado % 3 === 0;
+      multiplicador = 2;
+      break;
+  }
+
+  const win = ganhou
+    ? arredondar(
+        aposta * multiplicador
+      )
+    : 0;
+
+  return {
+    roundId:
+      gerarIdRodada("ROULETTE"),
+
+    gameId:
+      "roulette",
+
+    bet: aposta,
+
+    betType: tipo,
+
+    selection:
+      selecao,
+
+    number:
+      numeroSorteado,
+
+    color:
+      cor,
+
+    won:
+      ganhou,
+
+    multiplier:
+      multiplicador,
+
+    win,
+
+    payout:
+      ganhou
+        ? arredondar(
+            aposta + win
+          )
+        : 0
+  };
+}
 /* =========================================================
    SORTEIO PONDERADO
 ========================================================= */
@@ -805,7 +1019,41 @@ const SYMBOLS_ROYAL_JACKPOT = [
 ========================================================= */
 
 export const DEFAULT_GAMES = {
-  fortune7: {
+    roulette: {
+    id: "roulette",
+    name: "Roleta Europeia",
+    enabled: true,
+
+    type: "roulette",
+
+    minBet: 1,
+    maxBet: 1000,
+
+    description:
+      "Roleta europeia com zero e apostas clássicas.",
+
+    numbers: Array.from(
+      { length: 37 },
+      (_, index) => index
+    ),
+
+    payouts: {
+      straight: 35,
+      red: 1,
+      black: 1,
+      odd: 1,
+      even: 1,
+      low: 1,
+      high: 1,
+      dozen1: 2,
+      dozen2: 2,
+      dozen3: 2,
+      column1: 2,
+      column2: 2,
+      column3: 2
+    }
+  },
+   fortune7: {
     id: "fortune7",
     name: "Fortune 7",
     enabled: true,
@@ -1183,7 +1431,23 @@ export function normalizarConfiguracaoJogo(config) {
           triggerAt: 0,
           freeSpins: 0
         };
+  if (resultado.id === "roulette") {
+    resultado.type = "roulette";
 
+    resultado.numbers =
+      Array.isArray(resultado.numbers)
+        ? resultado.numbers
+        : Array.from(
+            { length: 37 },
+            (_, index) => index
+          );
+
+    resultado.payouts =
+      resultado.payouts &&
+      typeof resultado.payouts === "object"
+        ? resultado.payouts
+        : {};
+  }
   return resultado;
 }
 
