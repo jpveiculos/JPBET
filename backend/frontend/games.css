@@ -1,1397 +1,1454 @@
-*{box-sizing:border-box}
+const API = "/api";
 
-:root{
-  --bg:#07090d;
-  --panel:#10141c;
-  --panel2:#151b24;
-  --gold:#f5c542;
-  --gold2:#ffdf70;
-  --text:#fff;
-  --muted:#9ca5b5;
-  --red:#d51f3d;
-  --black:#15171d;
-  --green:#087d4d;
+let jogos = [];
+let jogoAtual = null;
+let configuracaoAtual = null;
+let girando = false;
 
-  --roulette-x:#c51f35;
-  --roulette-2x:#d8a92f;
-  --roulette-3x:#7059d8;
-  --roulette-5x:#a34fc4;
-  --roulette-10x:#16a9c7;
-  --roulette-free:#20a85a;
+const usuarioSalvo = localStorage.getItem("jpbet_user");
+
+let usuario = null;
+
+try {
+  usuario = usuarioSalvo
+    ? JSON.parse(usuarioSalvo)
+    : null;
+} catch {
+  usuario = null;
 }
-
-html,body{
-  margin:0;
-  min-height:100%;
-  background:
-    radial-gradient(
-      circle at top,
-      rgba(245,197,66,.07),
-      transparent 38%
-    ),
-    var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
-
-body{
-  overflow-x:hidden;
-}
-
-button,
-input,
-select{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-
-[hidden]{
-  display:none!important;
-}
-
 
 /* =========================================================
-   CABEÇALHO
+   ELEMENTOS
 ========================================================= */
 
-.game-header{
-  position:sticky;
-  top:0;
-  z-index:50;
-  height:70px;
-  display:grid;
-  grid-template-columns:52px 1fr auto;
-  align-items:center;
-  gap:10px;
-  padding:0 18px;
-  background:rgba(7,9,13,.94);
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
+const gamesContainer =
+  document.getElementById("gamesContainer");
 
-.header-back{
-  width:44px;
-  height:44px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:13px;
-  background:#111722;
-  color:#fff;
-  font-size:28px;
-}
+const gamesMessage =
+  document.getElementById("gamesMessage");
 
-.game-brand{
-  justify-self:center;
-  color:#fff;
-  text-decoration:none;
-  font-weight:1000;
-  letter-spacing:3px;
-  font-size:24px;
-}
+const gameModal =
+  document.getElementById("gameModal");
 
-.game-brand span{
-  color:var(--gold);
-}
+const gameTitle =
+  document.getElementById("gameTitle");
 
-.header-balance,
-.stage-balance{
-  padding:9px 12px;
-  border-radius:12px;
-  border:1px solid rgba(245,197,66,.25);
-  background:rgba(245,197,66,.08);
-  color:var(--gold2);
-  font-weight:900;
-  white-space:nowrap;
-}
+const gameBalance =
+  document.getElementById("gameBalance");
 
+const slotReels =
+  document.getElementById("slotReels");
+
+const winMessage =
+  document.getElementById("winMessage");
+
+const betInput =
+  document.getElementById("betInput");
+
+const minBet =
+  document.getElementById("minBet");
+
+const maxBet =
+  document.getElementById("maxBet");
+
+const paytable =
+  document.getElementById("paytable");
+
+const spinButton =
+  document.getElementById("spinButton");
+
+const closeGameButton =
+  document.getElementById("closeGameButton");
+
+const backButton =
+  document.getElementById("backButton");
+
+const quickBetButtons =
+  document.querySelectorAll(
+    "[data-bet]"
+  );
 
 /* =========================================================
-   LOBBY
+   API
 ========================================================= */
 
-.games-page{
-  width:min(1100px,calc(100% - 28px));
-  margin:auto;
-  padding:28px 0 70px;
-}
-
-.games-lobby{
-  text-align:center;
-}
-
-.page-kicker,
-.game-kicker{
-  font-size:11px;
-  letter-spacing:2px;
-  font-weight:1000;
-  color:var(--gold);
-}
-
-.games-lobby h1{
-  font-size:46px;
-  margin:8px 0 4px;
-}
-
-.games-lobby>p{
-  color:var(--muted);
-  margin:0 0 30px;
-}
-
-.games-message{
-  color:var(--muted);
-  margin:20px;
-}
-
-.games-container{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:16px;
-  text-align:left;
-}
-
-.lobby-card{
-  position:relative;
-  overflow:hidden;
-  padding:20px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:20px;
-  background:
-    linear-gradient(
-      145deg,
-      #171d27,
-      #0e131a
+async function apiFetch(
+  endpoint,
+  options = {}
+) {
+  const token =
+    localStorage.getItem(
+      "jpbet_token"
     );
-}
 
-.lobby-card::after{
-  content:"";
-  position:absolute;
-  width:140px;
-  height:140px;
-  right:-60px;
-  top:-60px;
-  border-radius:50%;
-  background:rgba(245,197,66,.08);
-}
+  const headers = {
+    "Content-Type":
+      "application/json",
 
-.lobby-icon{
-  font-size:46px;
-  margin-bottom:12px;
-}
+    ...(options.headers || {})
+  };
 
-.lobby-card h3{
-  margin:0 0 7px;
-  font-size:23px;
-}
+  if (token) {
+    headers.Authorization =
+      `Bearer ${token}`;
+  }
 
-.lobby-card p{
-  margin:0 0 18px;
-  color:var(--muted);
-}
-
-.lobby-play{
-  width:100%;
-  border:0;
-  border-radius:12px;
-  padding:13px;
-  background:
-    linear-gradient(
-      135deg,
-      var(--gold),
-      var(--gold2)
+  const response =
+    await fetch(
+      `${API}${endpoint}`,
+      {
+        ...options,
+        headers,
+        credentials: "include"
+      }
     );
-  color:#111;
-  font-weight:1000;
-}
 
+  let data = {};
+
+  try {
+    data =
+      await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+      "Erro na comunicação com o servidor."
+    );
+  }
+
+  return data;
+}
 
 /* =========================================================
-   STAGE
+   UTILITÁRIOS
 ========================================================= */
 
-.game-stage-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:18px;
+function numero(
+  valor,
+  padrao = 0
+) {
+  const n =
+    Number(valor);
+
+  return Number.isFinite(n)
+    ? n
+    : padrao;
 }
 
-.stage-back{
-  border:1px solid rgba(255,255,255,.1);
-  background:#111722;
-  color:#fff;
-  border-radius:12px;
-  padding:10px 14px;
-  font-weight:800;
+function dinheiro(
+  valor
+) {
+  return numero(
+    valor
+  ).toFixed(2);
 }
 
-.game-title-row{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:15px;
-  margin-bottom:18px;
+function escaparHtml(
+  valor
+) {
+  return String(
+    valor ?? ""
+  )
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-.game-title-row h2{
-  margin:5px 0 0;
-  font-size:34px;
+function atualizarUsuario(
+  novoUsuario
+) {
+  if (!novoUsuario) {
+    return;
+  }
+
+  usuario = {
+    ...usuario,
+    ...novoUsuario
+  };
+
+  localStorage.setItem(
+    "jpbet_user",
+    JSON.stringify(usuario)
+  );
+
+  atualizarSaldo();
 }
 
-.win-display{
-  color:var(--gold2);
-  font-size:20px;
-  font-weight:1000;
-}
+function obterSaldo() {
+  if (!usuario) {
+    return 0;
+  }
 
-
-/* =========================================================
-   SLOTS
-========================================================= */
-
-.slot-panel{
-  --slot1:#7a0716;
-  --slot2:#d51f3d;
-  --slot3:#ffdf70;
-}
-
-.slot-marquee{
-  position:relative;
-  overflow:hidden;
-  text-align:center;
-  padding:18px 15px 16px;
-  border:2px solid #9b6c12;
-  border-bottom:0;
-  border-radius:28px 28px 0 0;
-  background:
-    linear-gradient(
-      145deg,
-      #180d08,
-      #5b190d 45%,
-      #160b07
+  if (
+    usuario.balance !== undefined &&
+    usuario.balance !== null
+  ) {
+    return numero(
+      usuario.balance
     );
-  box-shadow:
-    inset 0 0 30px rgba(255,198,53,.13),
-    0 -5px 35px rgba(245,197,66,.1);
+  }
+
+  return (
+    numero(
+      usuario.bonusBalance
+    ) +
+    numero(
+      usuario.cashBalance
+    )
+  );
 }
 
-.marquee-lights{
-  position:absolute;
-  inset:8px;
-  border-radius:20px;
-  border:2px dotted #ffe98a;
-  opacity:.7;
-}
+function atualizarSaldo(
+  saldo = null
+) {
+  if (
+    saldo !== null &&
+    usuario
+  ) {
+    usuario.balance =
+      numero(saldo);
 
-.marquee-title{
-  position:relative;
-  font-size:clamp(30px,8vw,55px);
-  font-weight:1000;
-  letter-spacing:2px;
-  color:#fff1a6;
-  text-shadow:
-    0 3px 0 #7b4500,
-    0 0 18px rgba(255,214,80,.7);
-}
-
-.marquee-subtitle{
-  position:relative;
-  margin-top:3px;
-  color:#ffcf46;
-  font-size:11px;
-  font-weight:1000;
-  letter-spacing:4px;
-}
-
-.slot-cabinet{
-  position:relative;
-  padding:14px 12px 18px;
-  border:2px solid #9b6c12;
-  border-top:0;
-  border-radius:0 0 30px 30px;
-  background:
-    linear-gradient(
-      150deg,
-      #2a0b12,
-      #090b10 22%,
-      #161b25 75%,
-      #32100e
+    localStorage.setItem(
+      "jpbet_user",
+      JSON.stringify(usuario)
     );
-  box-shadow:
-    inset 0 0 45px rgba(0,0,0,.7),
-    0 24px 55px rgba(0,0,0,.5);
-}
+  }
 
-.slot-glow{
-  position:absolute;
-  inset:4px;
-  border-radius:25px;
-  pointer-events:none;
-  box-shadow:
-    inset 0 0 30px rgba(245,197,66,.08);
-}
+  const valor =
+    obterSaldo();
 
-.slot-screen{
-  position:relative;
-  padding:16px;
-  border-radius:22px;
-  border:4px solid #c68c1c;
-  background:#05070a;
-  box-shadow:
-    inset 0 0 0 2px #3b270b,
-    inset 0 0 45px rgba(0,0,0,.9),
-    0 8px 20px #000;
-}
-
-.reels-window{
-  position:relative;
-  z-index:2;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px;
-  padding:7px;
-  border-radius:16px;
-  background:#020305;
-  border:2px solid #4a4d55;
-}
-
-.reel{
-  height:225px;
-  overflow:hidden;
-  border-radius:10px;
-  background:
-    linear-gradient(
-      180deg,
-      #cbd0d9,
-      #fff 18%,
-      #e9ebef 50%,
-      #b9bec8
-    );
-  box-shadow:
-    inset 0 0 18px rgba(0,0,0,.25);
-}
-
-.reel-strip{
-  display:flex;
-  flex-direction:column;
-  transform:translateY(0);
-}
-
-.symbol{
-  height:75px;
-  flex:0 0 75px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:47px;
-  font-weight:1000;
-  color:#15171b;
-  text-shadow:
-    0 2px 2px rgba(255,255,255,.8);
-}
-
-.symbol.seven{
-  color:#c91835;
-  font-family:Georgia,serif;
-  font-size:58px;
-  text-shadow:
-    0 2px 0 #fff,
-    0 4px 0 #771020;
-}
-
-.symbol.diamond{
-  color:#16a5d9;
-  text-shadow:
-    0 2px 0 #fff,
-    0 0 9px rgba(0,170,255,.35);
-}
-
-.symbol.coin{
-  color:#d28b00;
-}
-
-.symbol.crown{
-  color:#b67800;
-}
-
-.payline{
-  position:absolute;
-  left:10px;
-  right:10px;
-  height:2px;
-  background:var(--gold);
-  z-index:5;
-  box-shadow:
-    0 0 9px rgba(255,218,90,.8);
-  pointer-events:none;
-}
-
-.payline-top{top:29%}
-.payline-mid{top:50%}
-.payline-bottom{top:71%}
-
-.screen-caption{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:8px 5px 0;
-  color:#8c939e;
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:1px;
-}
-
-.screen-caption strong{
-  color:var(--gold2);
-  font-size:15px;
-}
-
-.slot-controls{
-  padding:17px 2px 0;
-}
-
-
-/* =========================================================
-   APOSTAS
-========================================================= */
-
-.bet-row,
-.roulette-bet-row{
-  display:grid;
-  grid-template-columns:60px 1fr 60px;
-  gap:9px;
-  align-items:center;
-}
-
-.bet-adjust,
-.roulette-bet-row>button{
-  height:58px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:14px;
-  background:#0d121b;
-  color:#fff;
-  font-size:30px;
-}
-
-.bet-value,
-.roulette-bet-row>div{
-  height:58px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;
-  background:#070a0f;
-}
-
-.bet-value small,
-.roulette-bet-row small{
-  font-size:9px;
-  letter-spacing:1.4px;
-  color:#778092;
-  font-weight:900;
-}
-
-.bet-value strong,
-.roulette-bet-row strong{
-  color:#fff;
-  font-size:21px;
-}
-
-.quick-bets{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:8px;
-  margin-top:10px;
-}
-
-.quick-bets button{
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:11px;
-  padding:11px 4px;
-  background:#111722;
-  color:#fff;
-  font-weight:900;
-}
-
-.spin-button{
-  position:relative;
-  width:100%;
-  margin-top:13px;
-  min-height:63px;
-  border:2px solid #ffd85d;
-  border-radius:18px;
-  background:
-    linear-gradient(
-      145deg,
-      #ffe47b,
-      #f3b81e 58%,
-      #b87300
-    );
-  color:#171008;
-  font-size:22px;
-  font-weight:1000;
-  box-shadow:
-    0 10px 25px rgba(245,177,25,.2),
-    inset 0 1px rgba(255,255,255,.8);
-}
-
-.spin-button:active{
-  transform:translateY(1px);
-}
-
-.spin-button:disabled{
-  opacity:.55;
-  cursor:wait;
-}
-
-.slot-status{
-  text-align:center;
-  min-height:22px;
-  margin-top:10px;
-  color:#aab1bd;
-  font-size:13px;
-  font-weight:700;
-}
-
-.slot-paytable{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:12px;
-}
-
-.slot-paytable div{
-  padding:11px 7px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  background:#0e131b;
-  text-align:center;
-}
-
-.slot-paytable span{
-  display:block;
-  font-size:18px;
-}
-
-.slot-paytable strong{
-  font-size:9px;
-  color:var(--gold2);
-  letter-spacing:.6px;
-}
-
-.slot-cabinet.spinning .reels-window{
-  box-shadow:
-    0 0 25px rgba(245,197,66,.28);
-}
-
-.slot-cabinet.win .slot-screen{
-  animation:
-    winPulse .55s ease-in-out 4;
-}
-
-@keyframes winPulse{
-  50%{
-    box-shadow:
-      inset 0 0 0 2px #ffe27a,
-      inset 0 0 45px rgba(255,214,70,.5),
-      0 0 30px rgba(255,214,70,.4);
+  if (gameBalance) {
+    gameBalance.textContent =
+      `R$ ${dinheiro(valor)}`;
   }
 }
 
-.reel.spinning .reel-strip{
-  animation:
-    reelBlur .16s linear infinite;
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function verificarUsuario() {
+  if (!usuario || !usuario.id) {
+    window.location.href =
+      "index.html";
+
+    return false;
+  }
+
+  atualizarSaldo();
+
+  return true;
 }
 
-@keyframes reelBlur{
-  to{
-    transform:translateY(-75px);
+/* =========================================================
+   CARREGAR JOGOS
+========================================================= */
+
+async function carregarJogos() {
+  if (!gamesContainer) {
+    return;
+  }
+
+  gamesContainer.innerHTML =
+    "";
+
+  if (gamesMessage) {
+    gamesMessage.textContent =
+      "Carregando jogos...";
+  }
+
+  try {
+    const data =
+      await apiFetch(
+        "/games"
+      );
+
+    jogos =
+      Array.isArray(
+        data.games
+      )
+        ? data.games
+        : [];
+
+    renderizarJogos();
+
+    if (gamesMessage) {
+      gamesMessage.textContent =
+        jogos.length
+          ? ""
+          : "Nenhum jogo disponível.";
+    }
+  } catch (error) {
+    console.error(
+      "Erro ao carregar jogos:",
+      error
+    );
+
+    if (gamesMessage) {
+      gamesMessage.textContent =
+        error.message ||
+        "Não foi possível carregar os jogos.";
+    }
   }
 }
 
-
 /* =========================================================
-   ROLETA POPULAR MYBETS
+   RENDERIZAR LISTA
 ========================================================= */
 
-.roulette-panel{
-  padding-bottom:20px;
+function renderizarJogos() {
+  if (!gamesContainer) {
+    return;
+  }
+
+  gamesContainer.innerHTML =
+    "";
+
+  jogos.forEach(
+    (jogo) => {
+      const card =
+        document.createElement(
+          "button"
+        );
+
+      card.type = "button";
+
+      card.className =
+        "game-card";
+
+      card.dataset.gameId =
+        jogo.id;
+
+      card.innerHTML = `
+        <div class="game-card-icon">
+          ${obterIconeJogo(jogo.id)}
+        </div>
+
+        <div class="game-card-content">
+          <h3>
+            ${escaparHtml(
+              jogo.name ||
+              jogo.nome ||
+              jogo.id
+            )}
+          </h3>
+
+          <p>
+            ${escaparHtml(
+              jogo.description ||
+              "Jogue agora."
+            )}
+          </p>
+        </div>
+
+        <div class="game-card-action">
+          Jogar
+        </div>
+      `;
+
+      card.addEventListener(
+        "click",
+        () => abrirJogo(jogo.id)
+      );
+
+      gamesContainer.appendChild(
+        card
+      );
+    }
+  );
 }
 
-.roulette-machine{
-  position:relative;
+/* =========================================================
+   ÍCONES DOS JOGOS
+========================================================= */
 
-  width:min(560px,94vw);
-  aspect-ratio:1;
+function obterIconeJogo(
+  gameId
+) {
+  const icones = {
+    fortune7: "7️⃣",
+    diamondGold: "💎",
+    royalJackpot: "👑",
+    lucky7: "🍀"
+  };
 
-  margin:5px auto 22px;
+  return (
+    icones[gameId] ||
+    "🎰"
+  );
+}
 
-  border-radius:50%;
+/* =========================================================
+   ABRIR JOGO
+========================================================= */
 
-  background:
-    radial-gradient(
-      circle,
-      #d8ad38 0 3.5%,
-      #211806 3.6% 6%,
-      #e6c357 6.1% 8.5%,
-      #090807 8.6% 100%
+async function abrirJogo(
+  gameId
+) {
+  if (girando) {
+    return;
+  }
+
+  try {
+    const data =
+      await apiFetch(
+        `/games/${encodeURIComponent(
+          gameId
+        )}`
+      );
+
+    jogoAtual =
+      data.game ||
+      data;
+
+    configuracaoAtual =
+      jogoAtual;
+
+    renderizarConfiguracaoJogo();
+
+    if (gameModal) {
+      gameModal.classList.add(
+        "active"
+      );
+
+      gameModal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Erro ao abrir jogo:",
+      error
     );
 
-  padding:18px;
-
-  box-shadow:
-    0 30px 70px rgba(0,0,0,.75),
-    inset 0 0 0 5px #805507,
-    inset 0 0 0 10px #e7c75e,
-    inset 0 0 0 14px #342204;
+    mostrarMensagem(
+      error.message ||
+      "Não foi possível abrir o jogo.",
+      "error"
+    );
+  }
 }
 
+/* =========================================================
+   CONFIGURAÇÃO DO JOGO
+========================================================= */
 
-/* ---------------------------------------------------------
-   PONTEIRO
---------------------------------------------------------- */
+function renderizarConfiguracaoJogo() {
+  if (!configuracaoAtual) {
+    return;
+  }
 
-.roulette-pointer{
-  position:absolute;
-  z-index:20;
+  const config =
+    configuracaoAtual;
 
-  top:-7px;
-  left:50%;
+  if (gameTitle) {
+    gameTitle.textContent =
+      config.name ||
+      config.nome ||
+      "Jogo";
+  }
 
-  transform:
-    translateX(-50%);
+  if (minBet) {
+    minBet.textContent =
+      `R$ ${dinheiro(
+        config.minBet ?? 1
+      )}`;
+  }
 
-  width:0;
-  height:0;
+  if (maxBet) {
+    maxBet.textContent =
+      `R$ ${dinheiro(
+        config.maxBet ?? 1000
+      )}`;
+  }
 
-  border-left:19px solid transparent;
-  border-right:19px solid transparent;
-  border-top:38px solid var(--gold2);
+  if (betInput) {
+    const minimo =
+      numero(
+        config.minBet,
+        1
+      );
 
-  filter:
-    drop-shadow(0 4px 4px #000)
-    drop-shadow(0 0 7px rgba(255,216,80,.5));
+    const maximo =
+      numero(
+        config.maxBet,
+        1000
+      );
+
+    betInput.min =
+      minimo;
+
+    betInput.max =
+      maximo;
+
+    betInput.step =
+      "0.01";
+
+    const apostaAtual =
+      numero(
+        betInput.value,
+        minimo
+      );
+
+    betInput.value =
+      Math.min(
+        Math.max(
+          apostaAtual,
+          minimo
+        ),
+        maximo
+      ).toFixed(2);
+  }
+
+  renderizarTabelaPremios();
+
+  renderizarGradeInicial();
+  atualizarSaldo();
 }
 
+/* =========================================================
+   GRADE INICIAL
+========================================================= */
 
-/* ---------------------------------------------------------
-   RODA
---------------------------------------------------------- */
+function renderizarGradeInicial() {
+  if (!slotReels) {
+    return;
+  }
 
-.roulette-wheel{
-  position:absolute;
-
-  inset:30px;
-
-  border-radius:50%;
-
-  overflow:visible;
-
-  border:10px solid #211806;
-
-  box-shadow:
-    inset 0 0 0 4px #b88a29,
-    inset 0 0 0 7px #e0bd55,
-    inset 0 0 30px #000,
-    0 5px 15px rgba(0,0,0,.55);
-
-  transition:
-    transform 4.8s cubic-bezier(.12,.72,.12,1);
-
-  transform-origin:center center;
-
-  will-change:transform;
-}
-
-
-/* ---------------------------------------------------------
-   LINHAS DIVISÓRIAS
---------------------------------------------------------- */
-
-.roulette-wheel::before{
-  content:"";
-
-  position:absolute;
-  inset:0;
-
-  border-radius:50%;
-
-  background:
-    repeating-conic-gradient(
-      from 0deg,
-      rgba(255,255,255,.28) 0deg .7deg,
-      transparent .7deg 22.5deg
+  const reels =
+    Math.max(
+      1,
+      Math.floor(
+        numero(
+          configuracaoAtual?.reels,
+          3
+        )
+      )
     );
 
-  pointer-events:none;
-
-  z-index:3;
-
-  mix-blend-mode:screen;
-}
-
-
-/* ---------------------------------------------------------
-   ANEL INTERNO
---------------------------------------------------------- */
-
-.roulette-wheel::after{
-  content:"";
-
-  position:absolute;
-
-  inset:11%;
-
-  border-radius:50%;
-
-  border:
-    3px solid rgba(255,255,255,.18);
-
-  box-shadow:
-    inset 0 0 0 5px rgba(0,0,0,.25),
-    inset 0 0 25px rgba(0,0,0,.65);
-
-  pointer-events:none;
-
-  z-index:4;
-}
-
-
-/* ---------------------------------------------------------
-   LABELS
---------------------------------------------------------- */
-
-.roulette-label{
-  position:absolute;
-
-  left:50%;
-  top:50%;
-
-  width:100px;
-  height:42px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  transform-origin:center center;
-
-  color:#fff;
-
-  font-size:
-    clamp(12px,3vw,18px);
-
-  font-weight:1000;
-
-  text-shadow:
-    0 2px 4px #000,
-    0 0 5px rgba(0,0,0,.8);
-
-  white-space:nowrap;
-
-  pointer-events:none;
-
-  z-index:10;
-}
-
-
-/* X */
-
-.roulette-label.zero{
-  color:#fff;
-
-  font-size:
-    clamp(13px,3.4vw,19px);
-
-  text-shadow:
-    0 2px 3px #000,
-    0 0 7px rgba(0,0,0,.8);
-}
-
-
-/* 2x */
-
-.roulette-label.m2{
-  color:#fff4b5;
-
-  text-shadow:
-    0 2px 3px #5a3c00,
-    0 0 7px rgba(0,0,0,.8);
-}
-
-
-/* 3x */
-
-.roulette-label.m3{
-  color:#eee9ff;
-
-  text-shadow:
-    0 2px 3px #33227a,
-    0 0 7px rgba(0,0,0,.8);
-}
-
-
-/* 5x */
-
-.roulette-label.m5{
-  color:#ffeaff;
-
-  font-size:
-    clamp(13px,3.3vw,19px);
-
-  text-shadow:
-    0 2px 3px #4b155d,
-    0 0 8px rgba(0,0,0,.8);
-}
-
-
-/* 10x */
-
-.roulette-label.m10{
-  color:#e2fbff;
-
-  font-size:
-    clamp(12px,3vw,18px);
-
-  text-shadow:
-    0 2px 3px #075366,
-    0 0 8px rgba(0,0,0,.8);
-}
-
-
-/* 🍀 */
-
-.roulette-label.clover{
-  color:#eaffef;
-
-  font-size:
-    clamp(22px,5vw,31px);
-
-  text-shadow:
-    0 2px 4px #064b27,
-    0 0 12px rgba(50,255,130,.35);
-}
-
-
-/* ---------------------------------------------------------
-   CENTRO GIRAR
---------------------------------------------------------- */
-
-.roulette-hub{
-  position:absolute;
-
-  z-index:30;
-
-  left:50%;
-  top:50%;
-
-  transform:
-    translate(-50%,-50%);
-
-  width:29%;
-
-  aspect-ratio:1;
-
-  border-radius:50%;
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-
-  background:
-    radial-gradient(
-      circle at 35% 25%,
-      #fff4a9,
-      #e0aa27 43%,
-      #85590a 70%,
-      #3e2704 100%
+  const rows =
+    Math.max(
+      1,
+      Math.floor(
+        numero(
+          configuracaoAtual?.rows,
+          3
+        )
+      )
     );
 
-  border:
-    5px solid #f2cf63;
+  slotReels.style.setProperty(
+    "--reels",
+    reels
+  );
 
-  box-shadow:
-    0 0 0 5px #3b2505,
-    0 0 0 8px rgba(245,197,66,.16),
-    0 0 30px rgba(255,208,65,.3),
-    inset 0 2px 5px rgba(255,255,255,.7),
-    inset 0 -8px 15px rgba(0,0,0,.35);
+  slotReels.innerHTML =
+    "";
 
-  color:#171008;
+  const grade =
+    configuracaoAtual?.initialGrid ||
+    configuracaoAtual?.grid ||
+    null;
 
-  transition:
-    transform .15s ease,
-    filter .15s ease;
+  for (
+    let reel = 0;
+    reel < reels;
+    reel++
+  ) {
+    const coluna =
+      document.createElement(
+        "div"
+      );
+
+    coluna.className =
+      "slot-reel";
+
+    for (
+      let row = 0;
+      row < rows;
+      row++
+    ) {
+      let simbolo =
+        "7";
+
+      if (
+        Array.isArray(
+          grade
+        ) &&
+        Array.isArray(
+          grade[reel]
+        ) &&
+        grade[reel][row]
+      ) {
+        simbolo =
+          grade[reel][row];
+      }
+
+      coluna.appendChild(
+        criarSimbolo(
+          simbolo
+        )
+      );
+    }
+
+    slotReels.appendChild(
+      coluna
+    );
+  }
 }
 
-.roulette-hub:hover{
-  filter:brightness(1.1);
+/* =========================================================
+   CRIAR SÍMBOLO
+========================================================= */
+
+function criarSimbolo(
+  simbolo
+) {
+  const elemento =
+    document.createElement(
+      "div"
+    );
+
+  elemento.className =
+    "slot-symbol";
+
+  const valor =
+    obterValorSimbolo(
+      simbolo
+    );
+
+  elemento.dataset.symbol =
+    String(
+      simbolo ?? ""
+    );
+
+  elemento.textContent =
+    valor;
+
+  return elemento;
 }
 
-.roulette-hub:active{
-  transform:
-    translate(-50%,-50%)
-    scale(.95);
+function obterValorSimbolo(
+  simbolo
+) {
+  if (
+    simbolo &&
+    typeof simbolo ===
+      "object"
+  ) {
+    if (
+      simbolo.icon !==
+      undefined
+    ) {
+      return simbolo.icon;
+    }
+
+    if (
+      simbolo.emoji !==
+      undefined
+    ) {
+      return simbolo.emoji;
+    }
+
+    if (
+      simbolo.symbol !==
+      undefined
+    ) {
+      return simbolo.symbol;
+    }
+
+    if (
+      simbolo.name !==
+      undefined
+    ) {
+      return simbolo.name;
+    }
+  }
+
+  const mapa = {
+    seven: "7️⃣",
+    "7": "7️⃣",
+    diamond: "💎",
+    gold: "🪙",
+    crown: "👑",
+    star: "⭐",
+    bell: "🔔",
+    cherry: "🍒",
+    bar: "BAR",
+    wild: "WILD",
+    scatter: "⭐",
+    lemon: "🍋",
+    orange: "🍊"
+  };
+
+  return (
+    mapa[
+      String(
+        simbolo
+      ).toLowerCase()
+    ] ||
+    String(
+      simbolo ?? "?"
+    )
+  );
 }
 
-.roulette-hub:disabled{
-  opacity:.55;
-  cursor:wait;
+/* =========================================================
+   TABELA DE PRÊMIOS
+========================================================= */
+
+function renderizarTabelaPremios() {
+  if (!paytable) {
+    return;
+  }
+
+  paytable.innerHTML =
+    "";
+
+  const simbolos =
+    Array.isArray(
+      configuracaoAtual?.symbols
+    )
+      ? configuracaoAtual.symbols
+      : [];
+
+  if (!simbolos.length) {
+    paytable.innerHTML =
+      "<p>Tabela de prêmios não disponível.</p>";
+
+    return;
+  }
+
+  const tabela =
+    document.createElement(
+      "div"
+    );
+
+  tabela.className =
+    "paytable-list";
+
+  simbolos.forEach(
+    (simbolo) => {
+      if (
+        !simbolo ||
+        typeof simbolo !==
+          "object"
+      ) {
+        return;
+      }
+
+      const nome =
+        simbolo.name ||
+        simbolo.id ||
+        simbolo.symbol ||
+        "?";
+
+      const icone =
+        simbolo.icon ||
+        simbolo.emoji ||
+        simbolo.symbol ||
+        nome;
+
+      const payouts =
+        simbolo.payouts ||
+        simbolo.paytable ||
+        {};
+
+      const linha =
+        document.createElement(
+          "div"
+        );
+
+      linha.className =
+        "paytable-row";
+
+      const valores =
+        Object.entries(
+          payouts
+        )
+          .map(
+            ([quantidade, multiplicador]) =>
+              `${quantidade}x: ${multiplicador}x`
+          )
+          .join(" • ");
+
+      linha.innerHTML = `
+        <div class="paytable-symbol">
+          ${escaparHtml(icone)}
+        </div>
+
+        <div class="paytable-name">
+          ${escaparHtml(nome)}
+        </div>
+
+        <div class="paytable-values">
+          ${escaparHtml(
+            valores ||
+            "Sem prêmio configurado"
+          )}
+        </div>
+      `;
+
+      tabela.appendChild(
+        linha
+      );
+    }
+  );
+
+  paytable.appendChild(
+    tabela
+  );
 }
 
-.roulette-hub strong{
-  font-size:
-    clamp(21px,6vw,36px);
+/* =========================================================
+   APOSTA
+========================================================= */
 
-  letter-spacing:2px;
+function obterAposta() {
+  if (!betInput) {
+    return 0;
+  }
 
-  font-weight:1000;
-
-  line-height:1;
+  return numero(
+    betInput.value,
+    0
+  );
 }
 
-.roulette-hub small{
-  margin-top:5px;
+function validarApostaLocal() {
+  if (!configuracaoAtual) {
+    return false;
+  }
 
-  font-size:
-    clamp(7px,1.8vw,10px);
+  const aposta =
+    obterAposta();
 
-  font-weight:1000;
+  const minimo =
+    numero(
+      configuracaoAtual.minBet,
+      1
+    );
 
-  letter-spacing:3px;
+  const maximo =
+    numero(
+      configuracaoAtual.maxBet,
+      1000
+    );
+
+  if (
+    !Number.isFinite(
+      aposta
+    ) ||
+    aposta <= 0
+  ) {
+    mostrarMensagem(
+      "Informe uma aposta válida.",
+      "error"
+    );
+
+    return false;
+  }
+
+  if (
+    aposta < minimo
+  ) {
+    mostrarMensagem(
+      `A aposta mínima é R$ ${dinheiro(
+        minimo
+      )}.`,
+      "error"
+    );
+
+    return false;
+  }
+
+  if (
+    aposta > maximo
+  ) {
+    mostrarMensagem(
+      `A aposta máxima é R$ ${dinheiro(
+        maximo
+      )}.`,
+      "error"
+    );
+
+    return false;
+  }
+
+  if (
+    aposta > obterSaldo()
+  ) {
+    mostrarMensagem(
+      "Saldo insuficiente.",
+      "error"
+    );
+
+    return false;
+  }
+
+  return true;
 }
 
+/* =========================================================
+   APOSTAS RÁPIDAS
+========================================================= */
 
-/* ---------------------------------------------------------
+quickBetButtons.forEach(
+  (button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        if (!betInput) {
+          return;
+        }
+
+        const valor =
+          numero(
+            button.dataset.bet,
+            0
+          );
+
+        if (
+          valor <= 0
+        ) {
+          return;
+        }
+
+        const minimo =
+          numero(
+            configuracaoAtual?.minBet,
+            1
+          );
+
+        const maximo =
+          numero(
+            configuracaoAtual?.maxBet,
+            1000
+          );
+
+        betInput.value =
+          Math.min(
+            Math.max(
+              valor,
+              minimo
+            ),
+            maximo
+          ).toFixed(2);
+      }
+    );
+  }
+);
+
+/* =========================================================
+   GIRO
+========================================================= */
+
+async function girar() {
+  if (girando) {
+    return;
+  }
+
+  if (!verificarUsuario()) {
+    return;
+  }
+
+  if (!configuracaoAtual) {
+    mostrarMensagem(
+      "Nenhum jogo selecionado.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (!validarApostaLocal()) {
+    return;
+  }
+
+  const aposta =
+    Number(
+      obterAposta().toFixed(2)
+    );
+
+  girando = true;
+
+  bloquearControles(true);
+
+  limparMensagem();
+
+  try {
+    const resultado =
+      await apiFetch(
+        "/games/spin",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              userId:
+                usuario.id,
+
+              gameId:
+                configuracaoAtual.id,
+
+              bet:
+                aposta,
+
+              freeSpin:
+                false
+            })
+        }
+      );
+
+    if (
+      resultado.user
+    ) {
+      atualizarUsuario(
+        resultado.user
+      );
+    } else if (
+      resultado.usuario
+    ) {
+      atualizarUsuario(
+        resultado.usuario
+      );
+    } else if (
+      resultado.balance !==
+      undefined
+    ) {
+      atualizarSaldo(
+        resultado.balance
+      );
+    }
+
+    await animarResultado(
+      resultado
+    );
+
+    mostrarResultado(
+      resultado
+    );
+  } catch (error) {
+    console.error(
+      "Erro ao girar:",
+      error
+    );
+
+    mostrarMensagem(
+      error.message ||
+      "Não foi possível realizar o giro.",
+      "error"
+    );
+  } finally {
+    girando = false;
+
+    bloquearControles(false);
+  }
+}
+
+/* =========================================================
+   ANIMAÇÃO
+========================================================= */
+
+function animarResultado(
+  resultado
+) {
+  const grade =
+    resultado.grid ||
+    resultado.result?.grid ||
+    resultado.result?.grade ||
+    resultado.grade;
+
+  if (!Array.isArray(grade)) {
+    return Promise.resolve();
+  }
+
+  const reels =
+    grade.length;
+
+  const rows =
+    Array.isArray(
+      grade[0]
+    )
+      ? grade[0].length
+      : 1;
+
+  if (!slotReels) {
+    return Promise.resolve();
+  }
+
+  slotReels.style.setProperty(
+    "--reels",
+    reels
+  );
+
+  slotReels.innerHTML =
+    "";
+
+  const colunas = [];
+
+  for (
+    let reel = 0;
+    reel < reels;
+    reel++
+  ) {
+    const coluna =
+      document.createElement(
+        "div"
+      );
+
+    coluna.className =
+      "slot-reel spinning";
+
+    for (
+      let row = 0;
+      row < rows;
+      row++
+    ) {
+      const simbolo =
+        grade[reel]?.[row];
+
+      coluna.appendChild(
+        criarSimbolo(
+          simbolo
+        )
+      );
+    }
+
+    slotReels.appendChild(
+      coluna
+    );
+
+    colunas.push(
+      coluna
+    );
+  }
+
+  return new Promise(
+    (resolve) => {
+      setTimeout(
+        () => {
+          colunas.forEach(
+            (coluna) => {
+              coluna.classList.remove(
+                "spinning"
+              );
+            }
+          );
+
+          destacarPremios(
+            resultado
+          );
+
+          resolve();
+        },
+        900
+      );
+    }
+  );
+}
+
+/* =========================================================
+   DESTACAR PRÊMIOS
+========================================================= */
+
+function destacarPremios(
+  resultado
+) {
+  const elementos =
+    slotReels?.querySelectorAll(
+      ".slot-symbol"
+    );
+
+  if (!elementos) {
+    return;
+  }
+
+  const indices =
+    resultado.winningPositions ||
+    resultado.result?.winningPositions ||
+    resultado.premios?.winningPositions ||
+    [];
+
+  if (
+    Array.isArray(indices) &&
+    indices.length
+  ) {
+    indices.forEach(
+      (indice) => {
+        const elemento =
+          elementos[indice];
+
+        if (elemento) {
+          elemento.classList.add(
+            "win"
+          );
+        }
+      }
+    );
+
+    return;
+  }
+
+  const premio =
+    numero(
+      resultado.win ??
+      resultado.premio ??
+      resultado.result?.win ??
+      0
+    );
+
+  if (premio > 0) {
+    elementos.forEach(
+      (elemento) => {
+        elemento.classList.add(
+          "win"
+        );
+      }
+    );
+  }
+}
+
+/* =========================================================
    RESULTADO
---------------------------------------------------------- */
+========================================================= */
 
-.roulette-result{
-  padding:16px;
-
-  border:
-    1px solid rgba(245,197,66,.25);
-
-  border-radius:16px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(245,197,66,.09),
-      rgba(255,255,255,.025)
+function mostrarResultado(
+  resultado
+) {
+  const premio =
+    numero(
+      resultado.win ??
+      resultado.premio ??
+      resultado.result?.win ??
+      0
     );
 
-  text-align:center;
-
-  color:var(--gold2);
-
-  font-weight:1000;
-
-  font-size:18px;
-
-  margin-bottom:16px;
-
-  min-height:58px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  box-shadow:
-    inset 0 0 20px rgba(245,197,66,.035);
-}
-
-.roulette-result strong{
-  font-weight:1000;
-}
-
-.roulette-loss{
-  color:#ff7185;
-}
-
-
-/* ---------------------------------------------------------
-   ÁREA DE APOSTA
---------------------------------------------------------- */
-
-.roulette-betting{
-  padding:18px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  border-radius:20px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #121821,
-      #0b0f15
+  const aposta =
+    numero(
+      resultado.bet ??
+      resultado.aposta ??
+      obterAposta()
     );
 
-  box-shadow:
-    0 15px 35px rgba(0,0,0,.25);
+  if (!winMessage) {
+    return;
+  }
+
+  if (premio > 0) {
+    winMessage.textContent =
+      `🎉 Você ganhou R$ ${dinheiro(
+        premio
+      )}!`;
+
+    winMessage.classList.add(
+      "show",
+      "win"
+    );
+
+    winMessage.classList.remove(
+      "error"
+    );
+
+    return;
+  }
+
+  winMessage.textContent =
+    `Aposta de R$ ${dinheiro(
+      aposta
+    )} realizada. Boa sorte na próxima!`;
+
+  winMessage.classList.add(
+    "show"
+  );
+
+  winMessage.classList.remove(
+    "win",
+    "error"
+  );
 }
 
-.roulette-selection-label{
-  display:block;
+function mostrarMensagem(
+  mensagem,
+  tipo = ""
+) {
+  if (!winMessage) {
+    return;
+  }
 
-  margin-bottom:10px;
+  winMessage.textContent =
+    mensagem;
 
-  color:#aeb6c4;
+  winMessage.classList.add(
+    "show"
+  );
 
-  font-size:13px;
+  winMessage.classList.toggle(
+    "error",
+    tipo === "error"
+  );
 
-  font-weight:900;
-
-  text-align:center;
+  winMessage.classList.remove(
+    "win"
+  );
 }
 
-.roulette-selection-label strong{
-  color:var(--gold2);
+function limparMensagem() {
+  if (!winMessage) {
+    return;
+  }
+
+  winMessage.textContent =
+    "";
+
+  winMessage.classList.remove(
+    "show",
+    "win",
+    "error"
+  );
 }
-
-.roulette-betting select{
-  width:100%;
-  height:48px;
-
-  border:
-    1px solid rgba(255,255,255,.1);
-
-  border-radius:12px;
-
-  background:#070a0f;
-
-  color:#fff;
-
-  padding:0 12px;
-
-  margin-bottom:14px;
-}
-
-
-/* ---------------------------------------------------------
-   STATUS GIRO GRÁTIS
---------------------------------------------------------- */
-
-.roulette-free-spin-status{
-  margin:
-    0 0 12px;
-
-  padding:12px;
-
-  border:
-    1px solid rgba(32,168,90,.35);
-
-  border-radius:12px;
-
-  background:
-    rgba(32,168,90,.09);
-
-  color:#baffcf;
-
-  text-align:center;
-
-  font-weight:900;
-
-  font-size:13px;
-}
-
-
-/* ---------------------------------------------------------
-   CONTROLE DE APOSTA DA ROLETA
---------------------------------------------------------- */
-
-.roulette-bet-row{
-  margin-top:5px;
-}
-
 
 /* =========================================================
-   ELEMENTOS ANTIGOS DA ROLETA EUROPEIA
+   CONTROLES
 ========================================================= */
 
-/*
-  A nova Roleta Popular não usa números
-  de 0 a 36 nem vermelho/preto.
-*/
+function bloquearControles(
+  bloqueado
+) {
+  if (spinButton) {
+    spinButton.disabled =
+      bloqueado;
 
-.roulette-number-grid{
-  display:none!important;
+    spinButton.textContent =
+      bloqueado
+        ? "Girando..."
+        : "GIRAR";
+  }
+
+  if (betInput) {
+    betInput.disabled =
+      bloqueado;
+  }
+
+  quickBetButtons.forEach(
+    (button) => {
+      button.disabled =
+        bloqueado;
+    }
+  );
 }
-
-.roulette-number{
-  display:none!important;
-}
-
-#rouletteBetType{
-  display:none!important;
-}
-
 
 /* =========================================================
-   TOAST
+   FECHAR JOGO
 ========================================================= */
 
-.toast{
-  position:fixed;
-  z-index:100;
+function fecharJogo() {
+  if (girando) {
+    return;
+  }
 
-  left:50%;
-  bottom:22px;
+  if (gameModal) {
+    gameModal.classList.remove(
+      "active"
+    );
 
-  transform:
-    translate(-50%,20px);
+    gameModal.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+  }
 
-  opacity:0;
+  jogoAtual =
+    null;
 
-  pointer-events:none;
+  configuracaoAtual =
+    null;
 
-  max-width:
-    calc(100% - 30px);
-
-  padding:13px 18px;
-
-  border-radius:13px;
-
-  background:#202731;
-
-  color:#fff;
-
-  border:
-    1px solid rgba(255,255,255,.1);
-
-  transition:.25s;
-
-  text-align:center;
+  limparMensagem();
 }
-
-.toast.show{
-  opacity:1;
-
-  transform:
-    translate(-50%,0);
-}
-
 
 /* =========================================================
-   RESPONSIVO
+   EVENTOS
 ========================================================= */
 
-@media(max-width:700px){
-
-  .games-container{
-    grid-template-columns:1fr;
-  }
-
-  .games-page{
-    padding-top:20px;
-  }
-
-  .games-lobby h1{
-    font-size:40px;
-  }
-
-  .game-title-row h2{
-    font-size:29px;
-  }
-
-  .game-title-row{
-    align-items:center;
-  }
-
-  .win-display{
-    font-size:16px;
-  }
-
-  .reel{
-    height:195px;
-  }
-
-  .symbol{
-    height:65px;
-    flex-basis:65px;
-    font-size:39px;
-  }
-
-  .symbol.seven{
-    font-size:49px;
-  }
-
-  .roulette-machine{
-    width:min(540px,94vw);
-  }
-
-  .roulette-label{
-    width:90px;
-  }
+if (spinButton) {
+  spinButton.addEventListener(
+    "click",
+    girar
+  );
 }
 
-
-@media(max-width:480px){
-
-  .game-header{
-    height:62px;
-    padding:0 11px;
-    grid-template-columns:45px 1fr auto;
-  }
-
-  .header-back{
-    width:40px;
-    height:40px;
-  }
-
-  .game-brand{
-    font-size:20px;
-  }
-
-  .header-balance{
-    font-size:13px;
-    padding:8px 9px;
-  }
-
-  .games-page{
-    width:calc(100% - 20px);
-  }
-
-  .slot-marquee{
-    padding:15px 10px;
-  }
-
-  .marquee-title{
-    font-size:31px;
-  }
-
-  .slot-cabinet{
-    padding:9px 8px 14px;
-  }
-
-  .slot-screen{
-    padding:8px;
-    border-width:3px;
-  }
-
-  .reels-window{
-    gap:4px;
-    padding:4px;
-  }
-
-  .reel{
-    height:174px;
-  }
-
-  .symbol{
-    height:58px;
-    flex-basis:58px;
-    font-size:32px;
-  }
-
-  .symbol.seven{
-    font-size:43px;
-  }
-
-  .bet-row,
-  .roulette-bet-row{
-    grid-template-columns:52px 1fr 52px;
-  }
-
-  .bet-adjust,
-  .roulette-bet-row>button{
-    height:52px;
-  }
-
-  .bet-value,
-  .roulette-bet-row>div{
-    height:52px;
-  }
-
-  .bet-value strong,
-  .roulette-bet-row strong{
-    font-size:18px;
-  }
-
-  .quick-bets{
-    gap:5px;
-  }
-
-  .quick-bets button{
-    padding:10px 2px;
-    font-size:12px;
-  }
-
-  .spin-button{
-    min-height:58px;
-    font-size:20px;
-  }
-
-  .slot-paytable{
-    grid-template-columns:1fr;
-  }
-
-
-  /* ROLETA MOBILE */
-
-  .roulette-machine{
-    width:min(520px,96vw);
-    padding:11px;
-    margin-top:0;
-  }
-
-  .roulette-wheel{
-    inset:22px;
-    border-width:7px;
-  }
-
-  .roulette-pointer{
-    top:-5px;
-
-    border-left-width:15px;
-    border-right-width:15px;
-    border-top-width:31px;
-  }
-
-  .roulette-label{
-    width:68px;
-    height:30px;
-
-    font-size:11px;
-  }
-
-  .roulette-label.zero{
-    font-size:12px;
-  }
-
-  .roulette-label.m5,
-  .roulette-label.m10{
-    font-size:11px;
-  }
-
-  .roulette-label.clover{
-    font-size:21px;
-  }
-
-  .roulette-hub{
-    width:31%;
-    border-width:4px;
-  }
-
-  .roulette-hub strong{
-    font-size:21px;
-  }
-
-  .roulette-hub small{
-    font-size:7px;
-    letter-spacing:2px;
-  }
-
-  .roulette-result{
-    font-size:16px;
-    padding:13px;
-  }
+if (closeGameButton) {
+  closeGameButton.addEventListener(
+    "click",
+    fecharJogo
+  );
 }
+
+if (backButton) {
+  backButton.addEventListener(
+    "click",
+    () => {
+      if (girando) {
+        return;
+      }
+
+      window.location.href =
+        "dashboard.html";
+    }
+  );
+}
+
+if (gameModal) {
+  gameModal.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target ===
+        gameModal
+      ) {
+        fecharJogo();
+      }
+    }
+  );
+}
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    if (
+      event.key === "Escape" &&
+      !girando
+    ) {
+      fecharJogo();
+    }
+
+    if (
+      event.key === "Enter" &&
+      document.activeElement ===
+        betInput
+    ) {
+      girar();
+    }
+  }
+);
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+async function inicializar() {
+  if (!verificarUsuario()) {
+    return;
+  }
+
+  await carregarJogos();
+}
+
+inicializar();
