@@ -1,1462 +1,1302 @@
-*{box-sizing:border-box}
-
-:root{
-  --bg:#07090d;
-  --panel:#10141c;
-  --panel2:#151b24;
-  --gold:#f5c542;
-  --gold2:#ffdf70;
-  --text:#fff;
-  --muted:#9ca5b5;
-  --red:#d51f3d;
-  --black:#15171d;
-  --green:#18a957;
+* {
+  box-sizing: border-box;
 }
 
-html,body{
-  margin:0;
-  min-height:100%;
+:root {
+  --gold: #f6c94a;
+  --bg: #07080c;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
   background:
-    radial-gradient(circle at top,rgba(245,197,66,.07),transparent 38%),
-    var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
+    radial-gradient(
+      circle at 50% 18%,
+      #1b1d26,
+      #07080c 65%
+    );
+  color: #fff;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
-body{
-  overflow-x:hidden;
-}
-
-button,input,select{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-
-button:disabled{
-  cursor:wait;
-}
-
-[hidden]{
-  display:none!important;
+button {
+  font: inherit;
+  cursor: pointer;
 }
 
 /* =========================================================
-   HEADER
+   CABEÇALHO
 ========================================================= */
 
-.game-header{
-  position:sticky;
-  top:0;
-  z-index:50;
-  height:70px;
-  display:grid;
-  grid-template-columns:52px 1fr auto;
-  align-items:center;
-  gap:10px;
-  padding:0 18px;
-  background:rgba(7,9,13,.94);
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(255,255,255,.08);
+.game-header {
+  height: 64px;
+
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+
+  padding: 0 14px;
+
+  position: sticky;
+  top: 0;
+
+  z-index: 50;
+
+  background: #08090ddd;
+
+  backdrop-filter: blur(15px);
+
+  border-bottom:
+    1px solid #f6c94a2d;
 }
 
-.header-back{
-  width:44px;
-  height:44px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:13px;
-  background:#111722;
-  color:#fff;
-  font-size:28px;
-  line-height:1;
+.header-back {
+  width: 42px;
+  height: 42px;
+
+  border:
+    1px solid #2b303b;
+
+  border-radius: 13px;
+
+  background: #11141b;
+
+  color: #fff;
+
+  font-size: 25px;
 }
 
-.header-back:hover{
-  border-color:rgba(245,197,66,.45);
-  background:#171e29;
+.game-brand {
+  text-align: center;
+
+  text-decoration: none;
+
+  color: #eee;
+
+  font-size: 27px;
+
+  font-weight: 900;
 }
 
-.game-brand{
-  justify-self:center;
-  color:#fff;
-  text-decoration:none;
-  font-weight:1000;
-  letter-spacing:3px;
-  font-size:24px;
+.game-brand span {
+  color: var(--gold);
 }
 
-.game-brand span{
-  color:var(--gold);
+.header-balance {
+  padding: 10px 13px;
+
+  border:
+    1px solid #f6c94a44;
+
+  border-radius: 12px;
+
+  background: #0c0e14;
+
+  font-size: 12px;
+
+  color: #bbb;
 }
 
-.header-balance,
-.stage-balance{
-  padding:9px 12px;
-  border-radius:12px;
-  border:1px solid rgba(245,197,66,.25);
-  background:rgba(245,197,66,.08);
-  color:var(--gold2);
-  font-weight:900;
-  white-space:nowrap;
+.header-balance strong {
+  color: #fff;
+  font-size: 15px;
 }
 
 /* =========================================================
-   PAGE / LOBBY
+   PÁGINA
 ========================================================= */
 
-.games-page{
-  width:min(1100px,calc(100% - 28px));
-  margin:auto;
-  padding:28px 0 70px;
-}
+.games-page {
+  max-width: 1180px;
 
-.games-lobby{
-  text-align:center;
+  margin: auto;
+
+  padding:
+    26px 16px 50px;
 }
 
 .page-kicker,
-.game-kicker{
-  font-size:11px;
-  letter-spacing:2px;
-  font-weight:1000;
-  color:var(--gold);
+.game-kicker {
+  color: var(--gold);
+
+  font-size: 11px;
+
+  font-weight: 900;
+
+  letter-spacing: 2px;
 }
 
-.games-lobby h1{
-  font-size:46px;
-  margin:8px 0 4px;
-  letter-spacing:-1px;
+.games-lobby h1 {
+  margin:
+    5px 0 2px;
+
+  font-size: 36px;
 }
 
-.games-lobby>p{
-  color:var(--muted);
-  margin:0 0 30px;
+.games-lobby p {
+  margin: 0;
+
+  color: #9da4b1;
 }
 
-.games-message{
-  color:var(--muted);
-  margin:20px;
-}
+.games-message {
+  margin:
+    20px 0;
 
-.games-container{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:16px;
-  text-align:left;
-}
-
-.lobby-card{
-  position:relative;
-  overflow:hidden;
-  padding:20px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:20px;
-  background:linear-gradient(145deg,#171d27,#0e131a);
-  box-shadow:0 15px 35px rgba(0,0,0,.2);
-  transition:
-    transform .2s ease,
-    border-color .2s ease,
-    box-shadow .2s ease;
-}
-
-.lobby-card:hover{
-  transform:translateY(-3px);
-  border-color:rgba(245,197,66,.3);
-  box-shadow:0 20px 45px rgba(0,0,0,.35);
-}
-
-.lobby-card::after{
-  content:"";
-  position:absolute;
-  width:140px;
-  height:140px;
-  right:-60px;
-  top:-60px;
-  border-radius:50%;
-  background:rgba(245,197,66,.08);
-  pointer-events:none;
-}
-
-.lobby-icon{
-  font-size:46px;
-  margin-bottom:12px;
-}
-
-.lobby-card h3{
-  margin:0 0 7px;
-  font-size:23px;
-}
-
-.lobby-card p{
-  margin:0 0 18px;
-  color:var(--muted);
-}
-
-.lobby-play{
-  width:100%;
-  border:0;
-  border-radius:12px;
-  padding:13px;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:#111;
-  font-weight:1000;
-  box-shadow:0 7px 18px rgba(245,197,66,.12);
-}
-
-.lobby-play:hover{
-  filter:brightness(1.08);
+  color: #aeb4c0;
 }
 
 /* =========================================================
-   GAME STAGE
+   CARD DO JOGO
 ========================================================= */
 
-.game-stage-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:18px;
+.games-container {
+  display: grid;
+  gap: 14px;
 }
 
-.stage-back{
-  border:1px solid rgba(255,255,255,.1);
-  background:#111722;
-  color:#fff;
-  border-radius:12px;
-  padding:10px 14px;
-  font-weight:800;
-}
+.game-card {
+  width: 100%;
 
-.stage-back:hover{
-  border-color:rgba(245,197,66,.35);
-}
+  display: grid;
 
-.game-title-row{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:15px;
-  margin-bottom:18px;
-}
+  grid-template-columns:
+    58px
+    1fr
+    auto;
 
-.game-title-row h2{
-  margin:5px 0 0;
-  font-size:34px;
-  letter-spacing:-.5px;
-}
+  align-items: center;
 
-.win-display{
-  color:var(--gold2);
-  font-size:20px;
-  font-weight:1000;
-  white-space:nowrap;
-}
+  gap: 14px;
 
-/* =========================================================
-   SLOT MACHINE
-========================================================= */
+  text-align: left;
 
-.slot-panel{
-  --slot1:#7a0716;
-  --slot2:#d51f3d;
-  --slot3:#ffdf70;
-}
+  padding: 16px;
 
-.slot-marquee{
-  position:relative;
-  overflow:hidden;
-  text-align:center;
-  padding:18px 15px 16px;
-  border:2px solid #9b6c12;
-  border-bottom:0;
-  border-radius:28px 28px 0 0;
+  border:
+    1px solid #292e38;
+
+  border-radius: 18px;
+
   background:
     linear-gradient(
       145deg,
-      #180d08,
-      #5b190d 45%,
-      #160b07
+      #151923,
+      #0b0e14
     );
+
+  color: #fff;
+}
+
+.game-card-icon {
+  width: 54px;
+  height: 54px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 16px;
+
+  background: #090b10;
+
+  font-size: 28px;
+
+  border:
+    1px solid #f6c94a4d;
+}
+
+.game-card strong {
+  display: block;
+}
+
+.game-card span {
+  display: block;
+
+  color: #9299a6;
+
+  font-size: 12px;
+
+  margin-top: 4px;
+}
+
+.game-card b {
+  color: var(--gold);
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   ÁREA DO JOGO
+========================================================= */
+
+.game-stage-top {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.stage-back {
+  border: 0;
+
+  background: none;
+
+  color: #c9ced7;
+}
+
+.stage-balance {
+  font-size: 13px;
+
+  color: #b9bec8;
+}
+
+.stage-balance strong {
+  color: #fff;
+
+  font-size: 16px;
+}
+
+.game-title-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: end;
+
+  margin-bottom: 12px;
+}
+
+.game-title-row h2 {
+  margin:
+    3px 0;
+
+  font-size: 29px;
+}
+
+.win-display {
+  color: var(--gold);
+
+  font-weight: 900;
+}
+
+/* =========================================================
+   ROLETA
+========================================================= */
+
+.roulette-panel {
+  max-width: 850px;
+
+  margin: auto;
+}
+
+.roulette-heading {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 10px;
+}
+
+.roulette-crown {
+  color: var(--gold);
+}
+
+.roulette-name {
+  font-size: 25px;
+
+  font-weight: 950;
+
+  color: var(--gold);
+}
+
+.roulette-subtitle {
+  font-size: 10px;
+
+  color: #adb2bd;
+
+  letter-spacing: 1.8px;
+}
+
+.roulette-free-badge {
+  padding:
+    9px 12px;
+
+  border:
+    1px solid #31d36b66;
+
+  border-radius: 12px;
+
+  color: #73f39b;
+
+  font-size: 11px;
+
+  background: #17552d44;
+}
+
+/* =========================================================
+   MÁQUINA DA ROLETA
+========================================================= */
+
+.roulette-machine {
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+
+  padding:
+    15px 0 22px;
+}
+
+.roulette-wheel-shell {
+  width:
+    min(88vw, 620px);
+
+  aspect-ratio: 1;
+
+  position: relative;
+
+  border-radius: 50%;
+
+  padding: 15px;
+
+  background:
+    radial-gradient(
+      circle,
+      #fff2a0 0 2%,
+      #d59618 3%,
+      #7c4b08 8%,
+      #f9d45e 12%,
+      #08090d 18% 100%
+    );
+
   box-shadow:
-    inset 0 0 30px rgba(255,198,53,.13),
-    0 -5px 35px rgba(245,197,66,.1);
+    0 0 0 2px #4b2e08,
+    0 0 0 5px #dca52e,
+    0 0 25px #f6c94a66,
+    0 30px 70px #0009;
 }
 
-.marquee-lights{
-  position:absolute;
-  inset:8px;
-  border-radius:20px;
-  border:2px dotted #ffe98a;
-  opacity:.7;
-  pointer-events:none;
+/* =========================================================
+   DISCO
+========================================================= */
+
+.roulette-wheel {
+  position: absolute;
+
+  inset: 24px;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  background: #0b0c10;
+
+  box-shadow:
+    inset 0 0 0 7px #d7a126,
+    inset 0 0 35px #000;
 }
 
-.marquee-title{
-  position:relative;
-  font-size:clamp(30px,8vw,55px);
-  font-weight:1000;
-  letter-spacing:2px;
-  color:#fff1a6;
-  text-shadow:
-    0 3px 0 #7b4500,
-    0 0 18px rgba(255,214,80,.7);
-}
+.roulette-wheel::after {
+  content: "";
 
-.marquee-subtitle{
-  position:relative;
-  margin-top:3px;
-  color:#ffcf46;
-  font-size:11px;
-  font-weight:1000;
-  letter-spacing:4px;
-}
+  position: absolute;
 
-.slot-cabinet{
-  position:relative;
-  padding:14px 12px 18px;
-  border:2px solid #9b6c12;
-  border-top:0;
-  border-radius:0 0 30px 30px;
+  inset: 0;
+
+  border-radius: 50%;
+
   background:
     linear-gradient(
-      150deg,
-      #2a0b12,
-      #090b10 22%,
-      #161b25 75%,
-      #32100e
+      135deg,
+      #ffffff33,
+      transparent 25%,
+      transparent 68%,
+      #0007
     );
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   SETORES
+========================================================= */
+
+.roulette-label {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 50%;
+  height: 50%;
+
+  transform-origin: 0 0;
+
+  transform:
+    rotate(var(--angle))
+    skewY(
+      calc(
+        90deg -
+        var(--slice-angle)
+      )
+    );
+
+  background: #101217;
+
+  border-right:
+    2px solid #f6c94a8c;
+
+  border-bottom:
+    1px solid #f6c94a66;
+
+  clip-path:
+    polygon(
+      0 0,
+      100% 0,
+      100% 100%
+    );
+}
+
+.roulette-label span {
+  position: absolute;
+
+  left: 43%;
+  top: 37%;
+
+  transform:
+    skewY(
+      calc(
+        -90deg +
+        var(--slice-angle)
+      )
+    )
+    rotate(
+      calc(
+        var(--slice-angle) / 2
+      )
+    );
+
+  white-space: nowrap;
+
+  font-weight: 1000;
+
+  font-size:
+    clamp(
+      20px,
+      5vw,
+      38px
+    );
+}
+
+/* =========================================================
+   X — PRETO COM LETRA VERMELHA
+========================================================= */
+
+.roulette-label[data-type="zero"] {
+  background:
+    linear-gradient(
+      145deg,
+      #06070a,
+      #11131a
+    );
+}
+
+.roulette-label[data-type="zero"] span {
+  color: #ff3348;
+
+  text-shadow:
+    0 0 10px #ff1e3588,
+    0 3px 6px #000;
+}
+
+/* =========================================================
+   2X
+========================================================= */
+
+.roulette-label[data-multiplier="2"] {
+  background:
+    linear-gradient(
+      145deg,
+      #a97a08,
+      #f2cf52,
+      #795008
+    );
+}
+
+/* =========================================================
+   3X
+========================================================= */
+
+.roulette-label[data-multiplier="3"] {
+  background:
+    linear-gradient(
+      145deg,
+      #351d83,
+      #7650db,
+      #241354
+    );
+}
+
+/* =========================================================
+   4X
+========================================================= */
+
+.roulette-label[data-multiplier="4"] {
+  background:
+    linear-gradient(
+      145deg,
+      #07508b,
+      #1ca5ec,
+      #06365d
+    );
+}
+
+/* =========================================================
+   5X
+========================================================= */
+
+.roulette-label[data-multiplier="5"] {
+  background:
+    linear-gradient(
+      145deg,
+      #734308,
+      #dba735,
+      #633807
+    );
+}
+
+.roulette-label[data-type="prize"] span {
+  color: #fff;
+
+  text-shadow:
+    0 2px 5px #000;
+}
+
+/* =========================================================
+   🍀
+========================================================= */
+
+.roulette-label[data-type="sorte"] {
+  background:
+    linear-gradient(
+      145deg,
+      #0a602f,
+      #2be276,
+      #064520
+    );
+}
+
+.roulette-label[data-type="sorte"] span {
+  font-size:
+    clamp(
+      22px,
+      5vw,
+      34px
+    );
+}
+
+/* =========================================================
+   ANEL INTERNO
+========================================================= */
+
+.roulette-inner-ring {
+  position: absolute;
+
+  inset: 33%;
+
+  border-radius: 50%;
+
+  border:
+    2px solid #f6c94acc;
+
   box-shadow:
-    inset 0 0 45px rgba(0,0,0,.7),
-    0 24px 55px rgba(0,0,0,.5);
-  transition:box-shadow .25s ease;
+    0 0 0 5px #000c,
+    inset 0 0 18px #000;
+
+  pointer-events: none;
 }
 
-.slot-glow{
-  position:absolute;
-  inset:4px;
-  border-radius:25px;
-  pointer-events:none;
+/* =========================================================
+   BOTÃO CENTRAL
+========================================================= */
+
+.roulette-hub {
+  position: absolute;
+
+  inset: 36%;
+
+  border-radius: 50%;
+
+  border:
+    3px solid #e0ad35;
+
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      #34353b,
+      #11131a 46%,
+      #05060a 80%
+    );
+
+  color: #f8d35d;
+
   box-shadow:
-    inset 0 0 30px rgba(245,197,66,.08);
+    inset 0 0 18px #000,
+    0 0 18px #f6c94a40;
+
+  z-index: 8;
 }
 
-.slot-screen{
-  position:relative;
-  padding:16px;
-  border-radius:22px;
-  border:4px solid #c68c1c;
-  background:#05070a;
+.roulette-hub span {
+  display: block;
+}
+
+.roulette-hub strong {
+  display: block;
+
+  font-size:
+    clamp(
+      17px,
+      4vw,
+      27px
+    );
+}
+
+.roulette-hub small {
+  font-size: 8px;
+
+  letter-spacing: 2px;
+
+  color: #aaa;
+}
+
+/* =========================================================
+   LÂMPADAS
+========================================================= */
+
+.roulette-bulbs {
+  position: absolute;
+
+  inset: 4px;
+
+  border-radius: 50%;
+
+  z-index: 9;
+
+  pointer-events: none;
+}
+
+.roulette-bulbs i {
+  position: absolute;
+
+  width: 10px;
+  height: 10px;
+
+  left:
+    calc(50% - 5px);
+
+  top:
+    calc(50% - 5px);
+
+  border-radius: 50%;
+
+  background: #fff3a3;
+
   box-shadow:
-    inset 0 0 0 2px #3b270b,
-    inset 0 0 45px rgba(0,0,0,.9),
-    0 8px 20px #000;
+    0 0 5px 2px #fff,
+    0 0 12px 4px #f6c94acc;
+
+  transform:
+    rotate(var(--bulb-angle))
+    translateY(
+      calc(
+        min(43vw, 300px) * -1
+      )
+    );
 }
 
-.reels-window{
-  position:relative;
-  z-index:2;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px;
-  padding:7px;
-  border-radius:16px;
-  background:#020305;
-  border:2px solid #4a4d55;
+/* =========================================================
+   PONTEIRO PREMIUM
+========================================================= */
+
+.roulette-pointer {
+  position: absolute;
+
+  z-index: 20;
+
+  top: 0;
+
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  width: 54px;
+
+  height: 64px;
+
+  filter:
+    drop-shadow(
+      0 8px 8px #000a
+    );
 }
 
-.reel{
-  height:225px;
-  overflow:hidden;
-  border-radius:10px;
+.roulette-pointer::before {
+  content: "";
+
+  position: absolute;
+
+  left: 7px;
+  top: 0;
+
+  width: 40px;
+  height: 48px;
+
+  clip-path:
+    polygon(
+      50% 100%,
+      0 0,
+      100% 0
+    );
+
+  background:
+    linear-gradient(
+      90deg,
+      #6e4307,
+      #f7d66b 50%,
+      #8b580a
+    );
+
+  border:
+    2px solid #f4cb4e;
+}
+
+.pointer-gem {
+  position: absolute;
+
+  z-index: 2;
+
+  width: 17px;
+  height: 17px;
+
+  left: 19px;
+  top: 10px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      #ffb2b2,
+      #e20d24 45%,
+      #65000b
+    );
+
+  box-shadow:
+    0 0 10px #ff1e35;
+}
+
+/* =========================================================
+   RESULTADO
+========================================================= */
+
+.roulette-result {
+  min-height: 45px;
+
+  display: grid;
+
+  place-items: center;
+
+  margin:
+    4px auto 14px;
+
+  padding: 11px;
+
+  border:
+    1px solid #f6c94a33;
+
+  border-radius: 12px;
+
+  background: #0b0e14;
+
+  font-weight: 800;
+
+  text-align: center;
+}
+
+.roulette-free-spin-status {
+  margin:
+    -5px auto 13px;
+
+  text-align: center;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  background: #24984d29;
+
+  border:
+    1px solid #31d36b59;
+
+  color: #72ef9a;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+/* =========================================================
+   ÁREA DE APOSTA
+========================================================= */
+
+.roulette-betting {
+  max-width: 720px;
+
+  margin: auto;
+
+  padding: 17px;
+
+  border:
+    1px solid #272c35;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #11151d,
+      #090b10
+    );
+}
+
+.roulette-selection-label {
+  text-align: center;
+
+  color: #aeb4c0;
+
+  font-size: 11px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.4px;
+
+  margin-bottom: 12px;
+}
+
+/* =========================================================
+   SELETOR DE VALOR
+========================================================= */
+
+.roulette-bet-row {
+  display: grid;
+
+  grid-template-columns:
+    50px
+    1fr
+    50px;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.roulette-bet-row > button {
+  height: 46px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid #333944;
+
+  background: #151922;
+
+  color: #fff;
+
+  font-size: 25px;
+}
+
+.roulette-bet-row > div {
+  text-align: center;
+}
+
+.roulette-bet-row small {
+  display: block;
+
+  color: #777f8e;
+
+  font-size: 9px;
+}
+
+.roulette-bet-row strong {
+  display: block;
+
+  font-size: 20px;
+}
+
+/* =========================================================
+   APOSTAS RÁPIDAS
+========================================================= */
+
+.quick-bets {
+  display: grid;
+
+  gap: 8px;
+}
+
+.roulette-quick-bets {
+  grid-template-columns:
+    repeat(6, 1fr);
+
+  margin-top: 12px;
+}
+
+.quick-bets button {
+  min-height: 42px;
+
+  border:
+    1px solid #303641;
+
+  border-radius: 10px;
+
+  background: #151922;
+
+  color: #dfe2e7;
+
+  font-weight: 850;
+
+  font-size: 12px;
+}
+
+.quick-bets button.active {
+  border-color: #e7b93f;
+
+  background:
+    linear-gradient(
+      145deg,
+      #6f4a08,
+      #c79620
+    );
+
+  color: #fff;
+}
+
+/* =========================================================
+   OUTROS VALORES
+========================================================= */
+
+.other-value-button {
+  width: 100%;
+
+  margin-top: 9px;
+
+  min-height: 40px;
+
+  border:
+    1px dashed #f6c94a80;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #eac24d;
+
+  font-weight: 900;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   BOTÃO GIRAR
+========================================================= */
+
+.spin-button {
+  width: 100%;
+
+  min-height: 56px;
+
+  margin-top: 12px;
+
+  border:
+    1px solid #f7d76c;
+
+  border-radius: 13px;
+
   background:
     linear-gradient(
       180deg,
-      #cbd0d9,
-      #fff 18%,
-      #e9ebef 50%,
-      #b9bec8
+      #ffe477,
+      #d69a21 70%,
+      #9a650b
     );
-  box-shadow:
-    inset 0 0 18px rgba(0,0,0,.25);
+
+  color: #171107;
+
+  font-weight: 1000;
+
+  letter-spacing: 1.4px;
 }
 
-.reel-strip{
-  display:flex;
-  flex-direction:column;
-  transform:translateY(0);
-}
+.spin-button:disabled,
+.roulette-hub:disabled,
+.roulette-bet-row button:disabled {
+  opacity: 0.55;
 
-.symbol{
-  height:75px;
-  flex:0 0 75px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:47px;
-  font-weight:1000;
-  color:#15171b;
-  text-shadow:0 2px 2px rgba(255,255,255,.8);
-}
-
-.symbol.seven{
-  color:#c91835;
-  font-family:Georgia,serif;
-  font-size:58px;
-  text-shadow:
-    0 2px 0 #fff,
-    0 4px 0 #771020;
-}
-
-.symbol.diamond{
-  color:#16a5d9;
-  text-shadow:
-    0 2px 0 #fff,
-    0 0 9px rgba(0,170,255,.35);
-}
-
-.symbol.coin{
-  color:#d28b00;
-}
-
-.symbol.crown{
-  color:#b67800;
-}
-
-.payline{
-  position:absolute;
-  left:10px;
-  right:10px;
-  height:2px;
-  background:var(--gold);
-  z-index:5;
-  box-shadow:0 0 9px rgba(255,218,90,.8);
-  pointer-events:none;
-}
-
-.payline-top{
-  top:29%;
-}
-
-.payline-mid{
-  top:50%;
-}
-
-.payline-bottom{
-  top:71%;
-}
-
-.screen-caption{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:8px 5px 0;
-  color:#8c939e;
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:1px;
-}
-
-.screen-caption strong{
-  color:var(--gold2);
-  font-size:15px;
-}
-
-.slot-controls{
-  padding:17px 2px 0;
-}
-
-.bet-row,
-.roulette-bet-row{
-  display:grid;
-  grid-template-columns:60px 1fr 60px;
-  gap:9px;
-  align-items:center;
-}
-
-.bet-adjust,
-.roulette-bet-row>button{
-  height:58px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:14px;
-  background:#0d121b;
-  color:#fff;
-  font-size:30px;
-  line-height:1;
-}
-
-.bet-adjust:hover,
-.roulette-bet-row>button:hover{
-  border-color:rgba(245,197,66,.35);
-  background:#151c27;
-}
-
-.bet-value,
-.roulette-bet-row>div{
-  height:58px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;
-  background:#070a0f;
-}
-
-.bet-value small,
-.roulette-bet-row small{
-  font-size:9px;
-  letter-spacing:1.4px;
-  color:#778092;
-  font-weight:900;
-}
-
-.bet-value strong,
-.roulette-bet-row strong{
-  color:#fff;
-  font-size:21px;
-}
-
-.quick-bets{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:8px;
-  margin-top:10px;
-}
-
-.quick-bets button{
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:11px;
-  padding:11px 4px;
-  background:#111722;
-  color:#fff;
-  font-weight:900;
-}
-
-.quick-bets button:hover{
-  border-color:rgba(245,197,66,.35);
-  color:var(--gold2);
-}
-
-.spin-button{
-  position:relative;
-  width:100%;
-  margin-top:13px;
-  min-height:63px;
-  border:2px solid #ffd85d;
-  border-radius:18px;
-  background:
-    linear-gradient(
-      145deg,
-      #ffe47b,
-      #f3b81e 58%,
-      #b87300
-    );
-  color:#171008;
-  font-size:22px;
-  font-weight:1000;
-  box-shadow:
-    0 10px 25px rgba(245,177,25,.2),
-    inset 0 1px rgba(255,255,255,.8);
-}
-
-.spin-button:hover{
-  filter:brightness(1.06);
-}
-
-.spin-button:active{
-  transform:translateY(1px);
-}
-
-.spin-button:disabled{
-  opacity:.55;
-}
-
-.spin-button.spinning{
-  animation:spinButtonPulse .7s ease-in-out infinite alternate;
-}
-
-@keyframes spinButtonPulse{
-  from{
-    box-shadow:
-      0 10px 25px rgba(245,177,25,.15),
-      inset 0 1px rgba(255,255,255,.8);
-  }
-  to{
-    box-shadow:
-      0 0 30px rgba(255,214,70,.55),
-      inset 0 1px rgba(255,255,255,.8);
-  }
-}
-
-.slot-status{
-  text-align:center;
-  min-height:22px;
-  margin-top:10px;
-  color:#aab1bd;
-  font-size:13px;
-  font-weight:700;
-}
-
-.slot-paytable{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:12px;
-}
-
-.slot-paytable div{
-  padding:11px 7px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  background:#0e131b;
-  text-align:center;
-}
-
-.slot-paytable span{
-  display:block;
-  font-size:18px;
-}
-
-.slot-paytable strong{
-  font-size:9px;
-  color:var(--gold2);
-  letter-spacing:.6px;
-}
-
-.slot-cabinet.spinning .reels-window{
-  box-shadow:0 0 25px rgba(245,197,66,.28);
-}
-
-.slot-cabinet.win .slot-screen{
-  animation:winPulse .55s ease-in-out 4;
-}
-
-@keyframes winPulse{
-  50%{
-    box-shadow:
-      inset 0 0 0 2px #ffe27a,
-      inset 0 0 45px rgba(255,214,70,.5),
-      0 0 30px rgba(255,214,70,.4);
-  }
-}
-
-.reel.spinning .reel-strip{
-  animation:reelBlur .16s linear infinite;
-}
-
-@keyframes reelBlur{
-  to{
-    transform:translateY(-75px);
-  }
+  cursor: not-allowed;
 }
 
 /* =========================================================
-   ROULETTE POPULAR
+   LEGENDA
 ========================================================= */
 
-.roulette-panel{
-  padding-bottom:10px;
+.roulette-legend {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap:
+    8px 12px;
+
+  margin-top: 13px;
+
+  color: #858d9b;
+
+  font-size: 9px;
 }
 
-.roulette-machine{
-  position:relative;
-  width:min(520px,92vw);
-  aspect-ratio:1;
-  margin:0 auto 16px;
-  border-radius:50%;
-  background:
-    radial-gradient(
-      circle,
-      #d5a938 0 4%,
-      #201606 5% 7%,
-      #e7c15a 8% 10%,
-      #100e0a 11% 100%
-    );
-  padding:16px;
-  box-shadow:
-    0 25px 60px rgba(0,0,0,.65),
-    inset 0 0 0 5px #8d5d08,
-    inset 0 0 0 11px #e7c75e;
+.roulette-legend i {
+  font-style: normal;
+
+  font-weight: 1000;
 }
 
-.roulette-wheel{
-  position:absolute;
-  inset:29px;
-  border-radius:50%;
-
-  /*
-    16 setores visuais:
-    X / prêmio / X / prêmio...
-  */
-  background:
-    conic-gradient(
-      from -11.25deg,
-
-      #c9152d 0deg 22.5deg,
-      #d7a51d 22.5deg 45deg,
-
-      #c9152d 45deg 67.5deg,
-      #8d4fd1 67.5deg 90deg,
-
-      #c9152d 90deg 112.5deg,
-      #d6339a 112.5deg 135deg,
-
-      #c9152d 135deg 157.5deg,
-      #18a957 157.5deg 180deg,
-
-      #c9152d 180deg 202.5deg,
-      #159ec9 202.5deg 225deg,
-
-      #c9152d 225deg 247.5deg,
-      #d7a51d 247.5deg 270deg,
-
-      #c9152d 270deg 292.5deg,
-      #8d4fd1 292.5deg 315deg,
-
-      #c9152d 315deg 337.5deg,
-      #d7a51d 337.5deg 360deg
-    );
-
-  border:10px solid #241b0b;
-
-  box-shadow:
-    inset 0 0 0 5px #b58a2d,
-    inset 0 0 35px #000,
-    0 0 0 1px rgba(255,255,255,.08);
-
-  transition:
-    transform 4.8s cubic-bezier(.12,.72,.12,1);
-  will-change:transform;
+.legend-x {
+  color: #ff3348;
 }
 
-/*
-  Grade interna que separa visualmente os 16 setores.
-*/
-.roulette-wheel::before{
-  content:"";
-  position:absolute;
-  inset:4%;
-  border-radius:50%;
-  background:
-    repeating-conic-gradient(
-      from -11.25deg,
-      rgba(255,255,255,.18) 0deg,
-      rgba(255,255,255,.18) 1deg,
-      transparent 1deg,
-      transparent 22.5deg
-    );
-  -webkit-mask:
-    radial-gradient(
-      circle,
-      transparent 0 58%,
-      #000 59% 100%
-    );
-  mask:
-    radial-gradient(
-      circle,
-      transparent 0 58%,
-      #000 59% 100%
-    );
-  pointer-events:none;
-  z-index:1;
+.legend-2,
+.legend-5 {
+  color: #f5d35c;
 }
 
-/*
-  O texto central decorativo antigo da roleta europeia
-  foi removido. A roleta Popular trabalha somente
-  com os multiplicadores e X.
-*/
-
-.roulette-wheel::after{
-  content:"";
-  position:absolute;
-  inset:11%;
-  border-radius:50%;
-  border:2px solid rgba(255,255,255,.12);
-  box-shadow:
-    inset 0 0 25px rgba(0,0,0,.55),
-    0 0 0 1px rgba(0,0,0,.45);
-  pointer-events:none;
-  z-index:1;
+.legend-3 {
+  color: #a889ff;
 }
 
-.roulette-label{
-  position:absolute;
-  z-index:4;
-
-  min-width:38px;
-  height:38px;
-  padding:0 7px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  border-radius:10px;
-
-  font-size:13px;
-  font-weight:1000;
-  line-height:1;
-
-  border:1px solid rgba(255,255,255,.25);
-
-  box-shadow:
-    0 3px 8px rgba(0,0,0,.4),
-    inset 0 1px rgba(255,255,255,.2);
-
-  white-space:nowrap;
-
-  pointer-events:none;
-  transform-origin:center center;
-
-  transition:
-    filter .2s ease,
-    box-shadow .2s ease,
-    transform .2s ease;
+.legend-4 {
+  color: #4bc0ff;
 }
 
-.roulette-label[data-type="zero"]{
-  background:#c9152d!important;
-  color:#fff!important;
-}
-
-.roulette-label[data-type="sorte"]{
-  background:#18a957!important;
-  color:#fff!important;
-  border-color:#72efad;
-  box-shadow:
-    0 0 15px rgba(24,169,87,.45),
-    inset 0 1px rgba(255,255,255,.3);
-}
-
-.roulette-label[data-multiplier="2"]{
-  background:#d7a51d!important;
-  color:#171008!important;
-  border-color:#ffe17b;
-}
-
-.roulette-label[data-multiplier="3"]{
-  background:#8d4fd1!important;
-  color:#fff!important;
-  border-color:#d8b4ff;
-}
-
-.roulette-label[data-multiplier="5"]{
-  background:#d6339a!important;
-  color:#fff!important;
-  border-color:#ff8bd1;
-}
-
-.roulette-label[data-multiplier="10"]{
-  background:#159ec9!important;
-  color:#fff!important;
-  border-color:#72ddff;
-  box-shadow:
-    0 0 14px rgba(21,158,201,.42),
-    inset 0 1px rgba(255,255,255,.3);
-}
-
-.roulette-label.winner{
-  z-index:8;
-  transform:
-    translate(-50%,-50%)
-    scale(1.18);
-}
-
-@keyframes rouletteWinnerFlash{
-  from{
-    filter:brightness(1.5);
-  }
-  to{
-    filter:brightness(2.4);
-  }
-}
-
-/* =========================================================
-   ROULETTE HUB
-========================================================= */
-
-.roulette-hub{
-  position:absolute;
-  z-index:9;
-  left:50%;
-  top:50%;
-
-  transform:translate(-50%,-50%);
-
-  width:27%;
-  aspect-ratio:1;
-
-  border-radius:50%;
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-
-  background:
-    radial-gradient(
-      circle at 35% 25%,
-      #fff0a0,
-      #d39a17 45%,
-      #5d3905 100%
-    );
-
-  border:5px solid #f2cf63;
-
-  box-shadow:
-    0 0 0 5px #3c2606,
-    0 0 25px rgba(255,208,65,.25),
-    inset 0 3px 8px rgba(255,255,255,.45);
-
-  color:#171008;
-
-  user-select:none;
-}
-
-.roulette-hub strong{
-  font-size:clamp(23px,6vw,35px);
-  letter-spacing:2px;
-  line-height:1;
-}
-
-.roulette-hub small{
-  margin-top:4px;
-  font-weight:1000;
-  letter-spacing:3px;
-  font-size:9px;
-}
-
-/*
-  Quando o botão central estiver presente no HTML,
-  ele continua parecendo parte da máquina.
-*/
-.roulette-hub button{
-  border:0;
-  background:transparent;
-  color:#171008;
-  font-weight:1000;
-}
-
-/* =========================================================
-   POINTER
-========================================================= */
-
-.roulette-pointer{
-  position:absolute;
-  z-index:15;
-  top:-2px;
-  left:50%;
-
-  transform:translateX(-50%);
-
-  width:0;
-  height:0;
-
-  border-left:17px solid transparent;
-  border-right:17px solid transparent;
-  border-top:35px solid var(--gold2);
-
-  filter:
-    drop-shadow(0 3px 4px #000)
-    drop-shadow(0 0 7px rgba(255,215,80,.35));
-}
-
-.roulette-pointer::after{
-  content:"";
-  position:absolute;
-  left:-6px;
-  top:-31px;
-
-  width:12px;
-  height:12px;
-
-  border-radius:50%;
-
-  background:#fff2a0;
-
-  box-shadow:
-    0 0 10px rgba(255,228,100,.8);
-}
-
-/* =========================================================
-   ROULETTE RESULT
-========================================================= */
-
-.roulette-result{
-  padding:14px;
-  border:1px solid rgba(245,197,66,.22);
-  border-radius:15px;
-  background:rgba(245,197,66,.06);
-  text-align:center;
-  color:var(--gold2);
-  font-weight:1000;
-  font-size:19px;
-  margin-bottom:16px;
-  min-height:53px;
-}
-
-.roulette-result strong{
-  display:inline-block;
-  font-size:20px;
-}
-
-.roulette-result span{
-  display:inline-block;
-  margin-top:4px;
-  color:#d9dee7;
-  font-size:13px;
-  font-weight:700;
-}
-
-/* =========================================================
-   FREE SPIN
-========================================================= */
-
-.roulette-free-spin-status{
-  margin:0 0 14px;
-  padding:13px 15px;
-  border:1px solid rgba(24,169,87,.4);
-  border-radius:15px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(24,169,87,.18),
-      rgba(24,169,87,.05)
-    );
-  color:#9cffc7;
-  text-align:center;
-  font-size:14px;
-  line-height:1.45;
-  box-shadow:
-    0 0 20px rgba(24,169,87,.08);
-}
-
-.roulette-free-spin-status strong{
-  color:#fff;
-  letter-spacing:.4px;
-}
-
-.roulette-free-spin-status span{
-  color:#b7ffd2;
-  font-size:12px;
-}
-
-/* =========================================================
-   ROULETTE BETTING
-========================================================= */
-
-.roulette-betting{
-  padding:18px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;
-  background:
-    linear-gradient(
-      145deg,
-      #121821,
-      #0b0f15
-    );
-}
-
-.roulette-betting>label,
-.roulette-selection-label{
-  display:block;
-  margin-bottom:7px;
-  color:#aeb6c4;
-  font-size:13px;
-  font-weight:900;
-}
-
-.roulette-betting select{
-  width:100%;
-  height:48px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;
-  background:#070a0f;
-  color:#fff;
-  padding:0 12px;
-  margin-bottom:14px;
-}
-
-.roulette-betting select:focus{
-  outline:2px solid rgba(245,197,66,.4);
-}
-
-.roulette-number-grid{
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:6px;
-  margin-bottom:15px;
-}
-
-.roulette-number{
-  height:43px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:9px;
-  color:#fff;
-  font-weight:900;
-  background:#15171d;
-}
-
-.roulette-number.red{
-  background:#c81e3a;
-}
-
-.roulette-number.green{
-  background:#087d4d;
-}
-
-.roulette-number.selected{
-  outline:3px solid var(--gold2);
-  box-shadow:
-    0 0 15px rgba(255,215,80,.35);
-}
-
-.roulette-bet-row{
-  margin-top:5px;
-}
-
-/* =========================================================
-   ROULETTE SPIN BUTTON
-========================================================= */
-
-#rouletteSpinButton{
-  margin-top:13px;
-}
-
-#rouletteSpinButton.spinning{
-  animation:rouletteSpinButton .55s ease-in-out infinite alternate;
-}
-
-@keyframes rouletteSpinButton{
-  from{
-    transform:scale(1);
-    box-shadow:
-      0 10px 25px rgba(245,177,25,.15);
-  }
-  to{
-    transform:scale(1.015);
-    box-shadow:
-      0 0 30px rgba(255,214,70,.5);
-  }
+.legend-clover {
+  color: #58ed8a;
 }
 
 /* =========================================================
    TOAST
 ========================================================= */
 
-.toast{
-  position:fixed;
-  z-index:100;
-  left:50%;
-  bottom:22px;
+.toast {
+  position: fixed;
 
-  transform:translate(-50%,20px);
+  left: 50%;
 
-  opacity:0;
-  pointer-events:none;
+  bottom: 22px;
 
-  max-width:calc(100% - 30px);
+  transform:
+    translate(
+      -50%,
+      20px
+    );
 
-  padding:13px 18px;
+  opacity: 0;
 
-  border-radius:13px;
+  z-index: 100;
 
-  background:#202731;
-  color:#fff;
+  padding:
+    12px 16px;
 
-  border:1px solid rgba(255,255,255,.1);
+  border:
+    1px solid #f6c94a59;
 
-  box-shadow:0 12px 30px rgba(0,0,0,.4);
+  border-radius: 12px;
 
-  transition:.25s;
+  background: #11151d;
 
-  text-align:center;
+  color: #fff;
+
+  box-shadow:
+    0 15px 35px #0008;
+
+  font-size: 12px;
+
+  font-weight: 700;
 }
 
-.toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
+.toast.show {
+  opacity: 1;
 
-/* =========================================================
-   MOBILE
-========================================================= */
+  transform:
+    translate(
+      -50%,
+      0
+    );
 
-@media(max-width:700px){
-
-  .games-container{
-    grid-template-columns:1fr;
-  }
-
-  .games-page{
-    padding-top:20px;
-  }
-
-  .games-lobby h1{
-    font-size:40px;
-  }
-
-  .game-title-row h2{
-    font-size:29px;
-  }
-
-  .game-title-row{
-    align-items:center;
-  }
-
-  .win-display{
-    font-size:16px;
-  }
-
-  .reel{
-    height:195px;
-  }
-
-  .symbol{
-    height:65px;
-    flex-basis:65px;
-    font-size:39px;
-  }
-
-  .symbol.seven{
-    font-size:49px;
-  }
-
-  .roulette-label{
-    min-width:32px;
-    height:32px;
-    padding:0 5px;
-    border-radius:8px;
-    font-size:10px;
-  }
-
-  .roulette-hub strong{
-    font-size:22px;
-  }
-
-  .roulette-hub small{
-    font-size:7px;
-    letter-spacing:2px;
-  }
-
-  .roulette-number-grid{
-    grid-template-columns:repeat(6,1fr);
-  }
+  transition: 0.2s;
 }
 
 /* =========================================================
-   SMALL MOBILE
+   CELULAR
 ========================================================= */
 
-@media(max-width:480px){
+@media (max-width: 620px) {
 
-  .game-header{
-    height:62px;
-    padding:0 11px;
-    grid-template-columns:45px 1fr auto;
+  .game-header {
+    grid-template-columns:
+      48px
+      1fr
+      auto;
+
+    height: 58px;
+
+    padding:
+      0 9px;
   }
 
-  .header-back{
-    width:40px;
-    height:40px;
+  .game-brand {
+    font-size: 24px;
   }
 
-  .game-brand{
-    font-size:20px;
-    letter-spacing:2px;
+  .games-page {
+    padding:
+      19px 10px;
   }
 
-  .header-balance{
-    font-size:13px;
-    padding:8px 9px;
+  .game-title-row h2 {
+    font-size: 24px;
   }
 
-  .games-page{
-    width:calc(100% - 20px);
+  .roulette-name {
+    font-size: 22px;
   }
 
-  .games-lobby h1{
-    font-size:34px;
+  .roulette-wheel-shell {
+    width:
+      min(
+        96vw,
+        520px
+      );
+
+    padding: 11px;
   }
 
-  .slot-marquee{
-    padding:15px 10px;
+  .roulette-wheel {
+    inset: 18px;
   }
 
-  .marquee-title{
-    font-size:31px;
+  .roulette-inner-ring {
+    inset: 34%;
   }
 
-  .slot-cabinet{
-    padding:9px 8px 14px;
+  .roulette-hub {
+    inset: 37%;
   }
 
-  .slot-screen{
-    padding:8px;
-    border-width:3px;
+  .roulette-bulbs i {
+    width: 7px;
+    height: 7px;
+
+    left:
+      calc(50% - 3.5px);
+
+    top:
+      calc(50% - 3.5px);
+
+    transform:
+      rotate(var(--bulb-angle))
+      translateY(
+        calc(
+          min(46vw, 245px) * -1
+        )
+      );
   }
 
-  .reels-window{
-    gap:4px;
-    padding:4px;
+  /*
+  6 botões em 3 linhas
+  */
+
+  .roulette-quick-bets {
+    grid-template-columns:
+      repeat(3, 1fr);
   }
 
-  .reel{
-    height:174px;
+  .roulette-pointer {
+    transform:
+      translateX(-50%)
+      scale(0.8);
+
+    transform-origin:
+      top center;
   }
 
-  .symbol{
-    height:58px;
-    flex-basis:58px;
-    font-size:32px;
+  .game-card {
+    grid-template-columns:
+      48px
+      1fr;
   }
 
-  .symbol.seven{
-    font-size:43px;
-  }
-
-  .bet-row,
-  .roulette-bet-row{
-    grid-template-columns:52px 1fr 52px;
-  }
-
-  .bet-adjust,
-  .roulette-bet-row>button{
-    height:52px;
-  }
-
-  .bet-value,
-  .roulette-bet-row>div{
-    height:52px;
-  }
-
-  .bet-value strong,
-  .roulette-bet-row strong{
-    font-size:18px;
-  }
-
-  .quick-bets{
-    gap:5px;
-  }
-
-  .quick-bets button{
-    padding:10px 2px;
-    font-size:12px;
-  }
-
-  .spin-button{
-    min-height:58px;
-    font-size:20px;
-  }
-
-  .slot-paytable{
-    grid-template-columns:1fr;
-  }
-
-  .roulette-machine{
-    width:min(94vw,430px);
-    padding:10px;
-  }
-
-  .roulette-wheel{
-    inset:21px;
-  }
-
-  .roulette-label{
-    min-width:28px;
-    height:28px;
-    padding:0 4px;
-    border-radius:7px;
-    font-size:9px;
-  }
-
-  .roulette-hub{
-    width:29%;
-    border-width:4px;
-  }
-
-  .roulette-hub strong{
-    font-size:18px;
-    letter-spacing:1px;
-  }
-
-  .roulette-hub small{
-    font-size:6px;
-    letter-spacing:1.5px;
-  }
-
-  .roulette-pointer{
-    border-left-width:14px;
-    border-right-width:14px;
-    border-top-width:30px;
-  }
-
-  .roulette-result{
-    font-size:17px;
-  }
-
-  .roulette-betting{
-    padding:14px;
-  }
-
-  .roulette-number-grid{
-    grid-template-columns:repeat(5,1fr);
+  .game-card b {
+    display: none;
   }
 }
 
 /* =========================================================
-   VERY SMALL PHONES
+   CELULARES MUITO PEQUENOS
 ========================================================= */
 
-@media(max-width:360px){
+@media (max-width: 380px) {
 
-  .game-header{
-    grid-template-columns:42px 1fr auto;
-    gap:6px;
-    padding:0 7px;
+  .roulette-wheel-shell {
+    width: 94vw;
+
+    padding: 9px;
   }
 
-  .header-back{
-    width:38px;
-    height:38px;
-    font-size:24px;
+  .roulette-wheel {
+    inset: 15px;
   }
 
-  .game-brand{
-    font-size:18px;
+  .roulette-hub {
+    inset: 36%;
   }
 
-  .header-balance{
-    font-size:11px;
-    padding:7px;
+  .roulette-label span {
+    font-size: 17px;
   }
 
-  .games-page{
-    width:calc(100% - 14px);
+  .roulette-label[data-type="sorte"] span {
+    font-size: 20px;
   }
 
-  .roulette-label{
-    min-width:25px;
-    height:25px;
-    font-size:8px;
-    padding:0 3px;
+  .roulette-betting {
+    padding: 13px;
   }
 
-  .roulette-hub strong{
-    font-size:15px;
-  }
-
-  .roulette-hub small{
-    display:none;
-  }
-
-  .roulette-pointer{
-    border-left-width:12px;
-    border-right-width:12px;
-    border-top-width:27px;
+  .quick-bets button {
+    font-size: 11px;
   }
 }
