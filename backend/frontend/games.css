@@ -1,1217 +1,675 @@
-const API = "/api";
+* {
+  box-sizing: border-box;
+}
 
-let jogos = [];
-let jogoAtual = null;
-let configuracaoAtual = null;
-let girando = false;
+:root {
+  --bg: #080b12;
+  --panel: #111722;
+  --panel-2: #171e2b;
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --muted: #9da7b7;
+  --accent: #f5c542;
+  --accent-2: #ffdf70;
+  --danger: #ff5b6e;
+  --success: #43e08d;
+}
 
-const usuarioSalvo = localStorage.getItem("jpbet_user");
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
 
-let usuario = null;
+body {
+  background:
+    radial-gradient(
+      circle at top,
+      #182132 0,
+      #080b12 45%,
+      #05070b 100%
+    );
 
-try {
-  usuario = usuarioSalvo
-    ? JSON.parse(usuarioSalvo)
-    : null;
-} catch {
-  usuario = null;
+  color: var(--text);
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
 /* =========================================================
-   ELEMENTOS
+   TOPO
 ========================================================= */
 
-const gamesContainer =
-  document.getElementById("gamesContainer");
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
 
-const gamesMessage =
-  document.getElementById("gamesMessage");
+  width: 100%;
 
-const gameModal =
-  document.getElementById("gameModal");
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-const gameTitle =
-  document.getElementById("gameTitle");
+  padding: 14px 20px;
 
-const gameBalance =
-  document.getElementById("gameBalance");
+  background: rgba(8, 11, 18, 0.94);
 
-const slotReels =
-  document.getElementById("slotReels");
+  border-bottom:
+    1px solid var(--border);
 
-const winMessage =
-  document.getElementById("winMessage");
+  backdrop-filter: blur(14px);
+}
 
-const betInput =
-  document.getElementById("betInput");
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
 
-const minBet =
-  document.getElementById("minBet");
+  font-weight: 900;
+  letter-spacing: -1px;
+}
 
-const maxBet =
-  document.getElementById("maxBet");
+.brand-main {
+  font-size: 28px;
+  color: var(--accent);
+}
 
-const paytable =
-  document.getElementById("paytable");
+.brand-sub {
+  font-size: 24px;
+  color: #ffffff;
+}
 
-const spinButton =
-  document.getElementById("spinButton");
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-const closeGameButton =
-  document.getElementById("closeGameButton");
+.balance-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 
-const backButton =
-  document.getElementById("backButton");
+  line-height: 1.1;
+}
 
-const quickBetButtons =
-  document.querySelectorAll(
-    "[data-bet]"
+.balance-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.balance-box strong {
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+.back-button {
+  border: 1px solid var(--border);
+  background: var(--panel);
+
+  color: var(--text);
+
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.back-button:hover {
+  background: var(--panel-2);
+}
+
+/* =========================================================
+   PÁGINA
+========================================================= */
+
+.page {
+  width: min(1200px, 100%);
+
+  margin: 0 auto;
+
+  padding: 28px 18px 60px;
+}
+
+.hero {
+  margin-bottom: 25px;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+
+  color: var(--accent);
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+
+  font-size: clamp(
+    30px,
+    5vw,
+    48px
   );
 
-/* =========================================================
-   API
-========================================================= */
+  line-height: 1;
+}
 
-async function apiFetch(
-  endpoint,
-  options = {}
-) {
-  const token =
-    localStorage.getItem(
-      "jpbet_token"
-    );
+.hero-description {
+  margin: 12px 0 0;
 
-  const headers = {
-    "Content-Type":
-      "application/json",
+  color: var(--muted);
 
-    ...(options.headers || {})
-  };
-
-  if (token) {
-    headers.Authorization =
-      `Bearer ${token}`;
-  }
-
-  const response =
-    await fetch(
-      `${API}${endpoint}`,
-      {
-        ...options,
-        headers,
-        credentials: "include"
-      }
-    );
-
-  let data = {};
-
-  try {
-    data =
-      await response.json();
-  } catch {
-    data = {};
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      data.message ||
-      "Erro na comunicação com o servidor."
-    );
-  }
-
-  return data;
+  font-size: 15px;
 }
 
 /* =========================================================
-   UTILITÁRIOS
+   CARDS DOS JOGOS
 ========================================================= */
 
-function numero(
-  valor,
-  padrao = 0
-) {
-  const n =
-    Number(valor);
+.games-container {
+  display: grid;
 
-  return Number.isFinite(n)
-    ? n
-    : padrao;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
+
+  gap: 18px;
 }
 
-function dinheiro(
-  valor
-) {
-  return numero(
-    valor
-  ).toFixed(2);
+.game-card {
+  position: relative;
+
+  min-height: 210px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 20px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      #1b2433,
+      #0d121c
+    );
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 15px 35px
+    rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
-function escaparHtml(
-  valor
-) {
-  return String(
-    valor ?? ""
-  )
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+.game-card:hover {
+  transform: translateY(-4px);
+
+  border-color:
+    rgba(245, 197, 66, 0.4);
 }
 
-function atualizarUsuario(
-  novoUsuario
-) {
-  if (!novoUsuario) {
-    return;
-  }
+.game-card::after {
+  content: "";
 
-  usuario = {
-    ...usuario,
-    ...novoUsuario
-  };
+  position: absolute;
 
-  localStorage.setItem(
-    "jpbet_user",
-    JSON.stringify(usuario)
+  width: 150px;
+  height: 150px;
+
+  right: -60px;
+  top: -60px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(245, 197, 66, 0.16),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.game-icon {
+  width: 70px;
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 15px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #252f40,
+      #101620
+    );
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  font-size: 36px;
+
+  box-shadow:
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.06);
+}
+
+.game-card h3 {
+  margin: 0;
+
+  font-size: 21px;
+}
+
+.game-card p {
+  margin: 8px 0 18px;
+
+  color: var(--muted);
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.game-card-button {
+  width: 100%;
+
+  padding: 12px 15px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent),
+      var(--accent-2)
+    );
+
+  color: #17120a;
+
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.game-card-button:hover {
+  filter: brightness(1.06);
+}
+
+.game-card-button:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   MENSAGEM
+========================================================= */
+
+.message {
+  margin-top: 20px;
+
+  padding: 13px 15px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 91, 110, 0.12);
+
+  border:
+    1px solid
+    rgba(255, 91, 110, 0.25);
+
+  color: #ffd6dc;
+
+  font-size: 14px;
+}
+
+.loading {
+  padding: 30px;
+
+  text-align: center;
+
+  color: var(--muted);
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 15px;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    rgba(0, 0, 0, 0.78);
+
+  backdrop-filter: blur(8px);
+}
+
+.game-modal-content {
+  position: relative;
+
+  z-index: 2;
+
+  width: min(
+    920px,
+    100%
   );
 
-  atualizarSaldo();
-}
+  max-height:
+    calc(100vh - 30px);
 
-function obterSaldo() {
-  if (!usuario) {
-    return 0;
-  }
+  overflow-y: auto;
 
-  if (
-    usuario.balance !== undefined &&
-    usuario.balance !== null
-  ) {
-    return numero(
-      usuario.balance
+  padding: 24px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #151d2a,
+      #090d14
     );
-  }
 
-  return (
-    numero(
-      usuario.bonusBalance
-    ) +
-    numero(
-      usuario.cashBalance
-    )
-  );
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+
+  box-shadow:
+    0 30px 80px
+    rgba(0, 0, 0, 0.65);
 }
 
-function atualizarSaldo(
-  saldo = null
-) {
-  if (
-    saldo !== null &&
-    usuario
-  ) {
-    usuario.balance =
-      numero(saldo);
+.close-button {
+  position: absolute;
 
-    localStorage.setItem(
-      "jpbet_user",
-      JSON.stringify(usuario)
-    );
-  }
+  top: 12px;
+  right: 14px;
 
-  const valor =
-    obterSaldo();
+  width: 38px;
+  height: 38px;
 
-  if (gameBalance) {
-    gameBalance.textContent =
-      `R$ ${dinheiro(valor)}`;
-  }
+  border-radius: 50%;
+
+  border:
+    1px solid var(--border);
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  color: #ffffff;
+
+  font-size: 25px;
+
+  cursor: pointer;
 }
 
-/* =========================================================
-   LOGIN
-========================================================= */
-
-function verificarUsuario() {
-  if (!usuario || !usuario.id) {
-    window.location.href =
-      "index.html";
-
-    return false;
-  }
-
-  atualizarSaldo();
-
-  return true;
+.close-button:hover {
+  background:
+    rgba(255, 255, 255, 0.12);
 }
 
 /* =========================================================
-   CARREGAR JOGOS
+   CABEÇALHO DO JOGO
 ========================================================= */
 
-async function carregarJogos() {
-  if (!gamesContainer) {
-    return;
-  }
+.game-header {
+  display: flex;
 
-  gamesContainer.innerHTML =
-    "";
+  align-items: center;
+  justify-content: space-between;
 
-  if (gamesMessage) {
-    gamesMessage.textContent =
-      "Carregando jogos...";
-  }
+  gap: 20px;
 
-  try {
-    const data =
-      await apiFetch(
-        "/games"
-      );
+  padding-right: 48px;
 
-    jogos =
-      Array.isArray(
-        data.games
-      )
-        ? data.games
-        : [];
-
-    renderizarJogos();
-
-    if (gamesMessage) {
-      gamesMessage.textContent =
-        jogos.length
-          ? ""
-          : "Nenhum jogo disponível.";
-    }
-  } catch (error) {
-    console.error(
-      "Erro ao carregar jogos:",
-      error
-    );
-
-    if (gamesMessage) {
-      gamesMessage.textContent =
-        error.message ||
-        "Não foi possível carregar os jogos.";
-    }
-  }
+  margin-bottom: 20px;
 }
 
-/* =========================================================
-   RENDERIZAR LISTA
-========================================================= */
-
-function renderizarJogos() {
-  if (!gamesContainer) {
-    return;
-  }
-
-  gamesContainer.innerHTML =
-    "";
-
-  jogos.forEach(
-    (jogo) => {
-      const card =
-        document.createElement(
-          "button"
-        );
-
-      card.type = "button";
-
-      card.className =
-        "game-card";
-
-      card.dataset.gameId =
-        jogo.id;
-
-      card.innerHTML = `
-        <div class="game-card-icon">
-          ${obterIconeJogo(jogo.id)}
-        </div>
-
-        <div class="game-card-content">
-          <h3>
-            ${escaparHtml(
-              jogo.name ||
-              jogo.nome ||
-              jogo.id
-            )}
-          </h3>
-
-          <p>
-            ${escaparHtml(
-              jogo.description ||
-              "Jogue agora."
-            )}
-          </p>
-        </div>
-
-        <div class="game-card-action">
-          Jogar
-        </div>
-      `;
-
-      card.addEventListener(
-        "click",
-        () => abrirJogo(jogo.id)
-      );
-
-      gamesContainer.appendChild(
-        card
-      );
-    }
-  );
-}
-
-/* =========================================================
-   ÍCONES DOS JOGOS
-========================================================= */
-
-function obterIconeJogo(
-  gameId
-) {
-  const icones = {
-    fortune7: "7️⃣",
-    diamondGold: "💎",
-    royalJackpot: "👑",
-    lucky7: "🍀"
-  };
-
-  return (
-    icones[gameId] ||
-    "🎰"
-  );
-}
-
-/* =========================================================
-   ABRIR JOGO
-========================================================= */
-
-async function abrirJogo(
-  gameId
-) {
-  if (girando) {
-    return;
-  }
-
-  try {
-    const data =
-      await apiFetch(
-        `/games/${encodeURIComponent(
-          gameId
-        )}`
-      );
-
-    jogoAtual =
-      data.game ||
-      data;
-
-    configuracaoAtual =
-      jogoAtual;
-
-    renderizarConfiguracaoJogo();
-
-    if (gameModal) {
-      gameModal.classList.add(
-        "active"
-      );
-
-      gameModal.setAttribute(
-        "aria-hidden",
-        "false"
-      );
-    }
-  } catch (error) {
-    console.error(
-      "Erro ao abrir jogo:",
-      error
-    );
-
-    mostrarMensagem(
-      error.message ||
-      "Não foi possível abrir o jogo.",
-      "error"
-    );
-  }
-}
-
-/* =========================================================
-   CONFIGURAÇÃO DO JOGO
-========================================================= */
-
-function renderizarConfiguracaoJogo() {
-  if (!configuracaoAtual) {
-    return;
-  }
-
-  const config =
-    configuracaoAtual;
-
-  if (gameTitle) {
-    gameTitle.textContent =
-      config.name ||
-      config.nome ||
-      "Jogo";
-  }
-
-  if (minBet) {
-    minBet.textContent =
-      `R$ ${dinheiro(
-        config.minBet ?? 1
-      )}`;
-  }
-
-  if (maxBet) {
-    maxBet.textContent =
-      `R$ ${dinheiro(
-        config.maxBet ?? 1000
-      )}`;
-  }
-
-  if (betInput) {
-    const minimo =
-      numero(
-        config.minBet,
-        1
-      );
-
-    const maximo =
-      numero(
-        config.maxBet,
-        1000
-      );
-
-    betInput.min =
-      minimo;
-
-    betInput.max =
-      maximo;
-
-    betInput.step =
-      "0.01";
-
-    const apostaAtual =
-      numero(
-        betInput.value,
-        minimo
-      );
-
-    betInput.value =
-      Math.min(
-        Math.max(
-          apostaAtual,
-          minimo
-        ),
-        maximo
-      ).toFixed(2);
-  }
-
-  renderizarTabelaPremios();
-
-  renderizarGradeInicial();
-  atualizarSaldo();
-}
-
-/* =========================================================
-   GRADE INICIAL
-========================================================= */
-
-function renderizarGradeInicial() {
-  if (!slotReels) {
-    return;
-  }
-
-  const reels =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          configuracaoAtual?.reels,
-          3
-        )
-      )
-    );
-
-  const rows =
-    Math.max(
-      1,
-      Math.floor(
-        numero(
-          configuracaoAtual?.rows,
-          3
-        )
-      )
-    );
-
-  slotReels.style.setProperty(
-    "--reels",
-    reels
-  );
-
-  slotReels.innerHTML =
-    "";
-
-  const grade =
-    configuracaoAtual?.initialGrid ||
-    configuracaoAtual?.grid ||
-    null;
-
-  for (
-    let reel = 0;
-    reel < reels;
-    reel++
-  ) {
-    const coluna =
-      document.createElement(
-        "div"
-      );
-
-    coluna.className =
-      "slot-reel";
-
-    for (
-      let row = 0;
-      row < rows;
-      row++
-    ) {
-      let simbolo =
-        "7";
-
-      if (
-        Array.isArray(
-          grade
-        ) &&
-        Array.isArray(
-          grade[reel]
-        ) &&
-        grade[reel][row]
-      ) {
-        simbolo =
-          grade[reel][row];
-      }
-
-      coluna.appendChild(
-        criarSimbolo(
-          simbolo
-        )
-      );
-    }
-
-    slotReels.appendChild(
-      coluna
-    );
-  }
-}
-
-/* =========================================================
-   CRIAR SÍMBOLO
-========================================================= */
-
-function criarSimbolo(
-  simbolo
-) {
-  const elemento =
-    document.createElement(
-      "div"
-    );
-
-  elemento.className =
-    "slot-symbol";
-
-  const valor =
-    obterValorSimbolo(
-      simbolo
-    );
-
-  elemento.dataset.symbol =
-    String(
-      simbolo ?? ""
-    );
-
-  elemento.textContent =
-    valor;
-
-  return elemento;
-}
-
-function obterValorSimbolo(
-  simbolo
-) {
-  if (
-    simbolo &&
-    typeof simbolo ===
-      "object"
-  ) {
-    if (
-      simbolo.icon !==
-      undefined
-    ) {
-      return simbolo.icon;
-    }
-
-    if (
-      simbolo.emoji !==
-      undefined
-    ) {
-      return simbolo.emoji;
-    }
-
-    if (
-      simbolo.symbol !==
-      undefined
-    ) {
-      return simbolo.symbol;
-    }
-
-    if (
-      simbolo.name !==
-      undefined
-    ) {
-      return simbolo.name;
-    }
-  }
-
-  const mapa = {
-    seven: "7️⃣",
-    "7": "7️⃣",
-    diamond: "💎",
-    gold: "🪙",
-    crown: "👑",
-    star: "⭐",
-    bell: "🔔",
-    cherry: "🍒",
-    bar: "BAR",
-    wild: "WILD",
-    scatter: "⭐",
-    lemon: "🍋",
-    orange: "🍊"
-  };
-
-  return (
-    mapa[
-      String(
-        simbolo
-      ).toLowerCase()
-    ] ||
-    String(
-      simbolo ?? "?"
-    )
+.game-header h2 {
+  margin: 0;
+
+  font-size: clamp(
+    25px,
+    5vw,
+    36px
   );
 }
 
-/* =========================================================
-   TABELA DE PRÊMIOS
-========================================================= */
+.game-balance {
+  display: flex;
+  flex-direction: column;
 
-function renderizarTabelaPremios() {
-  if (!paytable) {
-    return;
-  }
+  align-items: flex-end;
+}
 
-  paytable.innerHTML =
-    "";
+.game-balance span {
+  color: var(--muted);
 
-  const simbolos =
-    Array.isArray(
-      configuracaoAtual?.symbols
-    )
-      ? configuracaoAtual.symbols
-      : [];
+  font-size: 11px;
+}
 
-  if (!simbolos.length) {
-    paytable.innerHTML =
-      "<p>Tabela de prêmios não disponível.</p>";
+.game-balance strong {
+  margin-top: 4px;
 
-    return;
-  }
+  font-size: 18px;
 
-  const tabela =
-    document.createElement(
-      "div"
-    );
-
-  tabela.className =
-    "paytable-list";
-
-  simbolos.forEach(
-    (simbolo) => {
-      if (
-        !simbolo ||
-        typeof simbolo !==
-          "object"
-      ) {
-        return;
-      }
-
-      const nome =
-        simbolo.name ||
-        simbolo.id ||
-        simbolo.symbol ||
-        "?";
-
-      const icone =
-        simbolo.icon ||
-        simbolo.emoji ||
-        simbolo.symbol ||
-        nome;
-
-      const payouts =
-        simbolo.payouts ||
-        simbolo.paytable ||
-        {};
-
-      const linha =
-        document.createElement(
-          "div"
-        );
-
-      linha.className =
-        "paytable-row";
-
-      const valores =
-        Object.entries(
-          payouts
-        )
-          .map(
-            ([quantidade, multiplicador]) =>
-              `${quantidade}x: ${multiplicador}x`
-          )
-          .join(" • ");
-
-      linha.innerHTML = `
-        <div class="paytable-symbol">
-          ${escaparHtml(icone)}
-        </div>
-
-        <div class="paytable-name">
-          ${escaparHtml(nome)}
-        </div>
-
-        <div class="paytable-values">
-          ${escaparHtml(
-            valores ||
-            "Sem prêmio configurado"
-          )}
-        </div>
-      `;
-
-      tabela.appendChild(
-        linha
-      );
-    }
-  );
-
-  paytable.appendChild(
-    tabela
-  );
+  color: var(--accent);
 }
 
 /* =========================================================
-   APOSTA
+   MÁQUINA
 ========================================================= */
 
-function obterAposta() {
-  if (!betInput) {
-    return 0;
-  }
+.slot-machine {
+  width: 100%;
 
-  return numero(
-    betInput.value,
-    0
+  padding: 15px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #252f40,
+      #0b1018
+    );
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+
+  box-shadow:
+    inset 0 0 25px
+    rgba(0, 0, 0, 0.35),
+    0 20px 50px
+    rgba(0, 0, 0, 0.3);
+}
+
+.slot-reels {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      var(--reels, 5),
+      minmax(0, 1fr)
+    );
+
+  gap: 8px;
+
+  padding: 10px;
+
+  border-radius: 12px;
+
+  background:
+    #070a10;
+
+  overflow: hidden;
+}
+
+.reel {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.slot-symbol {
+  min-height: 85px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 7px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f7f8fa,
+      #c9ced6
+    );
+
+  color: #121722;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.65);
+
+  box-shadow:
+    inset 0 2px 0
+    rgba(255, 255, 255, 0.8),
+    inset 0 -4px 10px
+    rgba(0, 0, 0, 0.16);
+
+  font-size: clamp(
+    20px,
+    4vw,
+    34px
+  );
+
+  font-weight: 900;
+
+  text-align: center;
+
+  word-break: break-word;
+
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.slot-symbol.small {
+  font-size: clamp(
+    13px,
+    2.5vw,
+    22px
   );
 }
 
-function validarApostaLocal() {
-  if (!configuracaoAtual) {
-    return false;
-  }
+.slot-symbol.win {
+  transform: scale(1.04);
 
-  const aposta =
-    obterAposta();
+  filter:
+    brightness(1.12);
 
-  const minimo =
-    numero(
-      configuracaoAtual.minBet,
-      1
-    );
-
-  const maximo =
-    numero(
-      configuracaoAtual.maxBet,
-      1000
-    );
-
-  if (
-    !Number.isFinite(
-      aposta
-    ) ||
-    aposta <= 0
-  ) {
-    mostrarMensagem(
-      "Informe uma aposta válida.",
-      "error"
-    );
-
-    return false;
-  }
-
-  if (
-    aposta < minimo
-  ) {
-    mostrarMensagem(
-      `A aposta mínima é R$ ${dinheiro(
-        minimo
-      )}.`,
-      "error"
-    );
-
-    return false;
-  }
-
-  if (
-    aposta > maximo
-  ) {
-    mostrarMensagem(
-      `A aposta máxima é R$ ${dinheiro(
-        maximo
-      )}.`,
-      "error"
-    );
-
-    return false;
-  }
-
-  if (
-    aposta > obterSaldo()
-  ) {
-    mostrarMensagem(
-      "Saldo insuficiente.",
-      "error"
-    );
-
-    return false;
-  }
-
-  return true;
-}
-
-/* =========================================================
-   APOSTAS RÁPIDAS
-========================================================= */
-
-quickBetButtons.forEach(
-  (button) => {
-    button.addEventListener(
-      "click",
-      () => {
-        if (!betInput) {
-          return;
-        }
-
-        const valor =
-          numero(
-            button.dataset.bet,
-            0
-          );
-
-        if (
-          valor <= 0
-        ) {
-          return;
-        }
-
-        const minimo =
-          numero(
-            configuracaoAtual?.minBet,
-            1
-          );
-
-        const maximo =
-          numero(
-            configuracaoAtual?.maxBet,
-            1000
-          );
-
-        betInput.value =
-          Math.min(
-            Math.max(
-              valor,
-              minimo
-            ),
-            maximo
-          ).toFixed(2);
-      }
-    );
-  }
-);
-
-/* =========================================================
-   GIRO
-========================================================= */
-
-async function girar() {
-  if (girando) {
-    return;
-  }
-
-  if (!verificarUsuario()) {
-    return;
-  }
-
-  if (!configuracaoAtual) {
-    mostrarMensagem(
-      "Nenhum jogo selecionado.",
-      "error"
-    );
-
-    return;
-  }
-
-  if (!validarApostaLocal()) {
-    return;
-  }
-
-  const aposta =
-    Number(
-      obterAposta().toFixed(2)
-    );
-
-  girando = true;
-
-  bloquearControles(true);
-
-  limparMensagem();
-
-  try {
-    const resultado =
-      await apiFetch(
-        "/games/spin",
-        {
-          method: "POST",
-
-          body:
-            JSON.stringify({
-              userId:
-                usuario.id,
-
-              gameId:
-                configuracaoAtual.id,
-
-              bet:
-                aposta,
-
-              freeSpin:
-                false
-            })
-        }
-      );
-
-    if (
-      resultado.user
-    ) {
-      atualizarUsuario(
-        resultado.user
-      );
-    } else if (
-      resultado.usuario
-    ) {
-      atualizarUsuario(
-        resultado.usuario
-      );
-    } else if (
-      resultado.balance !==
-      undefined
-    ) {
-      atualizarSaldo(
-        resultado.balance
-      );
-    }
-
-    await animarResultado(
-      resultado
-    );
-
-    mostrarResultado(
-      resultado
-    );
-  } catch (error) {
-    console.error(
-      "Erro ao girar:",
-      error
-    );
-
-    mostrarMensagem(
-      error.message ||
-      "Não foi possível realizar o giro.",
-      "error"
-    );
-  } finally {
-    girando = false;
-
-    bloquearControles(false);
-  }
+  box-shadow:
+    0 0 0 2px
+      var(--accent),
+    0 0 25px
+      rgba(245, 197, 66, 0.55);
 }
 
 /* =========================================================
    ANIMAÇÃO
 ========================================================= */
 
-function animarResultado(
-  resultado
-) {
-  const grade =
-    resultado.grid ||
-    resultado.result?.grid ||
-    resultado.result?.grade ||
-    resultado.grade;
-
-  if (!Array.isArray(grade)) {
-    return Promise.resolve();
-  }
-
-  const reels =
-    grade.length;
-
-  const rows =
-    Array.isArray(
-      grade[0]
-    )
-      ? grade[0].length
-      : 1;
-
-  if (!slotReels) {
-    return Promise.resolve();
-  }
-
-  slotReels.style.setProperty(
-    "--reels",
-    reels
-  );
-
-  slotReels.innerHTML =
-    "";
-
-  const colunas = [];
-
-  for (
-    let reel = 0;
-    reel < reels;
-    reel++
-  ) {
-    const coluna =
-      document.createElement(
-        "div"
-      );
-
-    coluna.className =
-      "slot-reel spinning";
-
-    for (
-      let row = 0;
-      row < rows;
-      row++
-    ) {
-      const simbolo =
-        grade[reel]?.[row];
-
-      coluna.appendChild(
-        criarSimbolo(
-          simbolo
-        )
-      );
-    }
-
-    slotReels.appendChild(
-      coluna
-    );
-
-    colunas.push(
-      coluna
-    );
-  }
-
-  return new Promise(
-    (resolve) => {
-      setTimeout(
-        () => {
-          colunas.forEach(
-            (coluna) => {
-              coluna.classList.remove(
-                "spinning"
-              );
-            }
-          );
-
-          destacarPremios(
-            resultado
-          );
-
-          resolve();
-        },
-        900
-      );
-    }
-  );
+.slot-reels.spinning
+.slot-symbol {
+  animation:
+    slotPulse
+    0.12s
+    linear
+    infinite;
 }
 
-/* =========================================================
-   DESTACAR PRÊMIOS
-========================================================= */
-
-function destacarPremios(
-  resultado
-) {
-  const elementos =
-    slotReels?.querySelectorAll(
-      ".slot-symbol"
-    );
-
-  if (!elementos) {
-    return;
+@keyframes slotPulse {
+  0% {
+    transform:
+      translateY(-4px);
   }
 
-  const indices =
-    resultado.winningPositions ||
-    resultado.result?.winningPositions ||
-    resultado.premios?.winningPositions ||
-    [];
-
-  if (
-    Array.isArray(indices) &&
-    indices.length
-  ) {
-    indices.forEach(
-      (indice) => {
-        const elemento =
-          elementos[indice];
-
-        if (elemento) {
-          elemento.classList.add(
-            "win"
-          );
-        }
-      }
-    );
-
-    return;
+  50% {
+    transform:
+      translateY(4px);
   }
 
-  const premio =
-    numero(
-      resultado.win ??
-      resultado.premio ??
-      resultado.result?.win ??
-      0
-    );
-
-  if (premio > 0) {
-    elementos.forEach(
-      (elemento) => {
-        elemento.classList.add(
-          "win"
-        );
-      }
-    );
+  100% {
+    transform:
+      translateY(-4px);
   }
 }
 
@@ -1219,236 +677,474 @@ function destacarPremios(
    RESULTADO
 ========================================================= */
 
-function mostrarResultado(
-  resultado
-) {
-  const premio =
-    numero(
-      resultado.win ??
-      resultado.premio ??
-      resultado.result?.win ??
-      0
-    );
+.win-message {
+  margin-top: 15px;
 
-  const aposta =
-    numero(
-      resultado.bet ??
-      resultado.aposta ??
-      obterAposta()
-    );
+  padding: 14px;
 
-  if (!winMessage) {
-    return;
-  }
+  border-radius: 12px;
 
-  if (premio > 0) {
-    winMessage.textContent =
-      `🎉 Você ganhou R$ ${dinheiro(
-        premio
-      )}!`;
+  text-align: center;
 
-    winMessage.classList.add(
-      "show",
-      "win"
-    );
+  background:
+    rgba(67, 224, 141, 0.1);
 
-    winMessage.classList.remove(
-      "error"
-    );
+  border:
+    1px solid
+    rgba(67, 224, 141, 0.25);
 
-    return;
-  }
+  color:
+    var(--success);
 
-  winMessage.textContent =
-    `Aposta de R$ ${dinheiro(
-      aposta
-    )} realizada. Boa sorte na próxima!`;
+  font-size: 18px;
 
-  winMessage.classList.add(
-    "show"
-  );
-
-  winMessage.classList.remove(
-    "win",
-    "error"
-  );
+  font-weight: 900;
 }
 
-function mostrarMensagem(
-  mensagem,
-  tipo = ""
-) {
-  if (!winMessage) {
-    return;
-  }
+.win-message.lose {
+  background:
+    rgba(255, 255, 255, 0.04);
 
-  winMessage.textContent =
-    mensagem;
+  border-color:
+    var(--border);
 
-  winMessage.classList.add(
-    "show"
-  );
-
-  winMessage.classList.toggle(
-    "error",
-    tipo === "error"
-  );
-
-  winMessage.classList.remove(
-    "win"
-  );
-}
-
-function limparMensagem() {
-  if (!winMessage) {
-    return;
-  }
-
-  winMessage.textContent =
-    "";
-
-  winMessage.classList.remove(
-    "show",
-    "win",
-    "error"
-  );
+  color:
+    var(--muted);
 }
 
 /* =========================================================
    CONTROLES
 ========================================================= */
 
-function bloquearControles(
-  bloqueado
+.game-controls {
+  margin-top: 20px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr auto;
+
+  gap: 15px;
+
+  align-items: end;
+}
+
+.bet-control label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--muted);
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.bet-input-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.bet-adjust {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 10px;
+
+  border:
+    1px solid var(--border);
+
+  background:
+    var(--panel);
+
+  color: #ffffff;
+
+  font-size: 24px;
+
+  cursor: pointer;
+}
+
+.bet-adjust:hover {
+  background:
+    var(--panel-2);
+}
+
+.bet-input-wrapper {
+  flex: 1;
+
+  height: 45px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 0 12px;
+
+  border-radius: 10px;
+
+  background:
+    #080b11;
+
+  border:
+    1px solid var(--border);
+}
+
+.bet-input-wrapper span {
+  color: var(--muted);
+
+  font-weight: 700;
+}
+
+.bet-input-wrapper input {
+  width: 100%;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-size: 16px;
+
+  font-weight: 800;
+}
+
+.quick-bets {
+  grid-column: 1 / -1;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.quick-bets button {
+  padding: 8px 12px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid var(--border);
+
+  background:
+    var(--panel);
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.quick-bets button:hover {
+  border-color:
+    rgba(245, 197, 66, 0.5);
+
+  color: var(--accent);
+}
+
+.spin-button {
+  min-width: 180px;
+
+  height: 52px;
+
+  padding: 0 25px;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent),
+      var(--accent-2)
+    );
+
+  color: #151008;
+
+  font-size: 16px;
+
+  font-weight: 950;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px
+    rgba(0, 0, 0, 0.3);
+}
+
+.spin-button:hover {
+  filter:
+    brightness(1.07);
+}
+
+.spin-button:disabled {
+  opacity: 0.5;
+
+  cursor:
+    not-allowed;
+
+  filter:
+    grayscale(0.2);
+}
+
+/* =========================================================
+   TABELA DE PRÊMIOS
+========================================================= */
+
+.paytable-section {
+  margin-top: 25px;
+
+  padding-top: 20px;
+
+  border-top:
+    1px solid var(--border);
+}
+
+.section-title {
+  margin-bottom: 12px;
+
+  font-size: 14px;
+
+  font-weight: 900;
+}
+
+.paytable {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(130px, 1fr)
+    );
+
+  gap: 8px;
+}
+
+.paytable-item {
+  padding: 10px;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  border:
+    1px solid var(--border);
+
+  text-align: center;
+}
+
+.paytable-symbol {
+  font-size: 20px;
+
+  font-weight: 900;
+}
+
+.paytable-values {
+  margin-top: 5px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   INFORMAÇÕES
+========================================================= */
+
+.game-info {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 15px;
+
+  margin-top: 18px;
+
+  color: var(--muted);
+
+  font-size: 12px;
+}
+
+.game-info strong {
+  color: #ffffff;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (
+  max-width: 700px
 ) {
-  if (spinButton) {
-    spinButton.disabled =
-      bloqueado;
 
-    spinButton.textContent =
-      bloqueado
-        ? "Girando..."
-        : "GIRAR";
+  .topbar {
+    padding: 12px 14px;
   }
 
-  if (betInput) {
-    betInput.disabled =
-      bloqueado;
+  .brand-main {
+    font-size: 24px;
   }
 
-  quickBetButtons.forEach(
-    (button) => {
-      button.disabled =
-        bloqueado;
-    }
-  );
-}
-
-/* =========================================================
-   FECHAR JOGO
-========================================================= */
-
-function fecharJogo() {
-  if (girando) {
-    return;
+  .brand-sub {
+    font-size: 20px;
   }
 
-  if (gameModal) {
-    gameModal.classList.remove(
-      "active"
-    );
-
-    gameModal.setAttribute(
-      "aria-hidden",
-      "true"
-    );
+  .balance-box {
+    display: none;
   }
 
-  jogoAtual =
-    null;
-
-  configuracaoAtual =
-    null;
-
-  limparMensagem();
-}
-
-/* =========================================================
-   EVENTOS
-========================================================= */
-
-if (spinButton) {
-  spinButton.addEventListener(
-    "click",
-    girar
-  );
-}
-
-if (closeGameButton) {
-  closeGameButton.addEventListener(
-    "click",
-    fecharJogo
-  );
-}
-
-if (backButton) {
-  backButton.addEventListener(
-    "click",
-    () => {
-      if (girando) {
-        return;
-      }
-
-      window.location.href =
-        "dashboard.html";
-    }
-  );
-}
-
-if (gameModal) {
-  gameModal.addEventListener(
-    "click",
-    (event) => {
-      if (
-        event.target ===
-        gameModal
-      ) {
-        fecharJogo();
-      }
-    }
-  );
-}
-
-document.addEventListener(
-  "keydown",
-  (event) => {
-    if (
-      event.key === "Escape" &&
-      !girando
-    ) {
-      fecharJogo();
-    }
-
-    if (
-      event.key === "Enter" &&
-      document.activeElement ===
-        betInput
-    ) {
-      girar();
-    }
-  }
-);
-
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
-
-async function inicializar() {
-  if (!verificarUsuario()) {
-    return;
+  .page {
+    padding:
+      22px 12px 45px;
   }
 
-  await carregarJogos();
+  .games-container {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+  }
+
+  .game-card {
+    min-height: 190px;
+
+    padding: 14px;
+
+    border-radius: 14px;
+  }
+
+  .game-icon {
+    width: 52px;
+    height: 52px;
+
+    margin-bottom: 10px;
+
+    border-radius: 13px;
+
+    font-size: 27px;
+  }
+
+  .game-card h3 {
+    font-size: 16px;
+  }
+
+  .game-card p {
+    font-size: 11px;
+
+    margin:
+      6px 0 12px;
+  }
+
+  .game-card-button {
+    padding: 10px 8px;
+
+    font-size: 12px;
+  }
+
+  .game-modal-content {
+    padding: 15px;
+
+    border-radius: 16px;
+  }
+
+  .game-header {
+    align-items: flex-start;
+
+    margin-bottom: 14px;
+  }
+
+  .game-header h2 {
+    font-size: 24px;
+  }
+
+  .game-balance {
+    padding-top: 3px;
+  }
+
+  .slot-machine {
+    padding: 8px;
+
+    border-radius: 12px;
+  }
+
+  .slot-reels {
+    gap: 4px;
+
+    padding: 5px;
+  }
+
+  .slot-symbol {
+    min-height: 58px;
+
+    border-width: 1px;
+
+    border-radius: 6px;
+
+    font-size: 19px;
+  }
+
+  .slot-symbol.small {
+    font-size: 10px;
+  }
+
+  .game-controls {
+    grid-template-columns:
+      1fr;
+  }
+
+  .spin-button {
+    width: 100%;
+  }
+
+  .quick-bets {
+    grid-column: auto;
+  }
+
+  .paytable {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .game-info {
+    flex-direction: column;
+
+    gap: 6px;
+  }
 }
 
-inicializar();
+@media (
+  max-width: 390px
+) {
+
+  .games-container {
+    grid-template-columns:
+      1fr;
+  }
+
+  .slot-symbol {
+    min-height: 52px;
+
+    font-size: 16px;
+  }
+
+  .slot-symbol.small {
+    font-size: 9px;
+  }
+
+}
