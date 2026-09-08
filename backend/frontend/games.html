@@ -7,7 +7,7 @@
 
   <title>MyBets — Jogos</title>
 
-  <link rel="stylesheet" href="/games.css?v=20260908-mybets-01">
+  <link rel="stylesheet" href="/games.css?v=20260908-mybets-02">
 </head>
 
 <body>
@@ -39,10 +39,6 @@
 
 
   <main class="games-page">
-
-    <!-- =====================================================
-         LOBBY
-    ====================================================== -->
 
     <section
       class="games-lobby"
@@ -76,10 +72,6 @@
     </section>
 
 
-    <!-- =====================================================
-         GAME STAGE
-    ====================================================== -->
-
     <section
       class="game-stage"
       id="gameStage"
@@ -111,11 +103,11 @@
             class="game-kicker"
             id="gameTypeLabel"
           >
-            SLOT
+            ROLETA
           </div>
 
           <h2 id="gameTitle">
-            Fortune 7
+            Roleta da Sorte
           </h2>
 
         </div>
@@ -130,229 +122,9 @@
       </div>
 
 
-      <!-- ===================================================
-           SLOT
-      ==================================================== -->
-
-      <div
-        class="slot-panel"
-        id="slotPanel"
-      >
-
-        <div
-          class="slot-marquee"
-          id="slotMarquee"
-        >
-
-          <div class="marquee-lights"></div>
-
-          <div
-            class="marquee-title"
-            id="marqueeTitle"
-          >
-            FORTUNE 7
-          </div>
-
-          <div class="marquee-subtitle">
-            ★ JACKPOT ★
-          </div>
-
-        </div>
-
-
-        <div
-          class="slot-cabinet"
-          id="slotCabinet"
-        >
-
-          <div class="slot-glow"></div>
-
-
-          <div class="slot-screen">
-
-            <div class="payline payline-top"></div>
-            <div class="payline payline-mid"></div>
-            <div class="payline payline-bottom"></div>
-
-
-            <div class="reels-window">
-
-              <div
-                class="reel"
-                id="reel0"
-              ></div>
-
-              <div
-                class="reel"
-                id="reel1"
-              ></div>
-
-              <div
-                class="reel"
-                id="reel2"
-              ></div>
-
-            </div>
-
-
-            <div class="screen-caption">
-
-              <span>
-                WIN
-              </span>
-
-              <strong id="screenWin">
-                R$ 0,00
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div class="slot-controls">
-
-            <div class="bet-row">
-
-              <button
-                class="bet-adjust"
-                id="betMinus"
-                type="button"
-                aria-label="Diminuir aposta"
-              >
-                −
-              </button>
-
-              <div class="bet-value">
-
-                <small>
-                  VALOR DA APOSTA
-                </small>
-
-                <strong id="slotBetValue">
-                  R$ 1,00
-                </strong>
-
-              </div>
-
-              <button
-                class="bet-adjust"
-                id="betPlus"
-                type="button"
-                aria-label="Aumentar aposta"
-              >
-                +
-              </button>
-
-            </div>
-
-
-            <div
-              class="quick-bets"
-              id="slotQuickBets"
-            >
-
-              <button
-                type="button"
-                data-bet="1"
-              >
-                R$ 1
-              </button>
-
-              <button
-                type="button"
-                data-bet="5"
-              >
-                R$ 5
-              </button>
-
-              <button
-                type="button"
-                data-bet="10"
-              >
-                R$ 10
-              </button>
-
-              <button
-                type="button"
-                data-bet="25"
-              >
-                R$ 25
-              </button>
-
-              <button
-                type="button"
-                data-bet="50"
-              >
-                R$ 50
-              </button>
-
-            </div>
-
-
-            <button
-              class="spin-button"
-              id="slotSpinButton"
-              type="button"
-            >
-              <span>
-                GIRAR
-              </span>
-            </button>
-
-
-            <div
-              class="slot-status"
-              id="slotStatus"
-            >
-              Boa sorte!
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div
-          class="slot-paytable"
-          id="slotPaytable"
-        >
-
-          <div>
-            <span>
-              7️⃣ 7️⃣ 7️⃣
-            </span>
-            <strong>
-              JACKPOT
-            </strong>
-          </div>
-
-          <div>
-            <span>
-              💎 💎 💎
-            </span>
-            <strong>
-              PRÊMIO ALTO
-            </strong>
-          </div>
-
-          <div>
-            <span>
-              🍒 🍒 🍒
-            </span>
-            <strong>
-              PRÊMIO
-            </strong>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- ===================================================
-           ROLETA POPULAR
-      ==================================================== -->
+      <!-- =====================================================
+           ROLETA DA SORTE
+      ====================================================== -->
 
       <div
         class="roulette-panel"
@@ -360,29 +132,89 @@
         hidden
       >
 
-        <div class="roulette-machine">
+        <div class="roulette-heading">
 
-          <div class="roulette-pointer"></div>
+          <div>
+
+            <div class="roulette-crown">
+              ♛
+            </div>
+
+            <div class="roulette-name">
+              Roleta da Sorte
+            </div>
+
+            <div class="roulette-subtitle">
+              GIRE E DESCUBRA A SUA SORTE
+            </div>
+
+          </div>
+
 
           <div
-            class="roulette-wheel"
-            id="rouletteWheel"
-          ></div>
-
-          <button
-            class="roulette-hub"
-            id="rouletteCenterButton"
-            type="button"
-            aria-label="Girar roleta"
+            class="roulette-free-badge"
+            id="rouletteFreeBadge"
+            hidden
           >
+            🍀
             <strong>
-              GIRAR
+              GIRO GRÁTIS
             </strong>
+          </div>
 
-            <small>
-              POPULAR
-            </small>
-          </button>
+        </div>
+
+
+        <div class="roulette-machine">
+
+          <div
+            class="roulette-pointer"
+            aria-hidden="true"
+          >
+            <span class="pointer-gem"></span>
+          </div>
+
+
+          <div class="roulette-wheel-shell">
+
+            <div
+              class="roulette-bulbs"
+              id="rouletteBulbs"
+            ></div>
+
+
+            <div
+              class="roulette-wheel"
+              id="rouletteWheel"
+              aria-label="Roleta da Sorte"
+            ></div>
+
+
+            <div class="roulette-inner-ring"></div>
+
+
+            <button
+              class="roulette-hub"
+              id="rouletteCenterButton"
+              type="button"
+              aria-label="Girar roleta"
+            >
+
+              <span>
+                ♛
+              </span>
+
+              <strong>
+                GIRAR
+              </strong>
+
+              <small>
+                MYBETS
+              </small>
+
+            </button>
+
+          </div>
 
         </div>
 
@@ -404,11 +236,8 @@
 
         <div class="roulette-betting">
 
-          <div
-            class="roulette-selection-label"
-            id="rouletteSelectionLabel"
-          >
-            Escolha o valor da aposta
+          <div class="roulette-selection-label">
+            ESCOLHA O VALOR DA APOSTA
           </div>
 
 
@@ -422,6 +251,7 @@
               −
             </button>
 
+
             <div>
 
               <small>
@@ -434,6 +264,7 @@
 
             </div>
 
+
             <button
               type="button"
               id="rouletteBetPlus"
@@ -445,7 +276,12 @@
           </div>
 
 
-          <div class="quick-bets">
+          <!-- 6 BOTÕES RÁPIDOS -->
+
+          <div
+            class="quick-bets roulette-quick-bets"
+            id="rouletteQuickBets"
+          >
 
             <button
               type="button"
@@ -482,8 +318,28 @@
               R$ 10
             </button>
 
+            <button
+              type="button"
+              data-roulette-bet="50"
+            >
+              R$ 50
+            </button>
+
           </div>
 
+
+          <!-- OUTROS VALORES -->
+
+          <button
+            class="other-value-button"
+            id="rouletteOtherValue"
+            type="button"
+          >
+            OUTROS VALORES
+          </button>
+
+
+          <!-- GIRAR -->
 
           <button
             class="spin-button roulette-spin-button"
@@ -492,6 +348,37 @@
           >
             GIRAR
           </button>
+
+
+          <div class="roulette-legend">
+
+            <span>
+              <i class="legend-x">X</i>
+              Perde
+            </span>
+
+            <span>
+              <i class="legend-2">2×</i>
+            </span>
+
+            <span>
+              <i class="legend-3">3×</i>
+            </span>
+
+            <span>
+              <i class="legend-4">4×</i>
+            </span>
+
+            <span>
+              <i class="legend-5">5×</i>
+            </span>
+
+            <span>
+              <i class="legend-clover">🍀</i>
+              Giro grátis
+            </span>
+
+          </div>
 
         </div>
 
@@ -508,7 +395,7 @@
   ></div>
 
 
-  <script src="/games.js?v=20260908-mybets-01"></script>
+  <script src="/games.js?v=20260908-mybets-02"></script>
 
 </body>
 </html>
