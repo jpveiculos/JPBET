@@ -10,25 +10,14 @@
   --muted:#9ca5b5;
   --red:#d51f3d;
   --black:#15171d;
-  --green:#087d4d;
-
-  --roulette-x:#c51f35;
-  --roulette-2x:#d8a92f;
-  --roulette-3x:#7059d8;
-  --roulette-5x:#a34fc4;
-  --roulette-10x:#16a9c7;
-  --roulette-free:#20a85a;
+  --green:#18a957;
 }
 
 html,body{
   margin:0;
   min-height:100%;
   background:
-    radial-gradient(
-      circle at top,
-      rgba(245,197,66,.07),
-      transparent 38%
-    ),
+    radial-gradient(circle at top,rgba(245,197,66,.07),transparent 38%),
     var(--bg);
   color:var(--text);
   font-family:Arial,Helvetica,sans-serif;
@@ -38,9 +27,7 @@ body{
   overflow-x:hidden;
 }
 
-button,
-input,
-select{
+button,input,select{
   font:inherit;
 }
 
@@ -49,13 +36,16 @@ button{
   -webkit-tap-highlight-color:transparent;
 }
 
+button:disabled{
+  cursor:wait;
+}
+
 [hidden]{
   display:none!important;
 }
 
-
 /* =========================================================
-   CABEÇALHO
+   HEADER
 ========================================================= */
 
 .game-header{
@@ -81,6 +71,12 @@ button{
   background:#111722;
   color:#fff;
   font-size:28px;
+  line-height:1;
+}
+
+.header-back:hover{
+  border-color:rgba(245,197,66,.45);
+  background:#171e29;
 }
 
 .game-brand{
@@ -107,9 +103,8 @@ button{
   white-space:nowrap;
 }
 
-
 /* =========================================================
-   LOBBY
+   PAGE / LOBBY
 ========================================================= */
 
 .games-page{
@@ -133,6 +128,7 @@ button{
 .games-lobby h1{
   font-size:46px;
   margin:8px 0 4px;
+  letter-spacing:-1px;
 }
 
 .games-lobby>p{
@@ -158,12 +154,18 @@ button{
   padding:20px;
   border:1px solid rgba(255,255,255,.09);
   border-radius:20px;
-  background:
-    linear-gradient(
-      145deg,
-      #171d27,
-      #0e131a
-    );
+  background:linear-gradient(145deg,#171d27,#0e131a);
+  box-shadow:0 15px 35px rgba(0,0,0,.2);
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.lobby-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(245,197,66,.3);
+  box-shadow:0 20px 45px rgba(0,0,0,.35);
 }
 
 .lobby-card::after{
@@ -175,6 +177,7 @@ button{
   top:-60px;
   border-radius:50%;
   background:rgba(245,197,66,.08);
+  pointer-events:none;
 }
 
 .lobby-icon{
@@ -197,19 +200,18 @@ button{
   border:0;
   border-radius:12px;
   padding:13px;
-  background:
-    linear-gradient(
-      135deg,
-      var(--gold),
-      var(--gold2)
-    );
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:#111;
   font-weight:1000;
+  box-shadow:0 7px 18px rgba(245,197,66,.12);
 }
 
+.lobby-play:hover{
+  filter:brightness(1.08);
+}
 
 /* =========================================================
-   STAGE
+   GAME STAGE
 ========================================================= */
 
 .game-stage-top{
@@ -228,6 +230,10 @@ button{
   font-weight:800;
 }
 
+.stage-back:hover{
+  border-color:rgba(245,197,66,.35);
+}
+
 .game-title-row{
   display:flex;
   align-items:end;
@@ -239,17 +245,18 @@ button{
 .game-title-row h2{
   margin:5px 0 0;
   font-size:34px;
+  letter-spacing:-.5px;
 }
 
 .win-display{
   color:var(--gold2);
   font-size:20px;
   font-weight:1000;
+  white-space:nowrap;
 }
 
-
 /* =========================================================
-   SLOTS
+   SLOT MACHINE
 ========================================================= */
 
 .slot-panel{
@@ -284,6 +291,7 @@ button{
   border-radius:20px;
   border:2px dotted #ffe98a;
   opacity:.7;
+  pointer-events:none;
 }
 
 .marquee-title{
@@ -323,6 +331,7 @@ button{
   box-shadow:
     inset 0 0 45px rgba(0,0,0,.7),
     0 24px 55px rgba(0,0,0,.5);
+  transition:box-shadow .25s ease;
 }
 
 .slot-glow{
@@ -389,8 +398,7 @@ button{
   font-size:47px;
   font-weight:1000;
   color:#15171b;
-  text-shadow:
-    0 2px 2px rgba(255,255,255,.8);
+  text-shadow:0 2px 2px rgba(255,255,255,.8);
 }
 
 .symbol.seven{
@@ -424,14 +432,21 @@ button{
   height:2px;
   background:var(--gold);
   z-index:5;
-  box-shadow:
-    0 0 9px rgba(255,218,90,.8);
+  box-shadow:0 0 9px rgba(255,218,90,.8);
   pointer-events:none;
 }
 
-.payline-top{top:29%}
-.payline-mid{top:50%}
-.payline-bottom{top:71%}
+.payline-top{
+  top:29%;
+}
+
+.payline-mid{
+  top:50%;
+}
+
+.payline-bottom{
+  top:71%;
+}
 
 .screen-caption{
   display:flex;
@@ -453,11 +468,6 @@ button{
   padding:17px 2px 0;
 }
 
-
-/* =========================================================
-   APOSTAS
-========================================================= */
-
 .bet-row,
 .roulette-bet-row{
   display:grid;
@@ -474,6 +484,13 @@ button{
   background:#0d121b;
   color:#fff;
   font-size:30px;
+  line-height:1;
+}
+
+.bet-adjust:hover,
+.roulette-bet-row>button:hover{
+  border-color:rgba(245,197,66,.35);
+  background:#151c27;
 }
 
 .bet-value,
@@ -518,6 +535,11 @@ button{
   font-weight:900;
 }
 
+.quick-bets button:hover{
+  border-color:rgba(245,197,66,.35);
+  color:var(--gold2);
+}
+
 .spin-button{
   position:relative;
   width:100%;
@@ -540,13 +562,33 @@ button{
     inset 0 1px rgba(255,255,255,.8);
 }
 
+.spin-button:hover{
+  filter:brightness(1.06);
+}
+
 .spin-button:active{
   transform:translateY(1px);
 }
 
 .spin-button:disabled{
   opacity:.55;
-  cursor:wait;
+}
+
+.spin-button.spinning{
+  animation:spinButtonPulse .7s ease-in-out infinite alternate;
+}
+
+@keyframes spinButtonPulse{
+  from{
+    box-shadow:
+      0 10px 25px rgba(245,177,25,.15),
+      inset 0 1px rgba(255,255,255,.8);
+  }
+  to{
+    box-shadow:
+      0 0 30px rgba(255,214,70,.55),
+      inset 0 1px rgba(255,255,255,.8);
+  }
 }
 
 .slot-status{
@@ -585,13 +627,11 @@ button{
 }
 
 .slot-cabinet.spinning .reels-window{
-  box-shadow:
-    0 0 25px rgba(245,197,66,.28);
+  box-shadow:0 0 25px rgba(245,197,66,.28);
 }
 
 .slot-cabinet.win .slot-screen{
-  animation:
-    winPulse .55s ease-in-out 4;
+  animation:winPulse .55s ease-in-out 4;
 }
 
 @keyframes winPulse{
@@ -604,8 +644,7 @@ button{
 }
 
 .reel.spinning .reel-strip{
-  animation:
-    reelBlur .16s linear infinite;
+  animation:reelBlur .16s linear infinite;
 }
 
 @keyframes reelBlur{
@@ -614,287 +653,241 @@ button{
   }
 }
 
-
 /* =========================================================
-   ROLETA POPULAR MYBETS
+   ROULETTE POPULAR
 ========================================================= */
 
 .roulette-panel{
-  padding-bottom:20px;
+  padding-bottom:10px;
 }
 
 .roulette-machine{
   position:relative;
-
-  width:min(560px,94vw);
+  width:min(520px,92vw);
   aspect-ratio:1;
-
-  margin:5px auto 22px;
-
+  margin:0 auto 16px;
   border-radius:50%;
-
   background:
     radial-gradient(
       circle,
-      #d8ad38 0 3.5%,
-      #211806 3.6% 6%,
-      #e6c357 6.1% 8.5%,
-      #090807 8.6% 100%
+      #d5a938 0 4%,
+      #201606 5% 7%,
+      #e7c15a 8% 10%,
+      #100e0a 11% 100%
     );
-
-  padding:18px;
-
+  padding:16px;
   box-shadow:
-    0 30px 70px rgba(0,0,0,.75),
-    inset 0 0 0 5px #805507,
-    inset 0 0 0 10px #e7c75e,
-    inset 0 0 0 14px #342204;
+    0 25px 60px rgba(0,0,0,.65),
+    inset 0 0 0 5px #8d5d08,
+    inset 0 0 0 11px #e7c75e;
 }
-
-
-/* ---------------------------------------------------------
-   PONTEIRO
---------------------------------------------------------- */
-
-.roulette-pointer{
-  position:absolute;
-  z-index:20;
-
-  top:-7px;
-  left:50%;
-
-  transform:
-    translateX(-50%);
-
-  width:0;
-  height:0;
-
-  border-left:19px solid transparent;
-  border-right:19px solid transparent;
-  border-top:38px solid var(--gold2);
-
-  filter:
-    drop-shadow(0 4px 4px #000)
-    drop-shadow(0 0 7px rgba(255,216,80,.5));
-}
-
-
-/* ---------------------------------------------------------
-   RODA
---------------------------------------------------------- */
 
 .roulette-wheel{
   position:absolute;
-
-  inset:30px;
-
+  inset:29px;
   border-radius:50%;
 
-  overflow:visible;
+  /*
+    16 setores visuais:
+    X / prêmio / X / prêmio...
+  */
+  background:
+    conic-gradient(
+      from -11.25deg,
 
-  border:10px solid #211806;
+      #c9152d 0deg 22.5deg,
+      #d7a51d 22.5deg 45deg,
+
+      #c9152d 45deg 67.5deg,
+      #8d4fd1 67.5deg 90deg,
+
+      #c9152d 90deg 112.5deg,
+      #d6339a 112.5deg 135deg,
+
+      #c9152d 135deg 157.5deg,
+      #18a957 157.5deg 180deg,
+
+      #c9152d 180deg 202.5deg,
+      #159ec9 202.5deg 225deg,
+
+      #c9152d 225deg 247.5deg,
+      #d7a51d 247.5deg 270deg,
+
+      #c9152d 270deg 292.5deg,
+      #8d4fd1 292.5deg 315deg,
+
+      #c9152d 315deg 337.5deg,
+      #d7a51d 337.5deg 360deg
+    );
+
+  border:10px solid #241b0b;
 
   box-shadow:
-    inset 0 0 0 4px #b88a29,
-    inset 0 0 0 7px #e0bd55,
-    inset 0 0 30px #000,
-    0 5px 15px rgba(0,0,0,.55);
+    inset 0 0 0 5px #b58a2d,
+    inset 0 0 35px #000,
+    0 0 0 1px rgba(255,255,255,.08);
 
   transition:
     transform 4.8s cubic-bezier(.12,.72,.12,1);
-
-  transform-origin:center center;
-
   will-change:transform;
 }
 
-
-/* ---------------------------------------------------------
-   LINHAS DIVISÓRIAS
---------------------------------------------------------- */
-
+/*
+  Grade interna que separa visualmente os 16 setores.
+*/
 .roulette-wheel::before{
   content:"";
-
   position:absolute;
-  inset:0;
-
+  inset:4%;
   border-radius:50%;
-
   background:
     repeating-conic-gradient(
-      from 0deg,
-      rgba(255,255,255,.28) 0deg .7deg,
-      transparent .7deg 22.5deg
+      from -11.25deg,
+      rgba(255,255,255,.18) 0deg,
+      rgba(255,255,255,.18) 1deg,
+      transparent 1deg,
+      transparent 22.5deg
     );
-
+  -webkit-mask:
+    radial-gradient(
+      circle,
+      transparent 0 58%,
+      #000 59% 100%
+    );
+  mask:
+    radial-gradient(
+      circle,
+      transparent 0 58%,
+      #000 59% 100%
+    );
   pointer-events:none;
-
-  z-index:3;
-
-  mix-blend-mode:screen;
+  z-index:1;
 }
 
-
-/* ---------------------------------------------------------
-   ANEL INTERNO
---------------------------------------------------------- */
+/*
+  O texto central decorativo antigo da roleta europeia
+  foi removido. A roleta Popular trabalha somente
+  com os multiplicadores e X.
+*/
 
 .roulette-wheel::after{
   content:"";
-
   position:absolute;
-
   inset:11%;
-
   border-radius:50%;
-
-  border:
-    3px solid rgba(255,255,255,.18);
-
+  border:2px solid rgba(255,255,255,.12);
   box-shadow:
-    inset 0 0 0 5px rgba(0,0,0,.25),
-    inset 0 0 25px rgba(0,0,0,.65);
-
+    inset 0 0 25px rgba(0,0,0,.55),
+    0 0 0 1px rgba(0,0,0,.45);
   pointer-events:none;
-
-  z-index:4;
+  z-index:1;
 }
-
-
-/* ---------------------------------------------------------
-   LABELS
---------------------------------------------------------- */
 
 .roulette-label{
   position:absolute;
+  z-index:4;
 
-  left:50%;
-  top:50%;
-
-  width:100px;
-  height:42px;
+  min-width:38px;
+  height:38px;
+  padding:0 7px;
 
   display:flex;
   align-items:center;
   justify-content:center;
 
-  transform-origin:center center;
+  border-radius:10px;
 
-  color:#fff;
-
-  font-size:
-    clamp(12px,3vw,18px);
-
+  font-size:13px;
   font-weight:1000;
+  line-height:1;
 
-  text-shadow:
-    0 2px 4px #000,
-    0 0 5px rgba(0,0,0,.8);
+  border:1px solid rgba(255,255,255,.25);
+
+  box-shadow:
+    0 3px 8px rgba(0,0,0,.4),
+    inset 0 1px rgba(255,255,255,.2);
 
   white-space:nowrap;
 
   pointer-events:none;
+  transform-origin:center center;
 
-  z-index:10;
+  transition:
+    filter .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
 }
 
-
-/* X */
-
-.roulette-label.zero{
-  color:#fff;
-
-  font-size:
-    clamp(13px,3.4vw,19px);
-
-  text-shadow:
-    0 2px 3px #000,
-    0 0 7px rgba(0,0,0,.8);
+.roulette-label[data-type="zero"]{
+  background:#c9152d!important;
+  color:#fff!important;
 }
 
-
-/* 2x */
-
-.roulette-label.m2{
-  color:#fff4b5;
-
-  text-shadow:
-    0 2px 3px #5a3c00,
-    0 0 7px rgba(0,0,0,.8);
+.roulette-label[data-type="sorte"]{
+  background:#18a957!important;
+  color:#fff!important;
+  border-color:#72efad;
+  box-shadow:
+    0 0 15px rgba(24,169,87,.45),
+    inset 0 1px rgba(255,255,255,.3);
 }
 
-
-/* 3x */
-
-.roulette-label.m3{
-  color:#eee9ff;
-
-  text-shadow:
-    0 2px 3px #33227a,
-    0 0 7px rgba(0,0,0,.8);
+.roulette-label[data-multiplier="2"]{
+  background:#d7a51d!important;
+  color:#171008!important;
+  border-color:#ffe17b;
 }
 
-
-/* 5x */
-
-.roulette-label.m5{
-  color:#ffeaff;
-
-  font-size:
-    clamp(13px,3.3vw,19px);
-
-  text-shadow:
-    0 2px 3px #4b155d,
-    0 0 8px rgba(0,0,0,.8);
+.roulette-label[data-multiplier="3"]{
+  background:#8d4fd1!important;
+  color:#fff!important;
+  border-color:#d8b4ff;
 }
 
-
-/* 10x */
-
-.roulette-label.m10{
-  color:#e2fbff;
-
-  font-size:
-    clamp(12px,3vw,18px);
-
-  text-shadow:
-    0 2px 3px #075366,
-    0 0 8px rgba(0,0,0,.8);
+.roulette-label[data-multiplier="5"]{
+  background:#d6339a!important;
+  color:#fff!important;
+  border-color:#ff8bd1;
 }
 
-
-/* 🍀 */
-
-.roulette-label.clover{
-  color:#eaffef;
-
-  font-size:
-    clamp(22px,5vw,31px);
-
-  text-shadow:
-    0 2px 4px #064b27,
-    0 0 12px rgba(50,255,130,.35);
+.roulette-label[data-multiplier="10"]{
+  background:#159ec9!important;
+  color:#fff!important;
+  border-color:#72ddff;
+  box-shadow:
+    0 0 14px rgba(21,158,201,.42),
+    inset 0 1px rgba(255,255,255,.3);
 }
 
+.roulette-label.winner{
+  z-index:8;
+  transform:
+    translate(-50%,-50%)
+    scale(1.18);
+}
 
-/* ---------------------------------------------------------
-   CENTRO GIRAR
---------------------------------------------------------- */
+@keyframes rouletteWinnerFlash{
+  from{
+    filter:brightness(1.5);
+  }
+  to{
+    filter:brightness(2.4);
+  }
+}
+
+/* =========================================================
+   ROULETTE HUB
+========================================================= */
 
 .roulette-hub{
   position:absolute;
-
-  z-index:30;
-
+  z-index:9;
   left:50%;
   top:50%;
 
-  transform:
-    translate(-50%,-50%);
+  transform:translate(-50%,-50%);
 
-  width:29%;
-
+  width:27%;
   aspect-ratio:1;
 
   border-radius:50%;
@@ -907,233 +900,249 @@ button{
   background:
     radial-gradient(
       circle at 35% 25%,
-      #fff4a9,
-      #e0aa27 43%,
-      #85590a 70%,
-      #3e2704 100%
+      #fff0a0,
+      #d39a17 45%,
+      #5d3905 100%
     );
 
-  border:
-    5px solid #f2cf63;
+  border:5px solid #f2cf63;
 
   box-shadow:
-    0 0 0 5px #3b2505,
-    0 0 0 8px rgba(245,197,66,.16),
-    0 0 30px rgba(255,208,65,.3),
-    inset 0 2px 5px rgba(255,255,255,.7),
-    inset 0 -8px 15px rgba(0,0,0,.35);
+    0 0 0 5px #3c2606,
+    0 0 25px rgba(255,208,65,.25),
+    inset 0 3px 8px rgba(255,255,255,.45);
 
   color:#171008;
 
-  transition:
-    transform .15s ease,
-    filter .15s ease;
-}
-
-.roulette-hub:hover{
-  filter:brightness(1.1);
-}
-
-.roulette-hub:active{
-  transform:
-    translate(-50%,-50%)
-    scale(.95);
-}
-
-.roulette-hub:disabled{
-  opacity:.55;
-  cursor:wait;
+  user-select:none;
 }
 
 .roulette-hub strong{
-  font-size:
-    clamp(21px,6vw,36px);
-
+  font-size:clamp(23px,6vw,35px);
   letter-spacing:2px;
-
-  font-weight:1000;
-
   line-height:1;
 }
 
 .roulette-hub small{
-  margin-top:5px;
-
-  font-size:
-    clamp(7px,1.8vw,10px);
-
+  margin-top:4px;
   font-weight:1000;
-
   letter-spacing:3px;
+  font-size:9px;
 }
 
-
-/* ---------------------------------------------------------
-   RESULTADO
---------------------------------------------------------- */
-
-.roulette-result{
-  padding:16px;
-
-  border:
-    1px solid rgba(245,197,66,.25);
-
-  border-radius:16px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(245,197,66,.09),
-      rgba(255,255,255,.025)
-    );
-
-  text-align:center;
-
-  color:var(--gold2);
-
+/*
+  Quando o botão central estiver presente no HTML,
+  ele continua parecendo parte da máquina.
+*/
+.roulette-hub button{
+  border:0;
+  background:transparent;
+  color:#171008;
   font-weight:1000;
+}
 
-  font-size:18px;
+/* =========================================================
+   POINTER
+========================================================= */
 
-  margin-bottom:16px;
+.roulette-pointer{
+  position:absolute;
+  z-index:15;
+  top:-2px;
+  left:50%;
 
-  min-height:58px;
+  transform:translateX(-50%);
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  width:0;
+  height:0;
+
+  border-left:17px solid transparent;
+  border-right:17px solid transparent;
+  border-top:35px solid var(--gold2);
+
+  filter:
+    drop-shadow(0 3px 4px #000)
+    drop-shadow(0 0 7px rgba(255,215,80,.35));
+}
+
+.roulette-pointer::after{
+  content:"";
+  position:absolute;
+  left:-6px;
+  top:-31px;
+
+  width:12px;
+  height:12px;
+
+  border-radius:50%;
+
+  background:#fff2a0;
 
   box-shadow:
-    inset 0 0 20px rgba(245,197,66,.035);
+    0 0 10px rgba(255,228,100,.8);
+}
+
+/* =========================================================
+   ROULETTE RESULT
+========================================================= */
+
+.roulette-result{
+  padding:14px;
+  border:1px solid rgba(245,197,66,.22);
+  border-radius:15px;
+  background:rgba(245,197,66,.06);
+  text-align:center;
+  color:var(--gold2);
+  font-weight:1000;
+  font-size:19px;
+  margin-bottom:16px;
+  min-height:53px;
 }
 
 .roulette-result strong{
-  font-weight:1000;
+  display:inline-block;
+  font-size:20px;
 }
 
-.roulette-loss{
-  color:#ff7185;
+.roulette-result span{
+  display:inline-block;
+  margin-top:4px;
+  color:#d9dee7;
+  font-size:13px;
+  font-weight:700;
 }
 
+/* =========================================================
+   FREE SPIN
+========================================================= */
 
-/* ---------------------------------------------------------
-   ÁREA DE APOSTA
---------------------------------------------------------- */
+.roulette-free-spin-status{
+  margin:0 0 14px;
+  padding:13px 15px;
+  border:1px solid rgba(24,169,87,.4);
+  border-radius:15px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24,169,87,.18),
+      rgba(24,169,87,.05)
+    );
+  color:#9cffc7;
+  text-align:center;
+  font-size:14px;
+  line-height:1.45;
+  box-shadow:
+    0 0 20px rgba(24,169,87,.08);
+}
+
+.roulette-free-spin-status strong{
+  color:#fff;
+  letter-spacing:.4px;
+}
+
+.roulette-free-spin-status span{
+  color:#b7ffd2;
+  font-size:12px;
+}
+
+/* =========================================================
+   ROULETTE BETTING
+========================================================= */
 
 .roulette-betting{
   padding:18px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
+  border:1px solid rgba(255,255,255,.08);
   border-radius:20px;
-
   background:
     linear-gradient(
       145deg,
       #121821,
       #0b0f15
     );
-
-  box-shadow:
-    0 15px 35px rgba(0,0,0,.25);
 }
 
+.roulette-betting>label,
 .roulette-selection-label{
   display:block;
-
-  margin-bottom:10px;
-
+  margin-bottom:7px;
   color:#aeb6c4;
-
   font-size:13px;
-
   font-weight:900;
-
-  text-align:center;
-}
-
-.roulette-selection-label strong{
-  color:var(--gold2);
 }
 
 .roulette-betting select{
   width:100%;
   height:48px;
-
-  border:
-    1px solid rgba(255,255,255,.1);
-
+  border:1px solid rgba(255,255,255,.1);
   border-radius:12px;
-
   background:#070a0f;
-
   color:#fff;
-
   padding:0 12px;
-
   margin-bottom:14px;
 }
 
-
-/* ---------------------------------------------------------
-   STATUS GIRO GRÁTIS
---------------------------------------------------------- */
-
-.roulette-free-spin-status{
-  margin:
-    0 0 12px;
-
-  padding:12px;
-
-  border:
-    1px solid rgba(32,168,90,.35);
-
-  border-radius:12px;
-
-  background:
-    rgba(32,168,90,.09);
-
-  color:#baffcf;
-
-  text-align:center;
-
-  font-weight:900;
-
-  font-size:13px;
+.roulette-betting select:focus{
+  outline:2px solid rgba(245,197,66,.4);
 }
 
+.roulette-number-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
+  margin-bottom:15px;
+}
 
-/* ---------------------------------------------------------
-   CONTROLE DE APOSTA DA ROLETA
---------------------------------------------------------- */
+.roulette-number{
+  height:43px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:9px;
+  color:#fff;
+  font-weight:900;
+  background:#15171d;
+}
+
+.roulette-number.red{
+  background:#c81e3a;
+}
+
+.roulette-number.green{
+  background:#087d4d;
+}
+
+.roulette-number.selected{
+  outline:3px solid var(--gold2);
+  box-shadow:
+    0 0 15px rgba(255,215,80,.35);
+}
 
 .roulette-bet-row{
   margin-top:5px;
 }
 
-
 /* =========================================================
-   ELEMENTOS ANTIGOS DA ROLETA EUROPEIA
+   ROULETTE SPIN BUTTON
 ========================================================= */
 
-/*
-  A nova Roleta Popular não usa números
-  de 0 a 36 nem vermelho/preto.
-*/
-
-.roulette-number-grid{
-  display:none!important;
+#rouletteSpinButton{
+  margin-top:13px;
 }
 
-.roulette-number{
-  display:none!important;
+#rouletteSpinButton.spinning{
+  animation:rouletteSpinButton .55s ease-in-out infinite alternate;
 }
 
-#rouletteBetType{
-  display:none!important;
+@keyframes rouletteSpinButton{
+  from{
+    transform:scale(1);
+    box-shadow:
+      0 10px 25px rgba(245,177,25,.15);
+  }
+  to{
+    transform:scale(1.015);
+    box-shadow:
+      0 0 30px rgba(255,214,70,.5);
+  }
 }
-
 
 /* =========================================================
    TOAST
@@ -1142,30 +1151,26 @@ button{
 .toast{
   position:fixed;
   z-index:100;
-
   left:50%;
   bottom:22px;
 
-  transform:
-    translate(-50%,20px);
+  transform:translate(-50%,20px);
 
   opacity:0;
-
   pointer-events:none;
 
-  max-width:
-    calc(100% - 30px);
+  max-width:calc(100% - 30px);
 
   padding:13px 18px;
 
   border-radius:13px;
 
   background:#202731;
-
   color:#fff;
 
-  border:
-    1px solid rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.1);
+
+  box-shadow:0 12px 30px rgba(0,0,0,.4);
 
   transition:.25s;
 
@@ -1174,14 +1179,11 @@ button{
 
 .toast.show{
   opacity:1;
-
-  transform:
-    translate(-50%,0);
+  transform:translate(-50%,0);
 }
 
-
 /* =========================================================
-   RESPONSIVO
+   MOBILE
 ========================================================= */
 
 @media(max-width:700px){
@@ -1224,15 +1226,31 @@ button{
     font-size:49px;
   }
 
-  .roulette-machine{
-    width:min(540px,94vw);
+  .roulette-label{
+    min-width:32px;
+    height:32px;
+    padding:0 5px;
+    border-radius:8px;
+    font-size:10px;
   }
 
-  .roulette-label{
-    width:90px;
+  .roulette-hub strong{
+    font-size:22px;
+  }
+
+  .roulette-hub small{
+    font-size:7px;
+    letter-spacing:2px;
+  }
+
+  .roulette-number-grid{
+    grid-template-columns:repeat(6,1fr);
   }
 }
 
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
 
 @media(max-width:480px){
 
@@ -1249,6 +1267,7 @@ button{
 
   .game-brand{
     font-size:20px;
+    letter-spacing:2px;
   }
 
   .header-balance{
@@ -1258,6 +1277,10 @@ button{
 
   .games-page{
     width:calc(100% - 20px);
+  }
+
+  .games-lobby h1{
+    font-size:34px;
   }
 
   .slot-marquee{
@@ -1334,64 +1357,106 @@ button{
     grid-template-columns:1fr;
   }
 
-
-  /* ROLETA MOBILE */
-
   .roulette-machine{
-    width:min(520px,96vw);
-    padding:11px;
-    margin-top:0;
+    width:min(94vw,430px);
+    padding:10px;
   }
 
   .roulette-wheel{
-    inset:22px;
-    border-width:7px;
-  }
-
-  .roulette-pointer{
-    top:-5px;
-
-    border-left-width:15px;
-    border-right-width:15px;
-    border-top-width:31px;
+    inset:21px;
   }
 
   .roulette-label{
-    width:68px;
-    height:30px;
-
-    font-size:11px;
-  }
-
-  .roulette-label.zero{
-    font-size:12px;
-  }
-
-  .roulette-label.m5,
-  .roulette-label.m10{
-    font-size:11px;
-  }
-
-  .roulette-label.clover{
-    font-size:21px;
+    min-width:28px;
+    height:28px;
+    padding:0 4px;
+    border-radius:7px;
+    font-size:9px;
   }
 
   .roulette-hub{
-    width:31%;
+    width:29%;
     border-width:4px;
   }
 
   .roulette-hub strong{
-    font-size:21px;
+    font-size:18px;
+    letter-spacing:1px;
   }
 
   .roulette-hub small{
-    font-size:7px;
-    letter-spacing:2px;
+    font-size:6px;
+    letter-spacing:1.5px;
+  }
+
+  .roulette-pointer{
+    border-left-width:14px;
+    border-right-width:14px;
+    border-top-width:30px;
   }
 
   .roulette-result{
-    font-size:16px;
-    padding:13px;
+    font-size:17px;
+  }
+
+  .roulette-betting{
+    padding:14px;
+  }
+
+  .roulette-number-grid{
+    grid-template-columns:repeat(5,1fr);
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media(max-width:360px){
+
+  .game-header{
+    grid-template-columns:42px 1fr auto;
+    gap:6px;
+    padding:0 7px;
+  }
+
+  .header-back{
+    width:38px;
+    height:38px;
+    font-size:24px;
+  }
+
+  .game-brand{
+    font-size:18px;
+  }
+
+  .header-balance{
+    font-size:11px;
+    padding:7px;
+  }
+
+  .games-page{
+    width:calc(100% - 14px);
+  }
+
+  .roulette-label{
+    min-width:25px;
+    height:25px;
+    font-size:8px;
+    padding:0 3px;
+  }
+
+  .roulette-hub strong{
+    font-size:15px;
+  }
+
+  .roulette-hub small{
+    display:none;
+  }
+
+  .roulette-pointer{
+    border-left-width:12px;
+    border-right-width:12px;
+    border-top-width:27px;
   }
 }
