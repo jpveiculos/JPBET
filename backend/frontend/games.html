@@ -17,15 +17,11 @@
 
   <link
     rel="stylesheet"
-    href="/games.css?v=20260908-mybets-03"
+    href="/games.css?v=20260908-mybets-04"
   >
 </head>
 
 <body>
-
-  <!-- ======================================================
-       CABEÇALHO
-       ====================================================== -->
 
   <header class="games-header">
 
@@ -55,15 +51,7 @@
   </header>
 
 
-  <!-- ======================================================
-       CONTEÚDO
-       ====================================================== -->
-
   <main class="games-page">
-
-    <!-- ====================================================
-         LOBBY
-         ==================================================== -->
 
     <section
       class="games-lobby"
@@ -92,10 +80,6 @@
     </section>
 
 
-    <!-- ====================================================
-         ROLETA DA SORTE
-         ==================================================== -->
-
     <section
       id="roulettePanel"
       hidden
@@ -110,8 +94,6 @@
       </p>
 
 
-      <!-- GIRO GRÁTIS -->
-
       <div
         id="rouletteFreeBadge"
         hidden
@@ -124,50 +106,32 @@
       ></div>
 
 
-      <!-- ==================================================
-           PALCO DA ROLETA
-           ================================================== -->
+      <!-- ROLETA EXATA DA IMAGEM -->
 
       <div class="roulette-stage">
 
         <div class="roulette-wheel-shell">
 
-          <!-- Ponteiro fixo -->
-
-          <div
-            class="roulette-pointer"
-            aria-hidden="true"
-          ></div>
-
-
-          <!-- Luzes -->
-
-          <div
-            id="rouletteBulbs"
-            aria-hidden="true"
-          ></div>
-
-
-          <!-- Roda -->
-
           <div
             id="rouletteWheel"
             class="roulette-wheel"
             aria-label="Roleta da Sorte"
-          ></div>
+          >
 
+            <img
+              src="/Roleta%20da%20Sorte.png"
+              alt="Roleta da Sorte MyBets"
+              class="roulette-wheel-image"
+              draggable="false"
+            >
 
-          <!-- Centro -->
-
-          <div class="roulette-center">
-
+            <!-- Área invisível sobre o botão GIRAR da própria imagem -->
             <button
               type="button"
               id="rouletteCenterButton"
+              class="roulette-image-center-button"
               aria-label="Girar roleta"
-            >
-              GIRAR
-            </button>
+            ></button>
 
           </div>
 
@@ -175,10 +139,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           RESULTADO
-           ================================================== -->
 
       <div
         id="rouletteResult"
@@ -189,13 +149,7 @@
       </div>
 
 
-      <!-- ==================================================
-           CONTROLES
-           ================================================== -->
-
       <div class="roulette-controls">
-
-        <!-- Valor da aposta -->
 
         <div class="roulette-bet-row">
 
@@ -207,9 +161,7 @@
             −
           </button>
 
-          <div
-            id="rouletteBetValue"
-          >
+          <div id="rouletteBetValue">
             R$ 0,50
           </div>
 
@@ -224,15 +176,11 @@
         </div>
 
 
-        <!-- Apostas rápidas -->
-
         <div
           id="rouletteQuickBets"
           aria-label="Apostas rápidas"
         ></div>
 
-
-        <!-- Outro valor -->
 
         <button
           type="button"
@@ -241,8 +189,6 @@
           Escolher outro valor
         </button>
 
-
-        <!-- Girar -->
 
         <button
           type="button"
@@ -253,10 +199,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           LEGENDA
-           ================================================== -->
 
       <div
         class="roulette-legend"
@@ -294,12 +236,8 @@
   </main>
 
 
-  <!-- ======================================================
-       JAVASCRIPT
-       ====================================================== -->
-
   <script
-    src="/games.js?v=20260908-mybets-03"
+    src="/games.js?v=20260908-mybets-04"
     defer
   ></script>
 
