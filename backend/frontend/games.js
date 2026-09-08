@@ -3,2036 +3,1452 @@ const API = "/api";
 let jogos = [];
 let jogoAtual = null;
 let configuracaoAtual = null;
+let girando = false;
 
-let slotBet = 1;
-let rouletteBet = 0.5;
+const usuarioSalvo = localStorage.getItem("jpbet_user");
 
-let rouletteSpinning = false;
-let slotSpinning = false;
+let usuario = null;
 
-let rouletteRotation = 0;
+try {
+  usuario = usuarioSalvo
+    ? JSON.parse(usuarioSalvo)
+    : null;
+} catch {
+  usuario = null;
+}
 
-const SLOT_SYMBOLS = {
-  fortune7: [
-    {v:"7", cls:"seven"},
-    {v:"🍒"},
-    {v:"🍋"},
-    {v:"🔔"},
-    {v:"BAR"},
-    {v:"💎"},
-    {v:"⭐"}
-  ],
+/* =========================================================
+   ELEMENTOS
+========================================================= */
 
-  diamondGold: [
-    {v:"💎", cls:"diamond"},
-    {v:"👑", cls:"crown"},
-    {v:"🪙", cls:"coin"},
-    {v:"7", cls:"seven"},
-    {v:"💠"},
-    {v:"✨"}
-  ],
+const gamesContainer =
+  document.getElementById("gamesContainer");
 
-  royalJackpot: [
-    {v:"👑", cls:"crown"},
-    {v:"💎", cls:"diamond"},
-    {v:"7", cls:"seven"},
-    {v:"💰", cls:"coin"},
-    {v:"♛", cls:"crown"},
-    {v:"✨"}
-  ],
+const gamesMessage =
+  document.getElementById("gamesMessage");
 
-  lucky7: [
-    {v:"7", cls:"seven"},
-    {v:"7", cls:"seven"},
-    {v:"🍒"},
-    {v:"🍀"},
-    {v:"BAR"},
-    {v:"⭐"},
-    {v:"🔔"}
-  ]
-};
+const gameModal =
+  document.getElementById("gameModal");
 
-const THEMES = {
-  fortune7: {
-    title:"FORTUNE 7",
-    type:"SLOT",
-    accent:"#d51f3d"
-  },
+const gameTitle =
+  document.getElementById("gameTitle");
 
-  diamondGold: {
-    title:"DIAMOND GOLD",
-    type:"SLOT",
-    accent:"#178fca"
-  },
+const gameBalance =
+  document.getElementById("gameBalance");
 
-  royalJackpot: {
-    title:"ROYAL JACKPOT",
-    type:"SLOT",
-    accent:"#9a55d8"
-  },
+const slotReels =
+  document.getElementById("slotReels");
 
-  lucky7: {
-    title:"LUCKY 7",
-    type:"SLOT",
-    accent:"#e3a51b"
-  }
-};
+const winMessage =
+  document.getElementById("winMessage");
 
-/*
-=========================================================
-  ROLETA POPULAR MYBETS
-=========================================================
+const betInput =
+  document.getElementById("betInput");
 
-  VISUALMENTE:
+const minBet =
+  document.getElementById("minBet");
 
-  X    2x   X    3x
-  X    5x   X    🍀
-  X    10x  X    2x
-  X    3x   X    2x
-  X    2x   X    X
+const maxBet =
+  document.getElementById("maxBet");
 
-  Total: 16 fatias
+const paytable =
+  document.getElementById("paytable");
 
-  O visual NÃO define o RTP.
+const spinButton =
+  document.getElementById("spinButton");
 
-  O resultado real é decidido pelo servidor.
-=========================================================
-*/
+const closeGameButton =
+  document.getElementById("closeGameButton");
 
-const ROULETTE_SEGMENTS = [
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"2×",   type:"prize", multiplier:2},
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"3×",   type:"prize", multiplier:3},
+const backButton =
+  document.getElementById("backButton");
 
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"5×",   type:"prize", multiplier:5},
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"🍀",   type:"sorte", multiplier:0},
+const quickBetButtons =
+  document.querySelectorAll(
+    "[data-bet]"
+  );
 
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"10×",  type:"prize", multiplier:10},
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"2×",   type:"prize", multiplier:2},
+/* =========================================================
+   API
+========================================================= */
 
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"3×",   type:"prize", multiplier:3},
-  {label:"X",    type:"zero",  multiplier:0},
-  {label:"2×",   type:"prize", multiplier:2}
-];
-
-
-/*
-=========================================================
-  UTILITÁRIOS
-=========================================================
-*/
-
-const $ = id => document.getElementById(id);
-
-function usuarioAtual() {
-  try {
-    return JSON.parse(
-      localStorage.getItem("jpbet_user") || "null"
+async function apiFetch(
+  endpoint,
+  options = {}
+) {
+  const token =
+    localStorage.getItem(
+      "jpbet_token"
     );
-  } catch (_) {
-    return null;
-  }
-}
 
-function tokenAtual() {
-  return localStorage.getItem("jpbet_token") || "";
-}
+  const headers = {
+    "Content-Type":
+      "application/json",
 
-function headersJSON() {
-  const h = {
-    "Content-Type":"application/json"
+    ...(options.headers || {})
   };
 
-  if (tokenAtual()) {
-    h.Authorization = `Bearer ${tokenAtual()}`;
+  if (token) {
+    headers.Authorization =
+      `Bearer ${token}`;
   }
 
-  return h;
+  const response =
+    await fetch(
+      `${API}${endpoint}`,
+      {
+        ...options,
+        headers,
+        credentials: "include"
+      }
+    );
+
+  let data = {};
+
+  try {
+    data =
+      await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+      "Erro na comunicação com o servidor."
+    );
+  }
+
+  return data;
 }
 
-function moeda(v) {
-  return Number(v || 0).toLocaleString(
-    "pt-BR",
-    {
-      style:"currency",
-      currency:"BRL"
+/* =========================================================
+   UTILITÁRIOS
+========================================================= */
+
+function numero(
+  valor,
+  padrao = 0
+) {
+  const n =
+    Number(valor);
+
+  return Number.isFinite(n)
+    ? n
+    : padrao;
+}
+
+function dinheiro(
+  valor
+) {
+  return numero(
+    valor
+  ).toFixed(2);
+}
+
+function escaparHtml(
+  valor
+) {
+  return String(
+    valor ?? ""
+  )
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function atualizarUsuario(
+  novoUsuario
+) {
+  if (!novoUsuario) {
+    return;
+  }
+
+  usuario = {
+    ...usuario,
+    ...novoUsuario
+  };
+
+  localStorage.setItem(
+    "jpbet_user",
+    JSON.stringify(usuario)
+  );
+
+  atualizarSaldo();
+}
+
+function obterSaldo() {
+  if (!usuario) {
+    return 0;
+  }
+
+  if (
+    usuario.balance !== undefined &&
+    usuario.balance !== null
+  ) {
+    return numero(
+      usuario.balance
+    );
+  }
+
+  return (
+    numero(
+      usuario.bonusBalance
+    ) +
+    numero(
+      usuario.cashBalance
+    )
+  );
+}
+
+function atualizarSaldo(
+  saldo = null
+) {
+  if (
+    saldo !== null &&
+    usuario
+  ) {
+    usuario.balance =
+      numero(saldo);
+
+    localStorage.setItem(
+      "jpbet_user",
+      JSON.stringify(usuario)
+    );
+  }
+
+  const valor =
+    obterSaldo();
+
+  if (gameBalance) {
+    gameBalance.textContent =
+      `R$ ${dinheiro(valor)}`;
+  }
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function verificarUsuario() {
+  if (!usuario || !usuario.id) {
+    window.location.href =
+      "index.html";
+
+    return false;
+  }
+
+  atualizarSaldo();
+
+  return true;
+}
+
+/* =========================================================
+   CARREGAR JOGOS
+========================================================= */
+
+async function carregarJogos() {
+  if (!gamesContainer) {
+    return;
+  }
+
+  gamesContainer.innerHTML =
+    "";
+
+  if (gamesMessage) {
+    gamesMessage.textContent =
+      "Carregando jogos...";
+  }
+
+  try {
+    const data =
+      await apiFetch(
+        "/games"
+      );
+
+    jogos =
+      Array.isArray(
+        data.games
+      )
+        ? data.games
+        : [];
+
+    renderizarJogos();
+
+    if (gamesMessage) {
+      gamesMessage.textContent =
+        jogos.length
+          ? ""
+          : "Nenhum jogo disponível.";
+    }
+  } catch (error) {
+    console.error(
+      "Erro ao carregar jogos:",
+      error
+    );
+
+    if (gamesMessage) {
+      gamesMessage.textContent =
+        error.message ||
+        "Não foi possível carregar os jogos.";
+    }
+  }
+}
+
+/* =========================================================
+   RENDERIZAR LISTA
+========================================================= */
+
+function renderizarJogos() {
+  if (!gamesContainer) {
+    return;
+  }
+
+  gamesContainer.innerHTML =
+    "";
+
+  jogos.forEach(
+    (jogo) => {
+      const card =
+        document.createElement(
+          "button"
+        );
+
+      card.type = "button";
+
+      card.className =
+        "game-card";
+
+      card.dataset.gameId =
+        jogo.id;
+
+      card.innerHTML = `
+        <div class="game-card-icon">
+          ${obterIconeJogo(jogo.id)}
+        </div>
+
+        <div class="game-card-content">
+          <h3>
+            ${escaparHtml(
+              jogo.name ||
+              jogo.nome ||
+              jogo.id
+            )}
+          </h3>
+
+          <p>
+            ${escaparHtml(
+              jogo.description ||
+              "Jogue agora."
+            )}
+          </p>
+        </div>
+
+        <div class="game-card-action">
+          Jogar
+        </div>
+      `;
+
+      card.addEventListener(
+        "click",
+        () => abrirJogo(jogo.id)
+      );
+
+      gamesContainer.appendChild(
+        card
+      );
     }
   );
 }
 
-function numero(v, fallback=0) {
-  const n = Number(v);
+/* =========================================================
+   ÍCONES DOS JOGOS
+========================================================= */
 
-  return Number.isFinite(n)
-    ? n
-    : fallback;
-}
-
-function obterIdUsuario() {
-  const u = usuarioAtual();
-
-  return u?.id ??
-    u?.userId ??
-    null;
-}
-
-function mostrarToast(msg) {
-  const el = $("toast");
-
-  if (!el) return;
-
-  el.textContent = msg;
-
-  el.classList.add("show");
-
-  clearTimeout(window.__toastTimer);
-
-  window.__toastTimer =
-    setTimeout(
-      () => el.classList.remove("show"),
-      2600
-    );
-}
-
-function atualizarSaldos(v) {
-  const valor = numero(v);
-
-  if ($("balance")) {
-    $("balance").textContent =
-      valor.toLocaleString(
-        "pt-BR",
-        {
-          minimumFractionDigits:2,
-          maximumFractionDigits:2
-        }
-      );
-  }
-
-  if ($("stageBalance")) {
-    $("stageBalance").textContent =
-      valor.toLocaleString(
-        "pt-BR",
-        {
-          minimumFractionDigits:2,
-          maximumFractionDigits:2
-        }
-      );
-  }
-}
-
-
-/*
-=========================================================
-  NAVEGAÇÃO
-=========================================================
-*/
-
-function configurarBotoesVoltar() {
-  if ($("backButton")) {
-    $("backButton").onclick =
-      () => {
-        window.location.href =
-          "dashboard.html";
-      };
-  }
-
-  if ($("stageBack")) {
-    $("stageBack").onclick =
-      voltarLobby;
-  }
-}
-
-
-/*
-=========================================================
-  JOGOS
-=========================================================
-*/
-
-async function carregarJogos() {
-  try {
-    const resposta =
-      await fetch(
-        `${API}/games`,
-        {
-          headers:headersJSON()
-        }
-      );
-
-    const data =
-      await resposta.json();
-
-    if (!resposta.ok) {
-      throw new Error(
-        data.message ||
-        "Não foi possível carregar os jogos."
-      );
-    }
-
-    jogos =
-      Array.isArray(data.games)
-        ? data.games
-        : [];
-
-    /*
-      Remove a roleta antiga cadastrada
-      no lobby para usarmos a nova
-      Roleta Popular.
-    */
-    jogos =
-      jogos.filter(
-        jogo =>
-          String(jogo.id) !== "roulette"
-      );
-
-    /*
-      Adiciona a nova Roleta Popular.
-    */
-    if (
-      !jogos.some(
-        jogo =>
-          String(jogo.id) ===
-          "roulettePopular"
-      )
-    ) {
-      jogos.push({
-        id:"roulettePopular",
-        name:"Roleta Popular",
-        description:
-          "16 fatias • 2×, 3×, 5×, 10× e giro grátis.",
-        type:"roulette",
-        minBet:0.5,
-        maxBet:20
-      });
-    }
-
-    renderizarJogos();
-
-    const id =
-      new URLSearchParams(
-        location.search
-      ).get("game");
-
-    if (id) {
-      const jogo =
-        jogos.find(
-          j =>
-            String(j.id) ===
-            String(id)
-        );
-
-      if (jogo) {
-        await abrirJogo(jogo.id);
-      }
-    }
-
-  } catch (e) {
-
-    if ($("gamesMessage")) {
-      $("gamesMessage").textContent =
-        e.message ||
-        "Erro ao carregar jogos.";
-    }
-  }
-}
-
-function iconeJogo(jogo) {
-  if (
-    jogo.type === "roulette" ||
-    jogo.id === "roulette" ||
-    jogo.id === "roulettePopular"
-  ) {
-    return "🎡";
-  }
-
-  const icons = {
-    fortune7:"🎰",
-    diamondGold:"💎",
-    royalJackpot:"👑",
-    lucky7:"🍀"
+function obterIconeJogo(
+  gameId
+) {
+  const icones = {
+    fortune7: "7️⃣",
+    diamondGold: "💎",
+    royalJackpot: "👑",
+    lucky7: "🍀"
   };
 
-  return icons[jogo.id] || "🎰";
+  return (
+    icones[gameId] ||
+    "🎰"
+  );
 }
 
-function renderizarJogos() {
-  const box =
-    $("gamesContainer");
+/* =========================================================
+   ABRIR JOGO
+========================================================= */
 
-  if (!box) return;
-
-  if ($("gamesMessage")) {
-    $("gamesMessage").style.display =
-      jogos.length
-        ? "none"
-        : "block";
-  }
-
-  box.innerHTML =
-    jogos.map(
-      jogo => `
-        <article class="lobby-card">
-
-          <div class="lobby-icon">
-            ${iconeJogo(jogo)}
-          </div>
-
-          <h3>
-            ${jogo.name || jogo.id}
-          </h3>
-
-          <p>
-            ${
-              jogo.description ||
-              "Escolha este jogo para jogar."
-            }
-          </p>
-
-          <button
-            class="lobby-play"
-            type="button"
-            data-game="${String(jogo.id)}"
-          >
-            JOGAR
-          </button>
-
-        </article>
-      `
-    ).join("");
-
-  box
-    .querySelectorAll("[data-game]")
-    .forEach(btn => {
-
-      btn.onclick =
-        () =>
-          abrirJogo(
-            btn.dataset.game
-          );
-    });
-}
-
-
-/*
-=========================================================
-  ABRIR JOGO
-=========================================================
-*/
-
-async function abrirJogo(gameId) {
-
-  /*
-    A Roleta Popular é uma interface
-    própria e não depende do cadastro
-    da antiga roleta europeia.
-  */
-
-  if (
-    String(gameId) ===
-    "roulettePopular"
-  ) {
-
-    configuracaoAtual = {
-      id:"roulettePopular",
-      name:"Roleta Popular",
-      type:"roulette",
-      minBet:0.5,
-      maxBet:20,
-      animationMs:4800
-    };
-
-    jogoAtual =
-      configuracaoAtual;
-
-    $("gamesLobby").hidden = true;
-    $("gameStage").hidden = false;
-
-    $("gameTitle").textContent =
-      "Roleta Popular";
-
-    abrirInterfaceRoleta(
-      configuracaoAtual
-    );
-
-    window.scrollTo({
-      top:0,
-      behavior:"instant"
-    });
-
+async function abrirJogo(
+  gameId
+) {
+  if (girando) {
     return;
   }
 
   try {
-
-    const resposta =
-      await fetch(
-        `${API}/games/${encodeURIComponent(gameId)}`,
-        {
-          headers:headersJSON()
-        }
-      );
-
     const data =
-      await resposta.json();
-
-    if (!resposta.ok) {
-      throw new Error(
-        data.message ||
-        "Não foi possível abrir o jogo."
+      await apiFetch(
+        `/games/${encodeURIComponent(
+          gameId
+        )}`
       );
-    }
-
-    configuracaoAtual =
-      data.game || data;
 
     jogoAtual =
-      configuracaoAtual;
+      data.game ||
+      data;
 
-    $("gamesLobby").hidden = true;
-    $("gameStage").hidden = false;
+    configuracaoAtual =
+      jogoAtual;
 
-    $("gameTitle").textContent =
-      configuracaoAtual.name ||
-      gameId;
+    renderizarConfiguracaoJogo();
 
-    if (
-      (
-        configuracaoAtual.type ||
-        ""
-      ).toLowerCase() ===
-      "roulette"
-    ) {
-
-      abrirInterfaceRoleta(
-        configuracaoAtual
+    if (gameModal) {
+      gameModal.classList.add(
+        "active"
       );
 
-    } else {
+      gameModal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Erro ao abrir jogo:",
+      error
+    );
 
-      abrirInterfaceSlot(
-        configuracaoAtual
+    mostrarMensagem(
+      error.message ||
+      "Não foi possível abrir o jogo.",
+      "error"
+    );
+  }
+}
+
+/* =========================================================
+   CONFIGURAÇÃO DO JOGO
+========================================================= */
+
+function renderizarConfiguracaoJogo() {
+  if (!configuracaoAtual) {
+    return;
+  }
+
+  const config =
+    configuracaoAtual;
+
+  if (gameTitle) {
+    gameTitle.textContent =
+      config.name ||
+      config.nome ||
+      "Jogo";
+  }
+
+  if (minBet) {
+    minBet.textContent =
+      `R$ ${dinheiro(
+        config.minBet ?? 1
+      )}`;
+  }
+
+  if (maxBet) {
+    maxBet.textContent =
+      `R$ ${dinheiro(
+        config.maxBet ?? 1000
+      )}`;
+  }
+
+  if (betInput) {
+    const minimo =
+      numero(
+        config.minBet,
+        1
+      );
+
+    const maximo =
+      numero(
+        config.maxBet,
+        1000
+      );
+
+    betInput.min =
+      minimo;
+
+    betInput.max =
+      maximo;
+
+    betInput.step =
+      "0.01";
+
+    const apostaAtual =
+      numero(
+        betInput.value,
+        minimo
+      );
+
+    betInput.value =
+      Math.min(
+        Math.max(
+          apostaAtual,
+          minimo
+        ),
+        maximo
+      ).toFixed(2);
+  }
+
+  renderizarTabelaPremios();
+
+  renderizarGradeInicial();
+  atualizarSaldo();
+}
+
+/* =========================================================
+   GRADE INICIAL
+========================================================= */
+
+function renderizarGradeInicial() {
+  if (!slotReels) {
+    return;
+  }
+
+  const reels =
+    Math.max(
+      1,
+      Math.floor(
+        numero(
+          configuracaoAtual?.reels,
+          3
+        )
+      )
+    );
+
+  const rows =
+    Math.max(
+      1,
+      Math.floor(
+        numero(
+          configuracaoAtual?.rows,
+          3
+        )
+      )
+    );
+
+  slotReels.style.setProperty(
+    "--reels",
+    reels
+  );
+
+  slotReels.innerHTML =
+    "";
+
+  const grade =
+    configuracaoAtual?.initialGrid ||
+    configuracaoAtual?.grid ||
+    null;
+
+  for (
+    let reel = 0;
+    reel < reels;
+    reel++
+  ) {
+    const coluna =
+      document.createElement(
+        "div"
+      );
+
+    coluna.className =
+      "slot-reel";
+
+    for (
+      let row = 0;
+      row < rows;
+      row++
+    ) {
+      let simbolo =
+        "7";
+
+      if (
+        Array.isArray(
+          grade
+        ) &&
+        Array.isArray(
+          grade[reel]
+        ) &&
+        grade[reel][row]
+      ) {
+        simbolo =
+          grade[reel][row];
+      }
+
+      coluna.appendChild(
+        criarSimbolo(
+          simbolo
+        )
       );
     }
 
-    window.scrollTo({
-      top:0,
-      behavior:"instant"
-    });
-
-  } catch (e) {
-
-    mostrarToast(
-      e.message ||
-      "Erro ao abrir jogo."
+    slotReels.appendChild(
+      coluna
     );
   }
 }
 
+/* =========================================================
+   CRIAR SÍMBOLO
+========================================================= */
 
-/*
-=========================================================
-  SLOT
-=========================================================
-*/
-
-function abrirInterfaceSlot(config) {
-
-  $("gameTypeLabel").textContent =
-    "SLOT";
-
-  $("slotPanel").hidden =
-    false;
-
-  $("roulettePanel").hidden =
-    true;
-
-  const theme =
-    THEMES[config.id] ||
-    THEMES.fortune7;
-
-  $("marqueeTitle").textContent =
-    (
-      config.name ||
-      theme.title
-    ).toUpperCase();
-
-  document.documentElement
-    .style
-    .setProperty(
-      "--slot1",
-      theme.accent
+function criarSimbolo(
+  simbolo
+) {
+  const elemento =
+    document.createElement(
+      "div"
     );
 
-  $("slotBetValue").textContent =
-    moeda(slotBet);
+  elemento.className =
+    "slot-symbol";
 
-  $("slotStatus").textContent =
-    "Boa sorte!";
+  const valor =
+    obterValorSimbolo(
+      simbolo
+    );
 
-  $("winDisplay").textContent =
-    "R$ 0,00";
+  elemento.dataset.symbol =
+    String(
+      simbolo ?? ""
+    );
 
-  $("screenWin").textContent =
-    "R$ 0,00";
+  elemento.textContent =
+    valor;
 
-  criarReels(config.id);
+  return elemento;
 }
 
-function criarReels(gameId) {
-
-  const symbols =
-    SLOT_SYMBOLS[gameId] ||
-    SLOT_SYMBOLS.fortune7;
-
-  for (
-    let i=0;
-    i<3;
-    i++
+function obterValorSimbolo(
+  simbolo
+) {
+  if (
+    simbolo &&
+    typeof simbolo ===
+      "object"
   ) {
+    if (
+      simbolo.icon !==
+      undefined
+    ) {
+      return simbolo.icon;
+    }
 
-    const reel =
-      $(`reel${i}`);
+    if (
+      simbolo.emoji !==
+      undefined
+    ) {
+      return simbolo.emoji;
+    }
 
-    if (!reel) continue;
+    if (
+      simbolo.symbol !==
+      undefined
+    ) {
+      return simbolo.symbol;
+    }
 
-    reel.innerHTML =
-      `
-        <div class="reel-strip">
-
-          ${
-            Array.from(
-              {length:9},
-              (_,k) => {
-
-                const s =
-                  symbols[
-                    (k+i) %
-                    symbols.length
-                  ];
-
-                return `
-                  <div
-                    class="symbol ${s.cls || ""}"
-                  >
-                    ${s.v}
-                  </div>
-                `;
-              }
-            ).join("")
-          }
-
-        </div>
-      `;
-  }
-}
-
-function definirSlotBet(v) {
-
-  const min =
-    Math.max(
-      0.01,
-      numero(
-        configuracaoAtual?.minBet,
-        1
-      )
-    );
-
-  const max =
-    Math.max(
-      min,
-      numero(
-        configuracaoAtual?.maxBet,
-        1000
-      )
-    );
-
-  slotBet =
-    Math.min(
-      max,
-      Math.max(
-        min,
-        numero(v,min)
-      )
-    );
-
-  $("slotBetValue").textContent =
-    moeda(slotBet);
-}
-
-
-/*
-=========================================================
-  APOSTAS
-=========================================================
-*/
-
-function prepararBets() {
-
-  if ($("betMinus")) {
-    $("betMinus").onclick =
-      () =>
-        definirSlotBet(
-          slotBet - 1
-        );
+    if (
+      simbolo.name !==
+      undefined
+    ) {
+      return simbolo.name;
+    }
   }
 
-  if ($("betPlus")) {
-    $("betPlus").onclick =
-      () =>
-        definirSlotBet(
-          slotBet + 1
-        );
-  }
-
-  if ($("slotQuickBets")) {
-
-    $("slotQuickBets")
-      .querySelectorAll(
-        "[data-bet]"
-      )
-      .forEach(b => {
-
-        b.onclick =
-          () =>
-            definirSlotBet(
-              numero(
-                b.dataset.bet,
-                1
-              )
-            );
-      });
-  }
-
-  if ($("slotSpinButton")) {
-    $("slotSpinButton").onclick =
-      girarSlot;
-  }
-
-  if ($("rouletteBetMinus")) {
-    $("rouletteBetMinus").onclick =
-      () =>
-        definirRouletteBet(
-          rouletteBet - 0.5
-        );
-  }
-
-  if ($("rouletteBetPlus")) {
-    $("rouletteBetPlus").onclick =
-      () =>
-        definirRouletteBet(
-          rouletteBet + 0.5
-        );
-  }
-
-  document
-    .querySelectorAll(
-      "[data-roulette-bet]"
-    )
-    .forEach(b => {
-
-      b.onclick =
-        () =>
-          definirRouletteBet(
-            numero(
-              b.dataset.rouletteBet,
-              0.5
-            )
-          );
-    });
-
-  if ($("rouletteSpinButton")) {
-    $("rouletteSpinButton").onclick =
-      girarRoleta;
-  }
-
-  if ($("rouletteCenterButton")) {
-    $("rouletteCenterButton").onclick =
-      girarRoleta;
-  }
-}
-
-function definirRouletteBet(v) {
-
-  const min =
-    Math.max(
-      0.5,
-      numero(
-        configuracaoAtual?.minBet,
-        0.5
-      )
-    );
-
-  const max =
-    Math.max(
-      min,
-      numero(
-        configuracaoAtual?.maxBet,
-        20
-      )
-    );
-
-  rouletteBet =
-    Math.min(
-      max,
-      Math.max(
-        min,
-        numero(v,min)
-      )
-    );
-
-  if ($("rouletteBetValue")) {
-    $("rouletteBetValue").textContent =
-      moeda(rouletteBet);
-  }
-}
-
-
-/*
-=========================================================
-  CRIAR ROLETA VISUAL
-=========================================================
-*/
-
-function criarRoletaVisual() {
-
-  const wheel =
-    $("rouletteWheel");
-
-  if (!wheel) return;
-
-  const quantidade =
-    ROULETTE_SEGMENTS.length;
-
-  const angulo =
-    360 / quantidade;
-
-  const cores = {
-    zero:"#b51e2d",
-    prize2:"#d7a62d",
-    prize3:"#6f58d9",
-    prize5:"#a24fc4",
-    prize10:"#16a9c7",
-    sorte:"#20a85a"
+  const mapa = {
+    seven: "7️⃣",
+    "7": "7️⃣",
+    diamond: "💎",
+    gold: "🪙",
+    crown: "👑",
+    star: "⭐",
+    bell: "🔔",
+    cherry: "🍒",
+    bar: "BAR",
+    wild: "WILD",
+    scatter: "⭐",
+    lemon: "🍋",
+    orange: "🍊"
   };
 
-  const stops = [];
-
-  ROULETTE_SEGMENTS
-    .forEach(
-      segmento => {
-
-        let cor =
-          cores.zero;
-
-        if (
-          segmento.type ===
-          "prize"
-        ) {
-
-          if (
-            segmento.multiplier === 2
-          ) {
-            cor =
-              cores.prize2;
-
-          } else if (
-            segmento.multiplier === 3
-          ) {
-            cor =
-              cores.prize3;
-
-          } else if (
-            segmento.multiplier === 5
-          ) {
-            cor =
-              cores.prize5;
-
-          } else if (
-            segmento.multiplier === 10
-          ) {
-            cor =
-              cores.prize10;
-          }
-
-        } else if (
-          segmento.type ===
-          "sorte"
-        ) {
-
-          cor =
-            cores.sorte;
-        }
-
-        stops.push(
-          `${cor} ${
-            stops.length * angulo
-          }deg ${
-            (stops.length + 1) * angulo
-          }deg`
-        );
-      }
-    );
-
-  wheel.innerHTML = "";
-
-  wheel.style.background =
-    `conic-gradient(${stops.join(",")})`;
-
-  wheel.style.transform =
-    `rotate(${rouletteRotation}deg)`;
-
-  ROULETTE_SEGMENTS
-    .forEach(
-      (segmento,index) => {
-
-        const label =
-          document.createElement(
-            "div"
-          );
-
-        label.className =
-          "roulette-label";
-
-        if (
-          segmento.type ===
-          "zero"
-        ) {
-          label.classList.add(
-            "zero"
-          );
-        }
-
-        if (
-          segmento.type ===
-          "prize"
-        ) {
-          label.classList.add(
-            `m${segmento.multiplier}`
-          );
-        }
-
-        if (
-          segmento.type ===
-          "sorte"
-        ) {
-          label.classList.add(
-            "clover"
-          );
-        }
-
-        label.textContent =
-          segmento.label;
-
-        const centro =
-          index * angulo +
-          angulo / 2;
-
-        label.style.transform =
-          `
-            translate(-50%, -50%)
-            rotate(${centro}deg)
-            translateY(-37%)
-            rotate(${-centro}deg)
-          `;
-
-        /*
-          A posição real é definida
-          pelo CSS da roleta.
-        */
-        label.style.setProperty(
-          "--segment-angle",
-          `${centro}deg`
-        );
-
-        wheel.appendChild(
-          label
-        );
-      }
-    );
+  return (
+    mapa[
+      String(
+        simbolo
+      ).toLowerCase()
+    ] ||
+    String(
+      simbolo ?? "?"
+    )
+  );
 }
 
+/* =========================================================
+   TABELA DE PRÊMIOS
+========================================================= */
 
-/*
-=========================================================
-  INTERFACE DA ROLETA
-=========================================================
-*/
+function renderizarTabelaPremios() {
+  if (!paytable) {
+    return;
+  }
 
-function abrirInterfaceRoleta(config) {
+  paytable.innerHTML =
+    "";
 
-  $("gameTypeLabel").textContent =
-    "ROLETA POPULAR";
+  const simbolos =
+    Array.isArray(
+      configuracaoAtual?.symbols
+    )
+      ? configuracaoAtual.symbols
+      : [];
 
-  $("slotPanel").hidden =
-    true;
+  if (!simbolos.length) {
+    paytable.innerHTML =
+      "<p>Tabela de prêmios não disponível.</p>";
 
-  $("roulettePanel").hidden =
-    false;
+    return;
+  }
 
-  $("winDisplay").textContent =
-    "R$ 0,00";
-
-  rouletteBet =
-    Math.max(
-      0.5,
-      numero(
-        config?.minBet,
-        0.5
-      )
+  const tabela =
+    document.createElement(
+      "div"
     );
 
-  if (
-    rouletteBet >
-    numero(
-      config?.maxBet,
-      20
-    )
-  ) {
-    rouletteBet = 0.5;
+  tabela.className =
+    "paytable-list";
+
+  simbolos.forEach(
+    (simbolo) => {
+      if (
+        !simbolo ||
+        typeof simbolo !==
+          "object"
+      ) {
+        return;
+      }
+
+      const nome =
+        simbolo.name ||
+        simbolo.id ||
+        simbolo.symbol ||
+        "?";
+
+      const icone =
+        simbolo.icon ||
+        simbolo.emoji ||
+        simbolo.symbol ||
+        nome;
+
+      const payouts =
+        simbolo.payouts ||
+        simbolo.paytable ||
+        {};
+
+      const linha =
+        document.createElement(
+          "div"
+        );
+
+      linha.className =
+        "paytable-row";
+
+      const valores =
+        Object.entries(
+          payouts
+        )
+          .map(
+            ([quantidade, multiplicador]) =>
+              `${quantidade}x: ${multiplicador}x`
+          )
+          .join(" • ");
+
+      linha.innerHTML = `
+        <div class="paytable-symbol">
+          ${escaparHtml(icone)}
+        </div>
+
+        <div class="paytable-name">
+          ${escaparHtml(nome)}
+        </div>
+
+        <div class="paytable-values">
+          ${escaparHtml(
+            valores ||
+            "Sem prêmio configurado"
+          )}
+        </div>
+      `;
+
+      tabela.appendChild(
+        linha
+      );
+    }
+  );
+
+  paytable.appendChild(
+    tabela
+  );
+}
+
+/* =========================================================
+   APOSTA
+========================================================= */
+
+function obterAposta() {
+  if (!betInput) {
+    return 0;
   }
 
-  rouletteRotation = 0;
-
-  $("rouletteBetValue").textContent =
-    moeda(rouletteBet);
-
-  if ($("rouletteResult")) {
-    $("rouletteResult").textContent =
-      "Defina sua aposta e gire.";
-  }
-
-  if ($("rouletteFreeSpinStatus")) {
-    $("rouletteFreeSpinStatus").hidden =
-      true;
-  }
-
-  /*
-    Esconde controles da roleta
-    europeia antiga.
-  */
-  const oldType =
-    $("rouletteBetType");
-
-  const oldNumbers =
-    $("rouletteNumberGrid");
-
-  if (oldType) {
-    oldType.closest(
-      ".field"
-    )?.remove();
-
-    oldType.style.display =
-      "none";
-  }
-
-  if (oldNumbers) {
-    oldNumbers.innerHTML =
-      "";
-
-    oldNumbers.style.display =
-      "none";
-  }
-
-  criarRoletaVisual();
-
-  atualizarSaldos(
-    usuarioAtual()?.balance ??
-    usuarioAtual()?.saldo ??
+  return numero(
+    betInput.value,
     0
   );
 }
 
-
-/*
-=========================================================
-  ROLETA — GIRO
-=========================================================
-*/
-
-async function girarRoleta() {
-
-  if (rouletteSpinning) {
-    return;
+function validarApostaLocal() {
+  if (!configuracaoAtual) {
+    return false;
   }
 
-  const userId =
-    obterIdUsuario();
+  const aposta =
+    obterAposta();
 
-  if (!userId) {
-    mostrarToast(
-      "Faça login novamente."
+  const minimo =
+    numero(
+      configuracaoAtual.minBet,
+      1
     );
 
-    return;
-  }
-
-  const bet =
+  const maximo =
     numero(
-      rouletteBet,
-      0
-    );
-
-  const minBet =
-    numero(
-      configuracaoAtual?.minBet,
-      0.5
-    );
-
-  const maxBet =
-    numero(
-      configuracaoAtual?.maxBet,
-      20
+      configuracaoAtual.maxBet,
+      1000
     );
 
   if (
-    bet < minBet ||
-    bet > maxBet
+    !Number.isFinite(
+      aposta
+    ) ||
+    aposta <= 0
   ) {
-
-    mostrarToast(
-      "Aposta fora dos limites."
+    mostrarMensagem(
+      "Informe uma aposta válida.",
+      "error"
     );
 
-    return;
+    return false;
   }
 
-  rouletteSpinning =
-    true;
-
-  const spinButton =
-    $("rouletteSpinButton");
-
-  const centerButton =
-    $("rouletteCenterButton");
-
-  if (spinButton) {
-    spinButton.disabled =
-      true;
-  }
-
-  if (centerButton) {
-    centerButton.disabled =
-      true;
-  }
-
-  if ($("rouletteResult")) {
-    $("rouletteResult").textContent =
-      "A roleta está girando...";
-  }
-
-  try {
-
-    /*
-      IMPORTANTE:
-
-      O frontend NÃO escolhe o prêmio.
-
-      O servidor decide o resultado.
-    */
-
-    const resposta =
-      await fetch(
-        `${API}/roulette/spin`,
-        {
-          method:"POST",
-
-          headers:
-            headersJSON(),
-
-          body:
-            JSON.stringify({
-              userId,
-              bet,
-              freeSpin:false
-            })
-        }
-      );
-
-    const data =
-      await resposta.json();
-
-    if (!resposta.ok) {
-      throw new Error(
-        data.message ||
-        "Não foi possível girar a roleta."
-      );
-    }
-
-    const resultado =
-      data.result ||
-      data.spin ||
-      data;
-
-    /*
-      Aceita diferentes formatos
-      possíveis enviados pelo backend.
-    */
-
-    const label =
-      String(
-        resultado.label ??
-        resultado.resultLabel ??
-        resultado.outcome ??
-        ""
-      ).trim();
-
-    const type =
-      String(
-        resultado.type ??
-        resultado.resultType ??
-        ""
-      ).toLowerCase();
-
-    const multiplier =
-      numero(
-        resultado.multiplier ??
-        resultado.result?.multiplier ??
-        0
-      );
-
-    const win =
-      numero(
-        resultado.win ??
-        resultado.payout ??
-        resultado.prize ??
-        data.win ??
-        0
-      );
-
-    const isFreeSpin =
-      type === "sorte" ||
-      type === "free_spin" ||
-      type === "freespin" ||
-      label === "🍀" ||
-      label.toLowerCase()
-        .includes("clover");
-
-    /*
-      Descobre qual fatia visual
-      corresponde ao resultado.
-    */
-
-    let indice =
-      ROULETTE_SEGMENTS.findIndex(
-        segmento => {
-
-          if (
-            isFreeSpin &&
-            segmento.type ===
-            "sorte"
-          ) {
-            return true;
-          }
-
-          if (
-            multiplier > 0 &&
-            segmento.type ===
-            "prize" &&
-            numero(
-              segmento.multiplier
-            ) === multiplier
-          ) {
-            return true;
-          }
-
-          if (
-            (
-              type === "zero" ||
-              type === "lose" ||
-              type === "loss"
-            ) &&
-            segmento.type ===
-            "zero"
-          ) {
-            return true;
-          }
-
-          if (
-            label &&
-            segmento.label ===
-            label
-          ) {
-            return true;
-          }
-
-          return false;
-        }
-      );
-
-    /*
-      Caso o servidor envie
-      apenas um índice.
-    */
-
-    if (
-      indice < 0 &&
-      resultado.segmentIndex != null
-    ) {
-
-      indice =
-        Math.max(
-          0,
-          Math.min(
-            ROULETTE_SEGMENTS.length - 1,
-            Number(
-              resultado.segmentIndex
-            )
-          )
-        );
-    }
-
-    /*
-      Se ainda não encontrar,
-      usa a primeira fatia X apenas
-      como fallback visual.
-    */
-
-    if (indice < 0) {
-      indice = 0;
-    }
-
-    animarRoletaAte(
-      indice
+  if (
+    aposta < minimo
+  ) {
+    mostrarMensagem(
+      `A aposta mínima é R$ ${dinheiro(
+        minimo
+      )}.`,
+      "error"
     );
 
-    /*
-      Espera a animação terminar
-      antes de mostrar o resultado.
-    */
+    return false;
+  }
 
-    setTimeout(
+  if (
+    aposta > maximo
+  ) {
+    mostrarMensagem(
+      `A aposta máxima é R$ ${dinheiro(
+        maximo
+      )}.`,
+      "error"
+    );
+
+    return false;
+  }
+
+  if (
+    aposta > obterSaldo()
+  ) {
+    mostrarMensagem(
+      "Saldo insuficiente.",
+      "error"
+    );
+
+    return false;
+  }
+
+  return true;
+}
+
+/* =========================================================
+   APOSTAS RÁPIDAS
+========================================================= */
+
+quickBetButtons.forEach(
+  (button) => {
+    button.addEventListener(
+      "click",
       () => {
-
-        mostrarResultadoRoleta({
-          label,
-          type,
-          multiplier,
-          win,
-          isFreeSpin
-        });
-
-        atualizarSaldos(
-          data.saldoDepois ??
-          data.balance ??
-          data.user?.balance ??
-          data.user?.saldo ??
-          0
-        );
-
-        if ($("winDisplay")) {
-          $("winDisplay").textContent =
-            moeda(win);
+        if (!betInput) {
+          return;
         }
 
-        /*
-          Atualiza usuário salvo
-          localmente quando o backend
-          devolver os dados.
-        */
-
-        const usuario =
-          usuarioAtual();
+        const valor =
+          numero(
+            button.dataset.bet,
+            0
+          );
 
         if (
-          usuario &&
-          data.user
+          valor <= 0
         ) {
-
-          const novoUsuario =
-            {
-              ...usuario,
-              ...data.user
-            };
-
-          localStorage.setItem(
-            "jpbet_user",
-            JSON.stringify(
-              novoUsuario
-            )
-          );
+          return;
         }
 
-      },
-      4800
+        const minimo =
+          numero(
+            configuracaoAtual?.minBet,
+            1
+          );
+
+        const maximo =
+          numero(
+            configuracaoAtual?.maxBet,
+            1000
+          );
+
+        betInput.value =
+          Math.min(
+            Math.max(
+              valor,
+              minimo
+            ),
+            maximo
+          ).toFixed(2);
+      }
     );
+  }
+);
 
-  } catch (e) {
+/* =========================================================
+   GIRO
+========================================================= */
 
-    if ($("rouletteResult")) {
-      $("rouletteResult").textContent =
-        "Defina sua aposta e gire.";
-    }
+async function girar() {
+  if (girando) {
+    return;
+  }
 
-    mostrarToast(
-      e.message ||
-      "Erro na roleta."
+  if (!verificarUsuario()) {
+    return;
+  }
+
+  if (!configuracaoAtual) {
+    mostrarMensagem(
+      "Nenhum jogo selecionado.",
+      "error"
     );
-
-    liberarRoleta();
 
     return;
   }
 
-  setTimeout(
-    liberarRoleta,
-    4900
-  );
-}
-
-
-/*
-=========================================================
-  ANIMAÇÃO DA ROLETA
-=========================================================
-*/
-
-function animarRoletaAte(indice) {
-
-  const wheel =
-    $("rouletteWheel");
-
-  if (!wheel) return;
-
-  const total =
-    ROULETTE_SEGMENTS.length;
-
-  const segmento =
-    360 / total;
-
-  /*
-    Ponteiro fica no topo.
-
-    Calculamos o centro da fatia
-    para que ela termine exatamente
-    sob o ponteiro.
-  */
-
-  const centro =
-    indice * segmento +
-    segmento / 2;
-
-  const voltas =
-    6;
-
-  const alvo =
-    voltas * 360 +
-    (360 - centro);
-
-  rouletteRotation +=
-    alvo;
-
-  wheel.style.transition =
-    "transform 4.8s cubic-bezier(.12,.72,.12,1)";
-
-  wheel.style.transform =
-    `rotate(${rouletteRotation}deg)`;
-}
-
-
-/*
-=========================================================
-  RESULTADO
-=========================================================
-*/
-
-function mostrarResultadoRoleta({
-  label,
-  multiplier,
-  win,
-  isFreeSpin
-}) {
-
-  const result =
-    $("rouletteResult");
-
-  if (!result) return;
-
-  if (isFreeSpin) {
-
-    result.innerHTML =
-      `
-        <strong>🍀 GIRO GRÁTIS!</strong>
-        <br>
-        A aposta foi preservada.
-      `;
-
-    if ($("rouletteFreeSpinStatus")) {
-
-      $("rouletteFreeSpinStatus").hidden =
-        false;
-
-      $("rouletteFreeSpinStatus").textContent =
-        `🍀 Você ganhou um giro grátis com aposta de ${moeda(rouletteBet)}.`;
-    }
-
+  if (!validarApostaLocal()) {
     return;
   }
 
-  if (multiplier > 0) {
-
-    result.innerHTML =
-      `
-        <strong>
-          🎉 ${label || `${multiplier}×`}
-        </strong>
-        <br>
-        Prêmio:
-        <strong>${moeda(win)}</strong>
-      `;
-
-    return;
-  }
-
-  result.innerHTML =
-    `
-      <strong class="roulette-loss">
-        X — SEM PRÊMIO
-      </strong>
-      <br>
-      Boa sorte no próximo giro.
-    `;
-}
-
-function liberarRoleta() {
-
-  if ($("rouletteSpinButton")) {
-    $("rouletteSpinButton").disabled =
-      false;
-  }
-
-  if ($("rouletteCenterButton")) {
-    $("rouletteCenterButton").disabled =
-      false;
-  }
-
-  rouletteSpinning =
-    false;
-}
-
-
-/*
-=========================================================
-  SLOT — GIRO
-=========================================================
-*/
-
-async function girarSlot() {
-
-  if (slotSpinning) {
-    return;
-  }
-
-  const userId =
-    obterIdUsuario();
-
-  if (!userId) {
-    return mostrarToast(
-      "Faça login novamente."
+  const aposta =
+    Number(
+      obterAposta().toFixed(2)
     );
-  }
 
-  const bet =
-    numero(slotBet);
+  girando = true;
 
-  if (!(bet > 0)) {
-    return mostrarToast(
-      "Informe uma aposta válida."
-    );
-  }
+  bloquearControles(true);
 
-  if (
-    bet <
-      numero(
-        configuracaoAtual?.minBet,
-        1
-      ) ||
-    bet >
-      numero(
-        configuracaoAtual?.maxBet,
-        1000
-      )
-  ) {
-
-    return mostrarToast(
-      "Aposta fora dos limites."
-    );
-  }
-
-  slotSpinning =
-    true;
-
-  const btn =
-    $("slotSpinButton");
-
-  const cabinet =
-    $("slotCabinet");
-
-  if (btn) {
-    btn.disabled =
-      true;
-  }
-
-  if (cabinet) {
-    cabinet.classList.add(
-      "spinning"
-    );
-  }
-
-  $("slotStatus").textContent =
-    "Girando...";
-
-  const strips =
-    [
-      ...document.querySelectorAll(
-        ".reel-strip"
-      )
-    ];
-
-  document
-    .querySelectorAll(".reel")
-    .forEach(
-      r =>
-        r.classList.add(
-          "spinning"
-        )
-    );
+  limparMensagem();
 
   try {
-
-    const resposta =
-      await fetch(
-        `${API}/games/spin`,
+    const resultado =
+      await apiFetch(
+        "/games/spin",
         {
-          method:"POST",
-          headers:headersJSON(),
+          method: "POST",
 
           body:
             JSON.stringify({
-              userId,
+              userId:
+                usuario.id,
+
               gameId:
                 configuracaoAtual.id,
-              bet
+
+              bet:
+                aposta,
+
+              freeSpin:
+                false
             })
         }
       );
 
-    const data =
-      await resposta.json();
-
-    if (!resposta.ok) {
-      throw new Error(
-        data.message ||
-        "Não foi possível girar."
+    if (
+      resultado.user
+    ) {
+      atualizarUsuario(
+        resultado.user
+      );
+    } else if (
+      resultado.usuario
+    ) {
+      atualizarUsuario(
+        resultado.usuario
+      );
+    } else if (
+      resultado.balance !==
+      undefined
+    ) {
+      atualizarSaldo(
+        resultado.balance
       );
     }
 
-    const resultado =
-      data.result ||
-      data.spin ||
-      data;
-
-    const symbols =
-      extrairSimbolosResultado(
-        resultado
-      );
-
-    await animarResultadoSlot(
-      strips,
-      symbols
+    await animarResultado(
+      resultado
     );
 
-    const win =
-      numero(
-        resultado.win ??
-        resultado.won ??
-        resultado.payout ??
-        data.win,
-        0
-      );
-
-    atualizarSaldos(
-      data.saldoDepois ??
-      data.balance ??
-      data.user?.balance ??
-      0
+    mostrarResultado(
+      resultado
+    );
+  } catch (error) {
+    console.error(
+      "Erro ao girar:",
+      error
     );
 
-    $("screenWin").textContent =
-      moeda(win);
-
-    $("winDisplay").textContent =
-      moeda(win);
-
-    if (win > 0) {
-
-      cabinet.classList.add(
-        "win"
-      );
-
-      $("slotStatus").textContent =
-        `Você ganhou ${moeda(win)}!`;
-
-    } else {
-
-      $("slotStatus").textContent =
-        "Boa sorte no próximo giro!";
-    }
-
-  } catch(e) {
-
-    $("slotStatus").textContent =
-      "Boa sorte!";
-
-    mostrarToast(
-      e.message ||
-      "Erro ao girar."
+    mostrarMensagem(
+      error.message ||
+      "Não foi possível realizar o giro.",
+      "error"
     );
-
   } finally {
+    girando = false;
 
-    setTimeout(
-      () => {
-
-        document
-          .querySelectorAll(".reel")
-          .forEach(
-            r =>
-              r.classList.remove(
-                "spinning"
-              )
-          );
-
-        cabinet.classList.remove(
-          "spinning",
-          "win"
-        );
-
-        btn.disabled =
-          false;
-
-        slotSpinning =
-          false;
-
-      },
-      700
-    );
+    bloquearControles(false);
   }
 }
 
+/* =========================================================
+   ANIMAÇÃO
+========================================================= */
 
-/*
-=========================================================
-  RESULTADO DOS SLOTS
-=========================================================
-*/
-
-function extrairSimbolosResultado(
+function animarResultado(
   resultado
 ) {
+  const grade =
+    resultado.grid ||
+    resultado.result?.grid ||
+    resultado.result?.grade ||
+    resultado.grade;
 
-  let raw =
-    resultado?.symbols ||
-    resultado?.reels ||
-    resultado?.result ||
-    resultado?.outcome;
+  if (!Array.isArray(grade)) {
+    return Promise.resolve();
+  }
 
-  if (Array.isArray(raw)) {
+  const reels =
+    grade.length;
 
-    if (
-      raw.length >= 3 &&
-      Array.isArray(raw[0])
+  const rows =
+    Array.isArray(
+      grade[0]
+    )
+      ? grade[0].length
+      : 1;
+
+  if (!slotReels) {
+    return Promise.resolve();
+  }
+
+  slotReels.style.setProperty(
+    "--reels",
+    reels
+  );
+
+  slotReels.innerHTML =
+    "";
+
+  const colunas = [];
+
+  for (
+    let reel = 0;
+    reel < reels;
+    reel++
+  ) {
+    const coluna =
+      document.createElement(
+        "div"
+      );
+
+    coluna.className =
+      "slot-reel spinning";
+
+    for (
+      let row = 0;
+      row < rows;
+      row++
     ) {
+      const simbolo =
+        grade[reel]?.[row];
 
-      return raw.map(
-        x =>
-          x[1] ??
-          x[0]
+      coluna.appendChild(
+        criarSimbolo(
+          simbolo
+        )
       );
     }
 
-    return raw
-      .slice(0,3)
-      .map(
-        x =>
-          typeof x ===
-          "object"
-            ? (
-                x.symbol ??
-                x.value ??
-                x.label
-              )
-            : x
-      );
+    slotReels.appendChild(
+      coluna
+    );
+
+    colunas.push(
+      coluna
+    );
   }
-
-  return [
-    randomSlotSymbol(),
-    randomSlotSymbol(),
-    randomSlotSymbol()
-  ];
-}
-
-function randomSlotSymbol() {
-
-  const symbols =
-    SLOT_SYMBOLS[
-      configuracaoAtual?.id
-    ] ||
-    SLOT_SYMBOLS.fortune7;
-
-  return symbols[
-    Math.floor(
-      Math.random() *
-      symbols.length
-    )
-  ].v;
-}
-
-function normalizarSymbol(v) {
-
-  const s =
-    String(v ?? "");
-
-  if (
-    s === "7" ||
-    /seven|7/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "7";
-  }
-
-  if (
-    /diamond|gem|💎/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "💎";
-  }
-
-  if (
-    /cherr|🍒/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "🍒";
-  }
-
-  if (
-    /lemon|🍋/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "🍋";
-  }
-
-  if (
-    /bell|🔔/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "🔔";
-  }
-
-  if (
-    /crown|👑|♛/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "👑";
-  }
-
-  if (
-    /coin|money|💰|🪙/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "🪙";
-  }
-
-  if (
-    /bar/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "BAR";
-  }
-
-  if (
-    /star|⭐|✨/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "⭐";
-  }
-
-  if (
-    /clover|🍀/.test(
-      s.toLowerCase()
-    )
-  ) {
-    return "🍀";
-  }
-
-  return s ||
-    randomSlotSymbol();
-}
-
-function animarResultadoSlot(
-  strips,
-  result
-) {
 
   return new Promise(
-    resolve => {
-
-      const values =
-        result.map(
-          normalizarSymbol
-        );
-
-      strips.forEach(
-        (strip,i) => {
-
-          strip.innerHTML =
-            "";
-
-          const symbols =
-            SLOT_SYMBOLS[
-              configuracaoAtual?.id
-            ] ||
-            SLOT_SYMBOLS.fortune7;
-
-          const pool = [];
-
-          for (
-            let k=0;
-            k<18+i*3;
-            k++
-          ) {
-
-            pool.push(
-              symbols[
-                Math.floor(
-                  Math.random() *
-                  symbols.length
-                )
-              ]
-            );
-          }
-
-          values.forEach(
-            v =>
-              pool.push({v})
-          );
-
-          strip.innerHTML =
-            pool.map(
-              s =>
-                `
-                  <div
-                    class="symbol ${s.cls || ""}"
-                  >
-                    ${s.v}
-                  </div>
-                `
-            ).join("");
-
-          const targetIndex =
-            pool.length - 1;
-
-          strip.style.transition =
-            "none";
-
-          strip.style.transform =
-            "translateY(0)";
-
-          requestAnimationFrame(
-            () => {
-
-              requestAnimationFrame(
-                () => {
-
-                  strip.style.transition =
-                    `transform ${
-                      1500+i*230
-                    }ms cubic-bezier(.12,.72,.12,1)`;
-
-                  strip.style.transform =
-                    `translateY(-${
-                      targetIndex * 75
-                    }px)`;
-                }
+    (resolve) => {
+      setTimeout(
+        () => {
+          colunas.forEach(
+            (coluna) => {
+              coluna.classList.remove(
+                "spinning"
               );
             }
           );
-        }
-      );
 
-      setTimeout(
-        resolve,
-        2200
+          destacarPremios(
+            resultado
+          );
+
+          resolve();
+        },
+        900
       );
     }
   );
 }
 
+/* =========================================================
+   DESTACAR PRÊMIOS
+========================================================= */
 
-/*
-=========================================================
-  VOLTAR AO LOBBY
-=========================================================
-*/
+function destacarPremios(
+  resultado
+) {
+  const elementos =
+    slotReels?.querySelectorAll(
+      ".slot-symbol"
+    );
 
-function voltarLobby() {
-
-  if (
-    slotSpinning ||
-    rouletteSpinning
-  ) {
+  if (!elementos) {
     return;
   }
 
-  $("gameStage").hidden =
-    true;
+  const indices =
+    resultado.winningPositions ||
+    resultado.result?.winningPositions ||
+    resultado.premios?.winningPositions ||
+    [];
 
-  $("gamesLobby").hidden =
-    false;
+  if (
+    Array.isArray(indices) &&
+    indices.length
+  ) {
+    indices.forEach(
+      (indice) => {
+        const elemento =
+          elementos[indice];
 
-  history.replaceState(
-    null,
-    "",
-    "games.html"
-  );
+        if (elemento) {
+          elemento.classList.add(
+            "win"
+          );
+        }
+      }
+    );
 
-  window.scrollTo({
-    top:0,
-    behavior:"instant"
-  });
+    return;
+  }
+
+  const premio =
+    numero(
+      resultado.win ??
+      resultado.premio ??
+      resultado.result?.win ??
+      0
+    );
+
+  if (premio > 0) {
+    elementos.forEach(
+      (elemento) => {
+        elemento.classList.add(
+          "win"
+        );
+      }
+    );
+  }
 }
 
+/* =========================================================
+   RESULTADO
+========================================================= */
 
-/*
-=========================================================
-  INICIALIZAÇÃO
-=========================================================
-*/
+function mostrarResultado(
+  resultado
+) {
+  const premio =
+    numero(
+      resultado.win ??
+      resultado.premio ??
+      resultado.result?.win ??
+      0
+    );
+
+  const aposta =
+    numero(
+      resultado.bet ??
+      resultado.aposta ??
+      obterAposta()
+    );
+
+  if (!winMessage) {
+    return;
+  }
+
+  if (premio > 0) {
+    winMessage.textContent =
+      `🎉 Você ganhou R$ ${dinheiro(
+        premio
+      )}!`;
+
+    winMessage.classList.add(
+      "show",
+      "win"
+    );
+
+    winMessage.classList.remove(
+      "error"
+    );
+
+    return;
+  }
+
+  winMessage.textContent =
+    `Aposta de R$ ${dinheiro(
+      aposta
+    )} realizada. Boa sorte na próxima!`;
+
+  winMessage.classList.add(
+    "show"
+  );
+
+  winMessage.classList.remove(
+    "win",
+    "error"
+  );
+}
+
+function mostrarMensagem(
+  mensagem,
+  tipo = ""
+) {
+  if (!winMessage) {
+    return;
+  }
+
+  winMessage.textContent =
+    mensagem;
+
+  winMessage.classList.add(
+    "show"
+  );
+
+  winMessage.classList.toggle(
+    "error",
+    tipo === "error"
+  );
+
+  winMessage.classList.remove(
+    "win"
+  );
+}
+
+function limparMensagem() {
+  if (!winMessage) {
+    return;
+  }
+
+  winMessage.textContent =
+    "";
+
+  winMessage.classList.remove(
+    "show",
+    "win",
+    "error"
+  );
+}
+
+/* =========================================================
+   CONTROLES
+========================================================= */
+
+function bloquearControles(
+  bloqueado
+) {
+  if (spinButton) {
+    spinButton.disabled =
+      bloqueado;
+
+    spinButton.textContent =
+      bloqueado
+        ? "Girando..."
+        : "GIRAR";
+  }
+
+  if (betInput) {
+    betInput.disabled =
+      bloqueado;
+  }
+
+  quickBetButtons.forEach(
+    (button) => {
+      button.disabled =
+        bloqueado;
+    }
+  );
+}
+
+/* =========================================================
+   FECHAR JOGO
+========================================================= */
+
+function fecharJogo() {
+  if (girando) {
+    return;
+  }
+
+  if (gameModal) {
+    gameModal.classList.remove(
+      "active"
+    );
+
+    gameModal.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+  }
+
+  jogoAtual =
+    null;
+
+  configuracaoAtual =
+    null;
+
+  limparMensagem();
+}
+
+/* =========================================================
+   EVENTOS
+========================================================= */
+
+if (spinButton) {
+  spinButton.addEventListener(
+    "click",
+    girar
+  );
+}
+
+if (closeGameButton) {
+  closeGameButton.addEventListener(
+    "click",
+    fecharJogo
+  );
+}
+
+if (backButton) {
+  backButton.addEventListener(
+    "click",
+    () => {
+      if (girando) {
+        return;
+      }
+
+      window.location.href =
+        "dashboard.html";
+    }
+  );
+}
+
+if (gameModal) {
+  gameModal.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target ===
+        gameModal
+      ) {
+        fecharJogo();
+      }
+    }
+  );
+}
 
 document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+  "keydown",
+  (event) => {
+    if (
+      event.key === "Escape" &&
+      !girando
+    ) {
+      fecharJogo();
+    }
 
-    configurarBotoesVoltar();
-
-    prepararBets();
-
-    carregarJogos();
-
+    if (
+      event.key === "Enter" &&
+      document.activeElement ===
+        betInput
+    ) {
+      girar();
+    }
   }
 );
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+async function inicializar() {
+  if (!verificarUsuario()) {
+    return;
+  }
+
+  await carregarJogos();
+}
+
+inicializar();
