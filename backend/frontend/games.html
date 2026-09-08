@@ -2,385 +2,290 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#08090d">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#050505"
+  >
 
   <title>MyBets — Jogos</title>
 
-  <link rel="stylesheet" href="/games.css?v=20260908-mybets-02">
+  <link
+    rel="stylesheet"
+    href="/games.css?v=20260908-mybets-03"
+  >
 </head>
 
 <body>
 
-  <header class="game-header">
+  <!-- ======================================================
+       CABEÇALHO
+       ====================================================== -->
 
-    <button
-      class="header-back"
-      id="backButton"
-      type="button"
-      aria-label="Voltar"
+  <header class="games-header">
+
+    <div class="games-header-brand">
+
+      <button
+        type="button"
+        class="games-back"
+        id="gamesBack"
+        aria-label="Voltar"
+      >
+        ←
+      </button>
+
+      <strong>MYBETS</strong>
+
+    </div>
+
+    <div
+      class="games-balance"
+      id="balance"
+      data-balance
     >
-      ←
-    </button>
-
-    <a
-      class="game-brand"
-      href="index.html"
-      aria-label="MyBets"
-    >
-      My<span>Bets</span>
-    </a>
-
-    <div class="header-balance">
-      R$ <strong id="balance">0,00</strong>
+      R$ 0,00
     </div>
 
   </header>
 
 
+  <!-- ======================================================
+       CONTEÚDO
+       ====================================================== -->
+
   <main class="games-page">
+
+    <!-- ====================================================
+         LOBBY
+         ==================================================== -->
 
     <section
       class="games-lobby"
       id="gamesLobby"
     >
 
-      <div class="page-kicker">
-        MyBets CASINO
-      </div>
-
-      <h1>
-        Jogos
-      </h1>
-
-      <p>
-        Escolha sua experiência.
-      </p>
-
-      <div
-        id="gamesMessage"
-        class="games-message"
+      <article
+        class="game-card"
+        data-game="roulette"
+        role="button"
+        tabindex="0"
+        aria-label="Abrir Roleta da Sorte"
       >
-        Carregando jogos...
-      </div>
 
-      <div
-        id="gamesContainer"
-        class="games-container"
-      ></div>
+        <div>
+          <h2>🎰 Roleta da Sorte</h2>
+
+          <p>
+            Gire a roleta e tente multiplicar
+            sua aposta.
+          </p>
+        </div>
+
+      </article>
 
     </section>
 
 
+    <!-- ====================================================
+         ROLETA DA SORTE
+         ==================================================== -->
+
     <section
-      class="game-stage"
-      id="gameStage"
+      id="roulettePanel"
       hidden
     >
 
-      <div class="game-stage-top">
+      <h1 class="roulette-title">
+        Roleta da Sorte
+      </h1>
 
-        <button
-          class="stage-back"
-          id="stageBack"
-          type="button"
-        >
-          ← Jogos
-        </button>
-
-        <div class="stage-balance">
-          R$ <strong id="stageBalance">0,00</strong>
-        </div>
-
-      </div>
+      <p class="roulette-subtitle">
+        Escolha sua aposta e gire a roleta
+      </p>
 
 
-      <div class="game-title-row">
-
-        <div>
-
-          <div
-            class="game-kicker"
-            id="gameTypeLabel"
-          >
-            ROLETA
-          </div>
-
-          <h2 id="gameTitle">
-            Roleta da Sorte
-          </h2>
-
-        </div>
-
-        <div
-          class="win-display"
-          id="winDisplay"
-        >
-          R$ 0,00
-        </div>
-
-      </div>
-
-
-      <!-- =====================================================
-           ROLETA DA SORTE
-      ====================================================== -->
+      <!-- GIRO GRÁTIS -->
 
       <div
-        class="roulette-panel"
-        id="roulettePanel"
+        id="rouletteFreeBadge"
         hidden
       >
+        🍀 GIRO GRÁTIS
+      </div>
 
-        <div class="roulette-heading">
-
-          <div>
-
-            <div class="roulette-crown">
-              ♛
-            </div>
-
-            <div class="roulette-name">
-              Roleta da Sorte
-            </div>
-
-            <div class="roulette-subtitle">
-              GIRE E DESCUBRA A SUA SORTE
-            </div>
-
-          </div>
+      <div
+        id="rouletteFreeSpinStatus"
+      ></div>
 
 
-          <div
-            class="roulette-free-badge"
-            id="rouletteFreeBadge"
-            hidden
-          >
-            🍀
-            <strong>
-              GIRO GRÁTIS
-            </strong>
-          </div>
+      <!-- ==================================================
+           PALCO DA ROLETA
+           ================================================== -->
 
-        </div>
+      <div class="roulette-stage">
 
+        <div class="roulette-wheel-shell">
 
-        <div class="roulette-machine">
+          <!-- Ponteiro fixo -->
 
           <div
             class="roulette-pointer"
             aria-hidden="true"
-          >
-            <span class="pointer-gem"></span>
-          </div>
+          ></div>
 
 
-          <div class="roulette-wheel-shell">
+          <!-- Luzes -->
 
-            <div
-              class="roulette-bulbs"
-              id="rouletteBulbs"
-            ></div>
-
-
-            <div
-              class="roulette-wheel"
-              id="rouletteWheel"
-              aria-label="Roleta da Sorte"
-            ></div>
+          <div
+            id="rouletteBulbs"
+            aria-hidden="true"
+          ></div>
 
 
-            <div class="roulette-inner-ring"></div>
+          <!-- Roda -->
 
+          <div
+            id="rouletteWheel"
+            class="roulette-wheel"
+            aria-label="Roleta da Sorte"
+          ></div>
+
+
+          <!-- Centro -->
+
+          <div class="roulette-center">
 
             <button
-              class="roulette-hub"
-              id="rouletteCenterButton"
               type="button"
+              id="rouletteCenterButton"
               aria-label="Girar roleta"
             >
-
-              <span>
-                ♛
-              </span>
-
-              <strong>
-                GIRAR
-              </strong>
-
-              <small>
-                MYBETS
-              </small>
-
+              GIRAR
             </button>
 
           </div>
 
         </div>
 
+      </div>
+
+
+      <!-- ==================================================
+           RESULTADO
+           ================================================== -->
+
+      <div
+        id="rouletteResult"
+        class="roulette-result"
+        aria-live="polite"
+      >
+        Boa sorte! 🎰
+      </div>
+
+
+      <!-- ==================================================
+           CONTROLES
+           ================================================== -->
+
+      <div class="roulette-controls">
+
+        <!-- Valor da aposta -->
+
+        <div class="roulette-bet-row">
+
+          <button
+            type="button"
+            id="rouletteBetMinus"
+            aria-label="Diminuir aposta"
+          >
+            −
+          </button>
+
+          <div
+            id="rouletteBetValue"
+          >
+            R$ 0,50
+          </div>
+
+          <button
+            type="button"
+            id="rouletteBetPlus"
+            aria-label="Aumentar aposta"
+          >
+            +
+          </button>
+
+        </div>
+
+
+        <!-- Apostas rápidas -->
 
         <div
-          class="roulette-free-spin-status"
-          id="rouletteFreeSpinStatus"
-          hidden
+          id="rouletteQuickBets"
+          aria-label="Apostas rápidas"
         ></div>
 
 
-        <div
-          class="roulette-result"
-          id="rouletteResult"
+        <!-- Outro valor -->
+
+        <button
+          type="button"
+          id="rouletteOtherValue"
         >
-          Faça sua aposta
-        </div>
+          Escolher outro valor
+        </button>
 
 
-        <div class="roulette-betting">
+        <!-- Girar -->
 
-          <div class="roulette-selection-label">
-            ESCOLHA O VALOR DA APOSTA
-          </div>
+        <button
+          type="button"
+          id="rouletteSpinButton"
+        >
+          🎰 GIRAR ROLETA
+        </button>
 
-
-          <div class="roulette-bet-row">
-
-            <button
-              type="button"
-              id="rouletteBetMinus"
-              aria-label="Diminuir aposta"
-            >
-              −
-            </button>
+      </div>
 
 
-            <div>
+      <!-- ==================================================
+           LEGENDA
+           ================================================== -->
 
-              <small>
-                VALOR DA APOSTA
-              </small>
+      <div
+        class="roulette-legend"
+        aria-label="Legenda da roleta"
+      >
 
-              <strong id="rouletteBetValue">
-                R$ 0,50
-              </strong>
+        <span class="legend-x">
+          ✕ X
+        </span>
 
-            </div>
+        <span class="legend-2">
+          2×
+        </span>
 
+        <span class="legend-3">
+          3×
+        </span>
 
-            <button
-              type="button"
-              id="rouletteBetPlus"
-              aria-label="Aumentar aposta"
-            >
-              +
-            </button>
+        <span class="legend-4">
+          4×
+        </span>
 
-          </div>
+        <span class="legend-5">
+          5×
+        </span>
 
-
-          <!-- 6 BOTÕES RÁPIDOS -->
-
-          <div
-            class="quick-bets roulette-quick-bets"
-            id="rouletteQuickBets"
-          >
-
-            <button
-              type="button"
-              data-roulette-bet="0.5"
-            >
-              R$ 0,50
-            </button>
-
-            <button
-              type="button"
-              data-roulette-bet="1"
-            >
-              R$ 1
-            </button>
-
-            <button
-              type="button"
-              data-roulette-bet="2"
-            >
-              R$ 2
-            </button>
-
-            <button
-              type="button"
-              data-roulette-bet="5"
-            >
-              R$ 5
-            </button>
-
-            <button
-              type="button"
-              data-roulette-bet="10"
-            >
-              R$ 10
-            </button>
-
-            <button
-              type="button"
-              data-roulette-bet="50"
-            >
-              R$ 50
-            </button>
-
-          </div>
-
-
-          <!-- OUTROS VALORES -->
-
-          <button
-            class="other-value-button"
-            id="rouletteOtherValue"
-            type="button"
-          >
-            OUTROS VALORES
-          </button>
-
-
-          <!-- GIRAR -->
-
-          <button
-            class="spin-button roulette-spin-button"
-            id="rouletteSpinButton"
-            type="button"
-          >
-            GIRAR
-          </button>
-
-
-          <div class="roulette-legend">
-
-            <span>
-              <i class="legend-x">X</i>
-              Perde
-            </span>
-
-            <span>
-              <i class="legend-2">2×</i>
-            </span>
-
-            <span>
-              <i class="legend-3">3×</i>
-            </span>
-
-            <span>
-              <i class="legend-4">4×</i>
-            </span>
-
-            <span>
-              <i class="legend-5">5×</i>
-            </span>
-
-            <span>
-              <i class="legend-clover">🍀</i>
-              Giro grátis
-            </span>
-
-          </div>
-
-        </div>
+        <span class="legend-free">
+          🍀 Giro grátis
+        </span>
 
       </div>
 
@@ -389,13 +294,14 @@
   </main>
 
 
-  <div
-    class="toast"
-    id="toast"
-  ></div>
+  <!-- ======================================================
+       JAVASCRIPT
+       ====================================================== -->
 
-
-  <script src="/games.js?v=20260908-mybets-02"></script>
+  <script
+    src="/games.js?v=20260908-mybets-03"
+    defer
+  ></script>
 
 </body>
 </html>
