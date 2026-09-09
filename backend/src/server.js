@@ -361,90 +361,32 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 10 FATIAS
+   ROLETA ÚNICA - 32 FATIAS
 ========================================================= */
 
-const ROLETTE_DEFAULT_SEGMENTS = [
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "4x",
-    "type": "prize",
-    "multiplier": 4,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "🍀",
-    "type": "sorte",
-    "multiplier": 0,
-    "probability": 10
-  }
-];
+// A configuração da roleta vem exclusivamente de site_settings.
+// Não existe uma segunda lista de segmentos escondida no servidor.
+const ROLETTE_DEFAULT_SEGMENTS = null;
 
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length !== 10) {
-      throw new Error("A roleta precisa ter exatamente 10 fatias.");
+    if (!Array.isArray(parsed) || parsed.length < 2 || parsed.length > 40) {
+      throw new Error("A roleta precisa ter entre 2 e 40 fatias.");
     }
 
-    return parsed.map((segmento, index) => {
+    const segmentos = parsed.map((segmento, index) => {
       const label = String(segmento?.label ?? "").trim();
       const type = String(segmento?.type ?? "zero").trim().toLowerCase();
       const multiplier = Number(segmento?.multiplier ?? 0);
-      const weight = Number(segmento?.probability ?? segmento?.weight ?? 0);
+      const probability = Number(segmento?.probability ?? segmento?.weight ?? 0);
+      const color = String(segmento?.color ?? "").trim();
 
       if (!label || !["zero", "sorte", "prize"].includes(type)) {
         throw new Error(`Configuração inválida na fatia ${index + 1}.`);
       }
-      if (!Number.isFinite(weight) || weight < 0) {
-        throw new Error(`Peso inválido na fatia ${index + 1}.`);
+      if (!Number.isFinite(probability) || probability < 0) {
+        throw new Error(`Probabilidade inválida na fatia ${index + 1}.`);
       }
       if (!Number.isFinite(multiplier) || multiplier < 0 || multiplier > 100) {
         throw new Error(`Multiplicador inválido na fatia ${index + 1}.`);
@@ -455,11 +397,19 @@ function carregarSegmentosRoleta(valor) {
       if (type !== "prize" && multiplier !== 0) {
         throw new Error(`A fatia ${index + 1} não pode ter multiplicador de prêmio.`);
       }
-      return { label, type, multiplier, probability: weight };
+      if (color && !/^#[0-9a-fA-F]{6}$/.test(color)) {
+        throw new Error(`Cor inválida na fatia ${index + 1}.`);
+      }
+      return { label, type, multiplier, probability, color };
     });
+
+    const totalProbability = segmentos.reduce((sum, item) => sum + item.probability, 0);
+    if (!(totalProbability > 0)) {
+      throw new Error("A soma das probabilidades da roleta deve ser maior que zero.");
+    }
+    return segmentos;
   } catch (error) {
-    console.warn("Configuração da roleta inválida; usando padrão:", error.message);
-    return ROLETTE_DEFAULT_SEGMENTS;
+    throw new Error(`Configuração da roleta inválida: ${error.message}`);
   }
 }
 
@@ -528,6 +478,9 @@ app.post(
         FROM site_settings
         WHERE setting_key IN (
           'roulette_enabled',
+          'roulette_title',
+          'roulette_subtitle',
+          'roulette_rules',
           'roulette_min_bet',
           'roulette_max_bet',
           'roulette_rtp',
@@ -710,7 +663,7 @@ app.post(
             ? Math.max(0, freeSpinCount - 1 + (ganhouReplay ? 1 : 0))
             : freeSpinCount + (ganhouReplay ? 1 : 0),
           rtp: rtp,
-          weight: Number(resultado.weight || 0)
+          weight: Number(resultado.probability || 0)
         },
         user: {
           id: user.id,

@@ -152,6 +152,21 @@ const configuracoesPadrao = [
   ],
 
   [
+    "roulette_title",
+    "Roda da Sorte"
+  ],
+
+  [
+    "roulette_subtitle",
+    "Escolha seu valor e gire a roda."
+  ],
+
+  [
+    "roulette_rules",
+    "X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado."
+  ],
+
+  [
     "roulette_min_bet",
     "0.50"
   ],
@@ -178,16 +193,7 @@ const configuracoesPadrao = [
 
   [
     "roulette_segments_json",
-    "[{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"4x\",\"type\":\"prize\",\"multiplier\":4,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"probability\":10}]",
-  ],
-
-  [
-    "roulette_sound_enabled",
-    "true"
-  ],
-
-  [
-    "roulette_animation_ms",
+    '[{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"2x","type":"prize","multiplier":2,"probability":10,"color":"#f6b51b"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"3x","type":"prize","multiplier":3,"probability":10,"color":"#6412c9"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"4x","type":"prize","multiplier":4,"probability":10,"color":"#0877e8"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"5x","type":"prize","multiplier":5,"probability":10,"color":"#e50068"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"🍀","type":"sorte","multiplier":0,"probability":10,"color":"#08a51a"}]',
     "4800"
   ],
 
@@ -405,36 +411,28 @@ async function inicializarConfiguracoes() {
         [key, value]
       );
     }
-
-    // Garante a primeira implantação do modelo atual de 10 fatias.
-    // Depois que estiver em 10 fatias, alterações feitas pelo administrador permanecem.
+    // Migração do modelo antigo da roleta: elimina a configuração de 20 fatias
+    // e também o formato antigo que usava "weight". A configuração oficial
+    // passa a ter uma única fonte de verdade: site_settings.
     const rouletteCurrent = await pool.query(`
       SELECT setting_value FROM site_settings
       WHERE setting_key = 'roulette_segments_json' LIMIT 1
     `);
     const currentRoulette = String(rouletteCurrent.rows[0]?.setting_value || '');
-    let precisaAtualizarRoleta = true;
+    let precisaMigrarRoleta = false;
     try {
       const atual = JSON.parse(currentRoulette);
-      const esperadoLista = JSON.parse(configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')[1]);
-      precisaAtualizarRoleta = !Array.isArray(atual) || atual.length !== 10 || atual.some((segmento, index) => {
-        const esperado = esperadoLista[index];
-        return String(segmento?.label || '') !== esperado.label
-          || String(segmento?.type || '') !== esperado.type
-          || Number(segmento?.multiplier || 0) !== esperado.multiplier;
-      });
+      const labelsAntigos = new Set(["10x", "20x", "30x", "50x", "75x", "100x"]);
+      precisaMigrarRoleta = !Array.isArray(atual) ||
+        atual.some(item => item && Object.prototype.hasOwnProperty.call(item, 'weight') && !Object.prototype.hasOwnProperty.call(item, 'probability')) ||
+        (atual.length === 20 && atual.some(item => labelsAntigos.has(String(item?.label || "").toLowerCase())));
     } catch (_) {
-      precisaAtualizarRoleta = true;
+      precisaMigrarRoleta = true;
     }
-
-    if (precisaAtualizarRoleta) {
+    if (precisaMigrarRoleta) {
       const novoPadrao = configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')?.[1];
       if (novoPadrao) {
-        await pool.query(`
-          UPDATE site_settings
-          SET setting_value = $1, updated_at = CURRENT_TIMESTAMP
-          WHERE setting_key = 'roulette_segments_json'
-        `, [novoPadrao]);
+        await pool.query(`UPDATE site_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = 'roulette_segments_json'`, [novoPadrao]);
       }
     }
 
