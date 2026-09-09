@@ -35,83 +35,55 @@
     });
 
   function toast(message) {
-    const element = $("toast");
+    const el = $("toast");
+    if (!el) return;
 
-    if (!element) {
-      alert(message);
-      return;
-    }
-
-    element.textContent = message;
-    element.classList.add("show");
+    el.textContent = message;
+    el.classList.add("show");
 
     clearTimeout(toast.timer);
-
     toast.timer = setTimeout(() => {
-      element.classList.remove("show");
+      el.classList.remove("show");
     }, 2600);
   }
 
   function stored() {
     try {
-      return JSON.parse(
-        localStorage.getItem("jpbet_user") || "null"
-      );
+      return JSON.parse(localStorage.getItem("jpbet_user") || "null");
     } catch {
       return null;
     }
   }
 
-  function save(newUser) {
-    if (!newUser) return;
+  function save(u) {
+    if (!u) return;
 
-    user = newUser;
+    user = u;
 
     try {
-      localStorage.setItem(
-        "jpbet_user",
-        JSON.stringify(newUser)
-      );
+      localStorage.setItem("jpbet_user", JSON.stringify(u));
     } catch {}
   }
 
   function uid() {
-    return (
-      user?.id ??
-      user?.userId ??
-      user?.user_id
-    );
+    return user?.id ?? user?.userId ?? user?.user_id;
   }
 
-  /*
-    O saldo REAL da conta é:
-    bonusBalance + cashBalance.
-
-    O backend também devolve "balance"
-    com essa soma, mas usamos os campos
-    separados quando disponíveis.
-  */
   function bal() {
-    const bonus =
-      user?.bonusBalance ??
-      user?.bonus_balance;
+    if (!user) return 0;
 
-    const cash =
-      user?.cashBalance ??
-      user?.cash_balance;
+    const bonus = Number(user.bonusBalance ?? user.bonus_balance ?? 0);
+    const cash = Number(user.cashBalance ?? user.cash_balance ?? 0);
 
-    if (
-      bonus !== undefined ||
-      cash !== undefined
-    ) {
-      return Number(bonus || 0) +
-             Number(cash || 0);
+    if (user.bonusBalance !== undefined || user.bonus_balance !== undefined ||
+        user.cashBalance !== undefined || user.cash_balance !== undefined) {
+      return bonus + cash;
     }
 
     return Number(
-      user?.balance ??
-      user?.saldo ??
-      user?.cash ??
+      user.balance ??
+      user.saldo ??
+      user.cash ??
       0
     );
   }
@@ -134,34 +106,23 @@
     };
 
     try {
-      const token =
-        localStorage.getItem("jpbet_token");
-
+      const token = localStorage.getItem("jpbet_token");
       if (token) {
-        headers.Authorization =
-          `Bearer ${token}`;
+        headers.Authorization = `Bearer ${token}`;
       }
     } catch {}
 
-    const response = await fetch(
-      API + path,
-      {
-        ...options,
-        headers,
-        credentials: "include"
-      }
-    );
+    const response = await fetch(API + path, {
+      ...options,
+      headers
+    });
 
-    const text =
-      await response.text();
+    const text = await response.text();
 
     let data = {};
 
     try {
-      data =
-        text
-          ? JSON.parse(text)
-          : {};
+      data = text ? JSON.parse(text) : {};
     } catch {}
 
     if (!response.ok) {
@@ -175,128 +136,63 @@
     return data;
   }
 
-  /*
-    Busca o saldo diretamente do banco
-    através da rota oficial do servidor.
-  */
-  async function refreshUser() {
-    if (!uid()) {
-      return false;
+  async function loadUser() {
+    user = stored();
+
+    const id = uid();
+
+    if (!id) {
+      balances();
+      return;
     }
 
     try {
-      const data =
-        await api(
-          `/user/${encodeURIComponent(uid())}`
-        );
+      const data = await api(`/user/${encodeURIComponent(id)}`);
 
       const freshUser =
         data.user ||
         data.usuario ||
-        data.player;
+        data.player ||
+        data;
 
-      if (
-        freshUser &&
-        (
-          freshUser.id ||
-          freshUser.userId ||
-          freshUser.user_id
-        )
-      ) {
+      if (freshUser?.id || freshUser?.userId || freshUser?.user_id) {
         save(freshUser);
-        balances();
-        return true;
       }
-
-      return false;
-
-    } catch (error) {
-      console.error(
-        "Erro ao atualizar usuário:",
-        error
-      );
-
-      balances();
-
-      return false;
-    }
-  }
-
-  async function loadUser() {
-    user = stored();
+    } catch {}
 
     balances();
-
-    /*
-      Primeiro mostra o saldo salvo localmente.
-      Depois substitui pelo saldo REAL do banco.
-    */
-    await refreshUser();
-
-    /*
-      Se não encontrou usuário no localStorage,
-      não tenta inventar login.
-    */
-    if (!uid()) {
-      balances();
-    }
   }
 
   function lobby() {
-    const container =
-      $("gamesContainer");
+    const container = $("gamesContainer");
 
     if (!container) return;
 
     container.innerHTML = `
-      <button
-        class="game-card"
-        id="rouletteCard"
-        type="button"
-      >
+      <button class="game-card" id="rouletteCard" type="button">
         <div class="game-card-icon">♛</div>
-
         <div>
           <strong>Roleta da Sorte</strong>
-          <span>
-            10 setores • Multiplicadores • 🍀 Giro grátis
-          </span>
+          <span>10 setores • Multiplicadores • 🍀 Giro grátis</span>
         </div>
-
         <b>JOGAR →</b>
       </button>
     `;
 
-    const card =
-      $("rouletteCard");
-
-    if (card) {
-      card.onclick =
-        openRoulette;
-    }
+    $("rouletteCard").onclick = openRoulette;
   }
 
-  async function openRoulette() {
+  function openRoulette() {
     $("gamesLobby").hidden = true;
     $("gameStage").hidden = false;
     $("roulettePanel").hidden = false;
 
-    $("gameTitle").textContent =
-      "Roleta da Sorte";
-
-    $("gameTypeLabel").textContent =
-      "ROLETA";
+    $("gameTitle").textContent = "Roleta da Sorte";
+    $("gameTypeLabel").textContent = "ROLETA";
 
     createWheel();
     updateBet();
-
-    /*
-      Sempre atualiza o saldo quando
-      o jogador entra na roleta.
-    */
-    await refreshUser();
-
-    updateFreeSpinState();
+    balances();
   }
 
   function back() {
@@ -306,89 +202,85 @@
   }
 
   function createWheel() {
-    const wheel =
-      $("rouletteWheel");
+    const wheel = $("rouletteWheel");
 
-    const bulbs =
-      $("rouletteBulbs");
+    if (!wheel) return;
 
-    if (!wheel || !bulbs) return;
+    const bulbs = $("rouletteBulbs");
+    const pointer = document.querySelector(".roulette-pointer");
+    const innerRing = document.querySelector(".roulette-inner-ring");
+    const oldHub = $("rouletteCenterButton");
 
-    const count =
-      ROULETTE_SEGMENTS.length;
-
-    const angle =
-      360 / count;
-
-    wheel.innerHTML = "";
-    bulbs.innerHTML = "";
-
-    ROULETTE_SEGMENTS.forEach(
-      (segment, index) => {
-        const element =
-          document.createElement("div");
-
-        element.className =
-          "roulette-label";
-
-        element.dataset.type =
-          segment.type;
-
-        element.dataset.multiplier =
-          segment.multiplier;
-
-        element.style.setProperty(
-          "--angle",
-          `${index * angle}deg`
-        );
-
-        element.style.setProperty(
-          "--slice-angle",
-          `${angle}deg`
-        );
-
-        element.innerHTML =
-          `<span>${segment.label}</span>`;
-
-        wheel.appendChild(element);
-      }
-    );
-
-    for (let i = 0; i < 30; i++) {
-      const bulb =
-        document.createElement("i");
-
-      bulb.style.setProperty(
-        "--bulb-angle",
-        `${i * 12}deg`
-      );
-
-      bulbs.appendChild(bulb);
+    if (bulbs) {
+      bulbs.style.display = "none";
     }
 
-    wheel.style.transform =
-      `rotate(${rotation}deg)`;
+    if (pointer) {
+      pointer.style.display = "none";
+    }
+
+    if (innerRing) {
+      innerRing.style.display = "none";
+    }
+
+    wheel.innerHTML = `
+      <img
+        src="/Roleta%20da%20Sorte.png"
+        alt="Roleta da Sorte MyBets"
+        class="roulette-wheel-image"
+        draggable="false"
+      >
+    `;
+
+    wheel.style.background = "transparent";
+    wheel.style.overflow = "hidden";
+    wheel.style.boxShadow = "none";
+    wheel.style.border = "none";
+    wheel.style.transform = `rotate(${rotation}deg)`;
+
+    const image = wheel.querySelector(".roulette-wheel-image");
+
+    if (image) {
+      image.style.position = "absolute";
+      image.style.inset = "0";
+      image.style.width = "100%";
+      image.style.height = "100%";
+      image.style.objectFit = "contain";
+      image.style.display = "block";
+      image.style.userSelect = "none";
+      image.style.pointerEvents = "none";
+    }
+
+    if (oldHub) {
+      oldHub.style.position = "absolute";
+      oldHub.style.inset = "36%";
+      oldHub.style.width = "28%";
+      oldHub.style.height = "28%";
+      oldHub.style.margin = "0";
+      oldHub.style.padding = "0";
+      oldHub.style.border = "0";
+      oldHub.style.borderRadius = "50%";
+      oldHub.style.background = "transparent";
+      oldHub.style.boxShadow = "none";
+      oldHub.style.color = "transparent";
+      oldHub.style.zIndex = "30";
+      oldHub.style.fontSize = "0";
+    }
   }
 
   function updateBet() {
-    const value =
-      $("rouletteBetValue");
+    const value = $("rouletteBetValue");
 
     if (value) {
-      value.textContent =
-        `R$ ${money(bet)}`;
+      value.textContent = `R$ ${money(bet)}`;
     }
 
     document
-      .querySelectorAll(
-        "[data-roulette-bet]"
-      )
+      .querySelectorAll("[data-roulette-bet]")
       .forEach(button => {
         button.classList.toggle(
           "active",
-          Number(
-            button.dataset.rouletteBet
-          ) === bet
+          Number(button.dataset.rouletteBet) === bet
         );
       });
   }
@@ -396,107 +288,73 @@
   function setBet(value) {
     value = Number(value);
 
-    if (
-      Number.isFinite(value) &&
-      value >= MIN
-    ) {
-      bet =
-        Math.round(value * 100) / 100;
-
-      updateBet();
-    }
-  }
-
-  function other() {
-    const input =
-      prompt(
-        "Digite o valor da aposta em reais:",
-        String(bet).replace(".", ",")
-      );
-
-    if (input === null) return;
-
-    const value =
-      Number(
-        input
-          .replace(/\./g, "")
-          .replace(",", ".")
-      );
-
-    if (
-      !Number.isFinite(value) ||
-      value < MIN
-    ) {
-      toast(
-        "Digite um valor a partir de R$ 0,50."
-      );
-
+    if (!Number.isFinite(value) || value < MIN) {
       return;
     }
 
-    setBet(value);
+    bet = Math.round(value * 100) / 100;
+
+    updateBet();
+  }
+
+  function other() {
+    const value = prompt(
+      "Digite o valor da aposta em reais:",
+      String(bet).replace(".", ",")
+    );
+
+    if (value === null) return;
+
+    const number = Number(
+      value
+        .replace(/\./g, "")
+        .replace(",", ".")
+    );
+
+    if (!Number.isFinite(number) || number < MIN) {
+      return toast("Digite um valor a partir de R$ 0,50.");
+    }
+
+    setBet(number);
   }
 
   function indexOf(result) {
-    if (
-      Number.isInteger(
-        result?.index
-      )
-    ) {
+    if (Number.isInteger(result?.index)) {
       return result.index;
     }
 
-    if (
-      Number.isInteger(
-        result?.segmentIndex
-      )
-    ) {
+    if (Number.isInteger(result?.segmentIndex)) {
       return result.segmentIndex;
     }
 
-    const multiplier =
-      Number(
-        result?.multiplier ??
-        result?.resultado?.multiplier ??
-        0
-      );
+    const multiplier = Number(
+      result?.multiplier ??
+      result?.resultado?.multiplier ??
+      0
+    );
 
     const type =
       result?.type ??
       result?.resultado?.type;
 
-    const candidates =
-      ROULETTE_SEGMENTS
-        .map(
-          (segment, index) => ({
-            segment,
-            index
-          })
-        )
-        .filter(item => {
-          if (
-            type &&
-            item.segment.type !== type
-          ) {
-            return false;
-          }
+    const candidates = ROULETTE_SEGMENTS
+      .map((segment, index) => ({ segment, index }))
+      .filter(item => {
+        if (type && item.segment.type !== type) {
+          return false;
+        }
 
-          if (
-            item.segment.type ===
-            "prize"
-          ) {
-            return (
-              item.segment.multiplier ===
-              multiplier
-            );
-          }
+        if (
+          item.segment.type === "prize" &&
+          item.segment.multiplier !== multiplier
+        ) {
+          return false;
+        }
 
-          return true;
-        });
+        return true;
+      });
 
-    return candidates.length
-      ? candidates[0].index
-      : 0;
+    return candidates.length ? candidates[0].index : 0;
   }
 
   function labelOf(result) {
@@ -504,47 +362,33 @@
       result?.label ||
       result?.resultLabel ||
       result?.resultado?.label ||
-      ROULETTE_SEGMENTS[
-        indexOf(result)
-      ]?.label ||
+      ROULETTE_SEGMENTS[indexOf(result)]?.label ||
       "X"
     );
   }
 
   function animate(index) {
-    const wheel =
-      $("rouletteWheel");
+    const wheel = $("rouletteWheel");
 
     if (!wheel) {
       return Promise.resolve();
     }
 
-    const angle =
-      360 /
-      ROULETTE_SEGMENTS.length;
+    const sliceAngle = 360 / ROULETTE_SEGMENTS.length;
 
     const target =
-      -(
-        index * angle +
-        angle / 2
-      );
+      -(index * sliceAngle + sliceAngle / 2);
 
     const current =
-      (
-        rotation % 360 +
-        360
-      ) % 360;
+      ((rotation % 360) + 360) % 360;
 
-    let distance =
-      target - current;
+    let distance = target - current;
 
     while (distance < 0) {
       distance += 360;
     }
 
-    rotation +=
-      7 * 360 +
-      distance;
+    rotation += 7 * 360 + distance;
 
     wheel.style.transition =
       "transform 5.8s cubic-bezier(.12,.78,.16,1)";
@@ -553,351 +397,189 @@
       `rotate(${rotation}deg)`;
 
     return new Promise(resolve => {
-      setTimeout(
-        resolve,
-        6000
-      );
+      setTimeout(resolve, 6000);
     });
   }
 
-  function updateFreeSpinState() {
-    const available =
-      Number(
-        user?.rouletteFreeSpins ??
-        user?.roulette_free_spins ??
-        0
+  async function refreshUser() {
+    const id = uid();
+
+    if (!id) return;
+
+    try {
+      const data = await api(
+        `/user/${encodeURIComponent(id)}`
       );
 
-    const hasFreeSpin =
-      available > 0;
+      const freshUser =
+        data.user ||
+        data.usuario ||
+        data.player ||
+        data;
 
-    const badge =
-      $("rouletteFreeBadge");
-
-    const status =
-      $("rouletteFreeSpinStatus");
-
-    if (badge) {
-      badge.hidden =
-        !hasFreeSpin;
-    }
-
-    if (status) {
-      status.hidden =
-        !hasFreeSpin;
-
-      if (hasFreeSpin) {
-        const freeBet =
-          Number(
-            user?.rouletteFreeSpinBet ??
-            user?.roulette_free_spin_bet ??
-            bet
-          );
-
-        status.textContent =
-          `🍀 ${available} giro(s) grátis disponível(is)${freeBet > 0 ? ` — R$ ${money(freeBet)} cada` : ""}.`;
+      if (freshUser?.id || freshUser?.userId || freshUser?.user_id) {
+        save(freshUser);
+        balances();
       }
-    }
-
-    freeSpin =
-      hasFreeSpin;
+    } catch {}
   }
 
   async function spin() {
     if (busy) return;
 
     if (!uid()) {
-      toast(
-        "Faça login para jogar."
-      );
-
-      return;
+      return toast("Faça login para jogar.");
     }
 
-    /*
-      Busca o saldo real imediatamente
-      antes de apostar.
-    */
     await refreshUser();
 
-    updateFreeSpinState();
+    const freeAvailable = Number(
+      user?.rouletteFreeSpins ??
+      user?.roulette_free_spins ??
+      0
+    ) > 0;
 
-    const availableFreeSpins =
-      Number(
-        user?.rouletteFreeSpins ??
-        user?.roulette_free_spins ??
-        0
-      );
-
-    /*
-      Se existe giro grátis, usa o giro grátis.
-      Caso contrário, verifica o saldo real.
-    */
-    const usarGiroGratis =
-      availableFreeSpins > 0;
-
-    if (
-      !usarGiroGratis &&
-      bal() < bet
-    ) {
-      toast(
-        `Saldo insuficiente. Saldo disponível: R$ ${money(bal())}.`
-      );
-
-      return;
+    if (!freeAvailable && !freeSpin && bal() < bet) {
+      return toast("Saldo insuficiente.");
     }
 
     busy = true;
 
     if ($("rouletteSpinButton")) {
-      $("rouletteSpinButton").disabled =
-        true;
+      $("rouletteSpinButton").disabled = true;
     }
 
     if ($("rouletteCenterButton")) {
-      $("rouletteCenterButton").disabled =
-        true;
+      $("rouletteCenterButton").disabled = true;
     }
 
-    if ($("rouletteResult")) {
-      $("rouletteResult").textContent =
-        "Girando...";
-    }
+    $("rouletteResult").textContent = "Girando...";
 
     try {
-      const data =
-        await api(
-          "/roulette/spin",
-          {
-            method: "POST",
+      const usingFreeSpin = freeAvailable || freeSpin;
 
-            body: JSON.stringify({
-              userId: uid(),
-
-              betAmount:
-                bet,
-
-              betType:
-                "roulette",
-
-              rouletteId:
-                "popular",
-
-              freeSpin:
-                usarGiroGratis
-            })
-          }
-        );
+      const data = await api("/roulette/spin", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: uid(),
+          betAmount: bet,
+          betType: "roulette",
+          rouletteId: "popular",
+          freeSpin: usingFreeSpin
+        })
+      });
 
       const result =
         data.result ||
         data.resultado ||
         data;
 
-      /*
-        O servidor devolve o usuário
-        atualizado depois da aposta.
-      */
-      if (
-        data.user ||
-        data.usuario ||
-        data.player
-      ) {
-        save(
-          data.user ||
-          data.usuario ||
-          data.player
-        );
+      const index = indexOf(result);
+
+      await animate(index);
+
+      if (data.user || data.usuario) {
+        save(data.user || data.usuario);
       } else {
-        /*
-          Mesmo que a resposta não tenha
-          usuário, busca novamente no banco.
-        */
         await refreshUser();
       }
 
-      const resultIndex =
-        indexOf(result);
-
-      await animate(
-        resultIndex
+      const prize = Number(
+        data.prize ??
+        data.payout ??
+        result.prize ??
+        result.payout ??
+        0
       );
 
-      /*
-        Atualiza novamente após a animação.
-        Assim o saldo mostrado é sempre
-        o saldo real do banco.
-      */
-      await refreshUser();
+      const label = labelOf(result);
 
-      const prize =
-        Number(
-          data.prize ??
-          data.payout ??
-          result.prize ??
-          result.payout ??
-          0
-        );
-
-      const label =
-        labelOf(result);
-
-      const isFreeResult =
+      const isFree =
         result.type === "sorte" ||
         label.includes("🍀");
 
-      if ($("rouletteResult")) {
-        if (isFreeResult) {
-          $("rouletteResult").textContent =
-            "🍀 GIRO GRÁTIS!";
-        } else if (prize > 0) {
-          $("rouletteResult").textContent =
-            `${label} — Você ganhou R$ ${money(prize)}`;
-        } else {
-          $("rouletteResult").textContent =
-            `${label} — Boa sorte na próxima!`;
-        }
+      $("rouletteResult").textContent =
+        isFree
+          ? "🍀 GIRO GRÁTIS!"
+          : prize > 0
+            ? `${label} — Você ganhou R$ ${money(prize)}`
+            : `${label} — Boa sorte na próxima!`;
+
+      $("winDisplay").textContent =
+        prize > 0
+          ? `R$ ${money(prize)}`
+          : "R$ 0,00";
+
+      if (isFree) {
+        freeSpin = true;
+
+        $("rouletteFreeSpinStatus").hidden = false;
+        $("rouletteFreeSpinStatus").textContent =
+          `🍀 Você ganhou 1 giro grátis de R$ ${money(bet)}.`;
+
+        $("rouletteFreeBadge").hidden = false;
+      } else {
+        freeSpin = false;
+
+        $("rouletteFreeSpinStatus").hidden = true;
+        $("rouletteFreeBadge").hidden = true;
       }
 
-      if ($("winDisplay")) {
-        $("winDisplay").textContent =
-          prize > 0
-            ? `R$ ${money(prize)}`
-            : "R$ 0,00";
-      }
-
-      /*
-        O backend é a fonte oficial dos
-        giros grátis. Não fazemos mais
-        controle artificial no navegador.
-      */
-      updateFreeSpinState();
-
+      await refreshUser();
       balances();
 
     } catch (error) {
-      console.error(
-        "Erro ao girar:",
-        error
-      );
-
       toast(
         error.message ||
         "Erro ao girar a roleta."
       );
 
-      if ($("rouletteResult")) {
-        $("rouletteResult").textContent =
-          "Não foi possível realizar o giro.";
-      }
-
-      /*
-        Mesmo em caso de erro,
-        sincroniza o saldo novamente.
-      */
-      await refreshUser();
-
+      $("rouletteResult").textContent =
+        "Não foi possível realizar o giro.";
     } finally {
       busy = false;
 
       if ($("rouletteSpinButton")) {
-        $("rouletteSpinButton").disabled =
-          false;
+        $("rouletteSpinButton").disabled = false;
       }
 
       if ($("rouletteCenterButton")) {
-        $("rouletteCenterButton").disabled =
-          false;
+        $("rouletteCenterButton").disabled = false;
       }
-
-      balances();
     }
   }
 
   function events() {
-    const backButton =
-      $("backButton");
+    $("backButton").onclick = () => {
+      if (history.length > 1) {
+        history.back();
+      } else {
+        location.href = "index.html";
+      }
+    };
 
-    if (backButton) {
-      backButton.onclick = () => {
-        if (
-          history.length > 1
-        ) {
-          history.back();
-        } else {
-          location.href =
-            "index.html";
-        }
-      };
-    }
+    $("stageBack").onclick = back;
 
-    const stageBack =
-      $("stageBack");
+    $("rouletteBetMinus").onclick = () => {
+      setBet(Math.max(MIN, bet - STEP));
+    };
 
-    if (stageBack) {
-      stageBack.onclick =
-        back;
-    }
+    $("rouletteBetPlus").onclick = () => {
+      setBet(bet + STEP);
+    };
 
-    const minus =
-      $("rouletteBetMinus");
+    $("rouletteOtherValue").onclick = other;
 
-    if (minus) {
-      minus.onclick =
-        () =>
-          setBet(
-            Math.max(
-              MIN,
-              bet - STEP
-            )
-          );
-    }
+    $("rouletteSpinButton").onclick = spin;
 
-    const plus =
-      $("rouletteBetPlus");
-
-    if (plus) {
-      plus.onclick =
-        () =>
-          setBet(
-            bet + STEP
-          );
-    }
-
-    const otherButton =
-      $("rouletteOtherValue");
-
-    if (otherButton) {
-      otherButton.onclick =
-        other;
-    }
-
-    const spinButton =
-      $("rouletteSpinButton");
-
-    if (spinButton) {
-      spinButton.onclick =
-        spin;
-    }
-
-    const centerButton =
-      $("rouletteCenterButton");
-
-    if (centerButton) {
-      centerButton.onclick =
-        spin;
-    }
+    $("rouletteCenterButton").onclick = spin;
 
     document
-      .querySelectorAll(
-        "[data-roulette-bet]"
-      )
+      .querySelectorAll("[data-roulette-bet]")
       .forEach(button => {
-        button.onclick = () =>
-          setBet(
-            button.dataset
-              .rouletteBet
-          );
+        button.onclick = () => {
+          setBet(button.dataset.rouletteBet);
+        };
       });
   }
 
