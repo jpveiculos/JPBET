@@ -361,27 +361,137 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 10 FATIAS
+   ROLETA ÚNICA - 32 FATIAS
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-  { label: "2x", type: "prize", multiplier: 2, probability: 10, color: "#f6b719" },
-  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-  { label: "3x", type: "prize", multiplier: 3, probability: 10, color: "#6c18d9" },
-  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-  { label: "4x", type: "prize", multiplier: 4, probability: 10, color: "#1476df" },
-  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-  { label: "5x", type: "prize", multiplier: 5, probability: 10, color: "#e9006b" },
-  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-  { label: "🍀", type: "sorte", multiplier: 0, probability: 10, color: "#12a91c" }
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 5
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 5
+  },
+  {
+    "label": "10x",
+    "type": "prize",
+    "multiplier": 10,
+    "probability": 5
+  },
+  {
+    "label": "20x",
+    "type": "prize",
+    "multiplier": 20,
+    "probability": 5
+  },
+  {
+    "label": "30x",
+    "type": "prize",
+    "multiplier": 30,
+    "probability": 5
+  },
+  {
+    "label": "50x",
+    "type": "prize",
+    "multiplier": 50,
+    "probability": 5
+  },
+  {
+    "label": "75x",
+    "type": "prize",
+    "multiplier": 75,
+    "probability": 5
+  },
+  {
+    "label": "100x",
+    "type": "prize",
+    "multiplier": 100,
+    "probability": 5
+  },
+  {
+    "label": "🍀",
+    "type": "sorte",
+    "multiplier": 0,
+    "probability": 5
+  }
 ];
 
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length < 2 || parsed.length > 40) {
-      throw new Error("A roleta precisa ter entre 2 e 40 fatias.");
+    if (!Array.isArray(parsed) || parsed.length < 10 || parsed.length > 40) {
+      throw new Error("A roleta precisa ter entre 10 e 40 fatias.");
     }
 
     return parsed.map((segmento, index) => {
@@ -405,7 +515,7 @@ function carregarSegmentosRoleta(valor) {
       if (type !== "prize" && multiplier !== 0) {
         throw new Error(`A fatia ${index + 1} não pode ter multiplicador de prêmio.`);
       }
-      return { label, type, multiplier, probability: weight, color: String(segmento?.color ?? "") };
+      return { label, type, multiplier, probability: weight };
     });
   } catch (error) {
     console.warn("Configuração da roleta inválida; usando padrão:", error.message);
@@ -500,6 +610,38 @@ app.post(
       const maxBet = Number(settings.roulette_max_bet || 100);
       const rtp = normalizarPercentual(settings.roulette_rtp, 50);
       const segmentos = carregarSegmentosRoleta(settings.roulette_segments_json);
+
+      const somaProbabilidades = segmentos.reduce(
+        (soma, segmento) => soma + Math.max(0, Number(segmento.probability) || 0),
+        0
+      );
+
+      if (!Number.isFinite(somaProbabilidades) || Math.abs(somaProbabilidades - 100) > 0.001) {
+        return res.status(500).json({
+          ok: false,
+          message: `Configuração da roleta inválida: a soma das probabilidades deve ser 100%. Atualmente está em ${somaProbabilidades.toFixed(2)}%.`
+        });
+      }
+
+      const rtpTeoricoDireto = Number(
+        segmentos
+          .reduce((soma, segmento) => {
+            if (segmento.type !== "prize") return soma;
+            return soma + (Number(segmento.probability) / 100) * Number(segmento.multiplier);
+          }, 0)
+          .toFixed(6)
+      );
+
+      const probabilidadeFreeSpin = freeSpinEnabled
+        ? segmentos.reduce(
+            (soma, segmento) => soma + (segmento.type === "sorte" ? Number(segmento.probability) / 100 : 0),
+            0
+          )
+        : 0;
+
+      const rtpTeoricoComFreeSpins = probabilidadeFreeSpin < 1
+        ? Number((rtpTeoricoDireto / (1 - probabilidadeFreeSpin)).toFixed(6))
+        : null;
 
       if (!rouletteEnabled) {
         return res.status(403).json({ ok: false, message: "A roleta está desativada." });
@@ -660,7 +802,9 @@ app.post(
             ? Math.max(0, freeSpinCount - 1 + (ganhouReplay ? 1 : 0))
             : freeSpinCount + (ganhouReplay ? 1 : 0),
           rtp: rtp,
-          weight: Number(resultado.probability || 0)
+          weight: Number(resultado.weight || resultado.probability || 0),
+          theoreticalRtpDirect: rtpTeoricoDireto * 100,
+          theoreticalRtpWithFreeSpins: rtpTeoricoComFreeSpins === null ? null : rtpTeoricoComFreeSpins * 100
         },
         user: {
           id: user.id,
