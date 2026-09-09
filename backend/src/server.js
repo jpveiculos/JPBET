@@ -438,7 +438,7 @@ function carregarSegmentosRoleta(valor) {
       const label = String(segmento?.label ?? "").trim();
       const type = String(segmento?.type ?? "zero").trim().toLowerCase();
       const multiplier = Number(segmento?.multiplier ?? 0);
-      const weight = Number(segmento?.probability ?? 0);
+      const weight = Number(segmento?.probability ?? segmento?.weight ?? 0);
 
       if (!label || !["zero", "sorte", "prize"].includes(type)) {
         throw new Error(`Configuração inválida na fatia ${index + 1}.`);

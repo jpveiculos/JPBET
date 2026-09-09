@@ -406,24 +406,35 @@ async function inicializarConfiguracoes() {
       );
     }
 
-    // Migra a configuração antiga da roleta para o novo modelo fixo de 10 fatias.
-    // O restante das configurações permanece intacto.
+    // Garante a primeira implantação do modelo atual de 10 fatias.
+    // Depois que estiver em 10 fatias, alterações feitas pelo administrador permanecem.
     const rouletteCurrent = await pool.query(`
       SELECT setting_value FROM site_settings
       WHERE setting_key = 'roulette_segments_json' LIMIT 1
     `);
     const currentRoulette = String(rouletteCurrent.rows[0]?.setting_value || '');
-    let rouletteNeedsMigration = true;
+    let precisaAtualizarRoleta = true;
     try {
-      const parsedRoulette = JSON.parse(currentRoulette);
-      rouletteNeedsMigration = !Array.isArray(parsedRoulette) || parsedRoulette.length !== 10;
+      const atual = JSON.parse(currentRoulette);
+      const esperadoLista = JSON.parse(configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')[1]);
+      precisaAtualizarRoleta = !Array.isArray(atual) || atual.length !== 10 || atual.some((segmento, index) => {
+        const esperado = esperadoLista[index];
+        return String(segmento?.label || '') !== esperado.label
+          || String(segmento?.type || '') !== esperado.type
+          || Number(segmento?.multiplier || 0) !== esperado.multiplier;
+      });
     } catch (_) {
-      rouletteNeedsMigration = true;
+      precisaAtualizarRoleta = true;
     }
-    if (rouletteNeedsMigration) {
+
+    if (precisaAtualizarRoleta) {
       const novoPadrao = configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')?.[1];
       if (novoPadrao) {
-        await pool.query(`UPDATE site_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = 'roulette_segments_json'`, [novoPadrao]);
+        await pool.query(`
+          UPDATE site_settings
+          SET setting_value = $1, updated_at = CURRENT_TIMESTAMP
+          WHERE setting_key = 'roulette_segments_json'
+        `, [novoPadrao]);
       }
     }
 
