@@ -365,16 +365,66 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
-  { "label": "2x", "type": "prize", "multiplier": 2, "probability": 10 },
-  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
-  { "label": "3x", "type": "prize", "multiplier": 3, "probability": 10 },
-  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
-  { "label": "4x", "type": "prize", "multiplier": 4, "probability": 10 },
-  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
-  { "label": "5x", "type": "prize", "multiplier": 5, "probability": 10 },
-  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
-  { "label": "🍀", "type": "sorte", "multiplier": 0, "probability": 10 }
+  {
+    "label": "X",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 10
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 10
+  },
+  {
+    "label": "X",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 10
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 10
+  },
+  {
+    "label": "X",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 10
+  },
+  {
+    "label": "4x",
+    "type": "prize",
+    "multiplier": 4,
+    "probability": 10
+  },
+  {
+    "label": "X",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 10
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 10
+  },
+  {
+    "label": "X",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 10
+  },
+  {
+    "label": "🍀",
+    "type": "sorte",
+    "multiplier": 0,
+    "probability": 10
+  }
 ];
 
 function carregarSegmentosRoleta(valor) {
