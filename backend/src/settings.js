@@ -193,12 +193,8 @@ const configuracoesPadrao = [
 
   [
     "roulette_segments_json",
-    '[{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"2x","type":"prize","multiplier":2,"probability":10,"color":"#f6b51b"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"3x","type":"prize","multiplier":3,"probability":10,"color":"#6412c9"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"4x","type":"prize","multiplier":4,"probability":10,"color":"#0877e8"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"5x","type":"prize","multiplier":5,"probability":10,"color":"#e50068"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"🍀","type":"sorte","multiplier":0,"probability":10,"color":"#08a51a"}]'
-  ],
-
-  [
-    "roulette_animation_ms",
-    "2600"
+    '[{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"2x","type":"prize","multiplier":2,"probability":10,"color":"#f6b51b"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"3x","type":"prize","multiplier":3,"probability":10,"color":"#6412c9"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"4x","type":"prize","multiplier":4,"probability":10,"color":"#0877e8"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"5x","type":"prize","multiplier":5,"probability":10,"color":"#e50068"},{"label":"X","type":"zero","multiplier":0,"probability":10,"color":"#101114"},{"label":"🍀","type":"sorte","multiplier":0,"probability":10,"color":"#08a51a"}]',
+    "4800"
   ],
 
   [
