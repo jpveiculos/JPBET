@@ -246,8 +246,6 @@ button:disabled{
 
 /* =========================================================
    ROLETA
-   A RODA GIRA.
-   O PONTEIRO E O BOTÃO CENTRAL FICAM PARADOS.
 ========================================================= */
 
 .roulette-machine{
@@ -255,7 +253,8 @@ button:disabled{
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:24px 0 28px
+  padding:30px 0 28px;
+  z-index:60
 }
 
 .roulette-wheel-shell{
@@ -293,19 +292,22 @@ button:disabled{
 
 
 /* =========================================================
-   PONTEIRO FIXO
+   PONTEIRO FIXO NO TOPO
 ========================================================= */
 
 .roulette-pointer{
   position:absolute;
   left:50%;
-  top:-14px;
-  width:0;
-  height:0;
+  top:-18px;
+  width:52px;
+  height:68px;
   transform:translateX(-50%);
-  z-index:40;
+  z-index:100;
   display:block!important;
-  pointer-events:none
+  pointer-events:none;
+  filter:
+    drop-shadow(0 4px 5px #000)
+    drop-shadow(0 0 8px #f6c94a55)
 }
 
 .roulette-pointer::before{
@@ -316,28 +318,26 @@ button:disabled{
   width:0;
   height:0;
   transform:translateX(-50%);
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
+  border-left:19px solid transparent;
+  border-right:19px solid transparent;
   border-top:0;
-  border-bottom:42px solid #f4bd2c;
-  filter:
-    drop-shadow(0 3px 4px #000)
-    drop-shadow(0 0 8px #f6c94a66)
+  border-bottom:46px solid #f4bd2c;
+  filter:drop-shadow(0 2px 2px #000)
 }
 
 .roulette-pointer::after{
   content:"";
   position:absolute;
   left:50%;
-  top:8px;
-  width:15px;
-  height:15px;
+  top:9px;
+  width:16px;
+  height:16px;
   transform:translateX(-50%);
   border-radius:50%;
   background:
     radial-gradient(
       circle at 35% 30%,
-      #ff6973,
+      #ff8b92,
       #ef1427 48%,
       #82000a 100%
     );
@@ -655,7 +655,8 @@ button:disabled{
   }
 
   .roulette-machine{
-    padding:28px 0 28px
+    padding:30px 0 28px;
+    z-index:60
   }
 
   .roulette-wheel-shell{
@@ -663,18 +664,19 @@ button:disabled{
   }
 
   .roulette-pointer{
-    top:-12px
+    top:-17px;
+    z-index:100
   }
 
   .roulette-pointer::before{
-    border-left-width:15px;
-    border-right-width:15px;
-    border-bottom-width:36px
+    border-left-width:16px;
+    border-right-width:16px;
+    border-bottom-width:39px
   }
 
   .roulette-pointer::after{
-    width:13px;
-    height:13px
+    width:14px;
+    height:14px
   }
 
   .roulette-quick-bets{
