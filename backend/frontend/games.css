@@ -1,1082 +1,562 @@
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+
+:root{
+  --gold:#f6c94a;
+  --bg:#07080c
 }
 
-:root {
-  --gold: #f6c94a;
-  --gold2: #d99b18;
-  --bg: #07080c;
+html,body{
+  margin:0;
+  min-height:100%;
+  background:radial-gradient(circle at 50% 18%,#1b1d26,#07080c 65%);
+  color:#fff;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
 
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  background:
-    radial-gradient(
-      circle at 50% 18%,
-      #1b1d26 0%,
-      #07080c 68%
-    );
-  color: #fff;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+button{
+  font:inherit;
+  cursor:pointer
 }
 
-button {
-  font: inherit;
-  cursor: pointer;
+.game-header{
+  height:64px;
+  display:grid;
+  grid-template-columns:64px 1fr auto;
+  align-items:center;
+  padding:0 14px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:#08090ddd;
+  backdrop-filter:blur(15px);
+  border-bottom:1px solid #f6c94a2d
 }
 
-/* =========================
-   CABEÇALHO
-========================= */
-
-.game-header {
-  height: 64px;
-  display: grid;
-  grid-template-columns: 64px 1fr auto;
-  align-items: center;
-  padding: 0 14px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: #08090df2;
-  backdrop-filter: blur(15px);
-  border-bottom: 1px solid #f6c94a40;
+.header-back{
+  width:42px;
+  height:42px;
+  border:1px solid #2b303b;
+  border-radius:13px;
+  background:#11141b;
+  color:#fff;
+  font-size:25px
 }
 
-.header-back {
-  width: 42px;
-  height: 42px;
-  border: 1px solid #2b303b;
-  border-radius: 13px;
-  background: #11141b;
-  color: #fff;
-  font-size: 25px;
+.game-brand{
+  text-align:center;
+  text-decoration:none;
+  color:#eee;
+  font-size:27px;
+  font-weight:900
 }
 
-.game-brand {
-  text-align: center;
-  text-decoration: none;
-  color: #eee;
-  font-size: 27px;
-  font-weight: 900;
+.game-brand span{
+  color:var(--gold)
 }
 
-.game-brand span {
-  color: var(--gold);
+.header-balance{
+  padding:10px 13px;
+  border:1px solid #f6c94a44;
+  border-radius:12px;
+  background:#0c0e14;
+  font-size:12px;
+  color:#bbb
 }
 
-.header-balance {
-  padding: 10px 13px;
-  border: 1px solid #f6c94a55;
-  border-radius: 12px;
-  background: #0c0e14;
-  font-size: 12px;
-  color: #bbb;
+.header-balance strong{
+  color:#fff;
+  font-size:15px
 }
 
-.header-balance strong {
-  color: #fff;
-  font-size: 15px;
-}
-
-/* =========================
-   PÁGINA
-========================= */
-
-.games-page {
-  max-width: 1180px;
-  margin: auto;
-  padding: 26px 16px 50px;
+.games-page{
+  max-width:1180px;
+  margin:auto;
+  padding:26px 16px 50px
 }
 
 .page-kicker,
-.game-kicker {
-  color: var(--gold);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 2px;
+.game-kicker{
+  color:var(--gold);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:2px
 }
 
-.games-lobby h1 {
-  margin: 5px 0 2px;
-  font-size: 36px;
+.games-lobby h1{
+  margin:5px 0 2px;
+  font-size:36px
 }
 
-.games-lobby p {
-  margin: 0;
-  color: #9da4b1;
+.games-lobby p{
+  margin:0;
+  color:#9da4b1
 }
 
-.games-message {
-  margin: 20px 0;
-  color: #aeb4c0;
+.games-message{
+  margin:20px 0;
+  color:#aeb4c0
 }
 
-.games-container {
-  display: grid;
-  gap: 14px;
+.games-container{
+  display:grid;
+  gap:14px
 }
 
-.game-card {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 58px 1fr auto;
-  align-items: center;
-  gap: 14px;
-  text-align: left;
-  padding: 16px;
-  border: 1px solid #292e38;
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      145deg,
-      #151923,
-      #0b0e14
-    );
-  color: #fff;
+.game-card{
+  width:100%;
+  display:grid;
+  grid-template-columns:58px 1fr auto;
+  align-items:center;
+  gap:14px;
+  text-align:left;
+  padding:16px;
+  border:1px solid #292e38;
+  border-radius:18px;
+  background:linear-gradient(145deg,#151923,#0b0e14);
+  color:#fff
 }
 
-.game-card-icon {
-  width: 54px;
-  height: 54px;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: #090b10;
-  font-size: 28px;
-  border: 1px solid #f6c94a4d;
+.game-card-icon{
+  width:54px;
+  height:54px;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  background:#090b10;
+  font-size:28px;
+  border:1px solid #f6c94a4d
 }
 
-.game-card strong {
-  display: block;
+.game-card strong{
+  display:block
 }
 
-.game-card span {
-  display: block;
-  color: #9299a6;
-  font-size: 12px;
-  margin-top: 4px;
+.game-card span{
+  display:block;
+  color:#9299a6;
+  font-size:12px;
+  margin-top:4px
 }
 
-.game-card b {
-  color: var(--gold);
-  font-size: 12px;
+.game-card b{
+  color:var(--gold);
+  font-size:12px
 }
 
-/* =========================
-   ESTÁGIO
-========================= */
-
-.game-stage-top {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 18px;
+.game-stage-top{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:18px
 }
 
-.stage-back {
-  border: 0;
-  background: none;
-  color: #c9ced7;
+.stage-back{
+  border:0;
+  background:none;
+  color:#c9ced7
 }
 
-.stage-balance {
-  font-size: 13px;
-  color: #b9bec8;
+.stage-balance{
+  font-size:13px;
+  color:#b9bec8
 }
 
-.stage-balance strong {
-  color: #fff;
-  font-size: 16px;
+.stage-balance strong{
+  color:#fff;
+  font-size:16px
 }
 
-.game-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  margin-bottom: 12px;
+.game-title-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  margin-bottom:12px
 }
 
-.game-title-row h2 {
-  margin: 3px 0;
-  font-size: 29px;
+.game-title-row h2{
+  margin:3px 0;
+  font-size:29px
 }
 
-.win-display {
-  color: var(--gold);
-  font-weight: 900;
+.win-display{
+  color:var(--gold);
+  font-weight:900
 }
 
-/* =========================
-   ROLETA
-========================= */
-
-.roulette-panel {
-  width: 100%;
-  max-width: 900px;
-  margin: auto;
+.roulette-panel{
+  max-width:850px;
+  margin:auto
 }
 
-.roulette-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+.roulette-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px
 }
 
-.roulette-crown {
-  color: var(--gold);
-  font-size: 18px;
+.roulette-crown{
+  color:var(--gold)
 }
 
-.roulette-name {
-  font-size: 25px;
-  font-weight: 950;
-  color: var(--gold);
+.roulette-name{
+  font-size:25px;
+  font-weight:950;
+  color:var(--gold)
 }
 
-.roulette-subtitle {
-  font-size: 10px;
-  color: #adb2bd;
-  letter-spacing: 1.8px;
+.roulette-subtitle{
+  font-size:10px;
+  color:#adb2bd;
+  letter-spacing:1.8px
 }
 
-.roulette-free-badge {
-  padding: 9px 12px;
-  border: 1px solid #31d36b66;
-  border-radius: 12px;
-  color: #73f39b;
-  font-size: 11px;
-  background: #17552d44;
+.roulette-free-badge{
+  padding:9px 12px;
+  border:1px solid #31d36b66;
+  border-radius:12px;
+  color:#73f39b;
+  font-size:11px;
+  background:#17552d44
 }
 
-/* =========================
-   ÁREA DA ROLETA
-========================= */
 
-.roulette-machine {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 18px 0 25px;
+/* =========================================================
+   ROLETA — SOMENTE O CANVAS NOVO
+========================================================= */
+
+.roulette-machine{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px 0 22px
 }
 
-/*
-   A roda inteira é construída pelo código.
-   10 setores de exatamente 36 graus.
-*/
-
-.roulette-wheel-shell {
-  width: min(88vw, 620px);
-  aspect-ratio: 1 / 1;
-  position: relative;
-  border-radius: 50%;
-  padding: 15px;
-
-  background:
-    radial-gradient(
-      circle,
-      #fff3a6 0 2%,
-      #d69b1e 3%,
-      #744b09 7%,
-      #f8d45c 10%,
-      #05060a 15% 100%
-    );
-
-  box-shadow:
-    0 0 0 2px #4a2c06,
-    0 0 0 6px #dca52e,
-    0 0 30px #f6c94a66,
-    0 30px 80px #000b;
-
-  overflow: visible;
+.roulette-wheel-shell{
+  width:min(88vw,620px);
+  aspect-ratio:1;
+  position:relative;
+  border-radius:50%;
+  padding:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible
 }
 
-/* =========================
-   DISCO
-========================= */
-
-.roulette-wheel {
-  position: absolute;
-  inset: 24px;
-  border-radius: 50%;
-  overflow: hidden;
-
-  background:
-    conic-gradient(
-      from -18deg,
-
-      #eab632 0deg 36deg,
-      #101217 36deg 72deg,
-
-      #6d35d7 72deg 108deg,
-      #101217 108deg 144deg,
-
-      #1175e8 144deg 180deg,
-      #101217 180deg 216deg,
-
-      #08a63b 216deg 252deg,
-      #101217 252deg 288deg,
-
-      #ef1764 288deg 324deg,
-      #101217 324deg 360deg
-    );
-
-  box-shadow:
-    inset 0 0 0 5px #dca52e,
-    inset 0 0 0 8px #08090d,
-    inset 0 0 35px #000;
-
-  transform-origin: center center;
-}
-
-/* brilho */
-
-.roulette-wheel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-
-  background:
-    radial-gradient(
-      circle at 35% 28%,
-      #ffffff22,
-      transparent 35%
-    );
-}
-
-.roulette-wheel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-
-  background:
-    repeating-conic-gradient(
-      from -18deg,
-      transparent 0deg 34deg,
-      #f6c94a99 34deg 36deg
-    );
-}
-
-/* =========================
-   TEXTOS DOS 10 SETORES
-========================= */
-
-.roulette-label {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-
-  transform:
-    rotate(var(--angle));
-
-  transform-origin: center center;
-
-  pointer-events: none;
-  z-index: 3;
-}
-
-.roulette-label span {
-  margin-top: 9%;
-  display: block;
-
-  transform:
-    rotate(calc(var(--slice-angle) / 2));
-
-  font-size: clamp(25px, 6vw, 45px);
-  font-weight: 1000;
-  line-height: 1;
-
-  color: #fff;
-
-  text-shadow:
-    0 3px 5px #000,
-    0 0 4px #000;
+.roulette-wheel{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:visible;
+  background:transparent;
+  box-shadow:none
 }
 
 /*
-   Ajuste visual dos X
+  O canvas desenha a roleta inteira.
+  Nenhuma peça antiga pode ficar por cima.
 */
 
-.roulette-label[data-type="zero"] span {
-  color: #ff2639;
+.roulette-wheel:after{
+  display:none!important
+}
 
-  text-shadow:
-    0 3px 5px #000,
-    0 0 8px #ff1e35;
+.roulette-bulbs,
+.roulette-inner-ring,
+.roulette-pointer,
+.pointer-gem{
+  display:none!important
 }
 
 /*
-   Multiplicadores
+  O botão central antigo continua existindo
+  apenas como área invisível de toque.
+  O desenho GIRAR vem do canvas.
 */
 
-.roulette-label[data-multiplier="2"] span,
-.roulette-label[data-multiplier="3"] span,
-.roulette-label[data-multiplier="4"] span,
-.roulette-label[data-multiplier="5"] span {
-  color: #fff;
+.roulette-hub{
+  position:absolute!important;
+  inset:34%!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  z-index:20!important;
+  opacity:0!important;
+  display:block!important
 }
 
-/*
-   Giro grátis
-*/
-
-.roulette-label[data-type="sorte"] span {
-  font-size: clamp(22px, 5vw, 35px);
+.roulette-hub span,
+.roulette-hub strong,
+.roulette-hub small{
+  display:none!important
 }
 
-/* =========================
-   DIVISÕES DOS SETORES
-========================= */
-
-.roulette-label::after {
-  content: "";
-  position: absolute;
-
-  left: 50%;
-  top: 0;
-
-  width: 2px;
-  height: 50%;
-
-  background:
-    linear-gradient(
-      to bottom,
-      #fff1a0,
-      #b77a16
-    );
-
-  transform-origin: bottom center;
-
-  opacity: 0.85;
+.mybets-roulette-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  border-radius:50%;
+  transform-origin:50% 50%;
+  touch-action:manipulation
 }
 
-/* =========================
-   ANEL INTERNO
-========================= */
 
-.roulette-inner-ring {
-  position: absolute;
-  inset: 32%;
-  border-radius: 50%;
-
-  border:
-    3px solid var(--gold);
-
-  box-shadow:
-    0 0 0 6px #050609,
-    0 0 0 9px #bd8319,
-    inset 0 0 20px #000,
-    0 0 20px #f6c94a55;
-
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* =========================
-   BOTÃO CENTRAL
-========================= */
-
-.roulette-hub {
-  position: absolute;
-  inset: 35%;
-
-  border-radius: 50%;
-  border: 3px solid #e0ad35;
-
-  background:
-    radial-gradient(
-      circle at 35% 25%,
-      #3a3b40,
-      #11131a 45%,
-      #05060a 80%
-    );
-
-  color: #f8d35d;
-
-  box-shadow:
-    inset 0 0 20px #000,
-    0 0 20px #f6c94a40;
-
-  z-index: 10;
-}
-
-.roulette-hub span {
-  display: block;
-  font-size: 20px;
-}
-
-.roulette-hub strong {
-  display: block;
-  font-size: clamp(19px, 4vw, 30px);
-  line-height: 1.1;
-}
-
-.roulette-hub small {
-  font-size: 8px;
-  letter-spacing: 3px;
-  color: #aaa;
-}
-
-/* =========================
-   LUZES
-========================= */
-
-.roulette-bulbs {
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  z-index: 15;
-  pointer-events: none;
-}
-
-.roulette-bulbs i {
-  position: absolute;
-
-  width: 11px;
-  height: 11px;
-
-  left: calc(50% - 5.5px);
-  top: calc(50% - 5.5px);
-
-  border-radius: 50%;
-
-  background: #fff4b0;
-
-  box-shadow:
-    0 0 5px 2px #fff,
-    0 0 14px 5px #f6c94acc;
-
-  transform:
-    rotate(var(--bulb-angle))
-    translateY(
-      calc(min(43vw, 300px) * -1)
-    );
-}
-
-/* =========================
-   PONTEIRO FIXO
-========================= */
-
-.roulette-pointer {
-  position: absolute;
-
-  z-index: 30;
-
-  top: 2px;
-  left: 50%;
-
-  transform:
-    translateX(-50%);
-
-  width: 58px;
-  height: 70px;
-
-  filter:
-    drop-shadow(
-      0 8px 8px #000a
-    );
-}
-
-.roulette-pointer::before {
-  content: "";
-
-  position: absolute;
-
-  left: 7px;
-  top: 0;
-
-  width: 44px;
-  height: 54px;
-
-  clip-path:
-    polygon(
-      50% 100%,
-      0 0,
-      100% 0
-    );
-
-  background:
-    linear-gradient(
-      90deg,
-      #704607,
-      #f7d66b 50%,
-      #8b580a
-    );
-
-  border:
-    2px solid #f4cb4e;
-}
-
-.pointer-gem {
-  position: absolute;
-
-  z-index: 2;
-
-  width: 19px;
-  height: 19px;
-
-  left: 20px;
-  top: 11px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle at 30% 25%,
-      #ffb2b2,
-      #e20d24 45%,
-      #65000b
-    );
-
-  box-shadow:
-    0 0 10px #ff1e35;
-}
-
-/* =========================
+/* =========================================================
    RESULTADO
-========================= */
+========================================================= */
 
-.roulette-result {
-  min-height: 48px;
-
-  display: grid;
-  place-items: center;
-
-  margin:
-    4px auto 14px;
-
-  padding: 11px;
-
-  border:
-    1px solid #f6c94a33;
-
-  border-radius: 12px;
-
-  background: #0b0e14;
-
-  font-weight: 800;
-  text-align: center;
+.roulette-result{
+  min-height:45px;
+  display:grid;
+  place-items:center;
+  margin:4px auto 14px;
+  padding:11px;
+  border:1px solid #f6c94a33;
+  border-radius:12px;
+  background:#0b0e14;
+  font-weight:800;
+  text-align:center
 }
 
-/* =========================
-   GIRO GRÁTIS
-========================= */
-
-.roulette-free-spin-status {
-  margin:
-    -5px auto 13px;
-
-  text-align: center;
-
-  padding: 10px;
-
-  border-radius: 10px;
-
-  background: #24984d29;
-
-  border:
-    1px solid #31d36b59;
-
-  color: #72ef9a;
-
-  font-size: 12px;
-  font-weight: 800;
+.roulette-free-spin-status{
+  margin:-5px auto 13px;
+  text-align:center;
+  padding:10px;
+  border-radius:10px;
+  background:#24984d29;
+  border:1px solid #31d36b59;
+  color:#72ef9a;
+  font-size:12px;
+  font-weight:800
 }
 
-/* =========================
+
+/* =========================================================
    APOSTAS
-========================= */
+========================================================= */
 
-.roulette-betting {
-  max-width: 720px;
-
-  margin: auto;
-
-  padding: 17px;
-
-  border:
-    1px solid #272c35;
-
-  border-radius: 18px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #11151d,
-      #090b10
-    );
+.roulette-betting{
+  max-width:720px;
+  margin:auto;
+  padding:17px;
+  border:1px solid #272c35;
+  border-radius:18px;
+  background:linear-gradient(145deg,#11151d,#090b10)
 }
 
-.roulette-selection-label {
-  text-align: center;
-
-  color: #aeb4c0;
-
-  font-size: 11px;
-
-  font-weight: 900;
-
-  letter-spacing: 1.4px;
-
-  margin-bottom: 12px;
+.roulette-selection-label{
+  text-align:center;
+  color:#aeb4c0;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1.4px;
+  margin-bottom:12px
 }
 
-.roulette-bet-row {
-  display: grid;
-
-  grid-template-columns:
-    50px 1fr 50px;
-
-  align-items: center;
-
-  gap: 10px;
+.roulette-bet-row{
+  display:grid;
+  grid-template-columns:50px 1fr 50px;
+  align-items:center;
+  gap:10px
 }
 
-.roulette-bet-row > button {
-  height: 46px;
-
-  border-radius: 12px;
-
-  border:
-    1px solid #333944;
-
-  background: #151922;
-
-  color: #fff;
-
-  font-size: 25px;
+.roulette-bet-row>button{
+  height:46px;
+  border-radius:12px;
+  border:1px solid #333944;
+  background:#151922;
+  color:#fff;
+  font-size:25px
 }
 
-.roulette-bet-row > div {
-  text-align: center;
+.roulette-bet-row>div{
+  text-align:center
 }
 
-.roulette-bet-row small {
-  display: block;
-
-  color: #777f8e;
-
-  font-size: 9px;
+.roulette-bet-row small{
+  display:block;
+  color:#777f8e;
+  font-size:9px
 }
 
-.roulette-bet-row strong {
-  display: block;
-
-  font-size: 20px;
+.roulette-bet-row strong{
+  display:block;
+  font-size:20px
 }
 
-.quick-bets {
-  display: grid;
-  gap: 8px;
+.quick-bets{
+  display:grid;
+  gap:8px
 }
 
-.roulette-quick-bets {
-  grid-template-columns:
-    repeat(6, 1fr);
-
-  margin-top: 12px;
+.roulette-quick-bets{
+  grid-template-columns:repeat(6,1fr);
+  margin-top:12px
 }
 
-.quick-bets button {
-  min-height: 42px;
-
-  border:
-    1px solid #303641;
-
-  border-radius: 10px;
-
-  background: #151922;
-
-  color: #dfe2e7;
-
-  font-weight: 850;
-
-  font-size: 12px;
+.quick-bets button{
+  min-height:42px;
+  border:1px solid #303641;
+  border-radius:10px;
+  background:#151922;
+  color:#dfe2e7;
+  font-weight:850;
+  font-size:12px
 }
 
-.quick-bets button.active {
-  border-color: #e7b93f;
-
-  background:
-    linear-gradient(
-      145deg,
-      #6f4a08,
-      #c79620
-    );
-
-  color: #fff;
+.quick-bets button.active{
+  border-color:#e7b93f;
+  background:linear-gradient(145deg,#6f4a08,#c79620);
+  color:#fff
 }
 
-.other-value-button {
-  width: 100%;
-
-  margin-top: 9px;
-
-  min-height: 40px;
-
-  border:
-    1px dashed #f6c94a80;
-
-  border-radius: 10px;
-
-  background: transparent;
-
-  color: #eac24d;
-
-  font-weight: 900;
-
-  font-size: 11px;
+.other-value-button{
+  width:100%;
+  margin-top:9px;
+  min-height:40px;
+  border:1px dashed #f6c94a80;
+  border-radius:10px;
+  background:transparent;
+  color:#eac24d;
+  font-weight:900;
+  font-size:11px
 }
 
-.spin-button {
-  width: 100%;
-
-  min-height: 56px;
-
-  margin-top: 12px;
-
-  border:
-    1px solid #f7d76c;
-
-  border-radius: 13px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffe477,
-      #d69a21 70%,
-      #9a650b
-    );
-
-  color: #171107;
-
-  font-weight: 1000;
-
-  letter-spacing: 1.4px;
+.spin-button{
+  width:100%;
+  min-height:56px;
+  margin-top:12px;
+  border:1px solid #f7d76c;
+  border-radius:13px;
+  background:linear-gradient(180deg,#ffe477,#d69a21 70%,#9a650b);
+  color:#171107;
+  font-weight:1000;
+  letter-spacing:1.4px
 }
 
-.spin-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.roulette-legend{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px 12px;
+  margin-top:13px;
+  color:#858d9b;
+  font-size:9px
 }
 
-/* =========================
-   LEGENDA
-========================= */
-
-.roulette-legend {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  justify-content: center;
-
-  gap: 8px 12px;
-
-  margin-top: 13px;
-
-  color: #858d9b;
-
-  font-size: 9px;
+.roulette-legend i{
+  font-style:normal;
+  font-weight:1000
 }
 
-.roulette-legend i {
-  font-style: normal;
-  font-weight: 1000;
-}
-
-.legend-x {
-  color: #ff3348;
+.legend-x{
+  color:#ff3348
 }
 
 .legend-2,
-.legend-5 {
-  color: #f5d35c;
+.legend-5{
+  color:#f5d35c
 }
 
-.legend-3 {
-  color: #a889ff;
+.legend-3{
+  color:#a889ff
 }
 
-.legend-4 {
-  color: #4bc0ff;
+.legend-4{
+  color:#4bc0ff
 }
 
-.legend-clover {
-  color: #58ed8a;
+.legend-clover{
+  color:#58ed8a
 }
 
-/* =========================
+
+/* =========================================================
    TOAST
-========================= */
+========================================================= */
 
-.toast {
-  position: fixed;
-
-  left: 50%;
-  bottom: 22px;
-
-  transform:
-    translate(-50%, 20px);
-
-  opacity: 0;
-
-  z-index: 100;
-
-  padding: 12px 16px;
-
-  border:
-    1px solid #f6c94a59;
-
-  border-radius: 12px;
-
-  background: #11151d;
-
-  color: #fff;
-
-  box-shadow:
-    0 15px 35px #0008;
-
-  font-size: 12px;
-  font-weight: 700;
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  transform:translate(-50%,20px);
+  opacity:0;
+  z-index:100;
+  padding:12px 16px;
+  border:1px solid #f6c94a59;
+  border-radius:12px;
+  background:#11151d;
+  color:#fff;
+  box-shadow:0 15px 35px #0008;
+  font-size:12px;
+  font-weight:700
 }
 
-.toast.show {
-  opacity: 1;
-
-  transform:
-    translate(-50%, 0);
-
-  transition: 0.2s;
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+  transition:.2s
 }
 
-/* =========================
+
+/* =========================================================
    CELULAR
-========================= */
+========================================================= */
 
-@media (max-width: 620px) {
+@media(max-width:620px){
 
-  .game-header {
-    grid-template-columns:
-      48px 1fr auto;
-
-    height: 58px;
-
-    padding: 0 9px;
+  .game-header{
+    grid-template-columns:48px 1fr auto;
+    height:58px;
+    padding:0 9px
   }
 
-  .game-brand {
-    font-size: 24px;
+  .game-brand{
+    font-size:24px
   }
 
-  .games-page {
-    padding:
-      19px 10px;
+  .games-page{
+    padding:19px 10px
   }
 
-  .game-title-row h2 {
-    font-size: 24px;
+  .game-title-row h2{
+    font-size:24px
   }
 
-  .roulette-name {
-    font-size: 22px;
+  .roulette-name{
+    font-size:22px
   }
 
-  .roulette-wheel-shell {
-    width:
-      min(96vw, 520px);
-
-    padding: 11px;
+  .roulette-wheel-shell{
+    width:min(96vw,520px);
+    padding:0
   }
 
-  .roulette-wheel {
-    inset: 18px;
+  .roulette-wheel{
+    inset:0
   }
 
-  .roulette-inner-ring {
-    inset: 32%;
+  .roulette-hub{
+    inset:34%!important
   }
 
-  .roulette-hub {
-    inset: 35%;
+  .roulette-quick-bets{
+    grid-template-columns:repeat(3,1fr)
   }
 
-  .roulette-label span {
-    margin-top: 9%;
-    font-size:
-      clamp(
-        21px,
-        7vw,
-        38px
-      );
+  .game-card{
+    grid-template-columns:48px 1fr
   }
 
-  .roulette-label[data-type="sorte"] span {
-    font-size:
-      clamp(
-        17px,
-        5vw,
-        29px
-      );
-  }
-
-  .roulette-bulbs i {
-    width: 7px;
-    height: 7px;
-
-    left:
-      calc(50% - 3.5px);
-
-    top:
-      calc(50% - 3.5px);
-
-    transform:
-      rotate(var(--bulb-angle))
-      translateY(
-        calc(
-          min(46vw, 245px) * -1
-        )
-      );
-  }
-
-  .roulette-pointer {
-    transform:
-      translateX(-50%)
-      scale(0.8);
-
-    transform-origin:
-      top center;
-  }
-
-  .roulette-quick-bets {
-    grid-template-columns:
-      repeat(3, 1fr);
-  }
-
-  .game-card {
-    grid-template-columns:
-      48px 1fr;
-  }
-
-  .game-card b {
-    display: none;
+  .game-card b{
+    display:none
   }
 }
