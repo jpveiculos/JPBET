@@ -16,7 +16,6 @@
     { label: "X", type: "zero", multiplier: 0 }
   ];
 
-  const QUICK = [0.5, 1, 2, 5, 10, 50];
   const MIN = 0.5;
   const STEP = 0.5;
 
@@ -72,11 +71,24 @@
   function bal() {
     if (!user) return 0;
 
-    const bonus = Number(user.bonusBalance ?? user.bonus_balance ?? 0);
-    const cash = Number(user.cashBalance ?? user.cash_balance ?? 0);
+    const bonus = Number(
+      user.bonusBalance ??
+      user.bonus_balance ??
+      0
+    );
 
-    if (user.bonusBalance !== undefined || user.bonus_balance !== undefined ||
-        user.cashBalance !== undefined || user.cash_balance !== undefined) {
+    const cash = Number(
+      user.cashBalance ??
+      user.cash_balance ??
+      0
+    );
+
+    if (
+      user.bonusBalance !== undefined ||
+      user.bonus_balance !== undefined ||
+      user.cashBalance !== undefined ||
+      user.cash_balance !== undefined
+    ) {
       return bonus + cash;
     }
 
@@ -107,6 +119,7 @@
 
     try {
       const token = localStorage.getItem("jpbet_token");
+
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
@@ -114,6 +127,7 @@
 
     const response = await fetch(API + path, {
       ...options,
+      credentials: "include",
       headers
     });
 
@@ -147,7 +161,9 @@
     }
 
     try {
-      const data = await api(`/user/${encodeURIComponent(id)}`);
+      const data = await api(
+        `/user/${encodeURIComponent(id)}`
+      );
 
       const freshUser =
         data.user ||
@@ -155,12 +171,43 @@
         data.player ||
         data;
 
-      if (freshUser?.id || freshUser?.userId || freshUser?.user_id) {
+      if (
+        freshUser?.id ||
+        freshUser?.userId ||
+        freshUser?.user_id
+      ) {
         save(freshUser);
       }
     } catch {}
 
     balances();
+  }
+
+  async function refreshUser() {
+    const id = uid();
+
+    if (!id) return;
+
+    try {
+      const data = await api(
+        `/user/${encodeURIComponent(id)}`
+      );
+
+      const freshUser =
+        data.user ||
+        data.usuario ||
+        data.player ||
+        data;
+
+      if (
+        freshUser?.id ||
+        freshUser?.userId ||
+        freshUser?.user_id
+      ) {
+        save(freshUser);
+        balances();
+      }
+    } catch {}
   }
 
   function lobby() {
@@ -238,7 +285,9 @@
     wheel.style.border = "none";
     wheel.style.transform = `rotate(${rotation}deg)`;
 
-    const image = wheel.querySelector(".roulette-wheel-image");
+    const image = wheel.querySelector(
+      ".roulette-wheel-image"
+    );
 
     if (image) {
       image.style.position = "absolute";
@@ -312,7 +361,9 @@
     );
 
     if (!Number.isFinite(number) || number < MIN) {
-      return toast("Digite um valor a partir de R$ 0,50.");
+      return toast(
+        "Digite um valor a partir de R$ 0,50."
+      );
     }
 
     setBet(number);
@@ -338,9 +389,15 @@
       result?.resultado?.type;
 
     const candidates = ROULETTE_SEGMENTS
-      .map((segment, index) => ({ segment, index }))
+      .map((segment, index) => ({
+        segment,
+        index
+      }))
       .filter(item => {
-        if (type && item.segment.type !== type) {
+        if (
+          type &&
+          item.segment.type !== type
+        ) {
           return false;
         }
 
@@ -354,7 +411,9 @@
         return true;
       });
 
-    return candidates.length ? candidates[0].index : 0;
+    return candidates.length
+      ? candidates[0].index
+      : 0;
   }
 
   function labelOf(result) {
@@ -374,7 +433,8 @@
       return Promise.resolve();
     }
 
-    const sliceAngle = 360 / ROULETTE_SEGMENTS.length;
+    const sliceAngle =
+      360 / ROULETTE_SEGMENTS.length;
 
     const target =
       -(index * sliceAngle + sliceAngle / 2);
@@ -401,29 +461,6 @@
     });
   }
 
-  async function refreshUser() {
-    const id = uid();
-
-    if (!id) return;
-
-    try {
-      const data = await api(
-        `/user/${encodeURIComponent(id)}`
-      );
-
-      const freshUser =
-        data.user ||
-        data.usuario ||
-        data.player ||
-        data;
-
-      if (freshUser?.id || freshUser?.userId || freshUser?.user_id) {
-        save(freshUser);
-        balances();
-      }
-    } catch {}
-  }
-
   async function spin() {
     if (busy) return;
 
@@ -433,13 +470,16 @@
 
     await refreshUser();
 
-    const freeAvailable = Number(
+    const serverFreeSpins = Number(
       user?.rouletteFreeSpins ??
       user?.roulette_free_spins ??
       0
-    ) > 0;
+    );
 
-    if (!freeAvailable && !freeSpin && bal() < bet) {
+    const hasFreeSpin =
+      serverFreeSpins > 0 || freeSpin;
+
+    if (!hasFreeSpin && bal() < bet) {
       return toast("Saldo insuficiente.");
     }
 
@@ -453,21 +493,24 @@
       $("rouletteCenterButton").disabled = true;
     }
 
-    $("rouletteResult").textContent = "Girando...";
+    $("rouletteResult").textContent =
+      "Girando...";
 
     try {
-      const usingFreeSpin = freeAvailable || freeSpin;
-
-      const data = await api("/roulette/spin", {
-        method: "POST",
-        body: JSON.stringify({
-          userId: uid(),
-          betAmount: bet,
-          betType: "roulette",
-          rouletteId: "popular",
-          freeSpin: usingFreeSpin
-        })
-      });
+      const data = await api(
+        "/roulette/spin",
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({
+            userId: uid(),
+            betAmount: bet,
+            betType: "roulette",
+            rouletteId: "popular",
+            freeSpin: hasFreeSpin
+          })
+        }
+      );
 
       const result =
         data.result ||
@@ -514,6 +557,7 @@
         freeSpin = true;
 
         $("rouletteFreeSpinStatus").hidden = false;
+
         $("rouletteFreeSpinStatus").textContent =
           `🍀 Você ganhou 1 giro grátis de R$ ${money(bet)}.`;
 
@@ -561,7 +605,9 @@
     $("stageBack").onclick = back;
 
     $("rouletteBetMinus").onclick = () => {
-      setBet(Math.max(MIN, bet - STEP));
+      setBet(
+        Math.max(MIN, bet - STEP)
+      );
     };
 
     $("rouletteBetPlus").onclick = () => {
@@ -578,7 +624,9 @@
       .querySelectorAll("[data-roulette-bet]")
       .forEach(button => {
         button.onclick = () => {
-          setBet(button.dataset.rouletteBet);
+          setBet(
+            button.dataset.rouletteBet
+          );
         };
       });
   }
