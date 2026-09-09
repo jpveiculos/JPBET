@@ -754,8 +754,16 @@
           Carregando as fatias...
         </div>
 
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <button type="button" id="btnModeloRtp50" class="btn-secondary">Aplicar modelo 50% (10 fatias)</button>
+        </div>
+
+        <div id="rouletteMathPreview" class="note" style="margin-top:12px;line-height:1.6;">
+          RTP teórico: calculando...
+        </div>
+
         <div class="note">
-          <strong>Peso:</strong> a chance relativa de cada fatia é proporcional ao peso configurado. O painel não esconde a distribuição: você consegue conferir e alterar cada peso antes de salvar.
+          <strong>Probabilidade (%):</strong> é a chance usada pelo servidor para aquela fatia. A soma deve ser exatamente 100%. O RTP teórico considera os multiplicadores e também o valor matemático dos giros 🍀.
         </div>
 
         <textarea
@@ -1218,8 +1226,8 @@
     function renderizarEditorRoleta(segmentos) {
       const editor = document.getElementById("rouletteSegmentsEditor");
       if (!editor) return;
-      if (!Array.isArray(segmentos) || segmentos.length < 2 || segmentos.length > 40) {
-        editor.textContent = "A configuração precisa conter entre 2 e 40 fatias.";
+      if (!Array.isArray(segmentos) || segmentos.length < 10 || segmentos.length > 40) {
+        editor.textContent = "A configuração precisa conter entre 10 e 40 fatias.";
         return;
       }
       let html = `
@@ -1265,6 +1273,42 @@
           label.value = `${mult.value}x`;
         }
       });
+
+      const linhas = document.querySelectorAll("#rouletteSegmentsEditor tbody tr");
+      let total = 0;
+      let direto = 0;
+      let sorte = 0;
+      linhas.forEach(linha => {
+        const tipo = linha.querySelector(".segment-type")?.value || "zero";
+        const mult = Number(linha.querySelector(".segment-multiplier")?.value || 0);
+        const prob = Number(linha.querySelector(".segment-probability")?.value || 0);
+        total += Math.max(0, prob);
+        if (tipo === "prize") direto += (prob / 100) * mult;
+        if (tipo === "sorte") sorte += prob / 100;
+      });
+      const preview = document.getElementById("rouletteMathPreview");
+      if (preview) {
+        const rtpDireto = direto * 100;
+        const rtpComSorte = sorte < 1 ? (direto / (1 - sorte)) * 100 : null;
+        preview.innerHTML = `<strong>Conferência:</strong> probabilidades = <strong>${total.toFixed(2)}%</strong> · RTP direto = <strong>${rtpDireto.toFixed(2)}%</strong>${rtpComSorte === null ? "" : ` · RTP com 🍀 = <strong>${rtpComSorte.toFixed(2)}%</strong>`}`;
+      }
+    }
+
+    function aplicarModeloRtp50() {
+      const modelo = [
+        { label: "❌", type: "zero", multiplier: 0, probability: 15.8 },
+        { label: "2x", type: "prize", multiplier: 2, probability: 12 },
+        { label: "❌", type: "zero", multiplier: 0, probability: 15.8 },
+        { label: "3x", type: "prize", multiplier: 3, probability: 4 },
+        { label: "❌", type: "zero", multiplier: 0, probability: 15.8 },
+        { label: "4x", type: "prize", multiplier: 4, probability: 2 },
+        { label: "❌", type: "zero", multiplier: 0, probability: 15.8 },
+        { label: "5x", type: "prize", multiplier: 5, probability: 1 },
+        { label: "❌", type: "zero", multiplier: 0, probability: 15.8 },
+        { label: "🍀", type: "sorte", multiplier: 0, probability: 2 }
+      ];
+      renderizarEditorRoleta(modelo);
+      sincronizarEditorRoleta();
     }
 
     function sincronizarEditorRoleta() {
@@ -1283,6 +1327,8 @@
       document.getElementById("roulette_segments_json").value =
         JSON.stringify(segmentos);
     }
+
+    document.getElementById("btnModeloRtp50")?.addEventListener("click", aplicarModeloRtp50);
 
     /* =========================
        CARREGAR CONFIGURAÇÕES
@@ -1615,7 +1661,7 @@
           rouletteSegments.length < 2 ||
           rouletteSegments.length > 40
         ) {
-          mostrarMensagem("A roleta precisa ter entre 2 e 40 fatias.", "error");
+          mostrarMensagem("A roleta precisa ter entre 10 e 40 fatias.", "error");
           return;
         }
 
