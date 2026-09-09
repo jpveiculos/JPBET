@@ -438,9 +438,16 @@ button {
 }
 
 .roulette-sector {
-    cursor: default;
-    transition: opacity .18s ease;
-    pointer-events: none;
+    cursor: pointer;
+    transition: filter .18s ease, opacity .18s ease;
+}
+
+.roulette-sector:hover {
+    filter: brightness(1.16);
+}
+
+.roulette-sector.selected {
+    filter: brightness(1.45) drop-shadow(0 0 8px rgba(255,215,0,.9));
 }
 
 .roulette-sector.winner {
@@ -1739,6 +1746,8 @@ function criarRoda() {
         path.setAttribute("stroke-width", "5");
         path.setAttribute("class", "roulette-sector");
         path.dataset.index = i;
+        path.addEventListener("click", e => { e.stopPropagation(); selecionarFatia(i); });
+        path.addEventListener("touchstart", e => { e.stopPropagation(); selecionarFatia(i); }, { passive: true });
         sectorsGroup.appendChild(path);
 
         const mid = start + angle / 2;
@@ -1781,6 +1790,68 @@ function criarRoda() {
         c.setAttribute("filter", "url(#glow)");
         hubLights.appendChild(c);
     }
+}
+
+function selecionarFatia(index) {
+
+    if (roletaGirando) return;
+
+    const roleta =
+        ROLETAS[roletaAtual];
+
+    if (
+        !roleta ||
+        !roleta.segments ||
+        !roleta.segments[index]
+    ) {
+        return;
+    }
+
+    indiceFatiaSelecionada = index;
+    fatiaSelecionada = roleta.segments[index];
+
+    document
+        .querySelectorAll(".roulette-sector")
+        .forEach(el => {
+
+            el.classList.remove("selected");
+            el.style.filter = "";
+            el.style.textShadow = "";
+
+        });
+
+    const elemento =
+        document.querySelector(
+            `.roulette-sector[data-index="${index}"]`
+        );
+
+    if (elemento) {
+
+        elemento.classList.add("selected");
+
+        elemento.style.filter =
+            "brightness(2)";
+
+        elemento.style.textShadow =
+            "0 0 8px #fff, 0 0 18px #ffd700, 0 0 30px #ffd700";
+    }
+
+    const resultado =
+        document.getElementById("rouletteResult");
+
+    const resultMain =
+        document.getElementById("resultMain");
+
+    const resultPrize =
+        document.getElementById("resultPrize");
+
+    resultado.style.display = "block";
+
+    resultMain.textContent =
+        `Selecionado: ${formatarResultadoRoleta(fatiaSelecionada)}`;
+
+    resultPrize.textContent =
+        "Aperte GIRAR";
 }
 
 function formatarResultadoRoleta(valor) {
@@ -1928,7 +1999,7 @@ function animarRoleta(indiceResultado) {
         // Cada setor começa em um limite angular, então somamos
         // metade do ângulo para levar o centro exato ao ponteiro.
         const alvo =
-            -(indiceResultado * angulo + angulo / 2);
+            90 - (indiceResultado * angulo);
 
         const voltas =
             7 + Math.floor(Math.random() * 3);
