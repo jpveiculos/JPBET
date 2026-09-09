@@ -1044,7 +1044,7 @@ let configuracoes = {
     roulette_rules: "X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
     roulette_min_bet: "0.50",
     roulette_max_bet: "100",
-    roulette_animation_ms: "2600",
+    roulette_animation_ms: "4800",
     roulette_sound_enabled: "true",
 
     roulette_primary_color: "#f5c542",
@@ -1272,14 +1272,8 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length >= 2 && segmentos.length <= 40) {
-                ROLETAS.sorte.segments = segmentos.map(item => ({
-                    label: String(item?.label || ""),
-                    type: String(item?.type || "zero"),
-                    multiplier: Number(item?.multiplier || 0),
-                    probability: Number(item?.probability ?? item?.weight ?? 0),
-                    color: String(item?.color || "")
-                }));
+            if (Array.isArray(segmentos) && segmentos.length >= 10 && segmentos.length <= 40) {
+                ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
             }
         } catch (_) {}
 
@@ -1872,7 +1866,7 @@ function animarRoleta(indiceResultado) {
             voltas * 360 + alvo;
 
         const duracao =
-            Number(configuracoes.roulette_animation_ms) || 2600;
+            Number(configuracoes.roulette_animation_ms) || 4800;
 
         wheel.style.transition =
             `transform ${duracao}ms cubic-bezier(.12,.72,.12,1)`;
@@ -1921,7 +1915,7 @@ async function destacarVencedora(index) {
         "brightness(2.5)";
 
     await new Promise(resolve =>
-        setTimeout(resolve, 700)
+        setTimeout(resolve, 2200)
     );
 
     elemento.style.animation = "";
@@ -1964,8 +1958,8 @@ async function girarRoleta() {
     roletaGirando = true;
 
     spinButton.disabled = true;
-    spinButton.classList.remove("spinning");
-    spinButton.textContent = "GIRAR";
+    spinButton.classList.add("spinning");
+    spinButton.textContent = "GIRANDO...";
 
     try {
 
@@ -2105,7 +2099,7 @@ async function girarRoleta() {
 
         /* 🍀 SORTE: o próximo giro usa a mesma aposta e não cobra novamente. */
         if (resultadoTipo === "sorte" && spin.freeSpinsAvailable > 0) {
-            await new Promise(resolve => setTimeout(resolve, 250));
+            await new Promise(resolve => setTimeout(resolve, 900));
             roletaGirando = false;
             spinButton.disabled = false;
             spinButton.classList.remove("spinning");
@@ -2221,8 +2215,8 @@ async function girarRoletaGratis() {
     const spinButton = document.getElementById("spinButton");
     roletaGirando = true;
     spinButton.disabled = true;
-    spinButton.classList.remove("spinning");
-    spinButton.textContent = "GIRAR";
+    spinButton.classList.add("spinning");
+    spinButton.textContent = "GIRANDO...";
     try {
         const resposta = await fetch(`${API_URL}/roulette/spin`, {
             method: "POST",
@@ -2261,7 +2255,7 @@ async function girarRoletaGratis() {
         await carregarSaldoServidor();
         await carregarHistorico();
         if (resultadoTipo === "sorte" && spin.freeSpinsAvailable > 0) {
-            await new Promise(resolve => setTimeout(resolve, 250));
+            await new Promise(resolve => setTimeout(resolve, 900));
             roletaGirando = false;
             await girarRoletaGratis();
             return;
