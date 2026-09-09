@@ -27,6 +27,19 @@ const ROULETTE_SEGMENTS = [
   {label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"3x",type:"prize",multiplier:3,probability:1.25},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"75x",type:"prize",multiplier:75,probability:0.005},{label:"3x",type:"prize",multiplier:3,probability:1.25},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"20x",type:"prize",multiplier:20,probability:0.2},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"3x",type:"prize",multiplier:3,probability:1.25},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"10x",type:"prize",multiplier:10,probability:1},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"5x",type:"prize",multiplier:5,probability:1.3333333333},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"100x",type:"prize",multiplier:100,probability:0.001},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"50x",type:"prize",multiplier:50,probability:0.01},{label:"3x",type:"prize",multiplier:3,probability:1.25},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"5x",type:"prize",multiplier:5,probability:1.3333333333},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"5x",type:"prize",multiplier:5,probability:1.3333333333},{label:"30x",type:"prize",multiplier:30,probability:0.05},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"2x",type:"prize",multiplier:2,probability:2.546875},{label:"X",type:"zero",multiplier:0,probability:6.6359},{label:"🍀",type:"replay",multiplier:0,probability:3}
 ];
 
+const ROULETTE_VISUAL_SEGMENTS = [
+  {label:"2X", type:"prize", multiplier:2},
+  {label:"X", type:"zero", multiplier:0},
+  {label:"3X", type:"prize", multiplier:3},
+  {label:"X", type:"zero", multiplier:0},
+  {label:"4X", type:"prize", multiplier:4},
+  {label:"X", type:"zero", multiplier:0},
+  {label:"X", type:"zero", multiplier:0},
+  {label:"🍀", type:"replay", multiplier:0},
+  {label:"5X", type:"prize", multiplier:5},
+  {label:"X", type:"zero", multiplier:0}
+];
+
 const THEMES = {
   fortune7: {title:"FORTUNE 7", type:"SLOT", accent:"#d51f3d"},
   diamondGold: {title:"DIAMOND GOLD", type:"SLOT", accent:"#178fca"},
@@ -186,18 +199,34 @@ function classeRoleta(seg) {
 function criarRoletaSorte() {
   const wheel = $("rouletteWheel");
   if (!wheel) return;
-  const angle = 360 / ROULETTE_SEGMENTS.length;
-  const colors = {zero:"#7d1118",m2:"#a24b16",m3:"#174d91",m5:"#5c2b8a",m10:"#b17b18",m20:"#183f78",m30:"#8a176a",m50:"#c15b19",m75:"#6f2b9a",m100:"#d4a83e",clover:"#146b3a"};
-  wheel.innerHTML = ROULETTE_SEGMENTS.map((seg,i)=>{
-    const d=document.createElement("span");
-    d.className=`roulette-label ${classeRoleta(seg)}`;
-    d.textContent=seg.type==="replay"?"🍀":seg.type==="zero"?"X":seg.label;
-    d.style.transform=`translate(-50%,-50%) rotate(${i*angle+angle/2}deg) translateY(-${Math.min(145, Math.max(105, (wheel.clientWidth||300)*.39))}px) rotate(${-(i*angle+angle/2)}deg)`;
-    d.dataset.index=i;
+
+  const angle = 360 / ROULETTE_VISUAL_SEGMENTS.length;
+  const colors = [
+    "#f4b91f", "#16171c", "#7b19d8", "#15171c", "#0879e8",
+    "#15171c", "#15171c", "#087d2f", "#ed1f5a", "#15171c"
+  ];
+
+  wheel.innerHTML = "";
+  ROULETTE_VISUAL_SEGMENTS.forEach((seg, i) => {
+    const d = document.createElement("span");
+    d.className = `roulette-label ${seg.type === "replay" ? "clover" : seg.type === "zero" ? "zero" : `v${seg.multiplier}`}`;
+    d.textContent = seg.type === "replay" ? "🍀" : seg.label;
+    const mid = i * angle + angle / 2;
+    const radius = Math.min(44, Math.max(37, (wheel.clientWidth || 300) * 0.14));
+    d.style.transform = `translate(-50%,-50%) rotate(${mid}deg) translateY(-${radius}%) rotate(${-mid}deg)`;
+    d.dataset.index = i;
     wheel.appendChild(d);
-    return `${colors[classeRoleta(seg)]} ${i*angle}deg ${(i+1)*angle}deg`;
-  }).join(",");
-  wheel.style.background=`conic-gradient(${wheel.innerHTML?Array.from(wheel.querySelectorAll("span")).map((_,i)=>{const c=ROULETTE_SEGMENTS[i];return `${colors[classeRoleta(c)]} ${i*angle}deg ${(i+1)*angle}deg`;}).join(","):"#222"})`;
+
+    if (seg.type === "replay") {
+      const sub = document.createElement("small");
+      sub.className = "roulette-label-sub";
+      sub.textContent = "GIRO GRÁTIS";
+      sub.style.transform = `translate(-50%,-50%) rotate(${mid}deg) translateY(-${radius - 7}%) rotate(${-mid}deg)`;
+      wheel.appendChild(sub);
+    }
+  });
+
+  wheel.style.background = `repeating-conic-gradient(from -18deg, transparent 0deg ${angle - 1.2}deg, rgba(255,221,105,.9) ${angle - 1.2}deg ${angle}deg), conic-gradient(from -18deg, ${colors.map((c, i) => `${c} ${i * angle}deg ${(i + 1) * angle}deg`).join(",")})`;
 }
 
 function atualizarGiroGratis() {
@@ -237,6 +266,8 @@ function prepararBets() {
   $("rouletteBetPlus").onclick = () => definirRouletteBet(rouletteBet + 0.5);
   document.querySelectorAll("[data-roulette-bet]").forEach(b => { b.onclick = () => definirRouletteBet(numero(b.dataset.rouletteBet,0.5)); });
   $("rouletteSpinButton").onclick = girarRoleta;
+  const hub = $("rouletteHubButton");
+  if (hub) hub.onclick = girarRoleta;
 }
 
 function definirRouletteBet(v) {
@@ -380,8 +411,22 @@ async function girarRoleta() {
     const index=numero(r.index,-1);
     if(index<0 || index>=ROULETTE_SEGMENTS.length) throw new Error("Resultado inválido.");
     const wheel=$("rouletteWheel");
-    const angle=360/ROULETTE_SEGMENTS.length;
-    const target=360-(index*angle+angle/2);
+    const logicalSeg=ROULETTE_SEGMENTS[index];
+    const visualIndex = (() => {
+      const exact = ROULETTE_VISUAL_SEGMENTS.findIndex(s => s.type === logicalSeg.type && Number(s.multiplier) === Number(logicalSeg.multiplier));
+      if (exact >= 0) return exact;
+      if (logicalSeg.type === "replay") return 7;
+      if (logicalSeg.type === "zero") return 1;
+      let best = 0, bestDiff = Infinity;
+      ROULETTE_VISUAL_SEGMENTS.forEach((s, i) => {
+        if (s.type !== "prize") return;
+        const diff = Math.abs(Number(s.multiplier) - Number(logicalSeg.multiplier));
+        if (diff < bestDiff) { bestDiff = diff; best = i; }
+      });
+      return best;
+    })();
+    const angle=360/ROULETTE_VISUAL_SEGMENTS.length;
+    const target=360-(visualIndex*angle+angle/2);
     const rotations=7+Math.floor(Math.random()*3);
     wheel.style.transition=`transform ${numero(configuracaoAtual?.animationMs,4800)}ms cubic-bezier(.12,.72,.12,1)`;
     wheel.style.transform=`rotate(${rotations*360+target}deg)`;
