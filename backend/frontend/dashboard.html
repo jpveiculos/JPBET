@@ -564,29 +564,28 @@ button {
 .pointer {
     position: absolute;
     z-index: 60;
-    top: -1px;
+    top: -7px;
     left: 50%;
     transform: translateX(-50%);
-    width: 58px;
-    height: 78px;
-    border-radius: 30px 30px 8px 8px;
-    background: linear-gradient(145deg, #ffe78a, #b96c00 70%);
-    clip-path: polygon(50% 100%, 4% 54%, 8% 27%, 22% 7%, 50% 0, 78% 7%, 92% 27%, 96% 54%);
-    box-shadow: 0 3px 12px rgba(0,0,0,.65), inset 0 0 0 3px rgba(255,231,138,.7);
+    width: 70px;
+    height: 88px;
+    background: linear-gradient(145deg, #fff0a2 0%, #f4c542 28%, #b96c00 72%, #6d3b00 100%);
+    clip-path: polygon(4% 0, 96% 0, 78% 68%, 50% 100%, 22% 68%);
+    filter: drop-shadow(0 5px 8px rgba(0,0,0,.75));
     pointer-events: none;
 }
 
 .pointer::after {
     content: "";
     position: absolute;
-    width: 27px;
-    height: 27px;
+    width: 38px;
+    height: 48px;
     left: 50%;
-    top: 14px;
+    top: 8px;
     transform: translateX(-50%);
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fff3ad 0 10%, #ffcf3d 28%, #8f5100 75%);
-    box-shadow: 0 0 10px rgba(255,214,73,.8);
+    background: linear-gradient(145deg, #ff8a8a 0%, #e71919 45%, #7d0000 100%);
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    box-shadow: 0 0 12px rgba(255,40,40,.55);
 }
 
 @keyframes spinButtonPulse {
@@ -1061,11 +1060,8 @@ const ROLETAS = {
         subtitle: "Escolha seu valor e gire a roda.",
         rules: "❌ não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
         segments: [
-            "❌", "❌", "❌", "❌", "❌",
-            "2x", "2x", "2x",
-            "3x", "3x", "3x",
-            "5x", "5x",
-            "10x", "20x", "30x", "50x", "75x", "100x", "🍀"
+            "❌", "2x", "❌", "3x", "❌",
+            "4x", "❌", "5x", "❌", "🍀"
         ]
     }
 };
@@ -1279,7 +1275,7 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length >= 12 && segmentos.length <= 40) {
+            if (Array.isArray(segmentos) && segmentos.length >= 10 && segmentos.length <= 40) {
                 ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
             }
         } catch (_) {}
@@ -1652,8 +1648,8 @@ function criarRoda() {
     wheel.style.transform = "rotate(0deg)";
 
     const colors = [
-        "#17191b", "#c8070b", "#007b42", "#651079", "#0a3971",
-        "#d99a0a", "#c8070b", "#007b42", "#0a3971", "#8c087e"
+        "#111214", "#d99a0a", "#111214", "#651079", "#111214",
+        "#0a3971", "#111214", "#d41468", "#111214", "#007b42"
     ];
     const total = roleta.segments.length;
     const angle = 360 / total;
@@ -1673,7 +1669,7 @@ function criarRoda() {
         sectorsGroup.appendChild(path);
 
         const mid = start + angle / 2;
-        const p = polar(500, 500, 310, mid);
+        const p = polar(500, 500, 318, mid);
         const label = roleta.segments[i];
         const normalized = label.toUpperCase();
         const rotate = mid > 90 && mid < 270 ? mid + 180 : mid;
