@@ -41,7 +41,7 @@ button:disabled{
   padding:0 14px;
   position:sticky;
   top:0;
-  z-index:50;
+  z-index:1000;
   background:#08090ddd;
   backdrop-filter:blur(15px);
   border-bottom:1px solid #f6c94a2d
@@ -237,7 +237,7 @@ button:disabled{
 
 
 /* =========================================================
-   MÁQUINA DA ROLETA
+   ROLETA
 ========================================================= */
 
 .roulette-machine{
@@ -245,9 +245,9 @@ button:disabled{
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:30px 0 28px;
+  padding:34px 0 28px;
   overflow:visible;
-  z-index:70
+  z-index:100
 }
 
 .roulette-wheel-shell{
@@ -287,69 +287,96 @@ button:disabled{
 
 
 /* =========================================================
-   PONTEIRO FIXO
+   REMOVE O ARO QUE PASSAVA PELO MEIO
+========================================================= */
+
+.roulette-inner-ring{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+
+/* =========================================================
+   PONTEIRO FIXO NO TOPO
 ========================================================= */
 
 .roulette-pointer{
   position:absolute!important;
   left:50%!important;
-  top:7px!important;
-  width:58px!important;
-  height:62px!important;
+  top:2px!important;
+
+  width:64px!important;
+  height:72px!important;
+
   transform:translateX(-50%)!important;
-  z-index:999!important;
+
+  z-index:9999!important;
+
   display:block!important;
   visibility:visible!important;
   opacity:1!important;
+
   pointer-events:none!important;
+
   filter:
-    drop-shadow(0 4px 5px #000)
-    drop-shadow(0 0 9px #f6c94a88)
+    drop-shadow(0 5px 5px #000)
+    drop-shadow(0 0 9px #f6c94a88)!important
 }
 
 .roulette-pointer::before{
   content:""!important;
+
   position:absolute!important;
   left:50%!important;
   top:0!important;
+
   width:0!important;
   height:0!important;
+
   transform:translateX(-50%)!important;
 
-  border-left:22px solid transparent!important;
-  border-right:22px solid transparent!important;
+  border-left:23px solid transparent!important;
+  border-right:23px solid transparent!important;
   border-top:0!important;
-  border-bottom:50px solid #f6c63c!important;
+  border-bottom:54px solid #f6c63c!important;
 
   filter:
     drop-shadow(0 2px 2px #000)
-    drop-shadow(0 0 4px #f6c94a)!important;
+    drop-shadow(0 0 5px #f6c94a)!important
 }
 
 .roulette-pointer::after{
   content:""!important;
+
   position:absolute!important;
   left:50%!important;
   top:9px!important;
-  width:18px!important;
-  height:18px!important;
+
+  width:19px!important;
+  height:19px!important;
+
   transform:translateX(-50%)!important;
+
   border-radius:50%!important;
 
   background:
     radial-gradient(
       circle at 32% 28%,
-      #ff9da3 0%,
-      #ff2639 42%,
-      #8a000b 100%
+      #ffb7bc 0%,
+      #ff2438 40%,
+      #a5000d 72%,
+      #4c0006 100%
     )!important;
 
   border:2px solid #ffe16a!important;
 
   box-shadow:
-    0 0 7px #ff2639,
-    0 0 15px #ff263966,
-    0 2px 5px #000!important;
+    0 0 8px #ff2639,
+    0 0 18px #ff263966,
+    0 2px 5px #000!important
 }
 
 .pointer-gem{
@@ -358,89 +385,142 @@ button:disabled{
 
 
 /* =========================================================
-   ANEL INTERNO
+   TREVO — MUITO MAIS DESTACADO
 ========================================================= */
 
-.roulette-inner-ring{
-  position:absolute;
-  inset:33%;
-  border-radius:50%;
-  border:2px solid #f6c94acc;
+.roulette-label[data-type=sorte]{
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      #65ff9b 0%,
+      #17d85d 28%,
+      #079b3e 58%,
+      #035d27 100%
+    )!important;
+
   box-shadow:
-    0 0 0 5px #000c,
-    inset 0 0 18px #000;
-  pointer-events:none;
-  z-index:15
+    inset 0 0 22px #8affb566,
+    inset 0 0 45px #00ff6644
+}
+
+.roulette-label[data-type=sorte] span{
+  color:#baffd0!important;
+
+  font-size:clamp(32px,7vw,54px)!important;
+
+  text-shadow:
+    0 0 5px #fff,
+    0 0 12px #6aff9b,
+    0 0 24px #00ff66,
+    0 3px 5px #003817!important;
+
+  filter:
+    drop-shadow(0 2px 3px #000)
+}
+
+.roulette-label[data-type=sorte] span::first-letter{
+  color:#baffd0
 }
 
 
 /* =========================================================
-   BOTÃO CENTRAL
+   SETORES
 ========================================================= */
 
-.roulette-hub{
-  position:absolute!important;
-  left:50%!important;
-  top:50%!important;
-  inset:auto!important;
-  transform:translate(-50%,-50%)!important;
+.roulette-label{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:50%;
+  height:50%;
+  transform-origin:0 0;
+  transform:
+    rotate(var(--angle))
+    skewY(calc(90deg - var(--slice-angle)));
+  background:#101217;
+  border-right:2px solid #f6c94a8c;
+  border-bottom:1px solid #f6c94a66;
+  clip-path:polygon(0 0,100% 0,100% 100%);
+  overflow:visible
+}
 
-  width:30%!important;
-  aspect-ratio:1!important;
-  height:auto!important;
+.roulette-label span{
+  position:absolute;
+  left:43%;
+  top:37%;
 
-  border-radius:50%!important;
-  border:3px solid #f4c63f!important;
+  transform:
+    skewY(calc(-90deg + var(--slice-angle)))
+    rotate(calc(var(--slice-angle)/2));
 
+  white-space:nowrap;
+
+  font-weight:1000;
+  font-size:clamp(20px,5vw,38px)
+}
+
+.roulette-label[data-type=zero]{
   background:
-    radial-gradient(
-      circle at 35% 30%,
-      #292929,
-      #0c0c0c 62%,
-      #000
-    )!important;
-
-  color:#f7cf4d!important;
-
-  box-shadow:
-    0 0 0 7px #08090c,
-    0 0 0 10px #d79a18,
-    0 0 18px #f6c94a66,
-    inset 0 0 20px #000!important;
-
-  z-index:30!important;
-
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-
-  gap:2px!important;
-  padding:0!important;
-  opacity:1!important
+    linear-gradient(
+      145deg,
+      #05060a,
+      #171922
+    )
 }
 
-.roulette-hub span{
-  display:block!important;
-  color:#f7d34e!important;
-  font-size:20%!important;
-  line-height:1!important
+.roulette-label[data-type=zero] span{
+  color:#ff3348;
+
+  text-shadow:
+    0 0 10px #ff1e3588,
+    0 3px 6px #000
 }
 
-.roulette-hub strong{
-  display:block!important;
-  color:#ffd84c!important;
-  font-size:16%!important;
-  line-height:1!important;
-  letter-spacing:.4px
+.roulette-label[data-multiplier="2"]{
+  background:
+    linear-gradient(
+      145deg,
+      #a97a08,
+      #f2cf52,
+      #795008
+    )
 }
 
-.roulette-hub small{
-  display:block!important;
-  color:#aeb0b5!important;
-  font-size:6%!important;
-  letter-spacing:2px!important;
-  line-height:1!important
+.roulette-label[data-multiplier="3"]{
+  background:
+    linear-gradient(
+      145deg,
+      #351d83,
+      #7650db,
+      #241354
+    )
+}
+
+.roulette-label[data-multiplier="4"]{
+  background:
+    linear-gradient(
+      145deg,
+      #07508b,
+      #1ca5ec,
+      #06365d
+    )
+}
+
+.roulette-label[data-multiplier="5"]{
+  background:
+    linear-gradient(
+      145deg,
+      #e90069,
+      #ff2583,
+      #9d0048
+    )
+}
+
+.roulette-label[data-type=prize] span{
+  color:#fff;
+
+  text-shadow:
+    0 2px 5px #000
 }
 
 
@@ -463,13 +543,87 @@ button:disabled{
   left:calc(50% - 5px);
   top:calc(50% - 5px);
   border-radius:50%;
+
   background:#fff3a3;
+
   box-shadow:
     0 0 5px 2px #fff,
     0 0 12px 4px #f6c94acc;
+
   transform:
     rotate(var(--bulb-angle))
     translateY(calc(min(43vw,300px)*-1))
+}
+
+
+/* =========================================================
+   BOTÃO CENTRAL
+========================================================= */
+
+.roulette-hub{
+  position:absolute!important;
+
+  left:50%!important;
+  top:50%!important;
+  inset:auto!important;
+
+  transform:translate(-50%,-50%)!important;
+
+  width:30%!important;
+  aspect-ratio:1!important;
+  height:auto!important;
+
+  border-radius:50%!important;
+
+  border:3px solid #f4c63f!important;
+
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #343434,
+      #111 55%,
+      #000
+    )!important;
+
+  color:#f7cf4d!important;
+
+  box-shadow:
+    0 0 0 7px #08090c,
+    0 0 0 10px #d79a18,
+    0 0 18px #f6c94a66,
+    inset 0 0 20px #000!important;
+
+  z-index:30!important;
+
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+
+  gap:2px!important;
+  padding:0!important
+}
+
+.roulette-hub span{
+  display:block!important;
+  color:#f7d34e!important;
+  font-size:20%!important;
+  line-height:1!important
+}
+
+.roulette-hub strong{
+  display:block!important;
+  color:#ffd84c!important;
+  font-size:16%!important;
+  line-height:1!important
+}
+
+.roulette-hub small{
+  display:block!important;
+  color:#aeb0b5!important;
+  font-size:6%!important;
+  letter-spacing:2px!important;
+  line-height:1!important
 }
 
 
@@ -514,7 +668,11 @@ button:disabled{
   border:1px solid #272c35;
   border-radius:18px;
   background:
-    linear-gradient(145deg,#11151d,#090b10)
+    linear-gradient(
+      145deg,
+      #11151d,
+      #090b10
+    )
 }
 
 .roulette-selection-label{
@@ -580,7 +738,11 @@ button:disabled{
 .quick-bets button.active{
   border-color:#e7b93f;
   background:
-    linear-gradient(145deg,#6f4a08,#c79620);
+    linear-gradient(
+      145deg,
+      #6f4a08,
+      #c79620
+    );
   color:#fff
 }
 
@@ -661,7 +823,7 @@ button:disabled{
   bottom:22px;
   transform:translate(-50%,20px);
   opacity:0;
-  z-index:100;
+  z-index:10000;
   padding:12px 16px;
   border:1px solid #f6c94a59;
   border-radius:12px;
@@ -709,8 +871,7 @@ button:disabled{
   }
 
   .roulette-machine{
-    padding:34px 0 28px;
-    z-index:70
+    padding:38px 0 28px
   }
 
   .roulette-wheel-shell{
@@ -718,21 +879,24 @@ button:disabled{
   }
 
   .roulette-pointer{
-    top:7px!important;
-    width:52px!important;
-    height:58px!important;
-    z-index:999!important
+    top:3px!important;
+    width:56px!important;
+    height:66px!important
   }
 
   .roulette-pointer::before{
-    border-left-width:19px!important;
-    border-right-width:19px!important;
-    border-bottom-width:43px!important
+    border-left-width:20px!important;
+    border-right-width:20px!important;
+    border-bottom-width:48px!important
   }
 
   .roulette-pointer::after{
-    width:16px!important;
-    height:16px!important
+    width:17px!important;
+    height:17px!important
+  }
+
+  .roulette-label[data-type=sorte] span{
+    font-size:clamp(34px,9vw,50px)!important
   }
 
   .roulette-quick-bets{
