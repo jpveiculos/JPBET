@@ -105,6 +105,20 @@
   box-sizing: border-box;
 }
 
+    .roulette-probability-summary {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff4f4;
+      color: #8a1f1f;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .roulette-probability-summary.ok {
+      background: #effaf2;
+      color: #176b34;
+    }
+
 .roulette-editor .chance {
   white-space: nowrap;
   font-weight: 700;
@@ -547,88 +561,6 @@
 
     </div>
 
-
-    <!-- NOTIFICAÇÕES -->
-
-    <div class="card">
-      <h2>📲 Notificações administrativas</h2>
-      <p class="section-note">
-        Deixe esta área preparada para conectar o WhatsApp da MayBets depois. Você não precisa preencher agora. Quando a conta do serviço estiver criada, informe os dados da integração aqui.
-      </p>
-
-      <div class="field">
-        <div class="checkbox-row">
-          <input type="checkbox" id="notification_enabled">
-          <label for="notification_enabled">Ativar notificações externas</label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Eventos que devem gerar aviso</label>
-        <div class="checkbox-row"><input type="checkbox" id="notification_deposit_requested"><label for="notification_deposit_requested">Novo depósito solicitado</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="notification_withdrawal_requested"><label for="notification_withdrawal_requested">Novo saque solicitado</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="notification_deposit_approved"><label for="notification_deposit_approved">Depósito aprovado</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="notification_deposit_rejected"><label for="notification_deposit_rejected">Depósito rejeitado</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="notification_withdrawal_approved"><label for="notification_withdrawal_approved">Saque aprovado</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="notification_withdrawal_rejected"><label for="notification_withdrawal_rejected">Saque rejeitado</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="notification_withdrawal_completed"><label for="notification_withdrawal_completed">Saque concluído/pago</label></div>
-      </div>
-
-      <div class="field">
-        <label for="notification_recipient">Número/identificador que receberá as notificações</label>
-        <input type="text" id="notification_recipient" placeholder="Ex.: 55XXXXXXXXXXX" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label for="notification_webhook_url">Endereço da integração (Webhook)</label>
-        <input type="url" id="notification_webhook_url" placeholder="Será preenchido quando a integração for cadastrada" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label for="notification_webhook_token">Token da integração</label>
-        <input type="password" id="notification_webhook_token" placeholder="Preencha somente quando tiver o token" autocomplete="new-password">
-      </div>
-
-      <div class="virtual-note">
-        🔐 Por segurança, não coloque senha de e-mail neste painel. O cadastro da conta do serviço de WhatsApp será feito separadamente. A MayBets já ficará preparada para receber o endereço/token da integração.
-      </div>
-
-      <button type="button" class="save-button" onclick="testarNotificacao()">
-        🧪 ENVIAR NOTIFICAÇÃO DE TESTE
-      </button>
-      <div id="notification_test_message" class="admin-message"></div>
-    </div>
-
-    <!-- BÔNUS E SAQUE -->
-
-    <div class="card">
-      <h2>🎁 Bônus e regras de saque</h2>
-      <p class="section-note">
-        O saldo de bônus é consumido antes do saldo de depósito. Enquanto houver bônus, o saque permanece bloqueado.
-      </p>
-
-      <div class="field">
-        <div class="checkbox-row">
-          <input type="checkbox" id="bonus_system_enabled">
-          <label for="bonus_system_enabled">Ativar sistema de bônus</label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="initial_bonus_amount">Bônus inicial para novos jogadores</label>
-        <input type="number" id="initial_bonus_amount" min="0" step="0.01">
-      </div>
-
-      <div class="field">
-        <label for="bonus_wager_requirement">Valor de apostas necessário para liberar o saque</label>
-        <input type="number" id="bonus_wager_requirement" min="0" step="0.01">
-      </div>
-
-      <div class="virtual-note">
-        <strong>Regra:</strong> O jogador precisa apostar/acumular o valor configurado em apostas para liberar o botão de saque. Qualquer saldo de bônus adicional dado pela plataforma também será consumido primeiro, antes do saldo proveniente de depósitos.
-      </div>
-    </div>
-
     <!-- ROLETA -->
 
     <div class="card">
@@ -665,7 +597,7 @@
         <input
           type="number"
           id="roulette_min_bet"
-          min="0"
+          min="0.50"
           step="0.01"
         >
 
@@ -688,40 +620,38 @@
 
       <div class="field">
 
-        <label for="roulette_rtp">
-          RTP (%)
-        </label>
+        <label for="roulette_rtp">RTP calculado (%)</label>
 
         <input
           type="number"
           id="roulette_rtp"
           min="0"
           max="100"
-          step="0.01"
+          step="0.0001"
+          readonly
         >
 
         <div class="note">
-          50% significa retorno esperado de 50% para uma fatia premiada; a vantagem matemática correspondente é de aproximadamente 50%.
+          Calculado automaticamente a partir das probabilidades das 32 fatias. Não é usado para escolher o resultado.
         </div>
 
       </div>
 
       <div class="field">
 
-        <label for="roulette_replay_probability">
-          Compatibilidade (legado)
-        </label>
+        <label for="roulette_replay_probability">Chance de giro grátis (%)</label>
 
         <input
           type="number"
           id="roulette_replay_probability"
           min="0"
-          max="49"
-          step="0.01"
+          max="100"
+          step="0.0001"
+          readonly
         >
 
         <div class="note">
-          Campo mantido apenas para compatibilidade com configurações antigas. A distribuição atual usa o peso definido em cada fatia.
+          Soma da probabilidade das fatias 🍀. Cada 🍀 concede 1 giro grátis, sem encadeamento.
         </div>
 
       </div>
@@ -734,7 +664,7 @@
             id="roulette_free_spin_enabled"
           >
           <label for="roulette_free_spin_enabled">
-            Liberar giro grátis ao acertar 🍀
+            Liberar giro grátis ao cair em 🍀
           </label>
         </div>
 
@@ -742,20 +672,22 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de 12 a 40 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
-          Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
+          <strong>Modelo da roleta:</strong> 32 fatias visuais, com resultado sorteado separadamente por probabilidade no servidor.
+          As cores são somente visuais; o jogador não escolhe cor nem fatia.
+          Multiplicadores permitidos: 2x, 3x, 5x, 10x, 20x, 30x, 50x, 75x e 100x.
         </div>
       </div>
 
       <div class="field">
-        <label>Editor das fatias</label>
+        <label>Editor das 32 fatias</label>
 
         <div class="roulette-editor" id="rouletteSegmentsEditor">
           Carregando as fatias...
         </div>
 
         <div class="note">
-          <strong>Peso:</strong> a chance relativa de cada fatia é proporcional ao peso configurado. O painel não esconde a distribuição: você consegue conferir e alterar cada peso antes de salvar.
+          <strong>Probabilidade:</strong> cada fatia possui seu próprio peso no servidor. A área visual da fatia não representa sua chance.
+          Ajuste as probabilidades até a soma chegar exatamente a 100%.
         </div>
 
         <textarea
@@ -1068,24 +1000,6 @@
       "site_description",
       "footer_text",
 
-      /* NOTIFICAÇÕES */
-      "notification_enabled",
-      "notification_deposit_requested",
-      "notification_withdrawal_requested",
-      "notification_deposit_approved",
-      "notification_deposit_rejected",
-      "notification_withdrawal_approved",
-      "notification_withdrawal_rejected",
-      "notification_withdrawal_completed",
-      "notification_recipient",
-      "notification_webhook_url",
-      "notification_webhook_token",
-
-      /* BÔNUS E SAQUE */
-      "bonus_system_enabled",
-      "initial_bonus_amount",
-      "bonus_wager_requirement",
-
       /* PIX */
 
       "pix_enabled",
@@ -1215,36 +1129,117 @@
         "Nenhum aviso configurado.";
     }
 
+    const ROULETTE_DEFAULT_SEGMENTS = [
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"3x",type:"prize",multiplier:3,probability:1.25},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"75x",type:"prize",multiplier:75,probability:0.005},
+      {label:"3x",type:"prize",multiplier:3,probability:1.25},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"20x",type:"prize",multiplier:20,probability:0.2},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"3x",type:"prize",multiplier:3,probability:1.25},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"10x",type:"prize",multiplier:10,probability:1},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"5x",type:"prize",multiplier:5,probability:1.3333333333},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"100x",type:"prize",multiplier:100,probability:0.001},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"50x",type:"prize",multiplier:50,probability:0.01},
+      {label:"3x",type:"prize",multiplier:3,probability:1.25},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"5x",type:"prize",multiplier:5,probability:1.3333333333},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"5x",type:"prize",multiplier:5,probability:1.3333333333},
+      {label:"30x",type:"prize",multiplier:30,probability:0.05},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"2x",type:"prize",multiplier:2,probability:2.546875},
+      {label:"X",type:"zero",multiplier:0,probability:6.6359},
+      {label:"🍀",type:"replay",multiplier:0,probability:3}
+    ];
+
+    const ALLOWED_MULTIPLIERS = [2,3,5,10,20,30,50,75,100];
+
+    function escaparHtml(valor) {
+      return String(valor ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/"/g,"&quot;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+    }
+
+    function calcularIndicadoresRoleta(segmentos) {
+      const base = segmentos.reduce((sum,item) => {
+        return sum + (Number(item.probability || 0) / 100) * (item.type === "prize" ? Number(item.multiplier || 0) : 0);
+      },0) * 100;
+      const replay = segmentos.reduce((sum,item) => sum + (item.type === "replay" ? Number(item.probability || 0) : 0),0);
+      const efetivo = base * (1 + replay / 100);
+      const casa = 100 - efetivo;
+      document.getElementById("roulette_rtp").value = base.toFixed(4);
+      document.getElementById("roulette_replay_probability").value = replay.toFixed(4);
+      return {base, replay, efetivo, casa};
+    }
+
     function renderizarEditorRoleta(segmentos) {
       const editor = document.getElementById("rouletteSegmentsEditor");
       if (!editor) return;
-      if (!Array.isArray(segmentos) || segmentos.length < 12 || segmentos.length > 40) {
-        editor.textContent = "A configuração precisa conter entre 12 e 40 fatias.";
-        return;
+
+      if (!Array.isArray(segmentos) || segmentos.length !== 32 ||
+          !segmentos.every(item => Number.isFinite(Number(item?.probability)))) {
+        segmentos = ROULETTE_DEFAULT_SEGMENTS.map(item => ({...item}));
       }
+
       let html = `
         <table>
-          <thead><tr><th>#</th><th>Símbolo/Texto</th><th>Tipo</th><th>Multiplicador</th><th>Probabilidade (%)</th></tr></thead>
-          <tbody>`;
-      segmentos.forEach((item, index) => {
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Resultado</th>
+              <th>Tipo</th>
+              <th>Multiplicador</th>
+              <th>Probabilidade (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      segmentos.forEach((item,index) => {
         const tipo = String(item.type || "zero").toLowerCase();
         const multiplicador = Number(item.multiplier || 0);
-        const peso = Number(item.probability ?? 0);
-        const esc = String(item.label || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
-        html += `<tr data-segment-index="${index}">
-          <td>${index + 1}</td>
-          <td><input class="segment-label" type="text" value="${esc}" maxlength="12"></td>
-          <td><select class="segment-type">
-            <option value="zero" ${tipo === "zero" ? "selected" : ""}>❌ Perda</option>
-            <option value="sorte" ${tipo === "sorte" ? "selected" : ""}>🍀 Giro grátis</option>
-            <option value="prize" ${tipo === "prize" ? "selected" : ""}>Prêmio</option>
-          </select></td>
-          <td><input class="segment-multiplier" type="number" min="0" max="100" step="1" value="${multiplicador}"></td>
-          <td><input class="segment-probability" type="number" min="0" step="0.01" value="${peso}"></td>
-        </tr>`;
+        const probabilidade = Number(item.probability || 0);
+        const label = tipo === "replay" ? "🍀" : tipo === "zero" ? "X" : String(item.label || `${multiplicador}x`);
+        html += `
+          <tr data-segment-index="${index}">
+            <td>${index + 1}</td>
+            <td><input class="segment-label" type="text" value="${escaparHtml(label)}"></td>
+            <td>
+              <select class="segment-type">
+                <option value="zero" ${tipo === "zero" ? "selected" : ""}>X / perde</option>
+                <option value="replay" ${tipo === "replay" ? "selected" : ""}>🍀 Giro grátis</option>
+                <option value="prize" ${tipo === "prize" ? "selected" : ""}>Prêmio</option>
+              </select>
+            </td>
+            <td>
+              <select class="segment-multiplier">
+                <option value="0" ${multiplicador === 0 ? "selected" : ""}>0</option>
+                ${ALLOWED_MULTIPLIERS.map(n => `<option value="${n}" ${multiplicador === n ? "selected" : ""}>${n}x</option>`).join("")}
+              </select>
+            </td>
+            <td><input class="segment-probability" type="number" min="0" max="100" step="0.000001" value="${probabilidade}"></td>
+          </tr>
+        `;
       });
-      html += `</tbody></table>`;
+
+      html += `</tbody></table>
+        <div id="rouletteProbabilitySummary" class="roulette-probability-summary"></div>`;
       editor.innerHTML = html;
+
       editor.querySelectorAll(".segment-type, .segment-multiplier, .segment-probability, .segment-label").forEach(campo => {
         campo.addEventListener("input", atualizarChancesEditorRoleta);
         campo.addEventListener("change", atualizarChancesEditorRoleta);
@@ -1253,35 +1248,48 @@
     }
 
     function atualizarChancesEditorRoleta() {
-      document.querySelectorAll("#rouletteSegmentsEditor tbody tr").forEach(linha => {
+      const linhas = document.querySelectorAll("#rouletteSegmentsEditor tbody tr");
+      let total = 0;
+      let replay = 0;
+      let base = 0;
+
+      linhas.forEach(linha => {
         const tipo = linha.querySelector(".segment-type").value;
-        const mult = linha.querySelector(".segment-multiplier");
-        const label = linha.querySelector(".segment-label");
-        if (tipo === "zero") { mult.value = "0"; label.value = "❌"; }
-        if (tipo === "sorte") { mult.value = "0"; label.value = "🍀"; }
-        if (tipo === "prize") {
-          const n = Number(mult.value) || 2;
-          mult.value = String(Math.max(2, Math.min(100, Math.round(n))));
-          label.value = `${mult.value}x`;
-        }
+        const mult = Number(linha.querySelector(".segment-multiplier").value) || 0;
+        const prob = Number(linha.querySelector(".segment-probability").value) || 0;
+        if (tipo !== "prize") linha.querySelector(".segment-multiplier").value = "0";
+        if (tipo === "replay") replay += prob;
+        if (tipo === "prize") base += (prob / 100) * mult * 100;
+        total += prob;
       });
+
+      const efetivo = base * (1 + replay / 100);
+      const casa = 100 - efetivo;
+      const summary = document.getElementById("rouletteProbabilitySummary");
+      if (summary) {
+        summary.innerHTML = `Soma: <strong>${total.toFixed(4)}%</strong> · RTP base: <strong>${base.toFixed(4)}%</strong> · RTP efetivo: <strong>${efetivo.toFixed(4)}%</strong> · Casa: <strong>${casa.toFixed(4)}%</strong> · 🍀: <strong>${replay.toFixed(4)}%</strong>`;
+        summary.className = `roulette-probability-summary ${Math.abs(total - 100) <= 0.0001 ? "ok" : "error"}`;
+      }
+      document.getElementById("roulette_rtp").value = base.toFixed(4);
+      document.getElementById("roulette_replay_probability").value = replay.toFixed(4);
     }
 
     function sincronizarEditorRoleta() {
       const linhas = document.querySelectorAll("#rouletteSegmentsEditor tbody tr");
       const segmentos = [];
-
       linhas.forEach(linha => {
+        const tipo = linha.querySelector(".segment-type").value;
+        const multiplicador = tipo === "prize" ? Number(linha.querySelector(".segment-multiplier").value) || 0 : 0;
         segmentos.push({
-          label: linha.querySelector(".segment-label").value.trim(),
-          type: linha.querySelector(".segment-type").value,
-          multiplier: Number(linha.querySelector(".segment-multiplier").value) || 0,
-          probability: Number(linha.querySelector(".segment-probability")?.value) || 0
+          label: tipo === "replay" ? "🍀" : tipo === "zero" ? "X" : `${multiplicador}x`,
+          type: tipo,
+          multiplier: multiplicador,
+          probability: Number(linha.querySelector(".segment-probability").value) || 0
         });
       });
-
-      document.getElementById("roulette_segments_json").value =
-        JSON.stringify(segmentos);
+      document.getElementById("roulette_segments_json").value = JSON.stringify(segmentos);
+      calcularIndicadoresRoleta(segmentos);
+      return segmentos;
     }
 
     /* =========================
@@ -1363,6 +1371,11 @@
             document.getElementById("roulette_segments_json").value || "[]"
           );
         } catch (_) {}
+        if (!Array.isArray(segmentosRoleta) || segmentosRoleta.length !== 32 ||
+            !segmentosRoleta.every(item => Number.isFinite(Number(item?.probability)))) {
+          segmentosRoleta = ROULETTE_DEFAULT_SEGMENTS.map(item => ({...item}));
+          document.getElementById("roulette_segments_json").value = JSON.stringify(segmentosRoleta);
+        }
         renderizarEditorRoleta(segmentosRoleta);
 
         atualizarPreviewPix();
@@ -1428,19 +1441,6 @@
         sincronizarEditorRoleta();
         configuracoes.roulette_segments_json =
           document.getElementById("roulette_segments_json").value;
-
-        const bonusEnabled = configuracoes.bonus_system_enabled === "true";
-        const initialBonus = Number(configuracoes.initial_bonus_amount);
-        const bonusRequirement = Number(configuracoes.bonus_wager_requirement);
-
-        if (!Number.isFinite(initialBonus) || initialBonus < 0) {
-          mostrarMensagem("O bônus inicial é inválido.", "error");
-          return;
-        }
-        if (!Number.isFinite(bonusRequirement) || bonusRequirement < 0) {
-          mostrarMensagem("O requisito de apostas para saque é inválido.", "error");
-          return;
-        }
 
         /* =========================
            VALIDAÇÕES PIX
@@ -1542,121 +1542,69 @@
             configuracoes.roulette_max_bet
           );
 
-        const rtp =
-          Number(
-            configuracoes.roulette_rtp
-          );
-
-        if (
-          !Number.isFinite(minBet) ||
-          minBet < 0
-        ) {
-
-          mostrarMensagem(
-            "A aposta mínima da roleta é inválida.",
-            "error"
-          );
-
+        if (!Number.isFinite(minBet) || minBet < 0.50) {
+          mostrarMensagem("A aposta mínima da roleta deve ser de pelo menos 0,50.", "error");
+          return;
+        }
+        if (!Number.isFinite(maxBet) || maxBet < minBet || maxBet > 100) {
+          mostrarMensagem("A aposta máxima da roleta deve ficar entre a mínima e 100.", "error");
           return;
         }
 
-        if (
-          !Number.isFinite(maxBet) ||
-          maxBet < 0
-        ) {
-
-          mostrarMensagem(
-            "A aposta máxima da roleta é inválida.",
-            "error"
-          );
-
-          return;
-        }
-
-        if (minBet > maxBet) {
-
-          mostrarMensagem(
-            "A aposta mínima não pode ser maior que a máxima.",
-            "error"
-          );
-
-          return;
-        }
-
-        if (
-          !Number.isFinite(rtp) ||
-          rtp < 0 ||
-          rtp > 100
-        ) {
-
-          mostrarMensagem(
-            "O RTP deve estar entre 0 e 100.",
-            "error"
-          );
-
-          return;
-        }
-
-                let rouletteSegments;
+        let rouletteSegments;
         try {
           rouletteSegments = JSON.parse(
             configuracoes.roulette_segments_json
           );
         } catch (_) {
           mostrarMensagem(
-            "O JSON das fatias está inválido.",
+            "O JSON das 32 fatias está inválido.",
             "error"
           );
           return;
         }
 
-        if (
-          !Array.isArray(rouletteSegments) ||
-          rouletteSegments.length < 12 ||
-          rouletteSegments.length > 40
-        ) {
-          mostrarMensagem("A roleta precisa ter entre 12 e 40 fatias.", "error");
+        if (!Array.isArray(rouletteSegments) || rouletteSegments.length !== 32) {
+          mostrarMensagem("A roleta precisa ter exatamente 32 fatias.", "error");
           return;
         }
 
+        let totalProbability = 0;
+        let replayCount = 0;
         for (let i = 0; i < rouletteSegments.length; i++) {
           const item = rouletteSegments[i] || {};
           const tipo = String(item.type || "").toLowerCase();
           const multiplicador = Number(item.multiplier ?? 0);
-          if (!String(item.label || "").trim() || !["zero", "sorte", "prize"].includes(tipo)) {
-            mostrarMensagem(`Fatia ${i + 1} inválida.`, "error");
+          const probability = Number(item.probability ?? NaN);
+          if (!["zero","replay","prize"].includes(tipo)) {
+            mostrarMensagem(`Tipo da fatia ${i + 1} inválido.`, "error");
             return;
           }
-          if (!Number.isFinite(multiplicador) || multiplicador < 0 || multiplicador > 100) {
-            mostrarMensagem(`Multiplicador da fatia ${i + 1} inválido.`, "error");
+          if (!Number.isFinite(probability) || probability < 0 || probability > 100) {
+            mostrarMensagem(`Probabilidade da fatia ${i + 1} inválida.`, "error");
             return;
           }
-          if (tipo === "prize" && (multiplicador < 2 || multiplicador > 100)) {
-            mostrarMensagem(`A fatia ${i + 1} precisa ter multiplicador entre 2x e 100x.`, "error");
+          if (tipo === "prize" && !ALLOWED_MULTIPLIERS.includes(multiplicador)) {
+            mostrarMensagem(`Multiplicador da fatia ${i + 1} não permitido.`, "error");
             return;
           }
           if (tipo !== "prize" && multiplicador !== 0) {
             mostrarMensagem(`A fatia ${i + 1} deve ter multiplicador 0.`, "error");
             return;
           }
-          const linha = document.querySelector(`#rouletteSegmentsEditor tbody tr[data-segment-index="${i}"]`);
-          const peso = Number(linha?.querySelector(".segment-probability")?.value ?? item.probability ?? 0);
-          if (!Number.isFinite(peso) || peso < 0) { mostrarMensagem(`Peso da fatia ${i + 1} inválido.`, "error"); return; }
-          item.probability = peso;
+          if (tipo === "replay") replayCount++;
+          totalProbability += probability;
+          item.label = tipo === "replay" ? "🍀" : tipo === "zero" ? "X" : `${multiplicador}x`;
+          item.multiplier = tipo === "prize" ? multiplicador : 0;
+          item.probability = probability;
         }
 
-        rouletteSegments = rouletteSegments.map((item, index) => {
-          const linha = document.querySelector(`#rouletteSegmentsEditor tbody tr[data-segment-index="${index}"]`);
-          return {
-            label: String(linha?.querySelector(".segment-label")?.value || item.label || "").trim(),
-            type: String(linha?.querySelector(".segment-type")?.value || item.type || "zero"),
-            multiplier: Number(linha?.querySelector(".segment-multiplier")?.value || item.multiplier || 0),
-            probability: Number(linha?.querySelector(".segment-probability")?.value || item.probability || 0)
-          };
-        });
-        const totalProbability = rouletteSegments.reduce((sum, item) => sum + Number(item.probability || 0), 0);
-        if (Math.abs(totalProbability - 100) > 0.001) {
-          mostrarMensagem(`A soma das probabilidades deve ser 100%. Atualmente está em ${totalProbability.toFixed(2)}%.`, "error");
+        if (replayCount !== 1) {
+          mostrarMensagem("A roleta precisa ter exatamente uma fatia 🍀.", "error");
+          return;
+        }
+        if (Math.abs(totalProbability - 100) > 0.0001) {
+          mostrarMensagem(`As probabilidades devem somar 100%. Soma atual: ${totalProbability.toFixed(4)}%.`, "error");
           return;
         }
 
@@ -1877,27 +1825,6 @@
         "admin.html";
     }
 
-    async function testarNotificacao() {
-      const message = document.getElementById("notification_test_message");
-      message.textContent = "Enviando teste...";
-      message.className = "admin-message";
-      try {
-        await salvarConfiguracoes();
-        const response = await fetch(`${API_URL}/admin/notifications/test`, {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { "Content-Type": "application/json" }
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Não foi possível enviar o teste.");
-        message.textContent = data.message || "Notificação de teste enviada.";
-        message.className = "admin-message admin-success";
-      } catch (error) {
-        message.textContent = error.message || "Erro ao testar a notificação.";
-        message.className = "admin-message admin-error";
-      }
-    }
-
     /* =========================
        SAIR
     ========================= */
@@ -1934,13 +1861,6 @@
       .addEventListener(
         "input",
         atualizarPreviewPix
-      );
-
-    document
-      .getElementById("roulette_rtp")
-      .addEventListener(
-        "input",
-        atualizarChancesEditorRoleta
       );
 
     document
