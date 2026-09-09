@@ -141,6 +141,10 @@ await garantirConfiguracoes();
 
 await garantirTabelasJogos();
 
+app.use(
+  "/api/games",
+  gamesRouter
+);
 
 /* =========================
    FUNÇÕES AUXILIARES
