@@ -1,21 +1,40 @@
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box
+}
 
 :root{
   --gold:#f6c94a;
   --bg:#07080c
 }
 
-html,body{
+html,
+body{
   margin:0;
   min-height:100%;
-  background:radial-gradient(circle at 50% 18%,#1b1d26,#07080c 65%);
+  background:
+    radial-gradient(
+      circle at 50% 18%,
+      #1b1d26,
+      #07080c 65%
+    );
   color:#fff;
-  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif
 }
 
 button{
   font:inherit;
   cursor:pointer
+}
+
+button:disabled{
+  cursor:not-allowed;
+  opacity:.65
 }
 
 .game-header{
@@ -112,7 +131,12 @@ button{
   padding:16px;
   border:1px solid #292e38;
   border-radius:18px;
-  background:linear-gradient(145deg,#151923,#0b0e14);
+  background:
+    linear-gradient(
+      145deg,
+      #151923,
+      #0b0e14
+    );
   color:#fff
 }
 
@@ -221,7 +245,9 @@ button{
 
 
 /* =========================================================
-   ROLETA — SOMENTE O CANVAS NOVO
+   ROLETA
+   A RODA GIRA.
+   O PONTEIRO E O BOTÃO CENTRAL FICAM PARADOS.
 ========================================================= */
 
 .roulette-machine{
@@ -229,7 +255,7 @@ button{
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:15px 0 22px
+  padding:24px 0 28px
 }
 
 .roulette-wheel-shell{
@@ -237,10 +263,8 @@ button{
   aspect-ratio:1;
   position:relative;
   border-radius:50%;
-  padding:0;
-  background:transparent;
-  box-shadow:none;
-  overflow:visible
+  overflow:visible;
+  background:transparent
 }
 
 .roulette-wheel{
@@ -250,51 +274,7 @@ button{
   height:100%;
   border-radius:50%;
   overflow:visible;
-  background:transparent;
-  box-shadow:none
-}
-
-/*
-  O canvas desenha a roleta inteira.
-  Nenhuma peça antiga pode ficar por cima.
-*/
-
-.roulette-wheel:after{
-  display:none!important
-}
-
-.roulette-bulbs,
-.roulette-inner-ring,
-.roulette-pointer,
-.pointer-gem{
-  display:none!important
-}
-
-/*
-  O botão central antigo continua existindo
-  apenas como área invisível de toque.
-  O desenho GIRAR vem do canvas.
-*/
-
-.roulette-hub{
-  position:absolute!important;
-  inset:34%!important;
-  width:auto!important;
-  height:auto!important;
-  border:0!important;
-  border-radius:50%!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  color:transparent!important;
-  z-index:20!important;
-  opacity:0!important;
-  display:block!important
-}
-
-.roulette-hub span,
-.roulette-hub strong,
-.roulette-hub small{
-  display:none!important
+  background:transparent
 }
 
 .mybets-roulette-canvas{
@@ -305,7 +285,129 @@ button{
   display:block;
   border-radius:50%;
   transform-origin:50% 50%;
-  touch-action:manipulation
+  transform:rotate(0deg);
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-user-select:none
+}
+
+
+/* =========================================================
+   PONTEIRO FIXO
+========================================================= */
+
+.roulette-pointer{
+  position:absolute;
+  left:50%;
+  top:-14px;
+  width:0;
+  height:0;
+  transform:translateX(-50%);
+  z-index:40;
+  display:block!important;
+  pointer-events:none
+}
+
+.roulette-pointer::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  width:0;
+  height:0;
+  transform:translateX(-50%);
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:0;
+  border-bottom:42px solid #f4bd2c;
+  filter:
+    drop-shadow(0 3px 4px #000)
+    drop-shadow(0 0 8px #f6c94a66)
+}
+
+.roulette-pointer::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:8px;
+  width:15px;
+  height:15px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #ff6973,
+      #ef1427 48%,
+      #82000a 100%
+    );
+  border:2px solid #ffd95b;
+  box-shadow:
+    0 0 10px #ff2637,
+    0 2px 5px #000
+}
+
+
+/* =========================================================
+   BOTÃO CENTRAL FIXO
+========================================================= */
+
+.roulette-hub{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  inset:auto!important;
+  transform:translate(-50%,-50%)!important;
+  width:30%!important;
+  aspect-ratio:1!important;
+  height:auto!important;
+  border-radius:50%!important;
+  border:3px solid #f4c63f!important;
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #292929,
+      #0c0c0c 62%,
+      #000
+    )!important;
+  color:#f7cf4d!important;
+  box-shadow:
+    0 0 0 7px #08090c,
+    0 0 0 10px #d79a18,
+    0 0 18px #f6c94a66,
+    inset 0 0 20px #000!important;
+  z-index:30!important;
+  opacity:1!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:2px!important;
+  padding:0!important;
+  pointer-events:auto!important
+}
+
+.roulette-hub span{
+  display:block!important;
+  color:#f7d34e!important;
+  font-size:20%!important;
+  line-height:1!important
+}
+
+.roulette-hub strong{
+  display:block!important;
+  color:#ffd84c!important;
+  font-size:16%!important;
+  line-height:1!important;
+  letter-spacing:.4px
+}
+
+.roulette-hub small{
+  display:block!important;
+  color:#aeb0b5!important;
+  font-size:6%!important;
+  letter-spacing:2px!important;
+  line-height:1!important
 }
 
 
@@ -349,7 +451,12 @@ button{
   padding:17px;
   border:1px solid #272c35;
   border-radius:18px;
-  background:linear-gradient(145deg,#11151d,#090b10)
+  background:
+    linear-gradient(
+      145deg,
+      #11151d,
+      #090b10
+    )
 }
 
 .roulette-selection-label{
@@ -414,7 +521,12 @@ button{
 
 .quick-bets button.active{
   border-color:#e7b93f;
-  background:linear-gradient(145deg,#6f4a08,#c79620);
+  background:
+    linear-gradient(
+      145deg,
+      #6f4a08,
+      #c79620
+    );
   color:#fff
 }
 
@@ -436,7 +548,13 @@ button{
   margin-top:12px;
   border:1px solid #f7d76c;
   border-radius:13px;
-  background:linear-gradient(180deg,#ffe477,#d69a21 70%,#9a650b);
+  background:
+    linear-gradient(
+      180deg,
+      #ffe477,
+      #d69a21 70%,
+      #9a650b
+    );
   color:#171107;
   font-weight:1000;
   letter-spacing:1.4px
@@ -497,7 +615,8 @@ button{
   color:#fff;
   box-shadow:0 15px 35px #0008;
   font-size:12px;
-  font-weight:700
+  font-weight:700;
+  pointer-events:none
 }
 
 .toast.show{
@@ -535,17 +654,27 @@ button{
     font-size:22px
   }
 
+  .roulette-machine{
+    padding:28px 0 28px
+  }
+
   .roulette-wheel-shell{
-    width:min(96vw,520px);
-    padding:0
+    width:min(96vw,520px)
   }
 
-  .roulette-wheel{
-    inset:0
+  .roulette-pointer{
+    top:-12px
   }
 
-  .roulette-hub{
-    inset:34%!important
+  .roulette-pointer::before{
+    border-left-width:15px;
+    border-right-width:15px;
+    border-bottom-width:36px
+  }
+
+  .roulette-pointer::after{
+    width:13px;
+    height:13px
   }
 
   .roulette-quick-bets{
