@@ -1276,7 +1276,7 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length >= 10 && segmentos.length <= 40) {
+            if (Array.isArray(segmentos) && segmentos.length === 10) {
                 ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
             }
         } catch (_) {}
@@ -1913,9 +1913,12 @@ function animarRoleta(indiceResultado) {
          * Levamos o centro da fatia vencedora
          * até o ponteiro.
          */
+        // Os setores já são desenhados com o centro da fatia 0
+        // exatamente no topo. Portanto, para levar qualquer setor
+        // ao ponteiro, a rotação deve ser múltipla do ângulo inteiro.
         const alvo =
             360 -
-            (indiceResultado * angulo + angulo / 2);
+            (indiceResultado * angulo);
 
         const voltas =
             7 + Math.floor(Math.random() * 3);

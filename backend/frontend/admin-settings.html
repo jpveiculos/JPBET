@@ -742,7 +742,7 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de 10 a 40 fatias. Use X para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
+          <strong>Modelo atual:</strong> roleta configurável de 12 a 40 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
           Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
         </div>
       </div>
@@ -1218,8 +1218,8 @@
     function renderizarEditorRoleta(segmentos) {
       const editor = document.getElementById("rouletteSegmentsEditor");
       if (!editor) return;
-      if (!Array.isArray(segmentos) || segmentos.length < 10 || segmentos.length > 40) {
-        editor.textContent = "A configuração precisa conter entre 10 e 40 fatias.";
+      if (!Array.isArray(segmentos) || segmentos.length !== 10) {
+        editor.textContent = "A configuração precisa conter exatamente 10 fatias.";
         return;
       }
       let html = `
@@ -1235,7 +1235,7 @@
           <td>${index + 1}</td>
           <td><input class="segment-label" type="text" value="${esc}" maxlength="12"></td>
           <td><select class="segment-type">
-            <option value="zero" ${tipo === "zero" ? "selected" : ""}>X Perda</option>
+            <option value="zero" ${tipo === "zero" ? "selected" : ""}>❌ Perda</option>
             <option value="sorte" ${tipo === "sorte" ? "selected" : ""}>🍀 Giro grátis</option>
             <option value="prize" ${tipo === "prize" ? "selected" : ""}>Prêmio</option>
           </select></td>
@@ -1257,7 +1257,7 @@
         const tipo = linha.querySelector(".segment-type").value;
         const mult = linha.querySelector(".segment-multiplier");
         const label = linha.querySelector(".segment-label");
-        if (tipo === "zero") { mult.value = "0"; label.value = "X"; }
+        if (tipo === "zero") { mult.value = "0"; label.value = "❌"; }
         if (tipo === "sorte") { mult.value = "0"; label.value = "🍀"; }
         if (tipo === "prize") {
           const n = Number(mult.value) || 2;
@@ -1612,10 +1612,9 @@
 
         if (
           !Array.isArray(rouletteSegments) ||
-          rouletteSegments.length < 10 ||
-          rouletteSegments.length > 40
+          rouletteSegments.length !== 10
         ) {
-          mostrarMensagem("A roleta precisa ter entre 10 e 40 fatias.", "error");
+          mostrarMensagem("A roleta precisa ter exatamente 10 fatias.", "error");
           return;
         }
 
