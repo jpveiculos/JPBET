@@ -469,7 +469,10 @@ app.post(
         return res.status(400).json({ ok: false, message: "Usuário inválido." });
       }
 
-      if (!Number.isFinite(requestedBet) || requestedBet <= 0) {
+      // Em um giro pago, a aposta precisa ser válida.
+      // Em um giro grátis, o frontend envia betAmount: 0 e o valor
+      // verdadeiro vem de roulette_free_spin_bet, já validado abaixo.
+      if (!requestedFreeSpin && (!Number.isFinite(requestedBet) || requestedBet <= 0)) {
         return res.status(400).json({ ok: false, message: "Valor da aposta inválido." });
       }
 
