@@ -1383,11 +1383,10 @@ app.post(
     }
   }
 );
-PARTE 2/3
-
 /* =========================
    ADMIN — APROVAR SAQUE
 ========================= */
+
 app.post(
   "/api/admin/withdrawals/:id/approve",
   exigirAdmin,
@@ -1395,12 +1394,16 @@ app.post(
     req,
     res
   ) => {
+
     const client =
       await pool.connect();
+
     try {
+
       await client.query(
         "BEGIN"
       );
+
       const result =
         await client.query(
           `
@@ -1419,13 +1422,16 @@ app.post(
             req.params.id
           ]
         );
+
       if (
         result.rows.length ===
         0
       ) {
+
         await client.query(
           "ROLLBACK"
         );
+
         return res
           .status(404)
           .json({
@@ -1433,15 +1439,19 @@ app.post(
               "Saque não encontrado."
           });
       }
+
       const withdrawal =
         result.rows[0];
+
       if (
         withdrawal.status !==
         "pending"
       ) {
+
         await client.query(
           "ROLLBACK"
         );
+
         return res
           .status(400)
           .json({
@@ -1449,25 +1459,31 @@ app.post(
               "Esse saque já foi processado."
           });
       }
+
       const valor =
         numero(
           withdrawal.amount
         );
+
       const cash =
         numero(
           withdrawal.cash_balance
         );
+
       const reserved =
         numero(
           withdrawal.reserved_balance
         );
+
       if (
         valor > cash ||
         valor > reserved
       ) {
+
         await client.query(
           "ROLLBACK"
         );
+
         return res
           .status(400)
           .json({
@@ -1475,6 +1491,7 @@ app.post(
               "Saldo reservado insuficiente para aprovar o saque."
           });
       }
+
       await client.query(
         `
         UPDATE withdrawals
@@ -1488,6 +1505,7 @@ app.post(
           withdrawal.id
         ]
       );
+
       await client.query(
         `
         UPDATE users
@@ -1497,11 +1515,13 @@ app.post(
               cash_balance,
               0
             ) - $1,
+
           balance =
             COALESCE(
               balance,
               0
             ) - $1,
+
           reserved_balance =
             GREATEST(
               0,
@@ -1510,6 +1530,7 @@ app.post(
                 0
               ) - $1
             )
+
         WHERE id = $2
         `,
         [
@@ -1517,48 +1538,65 @@ app.post(
           withdrawal.user_id
         ]
       );
+
       await client.query(
         "COMMIT"
       );
+
       await enviarNotificacao(
         "withdrawal_approved",
         {
           id:
             withdrawal.id,
+
           userId:
             withdrawal.user_id,
+
           username:
             withdrawal.username,
+
           amount:
             valor
         }
       );
+
       res.json({
         ok: true,
+
         message:
           "Saque aprovado."
       });
+
     } catch (error) {
+
       await client.query(
         "ROLLBACK"
       );
+
       console.error(
         error
       );
+
       res
         .status(500)
         .json({
           message:
             "Erro ao aprovar saque."
         });
+
     } finally {
+
       client.release();
+
     }
   }
 );
+
+
 /* =========================
    ADMIN — REJEITAR SAQUE
 ========================= */
+
 app.post(
   "/api/admin/withdrawals/:id/reject",
   exigirAdmin,
@@ -1566,12 +1604,16 @@ app.post(
     req,
     res
   ) => {
+
     const client =
       await pool.connect();
+
     try {
+
       await client.query(
         "BEGIN"
       );
+
       const result =
         await client.query(
           `
@@ -1588,13 +1630,16 @@ app.post(
             req.params.id
           ]
         );
+
       if (
         result.rows.length ===
         0
       ) {
+
         await client.query(
           "ROLLBACK"
         );
+
         return res
           .status(404)
           .json({
@@ -1602,15 +1647,19 @@ app.post(
               "Saque não encontrado."
           });
       }
+
       const withdrawal =
         result.rows[0];
+
       if (
         withdrawal.status !==
         "pending"
       ) {
+
         await client.query(
           "ROLLBACK"
         );
+
         return res
           .status(400)
           .json({
@@ -1618,9 +1667,11 @@ app.post(
               "Esse saque já foi processado."
           });
       }
+
       const reason =
         req.body?.reason ||
         "Saque rejeitado pelo administrador.";
+
       await client.query(
         `
         UPDATE withdrawals
@@ -1637,6 +1688,7 @@ app.post(
           withdrawal.id
         ]
       );
+
       await client.query(
         `
         UPDATE users
@@ -1655,54 +1707,73 @@ app.post(
           numero(
             withdrawal.amount
           ),
+
           withdrawal.user_id
         ]
       );
+
       await client.query(
         "COMMIT"
       );
+
       await enviarNotificacao(
         "withdrawal_rejected",
         {
           id:
             withdrawal.id,
+
           userId:
             withdrawal.user_id,
+
           username:
             withdrawal.username,
+
           amount:
             numero(
               withdrawal.amount
             ),
+
           reason
         }
       );
+
       res.json({
         ok: true,
+
         message:
           "Saque rejeitado."
       });
+
     } catch (error) {
+
       await client.query(
         "ROLLBACK"
       );
+
       console.error(
         error
       );
+
       res
         .status(500)
         .json({
           message:
             "Erro ao rejeitar saque."
         });
+
     } finally {
+
       client.release();
+
     }
   }
 );
+
+
 /* =========================
    ADMIN — SAQUE CONCLUÍDO
 ========================= */
+
 app.post(
   "/api/admin/withdrawals/:id/complete",
   exigirAdmin,
@@ -1710,7 +1781,9 @@ app.post(
     req,
     res
   ) => {
+
     try {
+
       const result =
         await pool.query(
           `
@@ -1727,10 +1800,12 @@ app.post(
             req.params.id
           ]
         );
+
       if (
         result.rows.length ===
         0
       ) {
+
         return res
           .status(404)
           .json({
@@ -1738,12 +1813,15 @@ app.post(
               "Saque não encontrado."
           });
       }
+
       const withdrawal =
         result.rows[0];
+
       if (
         withdrawal.status !==
         "approved"
       ) {
+
         return res
           .status(400)
           .json({
@@ -1751,6 +1829,7 @@ app.post(
               "O saque precisa estar aprovado antes de ser concluído."
           });
       }
+
       await pool.query(
         `
         UPDATE withdrawals
@@ -1764,30 +1843,39 @@ app.post(
           withdrawal.id
         ]
       );
+
       await enviarNotificacao(
         "withdrawal_completed",
         {
           id:
             withdrawal.id,
+
           userId:
             withdrawal.user_id,
+
           username:
             withdrawal.username,
+
           amount:
             numero(
               withdrawal.amount
             )
         }
       );
+
       res.json({
         ok: true,
+
         message:
           "Saque marcado como concluído."
       });
+
     } catch (error) {
+
       console.error(
         error
       );
+
       res
         .status(500)
         .json({
@@ -1797,9 +1885,12 @@ app.post(
     }
   }
 );
+
+
 /* =========================================================
    ROLETA DA SORTE — 10 SETORES
 ========================================================= */
+
 const ROLETA_SORTE_PADRAO = [
   {
     index: 0,
@@ -1808,6 +1899,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 2,
     probability: 9
   },
+
   {
     index: 1,
     label: "X",
@@ -1815,6 +1907,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 0,
     probability: 15.7
   },
+
   {
     index: 2,
     label: "3×",
@@ -1822,6 +1915,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 3,
     probability: 5
   },
+
   {
     index: 3,
     label: "X",
@@ -1829,6 +1923,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 0,
     probability: 15.7
   },
+
   {
     index: 4,
     label: "4×",
@@ -1836,6 +1931,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 4,
     probability: 3
   },
+
   {
     index: 5,
     label: "X",
@@ -1843,6 +1939,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 0,
     probability: 15.7
   },
+
   {
     index: 6,
     label: "🍀",
@@ -1850,6 +1947,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 0,
     probability: 3.5
   },
+
   {
     index: 7,
     label: "X",
@@ -1857,6 +1955,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 0,
     probability: 15.7
   },
+
   {
     index: 8,
     label: "5×",
@@ -1864,6 +1963,7 @@ const ROLETA_SORTE_PADRAO = [
     multiplier: 5,
     probability: 1
   },
+
   {
     index: 9,
     label: "X",
@@ -1872,12 +1972,16 @@ const ROLETA_SORTE_PADRAO = [
     probability: 15.7
   }
 ];
+
+
 /* =========================================================
    VALIDAÇÃO DOS 10 SETORES
 ========================================================= */
+
 function validarSegmentosRoleta(
   segmentos
 ) {
+
   if (
     !Array.isArray(
       segmentos
@@ -1888,14 +1992,17 @@ function validarSegmentosRoleta(
       "A Roleta da Sorte precisa ter exatamente 10 setores."
     );
   }
+
   let totalProbabilidade =
     0;
+
   const normalizados =
     segmentos.map(
       (
         segmento,
         index
       ) => {
+
         const tipo =
           segmento.type ||
           (
@@ -1903,6 +2010,7 @@ function validarSegmentosRoleta(
               ? "zero"
               : "prize"
           );
+
         if (
           ![
             "zero",
@@ -1912,46 +2020,60 @@ function validarSegmentosRoleta(
             tipo
           )
         ) {
+
           throw new Error(
             `Tipo inválido no setor ${index + 1}.`
           );
         }
+
         const probability =
           numero(
             segmento.probability,
             0
           );
+
         if (
           probability < 0
         ) {
+
           throw new Error(
             `Probabilidade inválida no setor ${index + 1}.`
           );
         }
+
         let multiplier =
           numero(
             segmento.multiplier,
             0
           );
+
         if (
           tipo === "prize"
         ) {
+
           if (
             multiplier < 2 ||
             multiplier > 100
           ) {
+
             throw new Error(
               `O multiplicador do setor ${index + 1} deve estar entre 2× e 100×.`
             );
           }
+
         } else {
+
           multiplier =
             0;
         }
+
         totalProbabilidade +=
           probability;
+
         return {
+
           index,
+
           label:
             segmento.label ||
             (
@@ -1961,50 +2083,71 @@ function validarSegmentosRoleta(
                   ? "🍀"
                   : `${multiplier}×`
             ),
+
           type:
             tipo,
+
           multiplier,
+
           probability
         };
       }
     );
+
+
   if (
     Math.abs(
       totalProbabilidade -
       100
     ) > 0.0001
   ) {
+
     throw new Error(
       `A soma das probabilidades deve ser 100%. Atualmente está em ${totalProbabilidade}%.`
     );
   }
+
+
   return normalizados;
 }
+
+
 /* =========================================================
    CARREGAR CONFIGURAÇÃO DA ROLETA
 ========================================================= */
+
 async function carregarSegmentosRoleta() {
+
   const configuracao =
     await obterConfiguracao(
       "roulette_segments_json",
       null
     );
+
+
   if (!configuracao) {
+
     return ROLETA_SORTE_PADRAO.map(
       segmento => ({
         ...segmento
       })
     );
   }
+
+
   try {
+
     const segmentos =
       JSON.parse(
         configuracao
       );
+
     const validos =
       validarSegmentosRoleta(
         segmentos
       );
+
+
     return validos.map(
       (
         segmento,
@@ -2014,11 +2157,14 @@ async function carregarSegmentosRoleta() {
         index
       })
     );
+
   } catch (error) {
+
     console.error(
       "Erro na configuração da roleta:",
       error
     );
+
     return ROLETA_SORTE_PADRAO.map(
       segmento => ({
         ...segmento
@@ -2026,104 +2172,142 @@ async function carregarSegmentosRoleta() {
     );
   }
 }
+
+
 /* =========================================================
    SORTEIO DA ROLETA
 ========================================================= */
+
 function sortearResultadoRoleta(
   segmentos
 ) {
+
   const aleatorio =
     crypto.randomInt(
       0,
       1000000
     ) / 10000;
+
   let acumulado =
     0;
+
+
   for (
     const segmento of segmentos
   ) {
+
     acumulado +=
       numero(
         segmento.probability
       );
+
+
     if (
       aleatorio <
       acumulado
     ) {
+
       return segmento;
     }
   }
+
+
   return segmentos[
     segmentos.length - 1
   ];
 }
+
+
 /* =========================================================
    ROLETA — GIRO
 ========================================================= */
+
 app.post(
   "/api/roulette/spin",
   async (
     req,
     res
   ) => {
+
     const client =
       await pool.connect();
+
+
     try {
+
       const userId =
         req.body?.userId;
+
       const betInformada =
         req.body?.betAmount ??
         req.body?.bet;
+
       const freeSpin =
         Boolean(
           req.body?.freeSpin
         );
+
+
       const valorAposta =
         arredondar(
           numero(
             betInformada
           )
         );
+
+
       /*
         =====================================================
         LIMITES DA ROLETA
         =====================================================
+
         Se as configurações antigas estiverem gravadas
         como 0, 0 ou valores inválidos, usamos automaticamente:
+
         MÍNIMO = R$ 0,50
         MÁXIMO = R$ 100,00
+
         Isso impede que uma configuração antiga de R$ 0,00
         bloqueie a roleta.
       */
+
       const configuracaoMinima =
         await obterConfiguracao(
           "roulette_popular_min_bet",
           null
         );
+
       const configuracaoMaxima =
         await obterConfiguracao(
           "roulette_popular_max_bet",
           null
         );
+
+
       let minimoFinal =
         Number(
           configuracaoMinima
         );
+
       let maximoFinal =
         Number(
           configuracaoMaxima
         );
+
+
       /*
         Se a configuração específica não existir
         ou estiver zerada/inválida, tenta a configuração
         antiga da roleta.
       */
+
       if (
         !Number.isFinite(
           minimoFinal
         ) ||
         minimoFinal <= 0
       ) {
+
         minimoFinal =
           Number(
             await obterConfiguracao(
@@ -2132,12 +2316,15 @@ app.post(
             )
           );
       }
+
+
       if (
         !Number.isFinite(
           maximoFinal
         ) ||
         maximoFinal <= 0
       ) {
+
         maximoFinal =
           Number(
             await obterConfiguracao(
@@ -2146,55 +2333,74 @@ app.post(
             )
           );
       }
+
+
       /*
         Última proteção.
+
         Nunca permitir que a roleta fique com
         mínimo ou máximo iguais a zero.
       */
+
       if (
         !Number.isFinite(
           minimoFinal
         ) ||
         minimoFinal <= 0
       ) {
+
         minimoFinal =
           0.50;
       }
+
+
       if (
         !Number.isFinite(
           maximoFinal
         ) ||
         maximoFinal <= 0
       ) {
+
         maximoFinal =
           100;
       }
+
+
       /*
         Se por alguma configuração antiga o máximo
         ficar abaixo do mínimo, corrigimos automaticamente.
       */
+
       if (
         maximoFinal <
         minimoFinal
       ) {
+
         maximoFinal =
           100;
+
         if (
           maximoFinal <
           minimoFinal
         ) {
+
           minimoFinal =
             0.50;
         }
       }
+
+
       minimoFinal =
         arredondar(
           minimoFinal
         );
+
       maximoFinal =
         arredondar(
           maximoFinal
         );
+
+
       if (
         !userId ||
         !Number.isFinite(
@@ -2205,16 +2411,23 @@ app.post(
         valorAposta >
           maximoFinal
       ) {
+
         return res
           .status(400)
           .json({
+
             message:
               `A aposta deve estar entre R$ ${minimoFinal.toFixed(2).replace(".", ",")} e R$ ${maximoFinal.toFixed(2).replace(".", ",")}.`
+
           });
       }
+
+
       await client.query(
         "BEGIN"
       );
+
+
       const userResult =
         await client.query(
           `
@@ -2236,13 +2449,17 @@ app.post(
             userId
           ]
         );
+
+
       if (
         userResult.rows.length ===
         0
       ) {
+
         await client.query(
           "ROLLBACK"
         );
+
         return res
           .status(404)
           .json({
@@ -2250,16 +2467,24 @@ app.post(
               "Usuário não encontrado."
           });
       }
+
+
       const user =
         userResult.rows[0];
+
+
       let bonus =
         numero(
           user.bonus_balance
         );
+
+
       let cash =
         numero(
           user.cash_balance
         );
+
+
       let freeSpins =
         Math.max(
           0,
@@ -2269,22 +2494,30 @@ app.post(
             )
           )
         );
+
+
       let freeSpinBet =
         numero(
           user.roulette_free_spin_bet
         );
+
+
       /* =========================
          GIRO GRÁTIS
       ========================= */
+
       if (
         freeSpin
       ) {
+
         if (
           freeSpins <= 0
         ) {
+
           await client.query(
             "ROLLBACK"
           );
+
           return res
             .status(400)
             .json({
@@ -2292,32 +2525,45 @@ app.post(
                 "Nenhum giro grátis disponível."
             });
         }
+
+
         if (
           freeSpinBet <= 0
         ) {
+
           freeSpinBet =
             valorAposta;
         }
+
+
         freeSpins -=
           1;
       }
+
+
       /* =========================
          GIRO PAGO
       ========================= */
+
       if (
         !freeSpin
       ) {
+
         const saldoTotal =
           arredondar(
             bonus + cash
           );
+
+
         if (
           saldoTotal <
           valorAposta
         ) {
+
           await client.query(
             "ROLLBACK"
           );
+
           return res
             .status(400)
             .json({
@@ -2325,36 +2571,51 @@ app.post(
                 "Saldo insuficiente."
           });
         }
+
+
         let restante =
           valorAposta;
+
+
         const usadoBonus =
           Math.min(
             bonus,
             restante
           );
+
+
         bonus =
           arredondar(
             bonus -
             usadoBonus
           );
+
+
         restante =
           arredondar(
             restante -
             usadoBonus
           );
+
+
         const usadoCash =
           Math.min(
             cash,
             restante
           );
+
+
         cash =
           arredondar(
             cash -
             usadoCash
           );
+
+
         if (
           usadoBonus > 0
         ) {
+
           await client.query(
             `
             UPDATE users
