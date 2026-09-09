@@ -30,10 +30,6 @@ import {
   registrarAuditoria
 } from "./audit.js";
 
-/* =========================
-   SISTEMA DE JOGOS
-========================= */
-
 import gamesRouter, {
   garantirTabelasJogos
 } from "./games.js";
@@ -359,6 +355,7 @@ app.get(
     res
   ) => {
     try {
+
       await pool.query(
         "SELECT 1"
       );
@@ -1863,28 +1860,6 @@ app.post(
    ROLETA DA SORTE — 10 SETORES
 ========================================================= */
 
-/*
-   ORDEM VISUAL DEFINITIVA:
-
-   2×
-   X
-   3×
-   X
-   4×
-   X
-   🍀
-   X
-   5×
-   X
-
-   TOTAL:
-   10 setores
-   4 multiplicadores
-   1 giro grátis
-   5 perdas
-*/
-
-
 const ROLETA_SORTE_PADRAO = [
   {
     index: 0,
@@ -2142,11 +2117,6 @@ async function carregarSegmentosRoleta() {
       );
 
 
-    /*
-       Mantém os 10 setores
-       exatamente na posição configurada.
-    */
-
     return validos.map(
       (
         segmento,
@@ -2217,9 +2187,9 @@ function sortearResultadoRoleta(
 }
 
 
-/* =========================
-   ROLETTE SPIN
-========================= */
+/* =========================================================
+   ROLETA — GIRO
+========================================================= */
 
 app.post(
   "/api/roulette/spin",
@@ -2233,13 +2203,6 @@ app.post(
 
 
     try {
-
-      /*
-        Compatibilidade com o frontend:
-
-        betAmount = formato atual
-        bet       = formato antigo
-      */
 
       const userId =
         req.body?.userId;
@@ -2263,56 +2226,148 @@ app.post(
 
 
       /*
-        A Roleta da Sorte usa primeiro
-        as configurações específicas dela.
+        =====================================================
+        LIMITES DA ROLETA
+        =====================================================
+
+        Se as configurações antigas estiverem gravadas
+        como 0, 0 ou valores inválidos, usamos automaticamente:
+
+        MÍNIMO = R$ 0,50
+        MÁXIMO = R$ 100,00
+
+        Isso impede que uma configuração antiga de R$ 0,00
+        bloqueie a roleta.
       */
 
-      const minBet =
-        numero(
-          await obterConfiguracao(
-            "roulette_popular_min_bet",
-            null
-          ),
-          NaN
+      const configuracaoMinima =
+        await obterConfiguracao(
+          "roulette_popular_min_bet",
+          null
+        );
+
+      const configuracaoMaxima =
+        await obterConfiguracao(
+          "roulette_popular_max_bet",
+          null
         );
 
 
-      const maxBet =
-        numero(
-          await obterConfiguracao(
-            "roulette_popular_max_bet",
-            null
-          ),
-          NaN
+      let minimoFinal =
+        Number(
+          configuracaoMinima
+        );
+
+      let maximoFinal =
+        Number(
+          configuracaoMaxima
         );
 
 
-      const minimoFinal =
-        Number.isFinite(
-          minBet
-        )
-          ? minBet
-          : numero(
-              await obterConfiguracao(
-                "roulette_min_bet",
-                "0.50"
-              ),
-              0.5
-            );
+      /*
+        Se a configuração específica não existir
+        ou estiver zerada/inválida, tenta a configuração
+        antiga da roleta.
+      */
+
+      if (
+        !Number.isFinite(
+          minimoFinal
+        ) ||
+        minimoFinal <= 0
+      ) {
+
+        minimoFinal =
+          Number(
+            await obterConfiguracao(
+              "roulette_min_bet",
+              "0.50"
+            )
+          );
+      }
 
 
-      const maximoFinal =
-        Number.isFinite(
-          maxBet
-        )
-          ? maxBet
-          : numero(
-              await obterConfiguracao(
-                "roulette_max_bet",
-                "100"
-              ),
-              100
-            );
+      if (
+        !Number.isFinite(
+          maximoFinal
+        ) ||
+        maximoFinal <= 0
+      ) {
+
+        maximoFinal =
+          Number(
+            await obterConfiguracao(
+              "roulette_max_bet",
+              "100"
+            )
+          );
+      }
+
+
+      /*
+        Última proteção.
+
+        Nunca permitir que a roleta fique com
+        mínimo ou máximo iguais a zero.
+      */
+
+      if (
+        !Number.isFinite(
+          minimoFinal
+        ) ||
+        minimoFinal <= 0
+      ) {
+
+        minimoFinal =
+          0.50;
+      }
+
+
+      if (
+        !Number.isFinite(
+          maximoFinal
+        ) ||
+        maximoFinal <= 0
+      ) {
+
+        maximoFinal =
+          100;
+      }
+
+
+      /*
+        Se por alguma configuração antiga o máximo
+        ficar abaixo do mínimo, corrigimos automaticamente.
+      */
+
+      if (
+        maximoFinal <
+        minimoFinal
+      ) {
+
+        maximoFinal =
+          100;
+
+        if (
+          maximoFinal <
+          minimoFinal
+        ) {
+
+          minimoFinal =
+            0.50;
+        }
+      }
+
+
+      minimoFinal =
+        arredondar(
+          minimoFinal
+        );
+
+      maximoFinal =
+        arredondar(
+          maximoFinal
+        );
 
 
       if (
@@ -2635,12 +2690,6 @@ app.post(
       }
 
 
-      /*
-        Se não ganhou outro giro grátis
-        e não há giros restantes,
-        limpa o valor reservado.
-      */
-
       if (
         !ganhouSorte &&
         freeSpins <= 0
@@ -2724,12 +2773,6 @@ app.post(
 
       } catch (_) {
 
-        /*
-          Compatibilidade caso
-          a tabela histórica esteja
-          em uma versão anterior.
-        */
-
       }
 
 
@@ -2743,15 +2786,6 @@ app.post(
           userId
         );
 
-
-      /*
-        IMPORTANTE:
-        agora retornamos o índice exato
-        do setor sorteado.
-
-        Isso permite que o frontend
-        pare exatamente no setor correto.
-      */
 
       res.json({
 
@@ -2838,11 +2872,6 @@ app.post(
 
 /* =====================================================
    SISTEMA CENTRAL DAS MÁQUINAS
-
-   FORTUNE 7
-   DIAMOND GOLD
-   ROYAL JACKPOT
-   LUCKY 7
 ===================================================== */
 
 app.use(
