@@ -149,7 +149,7 @@ async function inicializarBanco() {
       ON admin_audit_logs(created_at);
     `);
     console.log(
-      "Banco MayBets inicializado com sucesso."
+      "Banco JPBET inicializado com sucesso."
     );
   } catch (error) {
     console.error(
@@ -365,133 +365,23 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 5
-  },
-  {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 5
-  },
-  {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 5
-  },
-  {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 5
-  },
-  {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 5
-  },
-  {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 5
-  },
-  {
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
-    "probability": 5
-  },
-  {
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
-    "probability": 5
-  },
-  {
-    "label": "10x",
-    "type": "prize",
-    "multiplier": 10,
-    "probability": 5
-  },
-  {
-    "label": "20x",
-    "type": "prize",
-    "multiplier": 20,
-    "probability": 5
-  },
-  {
-    "label": "30x",
-    "type": "prize",
-    "multiplier": 30,
-    "probability": 5
-  },
-  {
-    "label": "50x",
-    "type": "prize",
-    "multiplier": 50,
-    "probability": 5
-  },
-  {
-    "label": "75x",
-    "type": "prize",
-    "multiplier": 75,
-    "probability": 5
-  },
-  {
-    "label": "100x",
-    "type": "prize",
-    "multiplier": 100,
-    "probability": 5
-  },
-  {
-    "label": "🍀",
-    "type": "sorte",
-    "multiplier": 0,
-    "probability": 5
-  }
+  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
+  { "label": "2x", "type": "prize", "multiplier": 2, "probability": 10 },
+  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
+  { "label": "3x", "type": "prize", "multiplier": 3, "probability": 10 },
+  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
+  { "label": "4x", "type": "prize", "multiplier": 4, "probability": 10 },
+  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
+  { "label": "5x", "type": "prize", "multiplier": 5, "probability": 10 },
+  { "label": "❌", "type": "zero", "multiplier": 0, "probability": 10 },
+  { "label": "🍀", "type": "sorte", "multiplier": 0, "probability": 10 }
 ];
 
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length < 12 || parsed.length > 40) {
-      throw new Error("A roleta precisa ter entre 12 e 40 fatias.");
+    if (!Array.isArray(parsed) || parsed.length < 10 || parsed.length > 40) {
+      throw new Error("A roleta precisa ter entre 10 e 40 fatias.");
     }
 
     return parsed.map((segmento, index) => {
@@ -621,7 +511,7 @@ app.post(
         return res.status(400).json({ ok: false, message: "Tipo de roleta inválido." });
       }
       if (String(rouletteId || "sorte").toLowerCase() !== "sorte") {
-        return res.status(400).json({ ok: false, message: "A MayBets utiliza uma única roleta." });
+        return res.status(400).json({ ok: false, message: "A JPBET utiliza uma única roleta." });
       }
 
       const indiceEscolhido = null;
@@ -2982,14 +2872,14 @@ inicializarBanco()
       PORT,
       () => {
         console.log(
-          `MayBets rodando na porta ${PORT}`
+          `JPBET rodando na porta ${PORT}`
         );
       }
     );
   })
   .catch(error => {
     console.error(
-      "MayBets não pôde iniciar:",
+      "JPBET não pôde iniciar:",
       error
     );
     process.exit(1);
