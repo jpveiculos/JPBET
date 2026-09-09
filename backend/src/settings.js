@@ -52,12 +52,12 @@ const configuracoesPadrao = [
 
   [
     "site_name",
-    "MayBets"
+    "JPBET"
   ],
 
   [
     "site_title",
-    "MayBets - Plataforma de Jogos"
+    "JPBET - Plataforma de Jogos"
   ],
 
   [
@@ -67,7 +67,7 @@ const configuracoesPadrao = [
 
   [
     "footer_text",
-    "© 2026 MayBets — Plataforma de demonstração."
+    "© 2026 JPBET — Plataforma de demonstração."
   ],
 
   /* BÔNUS E SAQUE */
@@ -178,7 +178,7 @@ const configuracoesPadrao = [
 
   [
     "roulette_segments_json",
-    "[{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"weight\":1},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"weight\":1},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"weight\":1},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"weight\":1},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"weight\":1},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"weight\":1},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"weight\":1},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"weight\":1},{\"label\":\"10x\",\"type\":\"prize\",\"multiplier\":10,\"weight\":1},{\"label\":\"20x\",\"type\":\"prize\",\"multiplier\":20,\"weight\":1},{\"label\":\"30x\",\"type\":\"prize\",\"multiplier\":30,\"weight\":1},{\"label\":\"50x\",\"type\":\"prize\",\"multiplier\":50,\"weight\":1},{\"label\":\"75x\",\"type\":\"prize\",\"multiplier\":75,\"weight\":1},{\"label\":\"100x\",\"type\":\"prize\",\"multiplier\":100,\"weight\":1},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"weight\":1}]",
+    "[{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"4x\",\"type\":\"prize\",\"multiplier\":4,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"weight\":1},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"weight\":1},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"weight\":1}]"
   ],
 
   [
@@ -281,7 +281,7 @@ const configuracoesPadrao = [
 
   [
     "dashboard_welcome_text",
-    "Bem-vindo à plataforma MayBets."
+    "Bem-vindo à plataforma JPBET."
   ],
 
   [
@@ -365,7 +365,7 @@ const configuracoesPadrao = [
 
   [
     "pix_description",
-    "MayBets"
+    "JPBET"
   ],
 
   [
@@ -413,15 +413,47 @@ async function inicializarConfiguracoes() {
       WHERE setting_key = 'roulette_segments_json' LIMIT 1
     `);
     const currentRoulette = String(rouletteCurrent.rows[0]?.setting_value || '');
-    if (currentRoulette.includes('JOGUE NOVAMENTE') || currentRoulette.includes('"multiplier":1')) {
+
+    let migrarRoleta = false;
+
+    try {
+      const atual = JSON.parse(currentRoulette);
+      const rotulos = Array.isArray(atual)
+        ? atual.map(item => String(item?.label || "").trim().toLowerCase())
+        : [];
+
+      const modeloAntigo = [
+        "❌", "❌", "❌", "❌", "❌",
+        "2x", "2x", "2x",
+        "3x", "3x", "3x",
+        "5x", "5x",
+        "10x", "20x", "30x", "50x", "75x", "100x", "🍀"
+      ];
+
+      migrarRoleta =
+        rotulos.length === modeloAntigo.length &&
+        rotulos.every((valor, index) => valor === modeloAntigo[index]);
+    } catch (_) {}
+
+    if (
+      migrarRoleta ||
+      currentRoulette.includes('JOGUE NOVAMENTE') ||
+      currentRoulette.includes('"multiplier":1')
+    ) {
       const novoPadrao = configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')?.[1];
+
       if (novoPadrao) {
-        await pool.query(`UPDATE site_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = 'roulette_segments_json'`, [novoPadrao]);
+        await pool.query(
+          `UPDATE site_settings
+           SET setting_value = $1, updated_at = CURRENT_TIMESTAMP
+           WHERE setting_key = 'roulette_segments_json'`,
+          [novoPadrao]
+        );
       }
     }
 
     console.log(
-      "Configurações do MayBets inicializadas com sucesso."
+      "Configurações do JPBET inicializadas com sucesso."
     );
   } catch (error) {
     console.error(
