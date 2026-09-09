@@ -1,34 +1,31 @@
 (() => {
   "use strict";
 
-  const SEGMENTS = [
+  const API = "/api";
+
+  const ROULETTE_SEGMENTS = [
     { label: "2×", type: "prize", multiplier: 2 },
     { label: "X", type: "zero", multiplier: 0 },
     { label: "3×", type: "prize", multiplier: 3 },
     { label: "X", type: "zero", multiplier: 0 },
     { label: "4×", type: "prize", multiplier: 4 },
     { label: "X", type: "zero", multiplier: 0 },
-    { label: "🍀", type: "free", multiplier: 0 },
+    { label: "🍀", type: "sorte", multiplier: 0 },
     { label: "X", type: "zero", multiplier: 0 },
     { label: "5×", type: "prize", multiplier: 5 },
     { label: "X", type: "zero", multiplier: 0 }
   ];
 
-  const COLORS = [
-    "#e5a916",
-    "#17191e",
-    "#7224e8",
-    "#17191e",
-    "#0874ed",
-    "#17191e",
-    "#12a92d",
-    "#17191e",
-    "#f01870",
-    "#17191e"
-  ];
+  const QUICK = [0.5, 1, 2, 5, 10, 50];
 
+  const MIN = 0.5;
+  const STEP = 0.5;
+
+  let user = null;
+  let bet = 0.5;
+  let busy = false;
   let rotation = 0;
-  let spinning = false;
+  let freeSpin = false;
 
   const $ = id => document.getElementById(id);
 
@@ -39,120 +36,443 @@
     });
   }
 
-  function createDemoWheel() {
-    const wheel = $("rouletteWheel");
-    if (!wheel) return;
+  function toast(message) {
+    const el = $("toast");
+
+    if (!el) {
+      alert(message);
+      return;
+    }
+
+    el.textContent = message;
+    el.classList.add("show");
+
+    clearTimeout(toast.timer);
+
+    toast.timer = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2600);
+  }
+
+  function storedUser() {
+    try {
+      return JSON.parse(
+        localStorage.getItem("jpbet_user") || "null"
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  function saveUser(data) {
+    if (!data) return;
+
+    user = data;
+
+    try {
+      localStorage.setItem(
+        "jpbet_user",
+        JSON.stringify(data)
+      );
+    } catch {}
+  }
+
+  function userId() {
+    return (
+      user?.id ??
+      user?.userId ??
+      user?.user_id ??
+      null
+    );
+  }
+
+  function balance() {
+    if (!user) return 0;
+
+    const bonus = Number(
+      user.bonusBalance ??
+      user.bonus_balance ??
+      0
+    );
+
+    const cash = Number(
+      user.cashBalance ??
+      user.cash_balance ??
+      0
+    );
+
+    if (
+      Number.isFinite(bonus) &&
+      Number.isFinite(cash)
+    ) {
+      return bonus + cash;
+    }
+
+    return Number(
+      user.balance ??
+      user.saldo ??
+      0
+    );
+  }
+
+  function updateBalances() {
+    const value = money(balance());
+
+    if ($("balance")) {
+      $("balance").textContent = value;
+    }
+
+    if ($("stageBalance")) {
+      $("stageBalance").textContent = value;
+    }
+  }
+
+  async function api(path, options = {}) {
+    const headers = {
+      "Content-Type": "application/json"
+    };
+
+    try {
+      const token =
+        localStorage.getItem("jpbet_token");
+
+      if (token) {
+        headers.Authorization =
+          `Bearer ${token}`;
+      }
+    } catch {}
+
+    const response = await fetch(
+      API + path,
+      {
+        ...options,
+        headers
+      }
+    );
+
+    const text =
+      await response.text();
+
+    let data = {};
+
+    try {
+      data =
+        text
+          ? JSON.parse(text)
+          : {};
+    } catch {}
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+        data.error ||
+        `Erro HTTP ${response.status}`
+      );
+    }
+
+    return data;
+  }
+
+  async function loadUser() {
+    user = storedUser();
+
+    const id = userId();
+
+    if (!id) {
+      updateBalances();
+      return;
+    }
+
+    try {
+      const data =
+        await api(
+          `/user/${encodeURIComponent(id)}`
+        );
+
+      if (data?.user) {
+        saveUser(data.user);
+      }
+
+    } catch (error) {
+      console.error(
+        "Erro ao carregar usuário:",
+        error
+      );
+    }
+
+    updateBalances();
+  }
+
+  function renderLobby() {
+    const container =
+      $("gamesContainer");
+
+    const message =
+      $("gamesMessage");
+
+    if (!container) {
+      console.error(
+        "gamesContainer não encontrado."
+      );
+      return;
+    }
+
+    container.innerHTML = `
+      <button
+        class="game-card"
+        id="rouletteCard"
+        type="button"
+      >
+        <div class="game-card-icon">
+          ♛
+        </div>
+
+        <div>
+          <strong>
+            Roleta da Sorte
+          </strong>
+
+          <span>
+            10 setores • Multiplicadores • 🍀 Giro grátis
+          </span>
+        </div>
+
+        <b>
+          JOGAR →
+        </b>
+      </button>
+    `;
+
+    const card =
+      $("rouletteCard");
+
+    if (card) {
+      card.addEventListener(
+        "click",
+        openRoulette
+      );
+    }
+
+    if (message) {
+      message.hidden = true;
+    }
+  }
+
+  function openRoulette() {
+    const lobby =
+      $("gamesLobby");
+
+    const stage =
+      $("gameStage");
+
+    const panel =
+      $("roulettePanel");
+
+    if (lobby) {
+      lobby.hidden = true;
+    }
+
+    if (stage) {
+      stage.hidden = false;
+    }
+
+    if (panel) {
+      panel.hidden = false;
+    }
+
+    if ($("gameTitle")) {
+      $("gameTitle").textContent =
+        "Roleta da Sorte";
+    }
+
+    if ($("gameTypeLabel")) {
+      $("gameTypeLabel").textContent =
+        "ROLETA";
+    }
+
+    createWheel();
+    updateBet();
+    updateBalances();
+  }
+
+  function back() {
+    if ($("gameStage")) {
+      $("gameStage").hidden = true;
+    }
+
+    if ($("gamesLobby")) {
+      $("gamesLobby").hidden = false;
+    }
+
+    if ($("roulettePanel")) {
+      $("roulettePanel").hidden = true;
+    }
+  }
+
+  function createWheel() {
+    const wheel =
+      $("rouletteWheel");
+
+    if (!wheel) {
+      console.error(
+        "rouletteWheel não encontrado."
+      );
+      return;
+    }
 
     wheel.innerHTML = "";
 
-    wheel.className =
-      "roulette-wheel roulette-code-wheel";
+    const angle =
+      360 / ROULETTE_SEGMENTS.length;
 
-    const sectors = document.createElement("div");
-    sectors.className = "roulette-code-sectors";
+    ROULETTE_SEGMENTS.forEach(
+      (segment, index) => {
+        const element =
+          document.createElement("div");
 
-    const step = 360 / SEGMENTS.length;
+        element.className =
+          "roulette-label";
 
-    SEGMENTS.forEach((segment, index) => {
-      const sector = document.createElement("div");
+        element.dataset.type =
+          segment.type;
 
-      sector.className =
-        "roulette-code-sector";
+        element.dataset.multiplier =
+          segment.multiplier;
 
-      sector.style.setProperty(
-        "--sector-color",
-        COLORS[index]
-      );
+        element.style.setProperty(
+          "--angle",
+          `${index * angle}deg`
+        );
 
-      sector.style.transform =
-        `rotate(${index * step}deg)`;
+        element.style.setProperty(
+          "--slice-angle",
+          `${angle}deg`
+        );
 
-      sector.innerHTML = `
-        <span
-          class="roulette-sector-content
-          ${segment.type === "zero" ? "sector-x" : ""}
-          ${segment.type === "free" ? "sector-free" : ""}"
-        >
-          ${
-            segment.type === "free"
-              ? `<b class="clover">☘</b><strong>GIRO</strong><strong>GRÁTIS</strong>`
-              : segment.label
-          }
-        </span>
-      `;
+        element.innerHTML =
+          `<span>${segment.label}</span>`;
 
-      sectors.appendChild(sector);
-    });
-
-    wheel.appendChild(sectors);
-
-    const outer = document.createElement("div");
-    outer.className = "roulette-code-outer-ring";
-    wheel.appendChild(outer);
-
-    const inner = document.createElement("div");
-    inner.className = "roulette-code-inner-ring";
-    wheel.appendChild(inner);
-
-    const center = document.createElement("div");
-    center.className = "roulette-code-center";
-    center.innerHTML = `
-      <span>♛</span>
-      <strong>GIRAR</strong>
-      <small>MYBETS</small>
-    `;
-    wheel.appendChild(center);
-
-    const pointer = document.createElement("div");
-    pointer.className = "roulette-code-pointer";
-    pointer.innerHTML = `<span></span>`;
-
-    const shell = wheel.parentElement;
-
-    if (shell) {
-      shell.appendChild(pointer);
-    }
-
-    center.onclick = spinDemo;
+        wheel.appendChild(element);
+      }
+    );
 
     wheel.style.transform =
       `rotate(${rotation}deg)`;
   }
 
-  function updateResult(text) {
-    const result = $("rouletteResult");
-
-    if (result) {
-      result.textContent = text;
+  function updateBet() {
+    if ($("rouletteBetValue")) {
+      $("rouletteBetValue")
+        .textContent =
+        `R$ ${money(bet)}`;
     }
+
+    document
+      .querySelectorAll(
+        "[data-roulette-bet]"
+      )
+      .forEach(button => {
+        button.classList.toggle(
+          "active",
+          Number(
+            button.dataset.rouletteBet
+          ) === bet
+        );
+      });
   }
 
-  function spinDemo() {
-    if (spinning) return;
+  function setBet(value) {
+    const number =
+      Number(value);
 
-    spinning = true;
+    if (
+      !Number.isFinite(number) ||
+      number < MIN
+    ) {
+      return;
+    }
 
-    updateResult("Girando...");
+    bet =
+      Math.round(number * 100) / 100;
 
-    /*
-     * Sorteio exclusivamente demonstrativo.
-     * O índice escolhido é exatamente o setor
-     * no qual a animação vai parar.
-     */
-    const index =
-      Math.floor(
-        Math.random() * SEGMENTS.length
+    updateBet();
+  }
+
+  function otherValue() {
+    const value =
+      prompt(
+        "Digite o valor da aposta em reais:",
+        String(bet).replace(".", ",")
       );
 
-    const step =
-      360 / SEGMENTS.length;
+    if (value === null) {
+      return;
+    }
 
-    /*
-     * O centro do setor sorteado fica exatamente
-     * sob o ponteiro fixo no topo.
-     */
+    const number =
+      Number(
+        value
+          .replace(/\./g, "")
+          .replace(",", ".")
+      );
+
+    if (
+      !Number.isFinite(number) ||
+      number < MIN
+    ) {
+      toast(
+        "Digite um valor a partir de R$ 0,50."
+      );
+      return;
+    }
+
+    setBet(number);
+  }
+
+  function resultIndex(result) {
+    if (
+      Number.isInteger(
+        result?.index
+      )
+    ) {
+      return result.index;
+    }
+
+    if (
+      Number.isInteger(
+        result?.segmentIndex
+      )
+    ) {
+      return result.segmentIndex;
+    }
+
+    return 0;
+  }
+
+  function resultLabel(result) {
+    const index =
+      resultIndex(result);
+
+    return (
+      result?.label ||
+      ROULETTE_SEGMENTS[index]?.label ||
+      "X"
+    );
+  }
+
+  function animate(index) {
+    const wheel =
+      $("rouletteWheel");
+
+    if (!wheel) {
+      return Promise.resolve();
+    }
+
+    const angle =
+      360 / ROULETTE_SEGMENTS.length;
+
     const target =
-      -(index * step + step / 2);
+      -(index * angle + angle / 2);
 
     const current =
       ((rotation % 360) + 360) % 360;
@@ -165,106 +485,299 @@
     }
 
     rotation +=
-      6 * 360 + distance;
-
-    const wheel =
-      $("rouletteWheel");
+      7 * 360 + distance;
 
     wheel.style.transition =
-      "transform 5.5s cubic-bezier(.12,.78,.16,1)";
+      "transform 5.8s cubic-bezier(.12,.78,.16,1)";
 
     wheel.style.transform =
       `rotate(${rotation}deg)`;
 
-    setTimeout(() => {
-      const result =
-        SEGMENTS[index];
-
-      if (result.type === "free") {
-        updateResult(
-          "🍀 GIRO GRÁTIS!"
-        );
-      } else if (result.type === "prize") {
-        updateResult(
-          `${result.label} — Resultado demonstrativo`
-        );
-      } else {
-        updateResult(
-          "X — Resultado demonstrativo"
-        );
-      }
-
-      spinning = false;
-    }, 5700);
+    return new Promise(resolve => {
+      setTimeout(resolve, 6000);
+    });
   }
 
-  function bind() {
-    const button =
+  async function refreshUserFromServer() {
+    const id =
+      userId();
+
+    if (!id) {
+      return;
+    }
+
+    try {
+      const data =
+        await api(
+          `/user/${encodeURIComponent(id)}`
+        );
+
+      if (data?.user) {
+        saveUser(data.user);
+        updateBalances();
+      }
+    } catch (error) {
+      console.error(
+        "Erro ao atualizar saldo:",
+        error
+      );
+    }
+  }
+
+  async function spin() {
+    if (busy) {
+      return;
+    }
+
+    const id =
+      userId();
+
+    if (!id) {
+      toast(
+        "Faça login para jogar."
+      );
+      return;
+    }
+
+    await refreshUserFromServer();
+
+    if (
+      !freeSpin &&
+      balance() < bet
+    ) {
+      toast(
+        "Saldo insuficiente."
+      );
+      return;
+    }
+
+    busy = true;
+
+    const spinButton =
       $("rouletteSpinButton");
 
-    if (button) {
-      button.onclick = spinDemo;
+    if (spinButton) {
+      spinButton.disabled = true;
     }
 
-    const center =
-      $("rouletteCenterButton");
+    const result =
+      $("rouletteResult");
 
-    if (center) {
-      center.style.display = "none";
+    if (result) {
+      result.textContent =
+        "Girando...";
     }
 
-    const oldPointer =
-      document.querySelector(
-        ".roulette-pointer"
+    try {
+      const data =
+        await api(
+          "/roulette/spin",
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              userId: id,
+              betAmount: bet,
+              betType: "roulette",
+              rouletteId: "popular",
+              freeSpin
+            })
+          }
+        );
+
+      const rouletteResult =
+        data.result ||
+        data.resultado ||
+        data;
+
+      const index =
+        resultIndex(
+          rouletteResult
+        );
+
+      await animate(index);
+
+      if (data.user) {
+        saveUser(data.user);
+      }
+
+      const prize =
+        Number(
+          rouletteResult?.prize ??
+          data.prize ??
+          0
+        );
+
+      const label =
+        resultLabel(
+          rouletteResult
+        );
+
+      const isFree =
+        rouletteResult?.type ===
+          "sorte" ||
+        label.includes("🍀");
+
+      if (result) {
+        if (isFree) {
+          result.textContent =
+            "🍀 GIRO GRÁTIS!";
+        } else if (prize > 0) {
+          result.textContent =
+            `${label} — Você ganhou R$ ${money(prize)}`;
+        } else {
+          result.textContent =
+            `${label} — Boa sorte na próxima!`;
+        }
+      }
+
+      if ($("winDisplay")) {
+        $("winDisplay").textContent =
+          prize > 0
+            ? `R$ ${money(prize)}`
+            : "R$ 0,00";
+      }
+
+      if (isFree) {
+        freeSpin = true;
+
+        if ($("rouletteFreeSpinStatus")) {
+          $("rouletteFreeSpinStatus").hidden =
+            false;
+
+          $("rouletteFreeSpinStatus").textContent =
+            `🍀 Você ganhou 1 giro grátis de R$ ${money(bet)}.`;
+        }
+
+        if ($("rouletteFreeBadge")) {
+          $("rouletteFreeBadge").hidden =
+            false;
+        }
+
+      } else if (freeSpin) {
+        freeSpin = false;
+
+        if ($("rouletteFreeSpinStatus")) {
+          $("rouletteFreeSpinStatus").hidden =
+            true;
+        }
+
+        if ($("rouletteFreeBadge")) {
+          $("rouletteFreeBadge").hidden =
+            true;
+        }
+      }
+
+      updateBalances();
+
+      await refreshUserFromServer();
+
+    } catch (error) {
+      console.error(
+        "Erro ao girar roleta:",
+        error
       );
 
-    if (oldPointer) {
-      oldPointer.style.display = "none";
-    }
-
-    const bulbs =
-      $("rouletteBulbs");
-
-    if (bulbs) {
-      bulbs.style.display = "none";
-    }
-
-    const inner =
-      document.querySelector(
-        ".roulette-inner-ring"
+      toast(
+        error.message ||
+        "Erro ao girar a roleta."
       );
 
-    if (inner) {
-      inner.style.display = "none";
+      if (result) {
+        result.textContent =
+          "Não foi possível realizar o giro.";
+      }
+
+    } finally {
+      busy = false;
+
+      if (spinButton) {
+        spinButton.disabled = false;
+      }
     }
   }
 
-  function initialize() {
-    createDemoWheel();
-    bind();
-
-    const balance =
-      $("balance");
-
-    const stageBalance =
-      $("stageBalance");
-
-    if (balance) {
-      balance.textContent = "0,00";
+  function events() {
+    if ($("backButton")) {
+      $("backButton").onclick =
+        () => {
+          if (
+            window.history.length > 1
+          ) {
+            history.back();
+          } else {
+            location.href =
+              "index.html";
+          }
+        };
     }
 
-    if (stageBalance) {
-      stageBalance.textContent = "0,00";
+    if ($("stageBack")) {
+      $("stageBack").onclick =
+        back;
     }
 
-    const bet =
-      $("rouletteBetValue");
-
-    if (bet) {
-      bet.textContent = "R$ 0,50";
+    if ($("rouletteBetMinus")) {
+      $("rouletteBetMinus").onclick =
+        () =>
+          setBet(
+            Math.max(
+              MIN,
+              bet - STEP
+            )
+          );
     }
+
+    if ($("rouletteBetPlus")) {
+      $("rouletteBetPlus").onclick =
+        () =>
+          setBet(
+            bet + STEP
+          );
+    }
+
+    if ($("rouletteOtherValue")) {
+      $("rouletteOtherValue").onclick =
+        otherValue;
+    }
+
+    if ($("rouletteSpinButton")) {
+      $("rouletteSpinButton").onclick =
+        spin;
+    }
+
+    document
+      .querySelectorAll(
+        "[data-roulette-bet]"
+      )
+      .forEach(button => {
+        button.onclick =
+          () =>
+            setBet(
+              button.dataset
+                .rouletteBet
+            );
+      });
   }
 
-  initialize();
+  function init() {
+    renderLobby();
+    events();
+    updateBet();
+    updateBalances();
+    loadUser();
+  }
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      init
+    );
+  } else {
+    init();
+  }
 
 })();
