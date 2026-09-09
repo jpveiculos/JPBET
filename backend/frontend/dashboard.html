@@ -366,12 +366,10 @@ button {
 
 .modal-content {
     position: relative;
-    width: min(560px, calc(100vw - 18px));
-    max-width: calc(100vw - 18px);
+    width: min(560px, 100%);
     max-height: 94vh;
-    overflow-x: hidden;
     overflow-y: auto;
-    padding: 20px 14px;
+    padding: 20px;
     border-radius: 23px;
     background: #10141c;
     border: 1px solid var(--border);
@@ -413,17 +411,15 @@ button {
 
 .roulette-area {
     position: relative;
-    width: min(470px, calc(100vw - 46px));
+    width: min(500px, 88vw);
     aspect-ratio: 1;
-    margin: 14px auto 10px;
-    flex: 0 0 auto;
+    margin: 16px auto 10px;
     filter: drop-shadow(0 18px 35px rgba(0,0,0,.65));
 }
 
 #wheel {
     position: absolute;
     inset: 0;
-    overflow: visible;
     border-radius: 50%;
     transform: rotate(0deg);
     transform-origin: 50% 50%;
@@ -438,17 +434,15 @@ button {
 }
 
 .roulette-sector {
-    cursor: pointer;
+    cursor: default;
     transition: filter .18s ease, opacity .18s ease;
+    pointer-events: none;
 }
 
 .roulette-sector:hover {
     filter: brightness(1.16);
 }
 
-.roulette-sector.selected {
-    filter: brightness(1.45) drop-shadow(0 0 8px rgba(255,215,0,.9));
-}
 
 .roulette-sector.winner {
     animation: rouletteSectorFlash .22s ease-in-out infinite alternate;
@@ -478,21 +472,19 @@ button {
 }
 
 .roulette-label.loss {
-    font-size: 58px;
     fill: #ff4b58;
     stroke: rgba(35, 3, 7, .88);
     filter: drop-shadow(0 0 7px rgba(255,45,65,.42));
 }
 
 .roulette-label.sorte {
-    font-size: 62px;
     fill: #9ff07a;
     stroke: rgba(12, 30, 8, .8);
     filter: drop-shadow(0 0 9px rgba(130,255,80,.4));
 }
 
-.roulette-label.mult-2, .roulette-label.mult-3, .roulette-label.mult-4 { font-size: 58px; }
-.roulette-label.mult-5 { font-size: 62px; }
+.roulette-label.mult-2, .roulette-label.mult-3, .roulette-label.mult-4 { font-size: clamp(34px, 6vw, 52px); }
+.roulette-label.mult-5 { font-size: clamp(38px, 7vw, 58px); }
 .roulette-label.mult-10 { font-size: clamp(34px, 6vw, 52px); }
 .roulette-label.mult-20, .roulette-label.mult-30 { font-size: clamp(34px, 6vw, 48px); }
 .roulette-label.mult-50 { font-size: clamp(40px, 7vw, 58px); }
@@ -574,8 +566,8 @@ button {
     top: -4px;
     left: 50%;
     transform: translateX(-50%);
-    width: 42px;
-    height: 56px;
+    width: 48px;
+    height: 64px;
     background: linear-gradient(145deg, #fff2a8 0%, #f2bd32 45%, #a96100 100%);
     clip-path: polygon(6% 0, 94% 0, 78% 65%, 50% 100%, 22% 65%);
     filter: drop-shadow(0 4px 7px rgba(0,0,0,.75));
@@ -585,8 +577,8 @@ button {
 .pointer::after {
     content: "";
     position: absolute;
-    width: 25px;
-    height: 34px;
+    width: 30px;
+    height: 40px;
     left: 50%;
     top: 7px;
     transform: translateX(-50%);
@@ -709,82 +701,7 @@ button {
     .quick-values {
         grid-template-columns: repeat(3, 1fr);
     }
-
-    .modal {
-        padding: 8px;
-        overflow: hidden;
-    }
-
-    .modal-content {
-        width: calc(100vw - 16px);
-        max-width: calc(100vw - 16px);
-        max-height: 96vh;
-        padding: 18px 10px 22px;
-        border-radius: 20px;
-        overflow-x: hidden;
-    }
-
-    .modal-title {
-        font-size: 30px;
-        padding-right: 48px;
-    }
-
-    .modal-subtitle {
-        font-size: 16px;
-    }
-
-    .rules {
-        font-size: 15px;
-        line-height: 1.4;
-        padding: 12px;
-    }
-
-    .roulette-area {
-        width: min(430px, calc(100vw - 42px));
-        margin-top: 12px;
-        margin-bottom: 8px;
-    }
-
-    .roulette-label.loss {
-        font-size: 64px;
-    }
-
-    .roulette-label.sorte {
-        font-size: 68px;
-    }
-
-    .roulette-label.mult-2,
-    .roulette-label.mult-3,
-    .roulette-label.mult-4 {
-        font-size: 64px;
-    }
-
-    .roulette-label.mult-5 {
-        font-size: 68px;
-    }
-
-    .pointer {
-        top: -5px;
-        width: 38px;
-        height: 52px;
-    }
-
-    .pointer::after {
-        width: 22px;
-        height: 31px;
-        top: 6px;
-    }
-
-    .roulette-explanation {
-        font-size: 16px;
-        line-height: 1.5;
-    }
-
-    .roulette-explanation small {
-        font-size: 14px;
-    }
 }
-
 </style>
 </head>
 
@@ -1119,11 +1036,12 @@ let tokenAtual = null;
 let roletaAtual = null;
 let roletaGirando = false;
 
-let fatiaSelecionada = null;
-let indiceFatiaSelecionada = null;
 
 let configuracoes = {
     roulette_enabled: "true",
+    roulette_title: "Roda da Sorte",
+    roulette_subtitle: "Escolha seu valor e gire a roda.",
+    roulette_rules: "X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
     roulette_min_bet: "0.50",
     roulette_max_bet: "100",
     roulette_animation_ms: "4800",
@@ -1138,13 +1056,10 @@ let configuracoes = {
 
 const ROLETAS = {
     sorte: {
-        title: "Roda da Sorte",
-        subtitle: "Escolha seu valor e gire a roda.",
-        rules: "X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
-        segments: [
-            "X", "2x", "X", "3x", "X",
-            "4x", "X", "5x", "X", "🍀"
-        ]
+        title: "",
+        subtitle: "",
+        rules: "",
+        segments: []
     }
 };
 
@@ -1357,7 +1272,7 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length === 10) {
+            if (Array.isArray(segmentos) && segmentos.length >= 10 && segmentos.length <= 40) {
                 ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
             }
         } catch (_) {}
@@ -1637,8 +1552,6 @@ function abrirRoleta(tipo = "sorte") {
 
     roletaAtual = tipo;
 
-    fatiaSelecionada = null;
-    indiceFatiaSelecionada = null;
     roletaGirando = false;
 
     const roleta = ROLETAS[tipo];
@@ -1714,6 +1627,20 @@ function svgText(parent, text, x, y, className, rotate = 0) {
     return node;
 }
 
+function obterCorFatia(segmento, index) {
+    if (segmento?.color && /^#[0-9a-fA-F]{6}$/.test(segmento.color)) {
+        return segmento.color;
+    }
+    const primary = configuracoes.roulette_accent_color || configuracoes.roulette_primary_color || "#f5c542";
+    const loss = configuracoes.roulette_black_color || "#101114";
+    const green = configuracoes.roulette_green_color || "#08a51a";
+    const label = String(segmento?.label || "").toUpperCase();
+    if (segmento?.type === "sorte" || label === "🍀") return green;
+    if (segmento?.type === "zero" || label === "X") return loss;
+    const palette = [primary, "#6412c9", "#0877e8", "#e50068", "#f6b51b"];
+    return palette[index % palette.length];
+}
+
 function criarRoda() {
     const roleta = ROLETAS.sorte;
     const sectorsGroup = document.getElementById("wheelSectors");
@@ -1729,30 +1656,25 @@ function criarRoda() {
     wheel.style.transition = "none";
     wheel.style.transform = "rotate(0deg)";
 
-    const colors = [
-        "#101114", "#f6b51b", "#101114", "#6412c9", "#101114",
-        "#0877e8", "#101114", "#e50068", "#101114", "#08a51a"
-    ];
     const total = roleta.segments.length;
     const angle = 360 / total;
 
     for (let i = 0; i < total; i++) {
+        const segmento = roleta.segments[i];
         const start = i * angle - 108;
         const end = start + angle;
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", sectorPath(500, 500, 430, start, end));
-        path.setAttribute("fill", colors[i]);
-        path.setAttribute("stroke", "#f4c542");
+        path.setAttribute("fill", obterCorFatia(segmento, i));
+        path.setAttribute("stroke", configuracoes.roulette_accent_color || "#f4c542");
         path.setAttribute("stroke-width", "5");
         path.setAttribute("class", "roulette-sector");
         path.dataset.index = i;
-        path.addEventListener("click", e => { e.stopPropagation(); selecionarFatia(i); });
-        path.addEventListener("touchstart", e => { e.stopPropagation(); selecionarFatia(i); }, { passive: true });
         sectorsGroup.appendChild(path);
 
         const mid = start + angle / 2;
         const p = polar(500, 500, 318, mid);
-        const label = roleta.segments[i];
+        const label = String(segmento?.label || "");
         const normalized = label.toUpperCase();
         const rotate = mid > 90 && mid < 270 ? mid + 180 : mid;
 
@@ -1769,7 +1691,6 @@ function criarRoda() {
         }
     }
 
-    // 40 lâmpadas externas, como na referência visual.
     for (let i = 0; i < 40; i++) {
         const a = i * 9;
         const p = polar(500, 500, 463, a);
@@ -1780,7 +1701,6 @@ function criarRoda() {
         lightsGroup.appendChild(c);
     }
 
-    // 12 lâmpadas no aro central.
     for (let i = 0; i < 12; i++) {
         const a = i * 30;
         const p = polar(500, 500, 128, a);
@@ -1790,68 +1710,6 @@ function criarRoda() {
         c.setAttribute("filter", "url(#glow)");
         hubLights.appendChild(c);
     }
-}
-
-function selecionarFatia(index) {
-
-    if (roletaGirando) return;
-
-    const roleta =
-        ROLETAS[roletaAtual];
-
-    if (
-        !roleta ||
-        !roleta.segments ||
-        !roleta.segments[index]
-    ) {
-        return;
-    }
-
-    indiceFatiaSelecionada = index;
-    fatiaSelecionada = roleta.segments[index];
-
-    document
-        .querySelectorAll(".roulette-sector")
-        .forEach(el => {
-
-            el.classList.remove("selected");
-            el.style.filter = "";
-            el.style.textShadow = "";
-
-        });
-
-    const elemento =
-        document.querySelector(
-            `.roulette-sector[data-index="${index}"]`
-        );
-
-    if (elemento) {
-
-        elemento.classList.add("selected");
-
-        elemento.style.filter =
-            "brightness(2)";
-
-        elemento.style.textShadow =
-            "0 0 8px #fff, 0 0 18px #ffd700, 0 0 30px #ffd700";
-    }
-
-    const resultado =
-        document.getElementById("rouletteResult");
-
-    const resultMain =
-        document.getElementById("resultMain");
-
-    const resultPrize =
-        document.getElementById("resultPrize");
-
-    resultado.style.display = "block";
-
-    resultMain.textContent =
-        `Selecionado: ${formatarResultadoRoleta(fatiaSelecionada)}`;
-
-    resultPrize.textContent =
-        "Aperte GIRAR";
 }
 
 function formatarResultadoRoleta(valor) {
@@ -1994,12 +1852,12 @@ function animarRoleta(indiceResultado) {
          * Levamos o centro da fatia vencedora
          * até o ponteiro.
          */
-        // O ponteiro fica fixo no topo e deve apontar para o
-        // CENTRO da fatia vencedora, não para a linha divisória.
-        // Cada setor começa em um limite angular, então somamos
-        // metade do ângulo para levar o centro exato ao ponteiro.
+        // Os setores já são desenhados com o centro da fatia 0
+        // exatamente no topo. Portanto, para levar qualquer setor
+        // ao ponteiro, a rotação deve ser múltipla do ângulo inteiro.
         const alvo =
-            90 - (indiceResultado * angulo);
+            360 -
+            (indiceResultado * angulo);
 
         const voltas =
             7 + Math.floor(Math.random() * 3);
@@ -2105,9 +1963,7 @@ async function girarRoleta() {
 
     try {
 
-        /*
-         * ENVIA A SELEÇÃO PARA O SERVER.JS
-         */
+        /* A aposta é enviada; nenhuma fatia é escolhida pelo jogador. */
         const resposta =
             await fetch(
                 `${API_URL}/roulette/spin`,
@@ -2226,7 +2082,7 @@ async function girarRoleta() {
             "block";
 
         const resultadoTipo = String(spin.resultType || "").toLowerCase();
-        const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado];
+        const resultadoLabel = spin.result || String(ROLETAS[roletaAtual].segments[indiceResultado]?.label || "");
 
         if (ganhou) {
             resultMain.textContent = "🎉 VOCÊ GANHOU!";
@@ -2252,11 +2108,6 @@ async function girarRoleta() {
             return;
         }
 
-        /*
-         * A seleção fica limpa para a próxima rodada.
-         */
-        fatiaSelecionada = null;
-        indiceFatiaSelecionada = null;
 
     } catch (erro) {
 
