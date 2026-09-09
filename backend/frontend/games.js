@@ -16,16 +16,17 @@
     { label: "X", type: "zero", multiplier: 0 }
   ];
 
-  const QUICK = [0.5, 1, 2, 5, 10, 50];
+  const QUICK_BETS = [0.5, 1, 2, 5, 10, 50];
 
-  const MIN = 0.5;
+  const MIN_BET = 0.5;
   const STEP = 0.5;
 
   let user = null;
   let bet = 0.5;
   let busy = false;
   let rotation = 0;
-  let freeSpin = false;
+  let freeSpins = 0;
+  let freeSpinBet = 0;
 
   const $ = id => document.getElementById(id);
 
@@ -36,22 +37,24 @@
     });
   }
 
+  function number(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
   function toast(message) {
-    const el = $("toast");
+    const element = $("toast");
 
-    if (!el) {
-      alert(message);
-      return;
-    }
+    if (!element) return;
 
-    el.textContent = message;
-    el.classList.add("show");
+    element.textContent = message;
+    element.classList.add("show");
 
     clearTimeout(toast.timer);
 
     toast.timer = setTimeout(() => {
-      el.classList.remove("show");
-    }, 2600);
+      element.classList.remove("show");
+    }, 2800);
   }
 
   function storedUser() {
@@ -89,28 +92,31 @@
   function balance() {
     if (!user) return 0;
 
-    const bonus = Number(
+    const bonus = number(
       user.bonusBalance ??
       user.bonus_balance ??
       0
     );
 
-    const cash = Number(
+    const cash = number(
       user.cashBalance ??
       user.cash_balance ??
       0
     );
 
     if (
-      Number.isFinite(bonus) &&
-      Number.isFinite(cash)
+      user.bonusBalance !== undefined ||
+      user.bonus_balance !== undefined ||
+      user.cashBalance !== undefined ||
+      user.cash_balance !== undefined
     ) {
-      return bonus + cash;
+      return Math.round((bonus + cash) * 100) / 100;
     }
 
-    return Number(
+    return number(
       user.balance ??
       user.saldo ??
+      user.cash ??
       0
     );
   }
@@ -127,9 +133,53 @@
     }
   }
 
+  function updateFreeSpinState() {
+    freeSpins = Math.max(
+      0,
+      Math.floor(
+        number(
+          user?.rouletteFreeSpins ??
+          user?.roulette_free_spins ??
+          freeSpins
+        )
+      )
+    );
+
+    freeSpinBet = number(
+      user?.rouletteFreeSpinBet ??
+      user?.roulette_free_spin_bet ??
+      freeSpinBet
+    );
+
+    const badge = $("rouletteFreeBadge");
+    const status = $("rouletteFreeSpinStatus");
+
+    if (freeSpins > 0) {
+      if (badge) {
+        badge.hidden = false;
+      }
+
+      if (status) {
+        status.hidden = false;
+        status.textContent =
+          `🍀 ${freeSpins} giro${freeSpins > 1 ? "s" : ""} grátis disponível${freeSpins > 1 ? "eis" : "el"}.`;
+      }
+    } else {
+      if (badge) {
+        badge.hidden = true;
+      }
+
+      if (status) {
+        status.hidden = true;
+        status.textContent = "";
+      }
+    }
+  }
+
   async function api(path, options = {}) {
     const headers = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     };
 
     try {
@@ -146,20 +196,19 @@
       API + path,
       {
         ...options,
-        headers
+        headers,
+        credentials: "include"
       }
     );
 
-    const text =
-      await response.text();
+    const text = await response.text();
 
     let data = {};
 
     try {
-      data =
-        text
-          ? JSON.parse(text)
-          : {};
+      data = text
+        ? JSON.parse(text)
+        : {};
     } catch {}
 
     if (!response.ok) {
@@ -174,7 +223,15 @@
   }
 
   async function loadUser() {
-    user = storedUser();
+    const saved = storedUser();
+
+    if (!saved) {
+      user = null;
+      updateBalances();
+      return;
+    }
+
+    user = saved;
 
     const id = userId();
 
@@ -194,28 +251,38 @@
       }
 
     } catch (error) {
-      console.error(
-        "Erro ao carregar usuário:",
+      console.warn(
+        "Não foi possível atualizar o usuário:",
         error
       );
     }
 
+    updateFreeSpinState();
     updateBalances();
   }
 
-  function renderLobby() {
+  async function refreshUser() {
+    const id = userId();
+
+    if (!id) return;
+
+    const data =
+      await api(
+        `/user/${encodeURIComponent(id)}`
+      );
+
+    if (data?.user) {
+      saveUser(data.user);
+      updateFreeSpinState();
+      updateBalances();
+    }
+  }
+
+  function lobby() {
     const container =
       $("gamesContainer");
 
-    const message =
-      $("gamesMessage");
-
-    if (!container) {
-      console.error(
-        "gamesContainer não encontrado."
-      );
-      return;
-    }
+    if (!container) return;
 
     container.innerHTML = `
       <button
@@ -223,147 +290,840 @@
         id="rouletteCard"
         type="button"
       >
-        <div class="game-card-icon">
-          ♛
-        </div>
+        <div class="game-card-icon">♛</div>
 
         <div>
-          <strong>
-            Roleta da Sorte
-          </strong>
-
+          <strong>Roleta da Sorte</strong>
           <span>
             10 setores • Multiplicadores • 🍀 Giro grátis
           </span>
         </div>
 
-        <b>
-          JOGAR →
-        </b>
+        <b>JOGAR →</b>
       </button>
     `;
 
-    const card =
-      $("rouletteCard");
-
-    if (card) {
-      card.addEventListener(
-        "click",
-        openRoulette
-      );
-    }
-
-    if (message) {
-      message.hidden = true;
-    }
+    $("rouletteCard").onclick =
+      openRoulette;
   }
 
   function openRoulette() {
-    const lobby =
-      $("gamesLobby");
+    $("gamesLobby").hidden = true;
+    $("gameStage").hidden = false;
+    $("roulettePanel").hidden = false;
 
-    const stage =
-      $("gameStage");
+    $("gameTitle").textContent =
+      "Roleta da Sorte";
 
-    const panel =
-      $("roulettePanel");
-
-    if (lobby) {
-      lobby.hidden = true;
-    }
-
-    if (stage) {
-      stage.hidden = false;
-    }
-
-    if (panel) {
-      panel.hidden = false;
-    }
-
-    if ($("gameTitle")) {
-      $("gameTitle").textContent =
-        "Roleta da Sorte";
-    }
-
-    if ($("gameTypeLabel")) {
-      $("gameTypeLabel").textContent =
-        "ROLETA";
-    }
+    $("gameTypeLabel").textContent =
+      "ROLETA";
 
     createWheel();
     updateBet();
+    updateFreeSpinState();
     updateBalances();
   }
 
   function back() {
-    if ($("gameStage")) {
-      $("gameStage").hidden = true;
-    }
-
-    if ($("gamesLobby")) {
-      $("gamesLobby").hidden = false;
-    }
-
-    if ($("roulettePanel")) {
-      $("roulettePanel").hidden = true;
-    }
+    $("gameStage").hidden = true;
+    $("gamesLobby").hidden = false;
+    $("roulettePanel").hidden = true;
   }
+
+  /*
+   * ========================================================
+   * ROLETA DESENHADA PELO CANVAS
+   *
+   * O ponteiro fica FORA da roda.
+   * Somente o canvas da roda gira.
+   *
+   * Ordem:
+   * 2x / X / 3x / X / 4x / X / 🍀 / X / 5x / X
+   * ========================================================
+   */
 
   function createWheel() {
     const wheel =
       $("rouletteWheel");
 
-    if (!wheel) {
-      console.error(
-        "rouletteWheel não encontrado."
-      );
-      return;
-    }
+    if (!wheel) return;
 
     wheel.innerHTML = "";
 
-    const angle =
-      360 / ROULETTE_SEGMENTS.length;
+    wheel.style.position = "relative";
+    wheel.style.overflow = "hidden";
+    wheel.style.border = "0";
+    wheel.style.background = "transparent";
+    wheel.style.boxShadow = "none";
+    wheel.style.borderRadius = "50%";
+
+    const canvas =
+      document.createElement("canvas");
+
+    canvas.className =
+      "mybets-roulette-canvas";
+
+    canvas.setAttribute(
+      "aria-label",
+      "Roleta da Sorte"
+    );
+
+    canvas.style.display = "block";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.borderRadius = "50%";
+    canvas.style.transform =
+      `rotate(${rotation}deg)`;
+    canvas.style.transition =
+      "none";
+
+    wheel.appendChild(canvas);
+
+    drawWheel(canvas);
+  }
+
+  function drawWheel(canvas) {
+    const rect =
+      canvas.getBoundingClientRect();
+
+    const size =
+      Math.max(
+        300,
+        Math.floor(
+          Math.min(
+            rect.width || 500,
+            rect.height || 500
+          )
+        )
+      );
+
+    const ratio =
+      window.devicePixelRatio || 1;
+
+    canvas.width =
+      size * ratio;
+
+    canvas.height =
+      size * ratio;
+
+    const ctx =
+      canvas.getContext("2d");
+
+    ctx.scale(
+      ratio,
+      ratio
+    );
+
+    const cx = size / 2;
+    const cy = size / 2;
+
+    const radius =
+      size * 0.48;
+
+    /*
+     * Fundo externo.
+     */
+
+    ctx.clearRect(
+      0,
+      0,
+      size,
+      size
+    );
+
+    ctx.beginPath();
+
+    ctx.arc(
+      cx,
+      cy,
+      radius,
+      0,
+      Math.PI * 2
+    );
+
+    const outerGold =
+      ctx.createRadialGradient(
+        cx,
+        cy,
+        radius * 0.65,
+        cx,
+        cy,
+        radius
+      );
+
+    outerGold.addColorStop(
+      0,
+      "#5c3000"
+    );
+
+    outerGold.addColorStop(
+      0.45,
+      "#ffd95a"
+    );
+
+    outerGold.addColorStop(
+      0.72,
+      "#b86b00"
+    );
+
+    outerGold.addColorStop(
+      0.9,
+      "#ffe57a"
+    );
+
+    outerGold.addColorStop(
+      1,
+      "#7b4300"
+    );
+
+    ctx.fillStyle =
+      outerGold;
+
+    ctx.fill();
+
+    ctx.lineWidth =
+      size * 0.012;
+
+    ctx.strokeStyle =
+      "#f8c83e";
+
+    ctx.stroke();
+
+    /*
+     * Anel preto interno.
+     */
+
+    ctx.beginPath();
+
+    ctx.arc(
+      cx,
+      cy,
+      radius * 0.91,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+      "#08090d";
+
+    ctx.fill();
+
+    /*
+     * Setores.
+     */
+
+    const sectorCount =
+      ROULETTE_SEGMENTS.length;
+
+    const sectorAngle =
+      Math.PI * 2 /
+      sectorCount;
+
+    const startAngle =
+      -Math.PI / 2;
+
+    const colors = [
+      "#f5b916",
+      "#101116",
+      "#7527e8",
+      "#101116",
+      "#0879ed",
+      "#101116",
+      "#00a92f",
+      "#101116",
+      "#ed1265",
+      "#101116"
+    ];
 
     ROULETTE_SEGMENTS.forEach(
       (segment, index) => {
-        const element =
-          document.createElement("div");
 
-        element.className =
-          "roulette-label";
+        const start =
+          startAngle +
+          index * sectorAngle;
 
-        element.dataset.type =
-          segment.type;
+        const end =
+          start +
+          sectorAngle;
 
-        element.dataset.multiplier =
-          segment.multiplier;
+        ctx.beginPath();
 
-        element.style.setProperty(
-          "--angle",
-          `${index * angle}deg`
+        ctx.moveTo(
+          cx,
+          cy
         );
 
-        element.style.setProperty(
-          "--slice-angle",
-          `${angle}deg`
+        ctx.arc(
+          cx,
+          cy,
+          radius * 0.86,
+          start,
+          end
         );
 
-        element.innerHTML =
-          `<span>${segment.label}</span>`;
+        ctx.closePath();
 
-        wheel.appendChild(element);
+        const gradient =
+          ctx.createLinearGradient(
+            cx,
+            cy -
+              radius,
+            cx,
+            cy +
+              radius
+          );
+
+        const base =
+          colors[index];
+
+        gradient.addColorStop(
+          0,
+          lighten(base, 0.18)
+        );
+
+        gradient.addColorStop(
+          0.5,
+          base
+        );
+
+        gradient.addColorStop(
+          1,
+          darken(base, 0.22)
+        );
+
+        ctx.fillStyle =
+          gradient;
+
+        ctx.fill();
+
+        ctx.lineWidth =
+          size * 0.006;
+
+        ctx.strokeStyle =
+          "#e4b83c";
+
+        ctx.stroke();
+
+        drawSectorLabel(
+          ctx,
+          segment,
+          cx,
+          cy,
+          radius,
+          start +
+            sectorAngle / 2,
+          size
+        );
       }
     );
 
-    wheel.style.transform =
-      `rotate(${rotation}deg)`;
+    /*
+     * Anel dourado sobre os setores.
+     */
+
+    ctx.beginPath();
+
+    ctx.arc(
+      cx,
+      cy,
+      radius * 0.86,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.lineWidth =
+      size * 0.018;
+
+    ctx.strokeStyle =
+      "#d99a18";
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.arc(
+      cx,
+      cy,
+      radius * 0.78,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.lineWidth =
+      size * 0.008;
+
+    ctx.strokeStyle =
+      "#f8d15b";
+
+    ctx.stroke();
+
+    /*
+     * Lâmpadas.
+     */
+
+    const bulbRadius =
+      radius * 0.89;
+
+    for (
+      let i = 0;
+      i < 30;
+      i++
+    ) {
+
+      const angle =
+        startAngle +
+        i *
+          (
+            Math.PI * 2 /
+            30
+          );
+
+      const x =
+        cx +
+        Math.cos(angle) *
+          bulbRadius;
+
+      const y =
+        cy +
+        Math.sin(angle) *
+          bulbRadius;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        x,
+        y,
+        size * 0.015,
+        0,
+        Math.PI * 2
+      );
+
+      const glow =
+        ctx.createRadialGradient(
+          x,
+          y,
+          0,
+          x,
+          y,
+          size * 0.035
+        );
+
+      glow.addColorStop(
+        0,
+        "#ffffff"
+      );
+
+      glow.addColorStop(
+        0.35,
+        "#fff4a5"
+      );
+
+      glow.addColorStop(
+        1,
+        "#d58c00"
+      );
+
+      ctx.fillStyle =
+        glow;
+
+      ctx.shadowBlur =
+        size * 0.025;
+
+      ctx.shadowColor =
+        "#ffd43d";
+
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+    }
+
+    /*
+     * Centro dourado.
+     */
+
+    const hubRadius =
+      radius * 0.30;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      cx,
+      cy,
+      hubRadius,
+      0,
+      Math.PI * 2
+    );
+
+    const hub =
+      ctx.createRadialGradient(
+        cx -
+          hubRadius * 0.2,
+        cy -
+          hubRadius * 0.2,
+        0,
+        cx,
+        cy,
+        hubRadius
+      );
+
+    hub.addColorStop(
+      0,
+      "#292929"
+    );
+
+    hub.addColorStop(
+      0.6,
+      "#090909"
+    );
+
+    hub.addColorStop(
+      1,
+      "#000000"
+    );
+
+    ctx.fillStyle =
+      hub;
+
+    ctx.fill();
+
+    ctx.lineWidth =
+      size * 0.018;
+
+    ctx.strokeStyle =
+      "#f5c63d";
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.arc(
+      cx,
+      cy,
+      hubRadius * 0.82,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.lineWidth =
+      size * 0.008;
+
+    ctx.strokeStyle =
+      "#c88b12";
+
+    ctx.stroke();
+
+    /*
+     * Coroa.
+     */
+
+    ctx.textAlign =
+      "center";
+
+    ctx.textBaseline =
+      "middle";
+
+    ctx.font =
+      `bold ${size * 0.075}px Arial`;
+
+    ctx.fillStyle =
+      "#ffd84a";
+
+    ctx.fillText(
+      "♛",
+      cx,
+      cy -
+        hubRadius * 0.40
+    );
+
+    /*
+     * GIRAR.
+     */
+
+    ctx.font =
+      `900 ${size * 0.075}px Arial`;
+
+    ctx.fillStyle =
+      "#ffd44a";
+
+    ctx.fillText(
+      "GIRAR",
+      cx,
+      cy +
+        hubRadius * 0.10
+    );
+
+    /*
+     * MYBETS.
+     */
+
+    ctx.font =
+      `${size * 0.027}px Arial`;
+
+    ctx.fillStyle =
+      "#bcbcbc";
+
+    ctx.letterSpacing =
+      `${size * 0.01}px`;
+
+    ctx.fillText(
+      "MYBETS",
+      cx,
+      cy +
+        hubRadius * 0.43
+    );
+  }
+
+  function drawSectorLabel(
+    ctx,
+    segment,
+    cx,
+    cy,
+    radius,
+    angle,
+    size
+  ) {
+
+    const distance =
+      radius * 0.64;
+
+    const x =
+      cx +
+      Math.cos(angle) *
+        distance;
+
+    const y =
+      cy +
+      Math.sin(angle) *
+        distance;
+
+    ctx.save();
+
+    ctx.translate(
+      x,
+      y
+    );
+
+    /*
+     * Mantém os textos
+     * orientados para o usuário.
+     */
+
+    let textAngle =
+      angle +
+      Math.PI / 2;
+
+    if (
+      textAngle >
+        Math.PI / 2 &&
+      textAngle <
+        Math.PI * 1.5
+    ) {
+      textAngle += Math.PI;
+    }
+
+    ctx.rotate(
+      textAngle
+    );
+
+    ctx.textAlign =
+      "center";
+
+    ctx.textBaseline =
+      "middle";
+
+    if (
+      segment.type ===
+      "zero"
+    ) {
+
+      ctx.font =
+        `900 ${size * 0.085}px Arial`;
+
+      ctx.fillStyle =
+        "#ff1825";
+
+      ctx.strokeStyle =
+        "#000000";
+
+      ctx.lineWidth =
+        size * 0.018;
+
+      ctx.strokeText(
+        "X",
+        0,
+        0
+      );
+
+      ctx.fillText(
+        "X",
+        0,
+        0
+      );
+
+    } else if (
+      segment.type ===
+      "sorte"
+    ) {
+
+      ctx.font =
+        `${size * 0.105}px Arial`;
+
+      ctx.fillText(
+        "🍀",
+        0,
+        -size * 0.035
+      );
+
+      ctx.font =
+        `900 ${size * 0.035}px Arial`;
+
+      ctx.fillStyle =
+        "#ffffff";
+
+      ctx.strokeStyle =
+        "#000000";
+
+      ctx.lineWidth =
+        size * 0.009;
+
+      ctx.strokeText(
+        "GIRO",
+        0,
+        size * 0.045
+      );
+
+      ctx.strokeText(
+        "GRÁTIS",
+        0,
+        size * 0.082
+      );
+
+      ctx.fillText(
+        "GIRO",
+        0,
+        size * 0.045
+      );
+
+      ctx.fillText(
+        "GRÁTIS",
+        0,
+        size * 0.082
+      );
+
+    } else {
+
+      ctx.font =
+        `900 ${size * 0.085}px Arial`;
+
+      ctx.fillStyle =
+        "#ffffff";
+
+      ctx.strokeStyle =
+        "#000000";
+
+      ctx.lineWidth =
+        size * 0.014;
+
+      ctx.strokeText(
+        segment.label,
+        0,
+        0
+      );
+
+      ctx.fillText(
+        segment.label,
+        0,
+        0
+      );
+    }
+
+    ctx.restore();
+  }
+
+  function lighten(hex, amount) {
+    const rgb =
+      hexToRgb(hex);
+
+    return rgbToHex(
+      Math.round(
+        rgb.r +
+        (255 - rgb.r) *
+          amount
+      ),
+      Math.round(
+        rgb.g +
+        (255 - rgb.g) *
+          amount
+      ),
+      Math.round(
+        rgb.b +
+        (255 - rgb.b) *
+          amount
+      )
+    );
+  }
+
+  function darken(hex, amount) {
+    const rgb =
+      hexToRgb(hex);
+
+    return rgbToHex(
+      Math.round(
+        rgb.r *
+          (1 - amount)
+      ),
+      Math.round(
+        rgb.g *
+          (1 - amount)
+      ),
+      Math.round(
+        rgb.b *
+          (1 - amount)
+      )
+    );
+  }
+
+  function hexToRgb(hex) {
+    const value =
+      hex.replace("#", "");
+
+    return {
+      r: parseInt(
+        value.substring(0, 2),
+        16
+      ),
+      g: parseInt(
+        value.substring(2, 4),
+        16
+      ),
+      b: parseInt(
+        value.substring(4, 6),
+        16
+      )
+    };
+  }
+
+  function rgbToHex(
+    r,
+    g,
+    b
+  ) {
+    return (
+      "#" +
+      [r, g, b]
+        .map(
+          value =>
+            value
+              .toString(16)
+              .padStart(2, "0")
+        )
+        .join("")
+    );
   }
 
   function updateBet() {
     if ($("rouletteBetValue")) {
-      $("rouletteBetValue")
-        .textContent =
+      $("rouletteBetValue").textContent =
         `R$ ${money(bet)}`;
     }
 
@@ -371,29 +1131,33 @@
       .querySelectorAll(
         "[data-roulette-bet]"
       )
-      .forEach(button => {
-        button.classList.toggle(
-          "active",
-          Number(
-            button.dataset.rouletteBet
-          ) === bet
-        );
-      });
+      .forEach(
+        button => {
+          button.classList.toggle(
+            "active",
+            Number(
+              button.dataset.rouletteBet
+            ) === bet
+          );
+        }
+      );
   }
 
   function setBet(value) {
-    const number =
+    const amount =
       Number(value);
 
     if (
-      !Number.isFinite(number) ||
-      number < MIN
+      !Number.isFinite(amount) ||
+      amount < MIN_BET
     ) {
       return;
     }
 
     bet =
-      Math.round(number * 100) / 100;
+      Math.round(
+        amount * 100
+      ) / 100;
 
     updateBet();
   }
@@ -402,14 +1166,19 @@
     const value =
       prompt(
         "Digite o valor da aposta em reais:",
-        String(bet).replace(".", ",")
+        String(bet).replace(
+          ".",
+          ","
+        )
       );
 
-    if (value === null) {
+    if (
+      value === null
+    ) {
       return;
     }
 
-    const number =
+    const amount =
       Number(
         value
           .replace(/\./g, "")
@@ -417,19 +1186,96 @@
       );
 
     if (
-      !Number.isFinite(number) ||
-      number < MIN
+      !Number.isFinite(amount) ||
+      amount < MIN_BET
     ) {
       toast(
         "Digite um valor a partir de R$ 0,50."
       );
+
       return;
     }
 
-    setBet(number);
+    setBet(amount);
+  }
+
+  /*
+   * ========================================================
+   * ANIMAÇÃO
+   *
+   * O servidor escolhe primeiro.
+   * O índice recebido determina exatamente onde parar.
+   * ========================================================
+   */
+
+  function animateToIndex(index) {
+    return new Promise(resolve => {
+
+      const wheel =
+        $("rouletteWheel");
+
+      const canvas =
+        wheel?.querySelector(
+          ".mybets-roulette-canvas"
+        );
+
+      if (!wheel || !canvas) {
+        resolve();
+        return;
+      }
+
+      const sectorAngle =
+        360 /
+        ROULETTE_SEGMENTS.length;
+
+      /*
+       * Cada setor começa no topo.
+       * O centro do setor precisa chegar
+       * exatamente ao ponteiro fixo.
+       */
+
+      const target =
+        -(
+          index *
+            sectorAngle +
+          sectorAngle / 2
+        );
+
+      const current =
+        ((rotation % 360) + 360) % 360;
+
+      let difference =
+        target -
+        current;
+
+      while (
+        difference < 0
+      ) {
+        difference += 360;
+      }
+
+      const extraTurns =
+        6 * 360;
+
+      rotation +=
+        extraTurns +
+        difference;
+
+      canvas.style.transition =
+        "transform 6s cubic-bezier(.12,.72,.15,1)";
+
+      canvas.style.transform =
+        `rotate(${rotation}deg)`;
+
+      setTimeout(
+        resolve,
+        6200
+      );
+    });
   }
 
   function resultIndex(result) {
+
     if (
       Number.isInteger(
         result?.index
@@ -460,74 +1306,9 @@
     );
   }
 
-  function animate(index) {
-    const wheel =
-      $("rouletteWheel");
-
-    if (!wheel) {
-      return Promise.resolve();
-    }
-
-    const angle =
-      360 / ROULETTE_SEGMENTS.length;
-
-    const target =
-      -(index * angle + angle / 2);
-
-    const current =
-      ((rotation % 360) + 360) % 360;
-
-    let distance =
-      target - current;
-
-    while (distance < 0) {
-      distance += 360;
-    }
-
-    rotation +=
-      7 * 360 + distance;
-
-    wheel.style.transition =
-      "transform 5.8s cubic-bezier(.12,.78,.16,1)";
-
-    wheel.style.transform =
-      `rotate(${rotation}deg)`;
-
-    return new Promise(resolve => {
-      setTimeout(resolve, 6000);
-    });
-  }
-
-  async function refreshUserFromServer() {
-    const id =
-      userId();
-
-    if (!id) {
-      return;
-    }
-
-    try {
-      const data =
-        await api(
-          `/user/${encodeURIComponent(id)}`
-        );
-
-      if (data?.user) {
-        saveUser(data.user);
-        updateBalances();
-      }
-    } catch (error) {
-      console.error(
-        "Erro ao atualizar saldo:",
-        error
-      );
-    }
-  }
-
   async function spin() {
-    if (busy) {
-      return;
-    }
+
+    if (busy) return;
 
     const id =
       userId();
@@ -539,10 +1320,30 @@
       return;
     }
 
-    await refreshUserFromServer();
+    /*
+     * Atualiza o saldo real antes do giro.
+     */
+
+    try {
+      await refreshUser();
+    } catch {}
+
+    const availableFreeSpins =
+      Math.max(
+        0,
+        Math.floor(
+          number(
+            user?.rouletteFreeSpins ??
+            freeSpins
+          )
+        )
+      );
+
+    const usingFreeSpin =
+      availableFreeSpins > 0;
 
     if (
-      !freeSpin &&
+      !usingFreeSpin &&
       balance() < bet
     ) {
       toast(
@@ -556,19 +1357,34 @@
     const spinButton =
       $("rouletteSpinButton");
 
+    const centerButton =
+      $("rouletteCenterButton");
+
     if (spinButton) {
       spinButton.disabled = true;
     }
 
-    const result =
-      $("rouletteResult");
+    if (centerButton) {
+      centerButton.disabled = true;
+    }
 
-    if (result) {
-      result.textContent =
+    if ($("rouletteResult")) {
+      $("rouletteResult").textContent =
         "Girando...";
     }
 
+    if ($("winDisplay")) {
+      $("winDisplay").textContent =
+        "R$ 0,00";
+    }
+
     try {
+
+      /*
+       * O servidor é quem decide:
+       * resultado, prêmio, saldo e giro grátis.
+       */
+
       const data =
         await api(
           "/roulette/spin",
@@ -580,129 +1396,152 @@
               betAmount: bet,
               betType: "roulette",
               rouletteId: "popular",
-              freeSpin
+              freeSpin: usingFreeSpin
             })
           }
         );
 
-      const rouletteResult =
-        data.result ||
-        data.resultado ||
+      const result =
+        data?.result ||
+        data?.resultado ||
         data;
 
       const index =
-        resultIndex(
-          rouletteResult
-        );
+        resultIndex(result);
 
-      await animate(index);
+      /*
+       * A roda só começa a animação
+       * depois que o servidor respondeu.
+       */
 
-      if (data.user) {
+      await animateToIndex(
+        index
+      );
+
+      /*
+       * Saldo retornado pelo servidor.
+       */
+
+      if (data?.user) {
         saveUser(data.user);
       }
 
+      /*
+       * Atualiza novamente diretamente
+       * no banco depois do giro.
+       */
+
+      try {
+        await refreshUser();
+      } catch {}
+
       const prize =
-        Number(
-          rouletteResult?.prize ??
-          data.prize ??
+        number(
+          result?.prize ??
+          data?.prize ??
+          result?.payout ??
+          data?.payout ??
           0
         );
 
       const label =
-        resultLabel(
-          rouletteResult
-        );
+        resultLabel(result);
 
-      const isFree =
-        rouletteResult?.type ===
-          "sorte" ||
+      const type =
+        result?.type ||
+        result?.resultType ||
+        "";
+
+      const ganhouGiroGratis =
+        type === "sorte" ||
         label.includes("🍀");
 
-      if (result) {
-        if (isFree) {
-          result.textContent =
+      if (
+        ganhouGiroGratis
+      ) {
+
+        if ($("rouletteResult")) {
+          $("rouletteResult").textContent =
             "🍀 GIRO GRÁTIS!";
-        } else if (prize > 0) {
-          result.textContent =
+        }
+
+        if ($("winDisplay")) {
+          $("winDisplay").textContent =
+            "GIRO GRÁTIS";
+        }
+
+      } else if (
+        prize > 0
+      ) {
+
+        if ($("rouletteResult")) {
+          $("rouletteResult").textContent =
             `${label} — Você ganhou R$ ${money(prize)}`;
-        } else {
-          result.textContent =
+        }
+
+        if ($("winDisplay")) {
+          $("winDisplay").textContent =
+            `R$ ${money(prize)}`;
+        }
+
+      } else {
+
+        if ($("rouletteResult")) {
+          $("rouletteResult").textContent =
             `${label} — Boa sorte na próxima!`;
         }
-      }
 
-      if ($("winDisplay")) {
-        $("winDisplay").textContent =
-          prize > 0
-            ? `R$ ${money(prize)}`
-            : "R$ 0,00";
-      }
-
-      if (isFree) {
-        freeSpin = true;
-
-        if ($("rouletteFreeSpinStatus")) {
-          $("rouletteFreeSpinStatus").hidden =
-            false;
-
-          $("rouletteFreeSpinStatus").textContent =
-            `🍀 Você ganhou 1 giro grátis de R$ ${money(bet)}.`;
-        }
-
-        if ($("rouletteFreeBadge")) {
-          $("rouletteFreeBadge").hidden =
-            false;
-        }
-
-      } else if (freeSpin) {
-        freeSpin = false;
-
-        if ($("rouletteFreeSpinStatus")) {
-          $("rouletteFreeSpinStatus").hidden =
-            true;
-        }
-
-        if ($("rouletteFreeBadge")) {
-          $("rouletteFreeBadge").hidden =
-            true;
+        if ($("winDisplay")) {
+          $("winDisplay").textContent =
+            "R$ 0,00";
         }
       }
 
+      updateFreeSpinState();
       updateBalances();
 
-      await refreshUserFromServer();
-
     } catch (error) {
+
       console.error(
-        "Erro ao girar roleta:",
+        "Erro na roleta:",
         error
       );
 
-      toast(
-        error.message ||
-        "Erro ao girar a roleta."
-      );
-
-      if (result) {
-        result.textContent =
+      if ($("rouletteResult")) {
+        $("rouletteResult").textContent =
           "Não foi possível realizar o giro.";
       }
 
+      toast(
+        error?.message ||
+        "Erro ao girar a roleta."
+      );
+
+      try {
+        await refreshUser();
+      } catch {}
+
     } finally {
+
       busy = false;
 
       if (spinButton) {
         spinButton.disabled = false;
       }
+
+      if (centerButton) {
+        centerButton.disabled = false;
+      }
     }
   }
 
   function events() {
+
     if ($("backButton")) {
       $("backButton").onclick =
         () => {
           if (
-            window.history.length > 1
+            history.length > 1
           ) {
             history.back();
           } else {
@@ -719,21 +1558,23 @@
 
     if ($("rouletteBetMinus")) {
       $("rouletteBetMinus").onclick =
-        () =>
+        () => {
           setBet(
             Math.max(
-              MIN,
+              MIN_BET,
               bet - STEP
             )
           );
+        };
     }
 
     if ($("rouletteBetPlus")) {
       $("rouletteBetPlus").onclick =
-        () =>
+        () => {
           setBet(
             bet + STEP
           );
+        };
     }
 
     if ($("rouletteOtherValue")) {
@@ -746,38 +1587,51 @@
         spin;
     }
 
+    if ($("rouletteCenterButton")) {
+      $("rouletteCenterButton").onclick =
+        spin;
+    }
+
     document
       .querySelectorAll(
         "[data-roulette-bet]"
       )
-      .forEach(button => {
-        button.onclick =
-          () =>
-            setBet(
-              button.dataset
-                .rouletteBet
+      .forEach(
+        button => {
+          button.onclick =
+            () => {
+              setBet(
+                button.dataset.rouletteBet
+              );
+            };
+        }
+      );
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        const canvas =
+          $("rouletteWheel")
+            ?.querySelector(
+              ".mybets-roulette-canvas"
             );
-      });
-  }
 
-  function init() {
-    renderLobby();
-    events();
-    updateBet();
-    updateBalances();
-    loadUser();
-  }
+        if (!canvas) return;
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      init
+        const currentRotation =
+          canvas.style.transform;
+
+        drawWheel(canvas);
+
+        canvas.style.transform =
+          currentRotation;
+      }
     );
-  } else {
-    init();
   }
+
+  lobby();
+  events();
+  loadUser();
 
 })();
