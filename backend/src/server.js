@@ -3127,11 +3127,11 @@ app.get(
 
 
     res.sendFile(
-      path.join(
-        FRONTEND_DIR,
-        "index.html"
-      )
-    );
+  path.join(
+    frontendPath,
+    "index.html"
+  )
+);
   }
 );
 
