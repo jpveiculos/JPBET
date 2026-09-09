@@ -178,8 +178,8 @@ const configuracoesPadrao = [
 
   [
     "roulette_segments_json",
-    "[{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":10},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"probability\":10},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"4x\",\"type\":\"prize\",\"multiplier\":4,\"probability\":10},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"probability\":10},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"probability\":10}]"
-  ]
+    "[{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"4x\",\"type\":\"prize\",\"multiplier\":4,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"probability\":10}]",
+  ],
 
   [
     "roulette_sound_enabled",
@@ -406,49 +406,24 @@ async function inicializarConfiguracoes() {
       );
     }
 
-    // Migra somente o modelo antigo padrão da roleta. Configurações
-    // personalizadas diferentes continuam intactas.
+    // Migra a configuração antiga da roleta para o novo modelo fixo de 10 fatias.
+    // O restante das configurações permanece intacto.
     const rouletteCurrent = await pool.query(`
       SELECT setting_value FROM site_settings
       WHERE setting_key = 'roulette_segments_json' LIMIT 1
     `);
     const currentRoulette = String(rouletteCurrent.rows[0]?.setting_value || '');
-
-    let migrarRoleta = false;
-
+    let rouletteNeedsMigration = true;
     try {
-      const atual = JSON.parse(currentRoulette);
-      const rotulos = Array.isArray(atual)
-        ? atual.map(item => String(item?.label || "").trim().toLowerCase())
-        : [];
-
-      const modeloAntigo = [
-        "❌", "❌", "❌", "❌", "❌",
-        "2x", "2x", "2x",
-        "3x", "3x", "3x",
-        "5x", "5x",
-        "10x", "20x", "30x", "50x", "75x", "100x", "🍀"
-      ];
-
-      migrarRoleta =
-        rotulos.length === modeloAntigo.length &&
-        rotulos.every((valor, index) => valor === modeloAntigo[index]);
-    } catch (_) {}
-
-    if (
-      migrarRoleta ||
-      currentRoulette.includes('JOGUE NOVAMENTE') ||
-      currentRoulette.includes('"multiplier":1')
-    ) {
+      const parsedRoulette = JSON.parse(currentRoulette);
+      rouletteNeedsMigration = !Array.isArray(parsedRoulette) || parsedRoulette.length !== 10;
+    } catch (_) {
+      rouletteNeedsMigration = true;
+    }
+    if (rouletteNeedsMigration) {
       const novoPadrao = configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')?.[1];
-
       if (novoPadrao) {
-        await pool.query(
-          `UPDATE site_settings
-           SET setting_value = $1, updated_at = CURRENT_TIMESTAMP
-           WHERE setting_key = 'roulette_segments_json'`,
-          [novoPadrao]
-        );
+        await pool.query(`UPDATE site_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = 'roulette_segments_json'`, [novoPadrao]);
       }
     }
 

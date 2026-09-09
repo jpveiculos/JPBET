@@ -361,12 +361,12 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 32 FATIAS
+   ROLETA ÚNICA - 10 FATIAS
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
   {
-    "label": "X",
+    "label": "❌",
     "type": "zero",
     "multiplier": 0,
     "probability": 10
@@ -378,7 +378,7 @@ const ROLETTE_DEFAULT_SEGMENTS = [
     "probability": 10
   },
   {
-    "label": "X",
+    "label": "❌",
     "type": "zero",
     "multiplier": 0,
     "probability": 10
@@ -390,7 +390,7 @@ const ROLETTE_DEFAULT_SEGMENTS = [
     "probability": 10
   },
   {
-    "label": "X",
+    "label": "❌",
     "type": "zero",
     "multiplier": 0,
     "probability": 10
@@ -402,7 +402,7 @@ const ROLETTE_DEFAULT_SEGMENTS = [
     "probability": 10
   },
   {
-    "label": "X",
+    "label": "❌",
     "type": "zero",
     "multiplier": 0,
     "probability": 10
@@ -414,7 +414,7 @@ const ROLETTE_DEFAULT_SEGMENTS = [
     "probability": 10
   },
   {
-    "label": "X",
+    "label": "❌",
     "type": "zero",
     "multiplier": 0,
     "probability": 10
@@ -430,8 +430,8 @@ const ROLETTE_DEFAULT_SEGMENTS = [
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length < 10 || parsed.length > 40) {
-      throw new Error("A roleta precisa ter entre 10 e 40 fatias.");
+    if (!Array.isArray(parsed) || parsed.length !== 10) {
+      throw new Error("A roleta precisa ter exatamente 10 fatias.");
     }
 
     return parsed.map((segmento, index) => {
