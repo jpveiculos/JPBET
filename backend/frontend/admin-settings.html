@@ -742,7 +742,7 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de 10 a 40 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
+          <strong>Modelo atual:</strong> roleta configurável de 10 a 40 fatias. Use X para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
           Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
         </div>
       </div>
@@ -1235,7 +1235,7 @@
           <td>${index + 1}</td>
           <td><input class="segment-label" type="text" value="${esc}" maxlength="12"></td>
           <td><select class="segment-type">
-            <option value="zero" ${tipo === "zero" ? "selected" : ""}>❌ Perda</option>
+            <option value="zero" ${tipo === "zero" ? "selected" : ""}>X Perda</option>
             <option value="sorte" ${tipo === "sorte" ? "selected" : ""}>🍀 Giro grátis</option>
             <option value="prize" ${tipo === "prize" ? "selected" : ""}>Prêmio</option>
           </select></td>
@@ -1257,7 +1257,7 @@
         const tipo = linha.querySelector(".segment-type").value;
         const mult = linha.querySelector(".segment-multiplier");
         const label = linha.querySelector(".segment-label");
-        if (tipo === "zero") { mult.value = "0"; label.value = "❌"; }
+        if (tipo === "zero") { mult.value = "0"; label.value = "X"; }
         if (tipo === "sorte") { mult.value = "0"; label.value = "🍀"; }
         if (tipo === "prize") {
           const n = Number(mult.value) || 2;

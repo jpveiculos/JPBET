@@ -411,7 +411,7 @@ button {
 
 .roulette-area {
     position: relative;
-    width: min(520px, 94vw);
+    width: min(500px, 88vw);
     aspect-ratio: 1;
     margin: 16px auto 10px;
     filter: drop-shadow(0 18px 35px rgba(0,0,0,.65));
@@ -485,8 +485,9 @@ button {
     filter: drop-shadow(0 0 9px rgba(130,255,80,.4));
 }
 
-.roulette-label.mult-2, .roulette-label.mult-3 { font-size: clamp(22px, 4vw, 32px); }
-.roulette-label.mult-5, .roulette-label.mult-10 { font-size: clamp(28px, 5vw, 40px); }
+.roulette-label.mult-2, .roulette-label.mult-3, .roulette-label.mult-4 { font-size: clamp(34px, 6vw, 52px); }
+.roulette-label.mult-5 { font-size: clamp(38px, 7vw, 58px); }
+.roulette-label.mult-10 { font-size: clamp(34px, 6vw, 52px); }
 .roulette-label.mult-20, .roulette-label.mult-30 { font-size: clamp(34px, 6vw, 48px); }
 .roulette-label.mult-50 { font-size: clamp(40px, 7vw, 58px); }
 .roulette-label.mult-75 { font-size: clamp(46px, 8vw, 68px); }
@@ -564,28 +565,28 @@ button {
 .pointer {
     position: absolute;
     z-index: 60;
-    top: -7px;
+    top: -4px;
     left: 50%;
     transform: translateX(-50%);
-    width: 70px;
-    height: 88px;
-    background: linear-gradient(145deg, #fff0a2 0%, #f4c542 28%, #b96c00 72%, #6d3b00 100%);
-    clip-path: polygon(4% 0, 96% 0, 78% 68%, 50% 100%, 22% 68%);
-    filter: drop-shadow(0 5px 8px rgba(0,0,0,.75));
+    width: 48px;
+    height: 64px;
+    background: linear-gradient(145deg, #fff2a8 0%, #f2bd32 45%, #a96100 100%);
+    clip-path: polygon(6% 0, 94% 0, 78% 65%, 50% 100%, 22% 65%);
+    filter: drop-shadow(0 4px 7px rgba(0,0,0,.75));
     pointer-events: none;
 }
 
 .pointer::after {
     content: "";
     position: absolute;
-    width: 38px;
-    height: 48px;
+    width: 30px;
+    height: 40px;
     left: 50%;
-    top: 8px;
+    top: 7px;
     transform: translateX(-50%);
-    background: linear-gradient(145deg, #ff8a8a 0%, #e71919 45%, #7d0000 100%);
+    background: linear-gradient(180deg, #ff6b6b 0%, #e71919 48%, #850000 100%);
     clip-path: polygon(50% 100%, 0 0, 100% 0);
-    box-shadow: 0 0 12px rgba(255,40,40,.55);
+    filter: drop-shadow(0 0 7px rgba(255,40,40,.45));
 }
 
 @keyframes spinButtonPulse {
@@ -838,7 +839,7 @@ button {
         </div>
 
         <div class="rules" id="rouletteRules">
-            ❌ não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.
+            X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.
         </div>
 
         <div class="roulette-area" id="rouletteArea">
@@ -892,7 +893,7 @@ button {
 
         <div class="roulette-explanation">
             <strong>Jogue seu valor e multiplique!</strong> Ex.: R$ 10 × 3 = R$ 30<br>
-            <small>❌ não gera prêmio e o valor apostado é perdido • 🍀 concede um giro grátis automático<br>
+            <small>X não gera prêmio e o valor apostado é perdido • 🍀 concede um giro grátis automático<br>
             Aposte de R$ 0,50 a R$ 100 • Multiplicadores de até 100×</small>
         </div>
 
@@ -1058,10 +1059,10 @@ const ROLETAS = {
     sorte: {
         title: "Roda da Sorte",
         subtitle: "Escolha seu valor e gire a roda.",
-        rules: "❌ não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
+        rules: "X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
         segments: [
-            "❌", "2x", "❌", "3x", "❌",
-            "4x", "❌", "5x", "❌", "🍀"
+            "X", "2x", "X", "3x", "X",
+            "4x", "X", "5x", "X", "🍀"
         ]
     }
 };
@@ -1648,14 +1649,14 @@ function criarRoda() {
     wheel.style.transform = "rotate(0deg)";
 
     const colors = [
-        "#111214", "#d99a0a", "#111214", "#651079", "#111214",
-        "#0a3971", "#111214", "#d41468", "#111214", "#007b42"
+        "#101114", "#f6b51b", "#101114", "#6412c9", "#101114",
+        "#0877e8", "#101114", "#e50068", "#101114", "#08a51a"
     ];
     const total = roleta.segments.length;
     const angle = 360 / total;
 
     for (let i = 0; i < total; i++) {
-        const start = i * angle;
+        const start = i * angle - 108;
         const end = start + angle;
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", sectorPath(500, 500, 430, start, end));
@@ -1675,7 +1676,7 @@ function criarRoda() {
         const rotate = mid > 90 && mid < 270 ? mid + 180 : mid;
 
         if (normalized === "❌" || normalized === "X") {
-            svgText(labelsGroup, "×", p.x, p.y, "roulette-label loss", rotate);
+            svgText(labelsGroup, "X", p.x, p.y, "roulette-label loss", rotate);
         } else if (normalized === "🍀") {
             svgText(labelsGroup, "🍀", p.x, p.y, "roulette-label sorte", rotate);
         } else if (/^\d+X$/.test(normalized)) {
@@ -1774,7 +1775,7 @@ function selecionarFatia(index) {
 
 function formatarResultadoRoleta(valor) {
     const v = String(valor || "").toUpperCase();
-    if (v === "❌" || v === "X") return "❌";
+    if (v === "❌" || v === "X") return "X";
     if (v === "🍀") return "🍀";
     if (/^\d+X$/.test(v)) return v;
     return v;
@@ -2150,7 +2151,7 @@ async function girarRoleta() {
             resultMain.textContent = "🍀";
             resultPrize.textContent = "Giro grátis automático!";
         } else {
-            resultMain.textContent = "❌";
+            resultMain.textContent = "X";
             resultPrize.textContent = "Aposta sem prêmio nesta rodada.";
         }
 
@@ -2313,7 +2314,7 @@ async function girarRoletaGratis() {
             resultMain.textContent = "🍀";
             resultPrize.textContent = "Outro giro grátis!";
         } else {
-            resultMain.textContent = "❌";
+            resultMain.textContent = "X";
             resultPrize.textContent = "O giro grátis terminou sem prêmio.";
         }
         await carregarSaldoServidor();
