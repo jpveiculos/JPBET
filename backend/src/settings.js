@@ -178,12 +178,7 @@ const configuracoesPadrao = [
 
   [
     "roulette_segments_json",
-    "[{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"4x\",\"type\":\"prize\",\"multiplier\":4,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"probability\":10},{\"label\":\"❌\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"probability\":10}]",
-  ],
-
-  [
-    "roulette_sound_enabled",
-    "true"
+    "[{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10,\"color\":\"#17191b\"},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":10,\"color\":\"#f6b719\"},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10,\"color\":\"#17191b\"},{\"label\":\"3x\",\"type\":\"prize\",\"multiplier\":3,\"probability\":10,\"color\":\"#6c18d9\"},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10,\"color\":\"#17191b\"},{\"label\":\"4x\",\"type\":\"prize\",\"multiplier\":4,\"probability\":10,\"color\":\"#1476df\"},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10,\"color\":\"#17191b\"},{\"label\":\"5x\",\"type\":\"prize\",\"multiplier\":5,\"probability\":10,\"color\":\"#e9006b\"},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":10,\"color\":\"#17191b\"},{\"label\":\"🍀\",\"type\":\"sorte\",\"multiplier\":0,\"probability\":10,\"color\":\"#12a91c\"}]"
   ],
 
   [
@@ -406,35 +401,28 @@ async function inicializarConfiguracoes() {
       );
     }
 
-    // Garante a primeira implantação do modelo atual de 10 fatias.
-    // Depois que estiver em 10 fatias, alterações feitas pelo administrador permanecem.
+    // Migra somente o modelo antigo padrão da roleta. Configurações
+    // personalizadas diferentes continuam intactas.
     const rouletteCurrent = await pool.query(`
       SELECT setting_value FROM site_settings
       WHERE setting_key = 'roulette_segments_json' LIMIT 1
     `);
     const currentRoulette = String(rouletteCurrent.rows[0]?.setting_value || '');
-    let precisaAtualizarRoleta = true;
+    let deveMigrarRoleta = false;
     try {
       const atual = JSON.parse(currentRoulette);
-      const esperadoLista = JSON.parse(configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')[1]);
-      precisaAtualizarRoleta = !Array.isArray(atual) || atual.length !== 10 || atual.some((segmento, index) => {
-        const esperado = esperadoLista[index];
-        return String(segmento?.label || '') !== esperado.label
-          || String(segmento?.type || '') !== esperado.type
-          || Number(segmento?.multiplier || 0) !== esperado.multiplier;
-      });
+      deveMigrarRoleta = Array.isArray(atual) && (
+        atual.length !== 10 ||
+        atual.some((item) => Object.prototype.hasOwnProperty.call(item || {}, 'weight')) ||
+        atual.some((item) => String(item?.label || '').toLowerCase() === '100x')
+      );
     } catch (_) {
-      precisaAtualizarRoleta = true;
+      deveMigrarRoleta = true;
     }
-
-    if (precisaAtualizarRoleta) {
+    if (deveMigrarRoleta || currentRoulette.includes('JOGUE NOVAMENTE') || currentRoulette.includes('"multiplier":1')) {
       const novoPadrao = configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')?.[1];
       if (novoPadrao) {
-        await pool.query(`
-          UPDATE site_settings
-          SET setting_value = $1, updated_at = CURRENT_TIMESTAMP
-          WHERE setting_key = 'roulette_segments_json'
-        `, [novoPadrao]);
+        await pool.query(`UPDATE site_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = 'roulette_segments_json'`, [novoPadrao]);
       }
     }
 

@@ -365,80 +365,30 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "4x",
-    "type": "prize",
-    "multiplier": 4,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
-    "probability": 10
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
-  },
-  {
-    "label": "🍀",
-    "type": "sorte",
-    "multiplier": 0,
-    "probability": 10
-  }
+  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
+  { label: "2x", type: "prize", multiplier: 2, probability: 10, color: "#f6b719" },
+  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
+  { label: "3x", type: "prize", multiplier: 3, probability: 10, color: "#6c18d9" },
+  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
+  { label: "4x", type: "prize", multiplier: 4, probability: 10, color: "#1476df" },
+  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
+  { label: "5x", type: "prize", multiplier: 5, probability: 10, color: "#e9006b" },
+  { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
+  { label: "🍀", type: "sorte", multiplier: 0, probability: 10, color: "#12a91c" }
 ];
 
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length !== 10) {
-      throw new Error("A roleta precisa ter exatamente 10 fatias.");
+    if (!Array.isArray(parsed) || parsed.length < 2 || parsed.length > 40) {
+      throw new Error("A roleta precisa ter entre 2 e 40 fatias.");
     }
 
     return parsed.map((segmento, index) => {
       const label = String(segmento?.label ?? "").trim();
       const type = String(segmento?.type ?? "zero").trim().toLowerCase();
       const multiplier = Number(segmento?.multiplier ?? 0);
-      const weight = Number(segmento?.probability ?? segmento?.weight ?? 0);
+      const weight = Number(segmento?.probability ?? 0);
 
       if (!label || !["zero", "sorte", "prize"].includes(type)) {
         throw new Error(`Configuração inválida na fatia ${index + 1}.`);
@@ -455,7 +405,7 @@ function carregarSegmentosRoleta(valor) {
       if (type !== "prize" && multiplier !== 0) {
         throw new Error(`A fatia ${index + 1} não pode ter multiplicador de prêmio.`);
       }
-      return { label, type, multiplier, probability: weight };
+      return { label, type, multiplier, probability: weight, color: String(segmento?.color ?? "") };
     });
   } catch (error) {
     console.warn("Configuração da roleta inválida; usando padrão:", error.message);
@@ -519,7 +469,7 @@ app.post(
         return res.status(400).json({ ok: false, message: "Usuário inválido." });
       }
 
-      if (!Number.isFinite(requestedBet) || requestedBet <= 0) {
+      if (!requestedFreeSpin && (!Number.isFinite(requestedBet) || requestedBet <= 0)) {
         return res.status(400).json({ ok: false, message: "Valor da aposta inválido." });
       }
 
@@ -710,7 +660,7 @@ app.post(
             ? Math.max(0, freeSpinCount - 1 + (ganhouReplay ? 1 : 0))
             : freeSpinCount + (ganhouReplay ? 1 : 0),
           rtp: rtp,
-          weight: Number(resultado.weight || 0)
+          weight: Number(resultado.probability || 0)
         },
         user: {
           id: user.id,
