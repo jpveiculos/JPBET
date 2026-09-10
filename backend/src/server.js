@@ -510,11 +510,9 @@ const ROLETTE_DEFAULT_SEGMENTS = [
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if ((type !== "zero" && !label) || !["zero", "sorte", "prize"].includes(type)) {
-  throw new Error(`Configuração inválida na fatia ${index + 1}.`);
-} 
-  throw new Error(`Configuração inválida na fatia ${index + 1}.`);
-}
+
+    if (!Array.isArray(parsed) || parsed.length !== 20) {
+      throw new Error("A roleta precisa ter exatamente 20 fatias.");
     }
 
     return parsed.map((segmento, index) => {
@@ -523,27 +521,59 @@ function carregarSegmentosRoleta(valor) {
       const multiplier = Number(segmento?.multiplier ?? 0);
       const weight = Number(segmento?.probability ?? 0);
 
-      if ((type !== "zero" && !label) || !["zero", "sorte", "prize"].includes(type)) {
-       throw new Error(`Configuração inválida na fatia ${index + 1}.`);
-      } 
-        throw new Error(`Configuração inválida na fatia ${index + 1}.`);
+      if (
+        (type !== "zero" && !label) ||
+        !["zero", "sorte", "prize"].includes(type)
+      ) {
+        throw new Error(
+          `Configuração inválida na fatia ${index + 1}.`
+        );
       }
+
       if (!Number.isFinite(weight) || weight < 0) {
-        throw new Error(`Peso inválido na fatia ${index + 1}.`);
+        throw new Error(
+          `Peso inválido na fatia ${index + 1}.`
+        );
       }
-      if (!Number.isFinite(multiplier) || multiplier < 0 || multiplier > 100) {
-        throw new Error(`Multiplicador inválido na fatia ${index + 1}.`);
+
+      if (
+        !Number.isFinite(multiplier) ||
+        multiplier < 0 ||
+        multiplier > 100
+      ) {
+        throw new Error(
+          `Multiplicador inválido na fatia ${index + 1}.`
+        );
       }
-      if (type === "prize" && (multiplier < 2 || multiplier > 100)) {
-        throw new Error(`O multiplicador da fatia ${index + 1} deve estar entre 2x e 100x.`);
+
+      if (
+        type === "prize" &&
+        (multiplier < 2 || multiplier > 100)
+      ) {
+        throw new Error(
+          `O multiplicador da fatia ${index + 1} deve estar entre 2x e 100x.`
+        );
       }
+
       if (type !== "prize" && multiplier !== 0) {
-        throw new Error(`A fatia ${index + 1} não pode ter multiplicador de prêmio.`);
+        throw new Error(
+          `A fatia ${index + 1} não pode ter multiplicador de prêmio.`
+        );
       }
-      return { label, type, multiplier, probability: weight };
+
+      return {
+        label,
+        type,
+        multiplier,
+        probability: weight
+      };
     });
   } catch (error) {
-    console.warn("Configuração da roleta inválida; usando padrão:", error.message);
+    console.warn(
+      "Configuração da roleta inválida; usando padrão:",
+      error.message
+    );
+
     return ROLETTE_DEFAULT_SEGMENTS;
   }
 }
