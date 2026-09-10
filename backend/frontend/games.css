@@ -624,157 +624,241 @@ button{
 
 
 /* =========================================================
-   ROLETA
-========================================================= */
-
-.roulette-panel{
-  padding-bottom:10px;
-}
-
-.roulette-machine{
-  position:relative;
-  width:min(560px,94vw);
-  aspect-ratio:1;
-  margin:0 auto 16px;
-  border-radius:50%;
-  padding:14px;
-  background:
-    radial-gradient(
-      circle,
-      #1b1408 0 70%,
-      #090909 71% 100%
-    );
-  box-shadow:
-    0 25px 60px rgba(0,0,0,.65),
-    inset 0 0 0 5px #6f4308,
-    inset 0 0 0 10px #f0b51f,
-    inset 0 0 0 14px #5a3505;
-}
-
-.roulette-machine::before{
-  content:"";
-  position:absolute;
-  inset:5px;
-  border-radius:50%;
-  background:
-    radial-gradient(
-      circle at 50% 3%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 68% 8%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 85% 20%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 96% 39%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 98% 61%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 88% 80%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 70% 93%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 50% 97%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 30% 93%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 12% 80%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 2% 61%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 4% 39%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 15% 20%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    ),
-    radial-gradient(
-      circle at 32% 8%,
-      #fff6b0 0 1.5%,
-      transparent 1.8%
-    );
-
-  box-shadow:
-    0 0 20px rgba(255,197,55,.45);
-
-  pointer-events:none;
-  z-index:1;
-}
-
-
-/* =========================================================
-   RODA
+   RODA — 15 FATIAS
 ========================================================= */
 
 .roulette-wheel{
   position:absolute;
   inset:42px;
+
+  width:auto;
+  height:auto;
+
   border-radius:50%;
   overflow:hidden;
+
   border:7px solid #f1b622;
+
+  background:
+    conic-gradient(
+      from -90deg,
+
+      #D4AF37 0deg 24deg,
+      #111111 24deg 48deg,
+
+      #D4AF37 48deg 72deg,
+      #111111 72deg 96deg,
+
+      #D4AF37 96deg 120deg,
+      #111111 120deg 144deg,
+
+      #D4AF37 144deg 168deg,
+      #111111 168deg 192deg,
+
+      #D4AF37 192deg 216deg,
+      #111111 216deg 240deg,
+
+      #D4AF37 240deg 264deg,
+      #111111 264deg 288deg,
+
+      #D4AF37 288deg 312deg,
+      #111111 312deg 336deg,
+
+      #D4AF37 336deg 360deg
+    );
 
   box-shadow:
     inset 0 0 0 4px #8e5a08,
     inset 0 0 35px #000,
-    0 0 18px rgba(255,194,45,.22);
+    0 0 18px rgba(255,194,45,.35);
+
+  transform-origin:center center;
+
+  transform:rotate(0deg);
 
   transition:
     transform
     4.8s
     cubic-bezier(.12,.72,.12,1);
-
-  transform:rotate(0deg);
 }
+
+
+/* =========================================================
+   DIVISÕES DAS 15 FATIAS
+========================================================= */
+
+.roulette-wheel::after{
+  content:"";
+
+  position:absolute;
+  inset:0;
+
+  border-radius:50%;
+
+  pointer-events:none;
+
+  z-index:4;
+
+  background:
+    repeating-conic-gradient(
+      from -90deg,
+      transparent 0deg 23.2deg,
+      rgba(255,220,120,.95) 23.2deg 24deg
+    );
+}
+
+
+/* =========================================================
+   ARO INTERNO
+========================================================= */
 
 .roulette-wheel::before{
   content:"";
+
   position:absolute;
+
   inset:7%;
+
   border-radius:50%;
+
   border:3px solid rgba(255,220,120,.75);
 
   box-shadow:
-    inset 0 0 0 2px rgba(0,0,0,.5),
+    inset 0 0 0 2px rgba(0,0,0,.55),
     0 0 12px rgba(255,218,110,.25);
 
   pointer-events:none;
-  z-index:2;
+
+  z-index:6;
 }
 
+
+/* =========================================================
+   NÚMEROS / TEXTOS DAS FATIAS
+========================================================= */
+
+.roulette-label{
+  position:absolute;
+
+  left:50%;
+  top:50%;
+
+  width:28%;
+  height:28%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transform-origin:center center;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size:
+    clamp(
+      13px,
+      3.8vw,
+      25px
+    );
+
+  font-weight:1000;
+
+  line-height:1;
+
+  text-align:center;
+
+  pointer-events:none;
+
+  z-index:5;
+
+  white-space:nowrap;
+
+  text-shadow:
+    0 2px 3px rgba(0,0,0,.9);
+}
+
+
+/* =========================================================
+   2X — DOURADO
+========================================================= */
+
+.roulette-label.prize{
+  color:#111111;
+
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.5),
+    0 2px 3px rgba(0,0,0,.95);
+
+  filter:
+    drop-shadow(
+      0 0 5px
+      rgba(255,225,100,.5)
+    );
+}
+
+
+/* =========================================================
+   X — PRETO
+========================================================= */
+
+.roulette-label.zero{
+  color:#f7d45a;
+
+  text-shadow:
+    0 2px 3px #000,
+    0 0 5px rgba(255,215,80,.4);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width:600px){
+
+  .roulette-machine{
+    width:min(520px,94vw);
+
+    padding:12px;
+  }
+
+  .roulette-wheel{
+    inset:35px;
+
+    border-width:6px;
+  }
+
+  .roulette-label{
+    width:30%;
+    height:30%;
+
+    font-size:
+      clamp(
+        12px,
+        4vw,
+        21px
+      );
+  }
+}
+
+
+/* =========================================================
+   IPHONE PEQUENO
+========================================================= */
+
+@media (max-width:390px){
+
+  .roulette-wheel{
+    inset:30px;
+  }
+
+  .roulette-label{
+    font-size:13px;
+  }
+}
 
 /* =========================================================
    NÚCLEO CENTRAL
