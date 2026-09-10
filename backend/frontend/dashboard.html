@@ -536,13 +536,18 @@ button {
     transition: transform .15s, filter .15s;
 }
 
+.roulette-center-button::before {
+    content: "♛";
+    display: block;
+    font-size: 24px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
 .roulette-center-button:active {
     transform: translate(-50%, -50%) scale(.95);
 }
 
-.roulette-center-button.spinning {
-    animation: spinButtonPulse .45s infinite alternate;
-}
 
 .pointer {
     position: absolute;
@@ -583,15 +588,6 @@ button {
     filter: drop-shadow(0 0 5px rgba(255,35,35,.8));
 }
 
-@keyframes spinButtonPulse {
-    from { filter: brightness(1); }
-    to { filter: brightness(1.5); }
-}
-
-@keyframes rouletteSectorFlash {
-    from { opacity: 1; filter: brightness(1.25) drop-shadow(0 0 4px #fff); }
-    to { opacity: .42; filter: brightness(2.2) drop-shadow(0 0 18px #ffd700); }
-}
 
 .bet-area {
     margin-top: 13px;
@@ -899,7 +895,7 @@ button {
         </div>
 
         <div class="rules" id="rouletteRules">
-            2X paga o dobro do valor apostado. As áreas douradas não possuem multiplicador.
+            Os multiplicadores são 2×, 3×, 4× e 5×. As áreas douradas não possuem multiplicador.
         </div>
 
         <div class="roulette-area" id="rouletteArea">
@@ -912,7 +908,7 @@ button {
                 <svg
                     id="rouletteSvg"
                     viewBox="0 0 500 500"
-                    aria-label="Roleta com 15 fatias"
+                    aria-label="Roleta com 20 posições"
                     role="img"
                 ></svg>
             </div>
@@ -933,7 +929,7 @@ button {
         <div class="roulette-explanation">
             <strong>Jogue seu valor e multiplique!</strong> Ex.: R$ 10 × 3 = R$ 30<br>
             <small>As áreas douradas não possuem multiplicador.<br>
-            Aposte de R$ 0,50 a R$ 100 • Prêmio: 2×</small>
+            Aposte de R$ 0,50 a R$ 100 • Prêmios: 2×, 3×, 4× e 5×</small>
         </div>
 
         <div class="bet-area">
@@ -1082,7 +1078,7 @@ let configuracoes = {
     roulette_enabled: "true",
     roulette_min_bet: "0.50",
     roulette_max_bet: "100",
-    roulette_animation_ms: "1800",
+    roulette_animation_ms: "950",
     roulette_sound_enabled: "true",
 
     roulette_primary_color: "#f5c542",
@@ -1099,9 +1095,9 @@ const ROLETAS = {
         rules: "A roleta tem 20 fatias: 4 multiplicadores e 16 espaços dourados.",
         segments: [
             "2X", "", "", "", "",
-            "2X", "", "", "", "",
-            "2X", "", "", "", "",
-            "2X", "", "", "", ""
+            "3X", "", "", "", "",
+            "4X", "", "", "", "",
+            "5X", "", "", "", ""
         ]
     }
 };
@@ -1316,7 +1312,14 @@ async function carregarConfiguracoes() {
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
             if (Array.isArray(segmentos) && segmentos.length === 20) {
-                ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
+                ROLETAS.sorte.segments = segmentos.map(item => {
+                    const tipo = String(item?.type || "zero").toLowerCase();
+                    const multiplicador = Number(item?.multiplier || 0);
+                    if (tipo === "prize" && multiplicador > 0) {
+                        return `${multiplicador}X`;
+                    }
+                    return "";
+                });
             }
         } catch (_) {}
 
@@ -1644,21 +1647,6 @@ function fecharRoleta() {
         "none";
 }
 
-function polar(cx, cy, radius, angleDeg) {
-    const rad = (angleDeg - 90) * Math.PI / 180;
-    return {
-        x: cx + radius * Math.cos(rad),
-        y: cy + radius * Math.sin(rad)
-    };
-}
-
-function sectorPath(cx, cy, radius, startDeg, endDeg) {
-    const start = polar(cx, cy, radius, endDeg);
-    const end = polar(cx, cy, radius, startDeg);
-    const largeArc = (endDeg - startDeg) > 180 ? 1 : 0;
-    return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
-}
-
 function svgText(parent, text, x, y, className, rotate = 0) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", "text");
     node.textContent = text;
@@ -1714,9 +1702,9 @@ function criarRoda() {
 
     /*
      * 20 fatias reais:
-     * - 4 fatias pretas grandes de 45° com 2X
+     * - 4 fatias pretas grandes de 45° com 2X, 3X, 4X e 5X
      * - 16 fatias douradas pequenas de 11,25°
-     * - existem exatamente 3 fatias douradas entre cada multiplicador
+     * - existem exatamente 4 posições douradas entre cada multiplicador
      *
      * As linhas internas das fatias douradas ficam ocultas de propósito,
      * dando a aparência de uma única área dourada contínua.
@@ -1768,12 +1756,21 @@ function criarRoda() {
             const p = polar(cx, cy, 157, centerDeg);
 
             const text = document.createElementNS(ns, "text");
-            text.textContent = String(label || "2X").toUpperCase();
+            const texto = String(label || "2X").toUpperCase();
+            const cores = {
+                0: "#25e66b",
+                5: "#39a7ff",
+                10: "#ffb52e",
+                15: "#ff3b30"
+            };
+            text.textContent = texto;
             text.setAttribute("x", p.x);
             text.setAttribute("y", p.y);
             text.setAttribute("class", "roulette-label multiplier");
             text.setAttribute("font-size", "58");
-            text.setAttribute("transform", `rotate(${centerDeg} ${p.x} ${p.y})`);
+            text.setAttribute("fill", cores[index] || "#25e66b");
+            /* Compensa a rotação da roda para o multiplicador terminar legível. */
+            text.setAttribute("transform", `rotate(${centerDeg} ${p.x} ${p.y}) rotate(${-centerDeg} ${p.x} ${p.y})`);
             group.appendChild(text);
         }
 
@@ -1940,7 +1937,6 @@ function tocarSom(tipo = "click") {
 function animarRoleta(indiceResultado) {
     return new Promise(resolve => {
         const wheel = document.getElementById("wheel");
-        const total = 20;
         const alvoIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
         const visualIndex = alvoIndices[indiceResultado] ?? 0;
 
