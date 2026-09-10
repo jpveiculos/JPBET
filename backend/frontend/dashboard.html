@@ -1079,7 +1079,7 @@ let configuracoes = {
     roulette_enabled: "true",
     roulette_min_bet: "0.50",
     roulette_max_bet: "100",
-    roulette_animation_ms: "950",
+    roulette_animation_ms: "720",
     roulette_sound_enabled: "true",
 
     roulette_primary_color: "#f5c542",
@@ -1770,8 +1770,10 @@ function criarRoda() {
             text.setAttribute("class", "roulette-label multiplier");
             text.setAttribute("font-size", "62");
             text.setAttribute("fill", cores[index] || "#25e66b");
-            /* Compensa a rotação da roda para o multiplicador terminar legível. */
-            text.setAttribute("transform", `rotate(${centerDeg} ${p.x} ${p.y}) rotate(${-centerDeg} ${p.x} ${p.y})`);
+            text.dataset.x = String(p.x);
+            text.dataset.y = String(p.y);
+            /* A animação atualiza esta rotação para manter o número sempre de pé. */
+            text.setAttribute("transform", `rotate(0 ${p.x} ${p.y})`);
             group.appendChild(text);
         }
 
@@ -1935,16 +1937,20 @@ function tocarSom(tipo = "click") {
     }
 }
 
+function manterNumerosRetos(rotacao) {
+    const labels = document.querySelectorAll("#rouletteSvg .roulette-label.multiplier");
+    labels.forEach(label => {
+        const x = Number(label.dataset.x || label.getAttribute("x") || 0);
+        const y = Number(label.dataset.y || label.getAttribute("y") || 0);
+        label.setAttribute("transform", `rotate(${-rotacao} ${x} ${y})`);
+    });
+}
+
 function animarRoleta(indiceResultado) {
     return new Promise(resolve => {
         const wheel = document.getElementById("wheel");
         const visualIndex = Number(indiceResultado);
 
-        /*
-         * A posição é a mesma posição lógica enviada pelo servidor.
-         * A roleta sempre faz pelo menos duas voltas completas rápidas
-         * antes de entrar na pequena fase final de seleção.
-         */
         let centro;
         if ([0, 5, 10, 15].includes(visualIndex)) {
             centro = Math.floor(visualIndex / 5) * 90;
@@ -1961,30 +1967,60 @@ function animarRoleta(indiceResultado) {
         let ajuste = moduloAlvo - moduloAtual;
         if (ajuste < 0) ajuste += 360;
 
-        /* Fase 1: giro completo rápido, sem aquele arrasto lento. */
-        const primeiraFase = atual + 720 + Math.random() * 180;
+        /* Giro rápido: 3 voltas completas antes de alinhar o resultado. */
+        const primeiraFase = atual + 1080 + Math.random() * 90;
         const final = primeiraFase + ajuste;
 
         wheel.style.transition = "none";
         wheel.style.transform = `rotate(${atual}deg)`;
+        manterNumerosRetos(atual);
 
         requestAnimationFrame(() => {
-            wheel.style.transition = "transform 760ms linear";
-            wheel.style.transform = `rotate(${primeiraFase}deg)`;
+            const inicio = performance.now();
+            const duracao = 720;
 
-            setTimeout(() => {
-                /* Fase 2: somente a seleção final, curta e firme. */
-                wheel.style.transition = "transform 220ms cubic-bezier(.25,.85,.35,1)";
-                wheel.style.transform = `rotate(${final}deg)`;
-                roletaRotacaoAtual = final;
+            function giroContinuo(agora) {
+                const progresso = Math.min(1, (agora - inicio) / duracao);
+                const rotacao = atual + (primeiraFase - atual) * progresso;
+                wheel.style.transform = `rotate(${rotacao}deg)`;
+                manterNumerosRetos(rotacao);
 
-                setTimeout(resolve, 245);
-            }, 775);
+                if (progresso < 1) {
+                    requestAnimationFrame(giroContinuo);
+                    return;
+                }
+
+                const inicioFinal = performance.now();
+                const duracaoFinal = 170;
+
+                function encaixarResultado(agoraFinal) {
+                    const p = Math.min(1, (agoraFinal - inicioFinal) / duracaoFinal);
+                    /* Pequena desaceleração apenas no encaixe final, sem aquele giro arrastado. */
+                    const ease = 1 - Math.pow(1 - p, 2);
+                    const rotacaoFinal = primeiraFase + ajuste * ease;
+                    wheel.style.transform = `rotate(${rotacaoFinal}deg)`;
+                    manterNumerosRetos(rotacaoFinal);
+
+                    if (p < 1) {
+                        requestAnimationFrame(encaixarResultado);
+                    } else {
+                        roletaRotacaoAtual = final;
+                        wheel.style.transform = `rotate(${final}deg)`;
+                        manterNumerosRetos(final);
+                        resolve();
+                    }
+                }
+
+                requestAnimationFrame(encaixarResultado);
+            }
+
+            requestAnimationFrame(giroContinuo);
         });
 
         tocarSom("click");
     });
 }
+
 async function destacarVencedora() {
     /* Sem efeitos de brilho/pisca: a roleta permanece leve. */
 }
