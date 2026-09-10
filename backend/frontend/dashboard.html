@@ -411,7 +411,7 @@ button {
 
 .roulette-area {
     position: relative;
-    width: min(520px, 94vw);
+    width: min(500px, 88vw);
     aspect-ratio: 1;
     margin: 16px auto 10px;
     filter: drop-shadow(0 18px 35px rgba(0,0,0,.65));
@@ -439,10 +439,10 @@ button {
     pointer-events: none;
 }
 
-
-.roulette-sector.selected {
-    filter: brightness(1.45) drop-shadow(0 0 8px rgba(255,215,0,.9));
+.roulette-sector:hover {
+    filter: brightness(1.16);
 }
+
 
 .roulette-sector.winner {
     animation: rouletteSectorFlash .22s ease-in-out infinite alternate;
@@ -472,31 +472,24 @@ button {
 }
 
 .roulette-label.loss {
-    font-size: clamp(54px, 10vw, 88px);
-    fill: #ff2636;
+    fill: #ff4b58;
     stroke: rgba(35, 3, 7, .88);
     filter: drop-shadow(0 0 7px rgba(255,45,65,.42));
 }
 
 .roulette-label.sorte {
-    font-size: clamp(54px, 9vw, 82px);
-    fill: #8cff3b;
+    fill: #9ff07a;
     stroke: rgba(12, 30, 8, .8);
     filter: drop-shadow(0 0 9px rgba(130,255,80,.4));
 }
 
-.roulette-label.free-spin-text {
-    font-size: clamp(14px, 2.5vw, 24px);
-    letter-spacing: 1px;
-    stroke-width: 5px;
-}
-
-.roulette-label.mult-2, .roulette-label.mult-3 { font-size: clamp(48px, 8vw, 72px); }
-.roulette-label.mult-5, .roulette-label.mult-10 { font-size: clamp(52px, 9vw, 78px); }
-.roulette-label.mult-20, .roulette-label.mult-30 { font-size: clamp(56px, 10vw, 84px); }
-.roulette-label.mult-50 { font-size: clamp(60px, 10vw, 90px); }
-.roulette-label.mult-75 { font-size: clamp(62px, 10vw, 94px); }
-.roulette-label.mult-100 { font-size: clamp(62px, 10vw, 96px); }
+.roulette-label.mult-2, .roulette-label.mult-3, .roulette-label.mult-4 { font-size: clamp(34px, 6vw, 52px); }
+.roulette-label.mult-5 { font-size: clamp(38px, 7vw, 58px); }
+.roulette-label.mult-10 { font-size: clamp(34px, 6vw, 52px); }
+.roulette-label.mult-20, .roulette-label.mult-30 { font-size: clamp(34px, 6vw, 48px); }
+.roulette-label.mult-50 { font-size: clamp(40px, 7vw, 58px); }
+.roulette-label.mult-75 { font-size: clamp(46px, 8vw, 68px); }
+.roulette-label.mult-100 { font-size: clamp(50px, 9vw, 78px); }
 
 .roulette-label.small {
     font-size: 25px;
@@ -559,51 +552,39 @@ button {
     transition: transform .15s, filter .15s;
 }
 
-.roulette-center-button::before {
-    content: "♛";
-    display: block;
-    font-size: clamp(20px, 4vw, 30px);
-    line-height: .75;
-    margin-bottom: 6px;
-    color: #ffd84a;
-    text-shadow: 0 0 8px rgba(255,210,60,.65);
-}
-
 .roulette-center-button:active {
     transform: translate(-50%, -50%) scale(.95);
 }
 
 .roulette-center-button.spinning {
-    animation: none;
-    filter: brightness(1.12);
+    animation: spinButtonPulse .45s infinite alternate;
 }
 
 .pointer {
     position: absolute;
     z-index: 60;
-    top: -1px;
+    top: -4px;
     left: 50%;
     transform: translateX(-50%);
-    width: 58px;
-    height: 78px;
-    border-radius: 30px 30px 8px 8px;
-    background: linear-gradient(145deg, #ffe78a, #b96c00 70%);
-    clip-path: polygon(50% 100%, 4% 54%, 8% 27%, 22% 7%, 50% 0, 78% 7%, 92% 27%, 96% 54%);
-    box-shadow: 0 3px 12px rgba(0,0,0,.65), inset 0 0 0 3px rgba(255,231,138,.7);
+    width: 48px;
+    height: 64px;
+    background: linear-gradient(145deg, #fff2a8 0%, #f2bd32 45%, #a96100 100%);
+    clip-path: polygon(6% 0, 94% 0, 78% 65%, 50% 100%, 22% 65%);
+    filter: drop-shadow(0 4px 7px rgba(0,0,0,.75));
     pointer-events: none;
 }
 
 .pointer::after {
     content: "";
     position: absolute;
-    width: 27px;
-    height: 27px;
+    width: 30px;
+    height: 40px;
     left: 50%;
-    top: 14px;
+    top: 7px;
     transform: translateX(-50%);
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fff3ad 0 10%, #ffcf3d 28%, #8f5100 75%);
-    box-shadow: 0 0 10px rgba(255,214,73,.8);
+    background: linear-gradient(180deg, #ff6b6b 0%, #e71919 48%, #850000 100%);
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    filter: drop-shadow(0 0 7px rgba(255,40,40,.45));
 }
 
 @keyframes spinButtonPulse {
@@ -856,7 +837,7 @@ button {
         </div>
 
         <div class="rules" id="rouletteRules">
-            ❌ não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.
+            X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.
         </div>
 
         <div class="roulette-area" id="rouletteArea">
@@ -910,7 +891,7 @@ button {
 
         <div class="roulette-explanation">
             <strong>Jogue seu valor e multiplique!</strong> Ex.: R$ 10 × 3 = R$ 30<br>
-            <small>❌ não gera prêmio e o valor apostado é perdido • 🍀 concede um giro grátis automático<br>
+            <small>X não gera prêmio e o valor apostado é perdido • 🍀 concede um giro grátis automático<br>
             Aposte de R$ 0,50 a R$ 100 • Multiplicadores de até 100×</small>
         </div>
 
@@ -1055,14 +1036,15 @@ let tokenAtual = null;
 let roletaAtual = null;
 let roletaGirando = false;
 
-let fatiaSelecionada = null;
-let indiceFatiaSelecionada = null;
 
 let configuracoes = {
     roulette_enabled: "true",
+    roulette_title: "Roda da Sorte",
+    roulette_subtitle: "Escolha seu valor e gire a roda.",
+    roulette_rules: "X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
     roulette_min_bet: "0.50",
     roulette_max_bet: "100",
-    roulette_animation_ms: "2600",
+    roulette_animation_ms: "4800",
     roulette_sound_enabled: "true",
 
     roulette_primary_color: "#f5c542",
@@ -1074,21 +1056,10 @@ let configuracoes = {
 
 const ROLETAS = {
     sorte: {
-        title: "Roda da Sorte",
-        subtitle: "Escolha seu valor e gire a roda.",
-        rules: "❌ não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.",
-        segments: [
-            { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-            { label: "2x", type: "prize", multiplier: 2, probability: 10, color: "#f6b719" },
-            { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-            { label: "3x", type: "prize", multiplier: 3, probability: 10, color: "#6c18d9" },
-            { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-            { label: "4x", type: "prize", multiplier: 4, probability: 10, color: "#1476df" },
-            { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-            { label: "5x", type: "prize", multiplier: 5, probability: 10, color: "#e9006b" },
-            { label: "X", type: "zero", multiplier: 0, probability: 10, color: "#17191b" },
-            { label: "🍀", type: "sorte", multiplier: 0, probability: 10, color: "#12a91c" }
-        ]
+        title: "",
+        subtitle: "",
+        rules: "",
+        segments: []
     }
 };
 
@@ -1301,14 +1272,8 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length >= 2 && segmentos.length <= 40) {
-                ROLETAS.sorte.segments = segmentos.map((item, index) => ({
-                    label: String(item?.label ?? "X"),
-                    type: String(item?.type ?? ((String(item?.label ?? "").toUpperCase() === "🍀") ? "sorte" : (String(item?.label ?? "").toUpperCase() === "X" || String(item?.label ?? "") === "❌") ? "zero" : "prize")),
-                    multiplier: Number(item?.multiplier ?? 0) || 0,
-                    probability: Number(item?.probability ?? item?.weight ?? 0) || 0,
-                    color: String(item?.color ?? "")
-                }));
+            if (Array.isArray(segmentos) && segmentos.length >= 10 && segmentos.length <= 40) {
+                ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
             }
         } catch (_) {}
 
@@ -1587,8 +1552,6 @@ function abrirRoleta(tipo = "sorte") {
 
     roletaAtual = tipo;
 
-    fatiaSelecionada = null;
-    indiceFatiaSelecionada = null;
     roletaGirando = false;
 
     const roleta = ROLETAS[tipo];
@@ -1664,6 +1627,20 @@ function svgText(parent, text, x, y, className, rotate = 0) {
     return node;
 }
 
+function obterCorFatia(segmento, index) {
+    if (segmento?.color && /^#[0-9a-fA-F]{6}$/.test(segmento.color)) {
+        return segmento.color;
+    }
+    const primary = configuracoes.roulette_accent_color || configuracoes.roulette_primary_color || "#f5c542";
+    const loss = configuracoes.roulette_black_color || "#101114";
+    const green = configuracoes.roulette_green_color || "#08a51a";
+    const label = String(segmento?.label || "").toUpperCase();
+    if (segmento?.type === "sorte" || label === "🍀") return green;
+    if (segmento?.type === "zero" || label === "X") return loss;
+    const palette = [primary, "#6412c9", "#0877e8", "#e50068", "#f6b51b"];
+    return palette[index % palette.length];
+}
+
 function criarRoda() {
     const roleta = ROLETAS.sorte;
     const sectorsGroup = document.getElementById("wheelSectors");
@@ -1679,38 +1656,35 @@ function criarRoda() {
     wheel.style.transition = "none";
     wheel.style.transform = "rotate(0deg)";
 
-    const palette = ["#17191b", "#f6b719", "#17191b", "#6c18d9", "#17191b", "#1476df", "#17191b", "#e9006b", "#17191b", "#12a91c"];
     const total = roleta.segments.length;
     const angle = 360 / total;
-    const half = angle / 2;
 
     for (let i = 0; i < total; i++) {
-        const start = i * angle - half;
+        const segmento = roleta.segments[i];
+        const start = i * angle - 108;
         const end = start + angle;
-        const segmento = roleta.segments[i] || {};
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", sectorPath(500, 500, 430, start, end));
-        path.setAttribute("fill", segmento.color || palette[i % palette.length]);
-        path.setAttribute("stroke", "#f5c542");
+        path.setAttribute("fill", obterCorFatia(segmento, i));
+        path.setAttribute("stroke", configuracoes.roulette_accent_color || "#f4c542");
         path.setAttribute("stroke-width", "5");
         path.setAttribute("class", "roulette-sector");
         path.dataset.index = i;
         sectorsGroup.appendChild(path);
 
-        const mid = i * angle;
-        const p = polar(500, 500, 305, mid);
-        const label = String(segmento.label || "X");
+        const mid = start + angle / 2;
+        const p = polar(500, 500, 318, mid);
+        const label = String(segmento?.label || "");
         const normalized = label.toUpperCase();
         const rotate = mid > 90 && mid < 270 ? mid + 180 : mid;
 
         if (normalized === "❌" || normalized === "X") {
             svgText(labelsGroup, "X", p.x, p.y, "roulette-label loss", rotate);
         } else if (normalized === "🍀") {
-            svgText(labelsGroup, "🍀", p.x, p.y - 8, "roulette-label sorte", rotate);
-            svgText(labelsGroup, "GIRO GRÁTIS", p.x, p.y + 55, "roulette-label sorte free-spin-text", rotate);
+            svgText(labelsGroup, "🍀", p.x, p.y, "roulette-label sorte", rotate);
         } else if (/^\d+X$/.test(normalized)) {
             const mult = Number(normalized.replace("X", ""));
-            const multClass = `mult-${mult}`;
+            const multClass = mult >= 100 ? "mult-100" : mult >= 75 ? "mult-75" : mult >= 50 ? "mult-50" : mult >= 30 ? "mult-30" : mult >= 20 ? "mult-20" : mult >= 10 ? "mult-10" : mult >= 5 ? "mult-5" : `mult-${mult}`;
             svgText(labelsGroup, normalized, p.x, p.y, `roulette-label multiplier ${multClass}`, rotate);
         } else {
             svgText(labelsGroup, normalized, p.x, p.y, "roulette-label multiplier mult-2", rotate);
@@ -1740,7 +1714,7 @@ function criarRoda() {
 
 function formatarResultadoRoleta(valor) {
     const v = String(valor || "").toUpperCase();
-    if (v === "❌" || v === "X") return "❌";
+    if (v === "❌" || v === "X") return "X";
     if (v === "🍀") return "🍀";
     if (/^\d+X$/.test(v)) return v;
     return v;
@@ -1860,26 +1834,66 @@ function tocarSom(tipo = "click") {
 }
 
 function animarRoleta(indiceResultado) {
-    return new Promise(resolve => {
-        const wheel = document.getElementById("wheel");
-        const total = ROLETAS[roletaAtual].segments.length;
-        const angulo = 360 / total;
-        const alvo = (360 - (indiceResultado * angulo)) % 360;
-        const voltas = 5 + Math.floor(Math.random() * 2);
-        const rotacao = voltas * 360 + alvo;
-        const duracao = Math.min(3200, Math.max(2200, Number(configuracoes.roulette_animation_ms) || 2600));
 
-        wheel.style.transition = `transform ${duracao}ms cubic-bezier(.12,.72,.12,1)`;
+    return new Promise(resolve => {
+
+        const wheel =
+            document.getElementById("wheel");
+
+        const total =
+            ROLETAS[roletaAtual].segments.length;
+
+        const angulo =
+            360 / total;
+
+        /*
+         * O ponteiro está no topo.
+         *
+         * Levamos o centro da fatia vencedora
+         * até o ponteiro.
+         */
+        // Os setores já são desenhados com o centro da fatia 0
+        // exatamente no topo. Portanto, para levar qualquer setor
+        // ao ponteiro, a rotação deve ser múltipla do ângulo inteiro.
+        const alvo =
+            360 -
+            (indiceResultado * angulo);
+
+        const voltas =
+            7 + Math.floor(Math.random() * 3);
+
+        const rotacao =
+            voltas * 360 + alvo;
+
+        const duracao =
+            Number(configuracoes.roulette_animation_ms) || 4800;
+
+        wheel.style.transition =
+            `transform ${duracao}ms cubic-bezier(.12,.72,.12,1)`;
+
         requestAnimationFrame(() => {
-            wheel.style.transform = `rotate(${rotacao}deg)`;
+
+            requestAnimationFrame(() => {
+
+                wheel.style.transform =
+                    `rotate(${rotacao}deg)`;
+
+            });
+
         });
+
         tocarSom("click");
+
         setTimeout(() => {
+
             tocarSom("win");
+
             resolve();
-        }, duracao + 30);
+
+        }, duracao + 80);
     });
 }
+
 async function destacarVencedora(index) {
 
     const elemento =
@@ -1901,16 +1915,28 @@ async function destacarVencedora(index) {
         "brightness(2.5)";
 
     await new Promise(resolve =>
-        setTimeout(resolve, 500)
+        setTimeout(resolve, 2200)
     );
 
     elemento.style.animation = "";
     elemento.classList.remove("winner");
 }
 
-/* =========================
-   GIRO DA ROLETA
-========================= */
+/*
+ * =====================================================
+ * NOVA LÓGICA DA ROLETA
+ * =====================================================
+ *
+ * Sem seleção:
+ *     NÃO faz nada.
+ *     NÃO mostra erro.
+ *     NÃO chama o servidor.
+ *
+ * Com seleção:
+ *     envia selectedIndex para o server.js.
+ *
+ * O servidor decide a fatia vencedora.
+ */
 async function girarRoleta() {
 
     if (roletaGirando) return;
@@ -1933,13 +1959,11 @@ async function girarRoleta() {
 
     spinButton.disabled = true;
     spinButton.classList.add("spinning");
-    spinButton.textContent = "GIRAR";
+    spinButton.textContent = "GIRANDO...";
 
     try {
 
-        /*
-         * ENVIA A SELEÇÃO PARA O SERVER.JS
-         */
+        /* A aposta é enviada; nenhuma fatia é escolhida pelo jogador. */
         const resposta =
             await fetch(
                 `${API_URL}/roulette/spin`,
@@ -2058,7 +2082,7 @@ async function girarRoleta() {
             "block";
 
         const resultadoTipo = String(spin.resultType || "").toLowerCase();
-        const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado]?.label || "X";
+        const resultadoLabel = spin.result || String(ROLETAS[roletaAtual].segments[indiceResultado]?.label || "");
 
         if (ganhou) {
             resultMain.textContent = "🎉 VOCÊ GANHOU!";
@@ -2067,7 +2091,7 @@ async function girarRoleta() {
             resultMain.textContent = "🍀";
             resultPrize.textContent = "Giro grátis automático!";
         } else {
-            resultMain.textContent = "❌";
+            resultMain.textContent = "X";
             resultPrize.textContent = "Aposta sem prêmio nesta rodada.";
         }
 
@@ -2075,7 +2099,7 @@ async function girarRoleta() {
 
         /* 🍀 SORTE: o próximo giro usa a mesma aposta e não cobra novamente. */
         if (resultadoTipo === "sorte" && spin.freeSpinsAvailable > 0) {
-            await new Promise(resolve => setTimeout(resolve, 250));
+            await new Promise(resolve => setTimeout(resolve, 900));
             roletaGirando = false;
             spinButton.disabled = false;
             spinButton.classList.remove("spinning");
@@ -2084,11 +2108,6 @@ async function girarRoleta() {
             return;
         }
 
-        /*
-         * A seleção fica limpa para a próxima rodada.
-         */
-        fatiaSelecionada = null;
-        indiceFatiaSelecionada = null;
 
     } catch (erro) {
 
@@ -2197,7 +2216,7 @@ async function girarRoletaGratis() {
     roletaGirando = true;
     spinButton.disabled = true;
     spinButton.classList.add("spinning");
-    spinButton.textContent = "GIRAR";
+    spinButton.textContent = "GIRANDO...";
     try {
         const resposta = await fetch(`${API_URL}/roulette/spin`, {
             method: "POST",
@@ -2230,13 +2249,13 @@ async function girarRoletaGratis() {
             resultMain.textContent = "🍀";
             resultPrize.textContent = "Outro giro grátis!";
         } else {
-            resultMain.textContent = "❌";
+            resultMain.textContent = "X";
             resultPrize.textContent = "O giro grátis terminou sem prêmio.";
         }
         await carregarSaldoServidor();
         await carregarHistorico();
         if (resultadoTipo === "sorte" && spin.freeSpinsAvailable > 0) {
-            await new Promise(resolve => setTimeout(resolve, 250));
+            await new Promise(resolve => setTimeout(resolve, 900));
             roletaGirando = false;
             await girarRoletaGratis();
             return;
