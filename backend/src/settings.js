@@ -178,7 +178,7 @@ const configuracoesPadrao = [
 
   [
     "roulette_segments_json",
-    "[{"label":"2x","type":"prize","multiplier":2,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5},{"label":"X","type":"zero","multiplier":0,"probability":5}]"
+    "[{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"2x\",\"type\":\"prize\",\"multiplier\":2,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5},{\"label\":\"X\",\"type\":\"zero\",\"multiplier\":0,\"probability\":5}]"
   ],
 
   [
@@ -401,17 +401,42 @@ async function inicializarConfiguracoes() {
       );
     }
 
-    // Migra somente o modelo antigo padrão da roleta. Configurações
-    // personalizadas diferentes continuam intactas.
+    /*
+      Migra somente modelos antigos conhecidos da roleta.
+      Configurações personalizadas diferentes continuam intactas.
+    */
+
     const rouletteCurrent = await pool.query(`
-      SELECT setting_value FROM site_settings
-      WHERE setting_key = 'roulette_segments_json' LIMIT 1
+      SELECT setting_value
+      FROM site_settings
+      WHERE setting_key = 'roulette_segments_json'
+      LIMIT 1
     `);
-    const currentRoulette = String(rouletteCurrent.rows[0]?.setting_value || '');
-    if (currentRoulette.includes('JOGUE NOVAMENTE') || currentRoulette.includes('"multiplier":1')) {
-      const novoPadrao = configuracoesPadrao.find(([key]) => key === 'roulette_segments_json')?.[1];
+
+    const currentRoulette = String(
+      rouletteCurrent.rows[0]?.setting_value || ""
+    );
+
+    if (
+      currentRoulette.includes("JOGUE NOVAMENTE") ||
+      currentRoulette.includes('"multiplier":1')
+    ) {
+      const novoPadrao =
+        configuracoesPadrao.find(
+          ([key]) => key === "roulette_segments_json"
+        )?.[1];
+
       if (novoPadrao) {
-        await pool.query(`UPDATE site_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = 'roulette_segments_json'`, [novoPadrao]);
+        await pool.query(
+          `
+          UPDATE site_settings
+          SET
+            setting_value = $1,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE setting_key = 'roulette_segments_json'
+          `,
+          [novoPadrao]
+        );
       }
     }
 
