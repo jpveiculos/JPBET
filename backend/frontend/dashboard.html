@@ -520,7 +520,7 @@ button {
     animation: none;
 }
 
-.pointer {
+.pointer { display: none; }
 
 @keyframes spinButtonPulse {
     from { filter: brightness(1); }
@@ -1820,10 +1820,12 @@ function criarRoda() {
     wheel.style.transform = "rotate(0deg)";
 }
 
-function formatarResultadoRoleta (valor) {
-const v = String(valor || ""). toUpperCase();
-if (/^\d+X$/.test(v)) return v;
-return v;
+function formatarResultadoRoleta(valor) {
+    const v = String(valor || "").toUpperCase();
+    if (v === "❌" || v === "X") return "X";
+    if (v === "🍀") return "🍀";
+    if (/^\d+X$/.test(v)) return v;
+    return v;
 }
 
 function validarAposta() {
