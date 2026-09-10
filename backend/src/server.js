@@ -366,73 +366,102 @@ async function obterConfiguracao(chave, padrao = null) {
 
 const ROLETTE_DEFAULT_SEGMENTS = [
   {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
+    label: "2x",
+    type: "prize",
+    multiplier: 2,
+    probability: 10
   },
   {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 10
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   },
   {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   },
   {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 10
+    label: "2x",
+    type: "prize",
+    multiplier: 2,
+    probability: 10
   },
   {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   },
   {
-    "label": "4x",
-    "type": "prize",
-    "multiplier": 4,
-    "probability": 10
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   },
   {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
+    label: "2x",
+    type: "prize",
+    multiplier: 2,
+    probability: 10
   },
   {
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
-    "probability": 10
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   },
   {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 10
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   },
   {
-    "label": "🍀",
-    "type": "sorte",
-    "multiplier": 0,
-    "probability": 10
+    label: "2x",
+    type: "prize",
+    multiplier: 2,
+    probability: 10
+  },
+  {
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
+  },
+  {
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
+  },
+  {
+    label: "2x",
+    type: "prize",
+    multiplier: 2,
+    probability: 10
+  },
+  {
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
+  },
+  {
+    label: "X",
+    type: "zero",
+    multiplier: 0,
+    probability: 15
   }
 ];
-
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length !== 10) {
-      throw new Error("A roleta precisa ter exatamente 10 fatias.");
-    }
+    if (!Array.isArray(parsed) || parsed.length !== 15) {
+  throw new Error("A roleta precisa ter exatamente 15 fatias.");
+}
 
     return parsed.map((segmento, index) => {
       const label = String(segmento?.label ?? "").trim();
