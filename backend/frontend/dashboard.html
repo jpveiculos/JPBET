@@ -1203,8 +1203,21 @@ const ROLETAS = {
         subtitle: "Escolha seu valor e gire a roda.",
         rules: "X não gera prêmio • 2X paga o dobro do valor apostado.",
         segments: [
-            "X", "2x", "X", "2x", "X",
-            "2x", "X", "2x", "X", "2x"
+            "2X",
+            "X",
+            "X",
+            "2X",
+            "X",
+            "X",
+            "2X",
+            "X",
+            "X",
+            "2X",
+            "X",
+            "X",
+            "2X",
+            "X",
+            "X"
         ]
     }
 };
@@ -1995,7 +2008,7 @@ function animarRoleta(indiceResultado) {
         // Cada setor começa em um limite angular, então somamos
         // metade do ângulo para levar o centro exato ao ponteiro.
         const alvo =
-            90 - (indiceResultado * angulo);
+              -(indiceResultado * angulo + angulo / 2);
 
         const voltas =
             7 + Math.floor(Math.random() * 3);
