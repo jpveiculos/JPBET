@@ -365,26 +365,126 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { label: "2x", type: "prize", multiplier: 2, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "3x", type: "prize", multiplier: 3, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "4x", type: "prize", multiplier: 4, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "5x", type: "prize", multiplier: 5, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 },
-  { label: "",   type: "zero",  multiplier: 0, probability: 5 }
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 5
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 5
+  },
+  {
+    "label": "10x",
+    "type": "prize",
+    "multiplier": 10,
+    "probability": 5
+  },
+  {
+    "label": "20x",
+    "type": "prize",
+    "multiplier": 20,
+    "probability": 5
+  },
+  {
+    "label": "30x",
+    "type": "prize",
+    "multiplier": 30,
+    "probability": 5
+  },
+  {
+    "label": "50x",
+    "type": "prize",
+    "multiplier": 50,
+    "probability": 5
+  },
+  {
+    "label": "75x",
+    "type": "prize",
+    "multiplier": 75,
+    "probability": 5
+  },
+  {
+    "label": "100x",
+    "type": "prize",
+    "multiplier": 100,
+    "probability": 5
+  },
+  {
+    "label": "🍀",
+    "type": "sorte",
+    "multiplier": 0,
+    "probability": 5
+  }
 ];
 
 function carregarSegmentosRoleta(valor) {
@@ -509,28 +609,7 @@ app.post(
       const minBet = Number(settings.roulette_min_bet || 0.5);
       const maxBet = Number(settings.roulette_max_bet || 100);
       const rtp = normalizarPercentual(settings.roulette_rtp, 50);
-      let segmentos = carregarSegmentosRoleta(settings.roulette_segments_json);
-
-      // A roleta atual usa exatamente 20 posições:
-      // 0=2x, 5=3x, 10=4x, 15=5x; todas as demais são perda.
-      // Mantemos a configuração editável pelo administrador, mas não
-      // permitimos que uma configuração antiga (10x/20x/50x/etc.)
-      // continue sendo usada pelo serviço.
-      const configuracaoRoleta20Valida =
-        Array.isArray(segmentos) &&
-        segmentos.length === 20 &&
-        [0, 5, 10, 15].every((indice) =>
-          segmentos[indice]?.type === "prize" &&
-          [2, 3, 4, 5].includes(Number(segmentos[indice]?.multiplier))
-        ) &&
-        segmentos.every((segmento, indice) => {
-          if ([0, 5, 10, 15].includes(indice)) return true;
-          return segmento?.type === "zero" && Number(segmento?.multiplier) === 0;
-        });
-
-      if (!configuracaoRoleta20Valida) {
-        segmentos = ROLETTE_DEFAULT_SEGMENTS.map((segmento) => ({ ...segmento }));
-      }
+      const segmentos = carregarSegmentosRoleta(settings.roulette_segments_json);
 
       if (!rouletteEnabled) {
         return res.status(403).json({ ok: false, message: "A roleta está desativada." });
