@@ -577,6 +577,23 @@ function carregarSegmentosRoleta(valor) {
     return ROLETTE_DEFAULT_SEGMENTS;
   }
 }
+
+      return {
+        label,
+        type,
+        multiplier,
+        probability: weight
+      };
+    });
+  } catch (error) {
+    console.warn(
+      "Configuração da roleta inválida; usando padrão:",
+      error.message
+    );
+
+    return ROLETTE_DEFAULT_SEGMENTS;
+  }
+}
 function numeroAleatorioSeguro() {
   return Math.random();
 }
@@ -637,22 +654,21 @@ app.post(
         return res.status(400).json({ ok: false, message: "Valor da aposta inválido." });
       }
 
-      const settingsResult = await pool.query(`
-        SELECT setting_key, setting_value
-        FROM site_settings
-        WHERE setting_key IN (
-          'roulette_enabled',
-          'roulette_min_bet',
-          'roulette_max_bet',
-          'roulette_rtp',
-                    'roulette_free_spin_enabled',
-          'roulette_segments_json',
-          'virtual_credits_mode',
-          'bonus_system_enabled',
-          'initial_bonus_amount',
-          'bonus_wager_requirement'
-        )
-      `);
+      const userResult = await client.query(`
+  SELECT
+    id,
+    username,
+    balance,
+    bonus_balance,
+    cash_balance,
+    bonus_wager_progress,
+    reserved_balance,
+    roulette_free_spins,
+    roulette_free_spin_bet
+  FROM users
+  WHERE id = $1
+  FOR UPDATE
+`, [userIdNumber]);
 
       const settings = {};
       for (const row of settingsResult.rows) settings[row.setting_key] = row.setting_value;
