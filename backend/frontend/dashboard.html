@@ -1072,6 +1072,7 @@ let tokenAtual = null;
 
 let roletaAtual = null;
 let roletaGirando = false;
+let roletaRotacaoAtual = 0;
 
 
 let configuracoes = {
@@ -1758,16 +1759,16 @@ function criarRoda() {
             const text = document.createElementNS(ns, "text");
             const texto = String(label || "2X").toUpperCase();
             const cores = {
-                0: "#25e66b",
-                5: "#39a7ff",
-                10: "#ffb52e",
-                15: "#ff3b30"
+                0: "#35ff78",
+                5: "#3da5ff",
+                10: "#ffc02e",
+                15: "#ff4040"
             };
             text.textContent = texto;
             text.setAttribute("x", p.x);
             text.setAttribute("y", p.y);
             text.setAttribute("class", "roulette-label multiplier");
-            text.setAttribute("font-size", "58");
+            text.setAttribute("font-size", "62");
             text.setAttribute("fill", cores[index] || "#25e66b");
             /* Compensa a rotação da roda para o multiplicador terminar legível. */
             text.setAttribute("transform", `rotate(${centerDeg} ${p.x} ${p.y}) rotate(${-centerDeg} ${p.x} ${p.y})`);
@@ -1937,14 +1938,16 @@ function tocarSom(tipo = "click") {
 function animarRoleta(indiceResultado) {
     return new Promise(resolve => {
         const wheel = document.getElementById("wheel");
-        const alvoIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-        const visualIndex = alvoIndices[indiceResultado] ?? 0;
+        const visualIndex = Number(indiceResultado);
 
-        /* Cada posição lógica tem um centro próprio.
-           Multiplicadores ocupam 45°; vazias, 11,25°. */
+        /*
+         * A posição é a mesma posição lógica enviada pelo servidor.
+         * A roleta sempre faz pelo menos duas voltas completas rápidas
+         * antes de entrar na pequena fase final de seleção.
+         */
         let centro;
         if ([0, 5, 10, 15].includes(visualIndex)) {
-            centro = (Math.floor(visualIndex / 5) * 90);
+            centro = Math.floor(visualIndex / 5) * 90;
         } else {
             const grupo = Math.floor(visualIndex / 5);
             const posicao = visualIndex - grupo * 5;
@@ -1952,26 +1955,36 @@ function animarRoleta(indiceResultado) {
         }
 
         const alvo = -centro;
-        const voltas = 3 + Math.floor(Math.random() * 2);
-        const rotacao = voltas * 360 + alvo;
-        const duracao = Number(configuracoes.roulette_animation_ms) || 1800;
+        const atual = roletaRotacaoAtual;
+        const moduloAlvo = ((alvo % 360) + 360) % 360;
+        const moduloAtual = ((atual % 360) + 360) % 360;
+        let ajuste = moduloAlvo - moduloAtual;
+        if (ajuste < 0) ajuste += 360;
 
-        wheel.style.transition = `transform ${duracao}ms cubic-bezier(.18,.78,.18,1)`;
+        /* Fase 1: giro completo rápido, sem aquele arrasto lento. */
+        const primeiraFase = atual + 720 + Math.random() * 180;
+        const final = primeiraFase + ajuste;
+
+        wheel.style.transition = "none";
+        wheel.style.transform = `rotate(${atual}deg)`;
 
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                wheel.style.transform = `rotate(${rotacao}deg)`;
-            });
+            wheel.style.transition = "transform 760ms linear";
+            wheel.style.transform = `rotate(${primeiraFase}deg)`;
+
+            setTimeout(() => {
+                /* Fase 2: somente a seleção final, curta e firme. */
+                wheel.style.transition = "transform 220ms cubic-bezier(.25,.85,.35,1)";
+                wheel.style.transform = `rotate(${final}deg)`;
+                roletaRotacaoAtual = final;
+
+                setTimeout(resolve, 245);
+            }, 775);
         });
 
         tocarSom("click");
-
-        setTimeout(() => {
-            resolve();
-        }, duracao + 50);
     });
 }
-
 async function destacarVencedora() {
     /* Sem efeitos de brilho/pisca: a roleta permanece leve. */
 }
@@ -1997,7 +2010,6 @@ async function girarRoleta() {
     roletaGirando = true;
 
     spinButton.disabled = true;
-    spinButton.classList.add("spinning");
     spinButton.textContent = "GIRANDO...";
 
     try {
@@ -2136,8 +2148,7 @@ async function girarRoleta() {
             await new Promise(resolve => setTimeout(resolve, 900));
             roletaGirando = false;
             spinButton.disabled = false;
-            spinButton.classList.remove("spinning");
-            spinButton.textContent = "GIRAR";
+                    spinButton.textContent = "GIRAR";
             await girarRoletaGratis();
             return;
         }
@@ -2164,8 +2175,7 @@ async function girarRoleta() {
         roletaGirando = false;
 
         spinButton.disabled = false;
-        spinButton.classList.remove("spinning");
-        spinButton.textContent = "GIRAR";
+            spinButton.textContent = "GIRAR";
     }
 }
 
@@ -2247,7 +2257,6 @@ async function girarRoletaGratis() {
     const spinButton = document.getElementById("spinButton");
     roletaGirando = true;
     spinButton.disabled = true;
-    spinButton.classList.add("spinning");
     spinButton.textContent = "GIRANDO...";
     try {
         const resposta = await fetch(`${API_URL}/roulette/spin`, {
@@ -2304,8 +2313,7 @@ async function girarRoletaGratis() {
     } finally {
         roletaGirando = false;
         spinButton.disabled = false;
-        spinButton.classList.remove("spinning");
-        spinButton.textContent = "GIRAR";
+            spinButton.textContent = "GIRAR";
     }
 }
 
