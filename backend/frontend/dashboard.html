@@ -1770,6 +1770,8 @@ function criarRoda() {
             text.setAttribute("class", "roulette-label multiplier");
             text.setAttribute("font-size", "62");
             text.setAttribute("fill", cores[index] || "#25e66b");
+            text.style.fill = cores[index] || "#25e66b";
+            text.style.color = cores[index] || "#25e66b";
             text.dataset.x = String(p.x);
             text.dataset.y = String(p.y);
             /* A animação atualiza esta rotação para manter o número sempre de pé. */
@@ -1951,6 +1953,16 @@ function animarRoleta(indiceResultado) {
         const wheel = document.getElementById("wheel");
         const visualIndex = Number(indiceResultado);
 
+        if (!wheel || !Number.isInteger(visualIndex) || visualIndex < 0 || visualIndex >= 20) {
+            resolve();
+            return;
+        }
+
+        /*
+         * A posição visual é fixa e corresponde exatamente ao índice do servidor:
+         * 0 = 2X, 5 = 3X, 10 = 4X, 15 = 5X.
+         * O centro da fatia vencedora é levado exatamente para o ponteiro (12h).
+         */
         let centro;
         if ([0, 5, 10, 15].includes(visualIndex)) {
             centro = Math.floor(visualIndex / 5) * 90;
@@ -1961,15 +1973,20 @@ function animarRoleta(indiceResultado) {
         }
 
         const alvo = -centro;
-        const atual = roletaRotacaoAtual;
+        const atual = Number(roletaRotacaoAtual) || 0;
         const moduloAlvo = ((alvo % 360) + 360) % 360;
         const moduloAtual = ((atual % 360) + 360) % 360;
         let ajuste = moduloAlvo - moduloAtual;
         if (ajuste < 0) ajuste += 360;
 
-        /* Giro rápido: 3 voltas completas antes de alinhar o resultado. */
-        const primeiraFase = atual + 1080 + Math.random() * 90;
-        const final = primeiraFase + ajuste;
+        /*
+         * Giro intermediário: 3 voltas completas.
+         * Depois, uma desaceleração suave até a fatia exata.
+         * Assim a roda não fica “travando” no meio nem termina fora do ponteiro.
+         */
+        const voltas = 3 * 360;
+        const destino = atual + voltas + ajuste;
+        const duracao = 1750;
 
         wheel.style.transition = "none";
         wheel.style.transform = `rotate(${atual}deg)`;
@@ -1977,50 +1994,37 @@ function animarRoleta(indiceResultado) {
 
         requestAnimationFrame(() => {
             const inicio = performance.now();
-            const duracao = 720;
 
-            function giroContinuo(agora) {
+            function animar(agora) {
                 const progresso = Math.min(1, (agora - inicio) / duracao);
-                const rotacao = atual + (primeiraFase - atual) * progresso;
+
+                /*
+                 * Ease-out cúbico: começa rápido e desacelera progressivamente,
+                 * sem uma segunda parada brusca no final.
+                 */
+                const ease = 1 - Math.pow(1 - progresso, 3);
+                const rotacao = atual + (destino - atual) * ease;
+
                 wheel.style.transform = `rotate(${rotacao}deg)`;
                 manterNumerosRetos(rotacao);
 
                 if (progresso < 1) {
-                    requestAnimationFrame(giroContinuo);
+                    requestAnimationFrame(animar);
                     return;
                 }
 
-                const inicioFinal = performance.now();
-                const duracaoFinal = 170;
-
-                function encaixarResultado(agoraFinal) {
-                    const p = Math.min(1, (agoraFinal - inicioFinal) / duracaoFinal);
-                    /* Pequena desaceleração apenas no encaixe final, sem aquele giro arrastado. */
-                    const ease = 1 - Math.pow(1 - p, 2);
-                    const rotacaoFinal = primeiraFase + ajuste * ease;
-                    wheel.style.transform = `rotate(${rotacaoFinal}deg)`;
-                    manterNumerosRetos(rotacaoFinal);
-
-                    if (p < 1) {
-                        requestAnimationFrame(encaixarResultado);
-                    } else {
-                        roletaRotacaoAtual = final;
-                        wheel.style.transform = `rotate(${final}deg)`;
-                        manterNumerosRetos(final);
-                        resolve();
-                    }
-                }
-
-                requestAnimationFrame(encaixarResultado);
+                roletaRotacaoAtual = destino;
+                wheel.style.transform = `rotate(${destino}deg)`;
+                manterNumerosRetos(destino);
+                resolve();
             }
 
-            requestAnimationFrame(giroContinuo);
+            requestAnimationFrame(animar);
         });
 
         tocarSom("click");
     });
 }
-
 async function destacarVencedora() {
     /* Sem efeitos de brilho/pisca: a roleta permanece leve. */
 }
