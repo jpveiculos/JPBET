@@ -366,122 +366,142 @@ async function obterConfiguracao(chave, padrao = null) {
 
 const ROLETTE_DEFAULT_SEGMENTS = [
   {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "label": "❌",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
+    "index": 0,
     "label": "2x",
     "type": "prize",
     "multiplier": 2,
     "probability": 5
   },
   {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
+    "index": 1,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
+    "index": 2,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
+    "index": 3,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "index": 4,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 6
+  },
+  {
+    "index": 5,
     "label": "3x",
     "type": "prize",
     "multiplier": 3,
+    "probability": 4
+  },
+  {
+    "index": 6,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
-    "label": "3x",
+    "index": 7,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "index": 8,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "index": 9,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 6
+  },
+  {
+    "index": 10,
+    "label": "4x",
     "type": "prize",
-    "multiplier": 3,
+    "multiplier": 4,
+    "probability": 3
+  },
+  {
+    "index": 11,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 6
+  },
+  {
+    "index": 12,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
+    "index": 13,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
+    "index": 14,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 6
+  },
+  {
+    "index": 15,
     "label": "5x",
     "type": "prize",
     "multiplier": 5,
+    "probability": 2
+  },
+  {
+    "index": 16,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 6
+  },
+  {
+    "index": 17,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
+    "index": 18,
+    "label": "",
+    "type": "zero",
+    "multiplier": 0,
     "probability": 5
   },
   {
-    "label": "10x",
-    "type": "prize",
-    "multiplier": 10,
-    "probability": 5
-  },
-  {
-    "label": "20x",
-    "type": "prize",
-    "multiplier": 20,
-    "probability": 5
-  },
-  {
-    "label": "30x",
-    "type": "prize",
-    "multiplier": 30,
-    "probability": 5
-  },
-  {
-    "label": "50x",
-    "type": "prize",
-    "multiplier": 50,
-    "probability": 5
-  },
-  {
-    "label": "75x",
-    "type": "prize",
-    "multiplier": 75,
-    "probability": 5
-  },
-  {
-    "label": "100x",
-    "type": "prize",
-    "multiplier": 100,
-    "probability": 5
-  },
-  {
-    "label": "🍀",
-    "type": "sorte",
+    "index": 19,
+    "label": "",
+    "type": "zero",
     "multiplier": 0,
     "probability": 5
   }
