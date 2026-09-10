@@ -521,9 +521,14 @@ function carregarSegmentosRoleta(valor) {
       const multiplier = Number(segmento?.multiplier ?? 0);
       const weight = Number(segmento?.probability ?? 0);
 
-      if (!Array.isArray(parsed) || parsed.length !== 20) {
-  throw new Error("A roleta precisa ter exatamente 20 fatias.");
-}
+      if (
+        (type !== "zero" && !label) ||
+        !["zero", "sorte", "prize"].includes(type)
+      ) {
+        throw new Error(
+          `Configuração inválida na fatia ${index + 1}.`
+        );
+      }
 
       if (!Number.isFinite(weight) || weight < 0) {
         throw new Error(
@@ -572,7 +577,6 @@ function carregarSegmentosRoleta(valor) {
     return ROLETTE_DEFAULT_SEGMENTS;
   }
 }
-
 function numeroAleatorioSeguro() {
   return Math.random();
 }
