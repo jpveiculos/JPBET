@@ -871,7 +871,7 @@ button {
 <body>
 
 <header class="header">
-    <div class="logo">JPBET</div>
+    <div class="logo">MayBets</div>
 
     <div class="header-right">
         <div class="header-balance" id="headerBalance">0,00</div>
@@ -883,7 +883,7 @@ button {
 
     <section class="welcome">
         <h1>Olá, <span id="userName">Jogador</span> 👋</h1>
-        <p>Bem-vindo ao JPBET.</p>
+        <p>Bem-vindo ao MayBets.</p>
     </section>
 
     <section class="balance-card">
@@ -1010,14 +1010,14 @@ button {
 
             <!-- A arte enviada pelo usuário. O giro é aplicado somente nesta camada. -->
             <div id="wheel">
-                <img
-                    id="rouletteImage"
-                    class="roulette-image"
-                    src="assets/MayBets_roleta_10.jpeg"
-                    alt="Roleta MayBets de 10 fatias"
-                    draggable="false"
-                >
-            </div>
+                <div id="wheel">
+    <svg
+        id="rouletteSvg"
+        viewBox="0 0 500 500"
+        aria-label="Roleta com 15 fatias"
+        role="img"
+    ></svg>
+</div>
 
             <!-- Cobre o GIRAR que existe na arte, mantendo o centro parado. -->
             <div class="roulette-center-cover" aria-hidden="true"></div>
