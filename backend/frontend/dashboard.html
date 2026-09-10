@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>MyBets - Dashboard</title>
+<title>JPBET - Dashboard</title>
 
 <style>
 :root {
@@ -429,6 +429,15 @@ button {
     to { filter: drop-shadow(0 18px 35px rgba(255,198,35,.85)); }
 }
 
+#wheel {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    border-radius: 50%;
+    transform: rotate(0deg);
+    transform-origin: 50% 50%;
+    will-change: transform;
+}
 
 #rouletteSvg {
     width: 100%;
@@ -841,7 +850,7 @@ button {
 <body>
 
 <header class="header">
-    <div class="logo">MyBets</div>
+    <div class="logo">MayBets</div>
 
     <div class="header-right">
         <div class="header-balance" id="headerBalance">0,00</div>
@@ -853,7 +862,7 @@ button {
 
     <section class="welcome">
         <h1>Olá, <span id="userName">Jogador</span> 👋</h1>
-        <p>Bem-vindo ao MyBets.</p>
+        <p>Bem-vindo ao MayBets.</p>
     </section>
 
     <section class="balance-card">
@@ -1319,10 +1328,10 @@ function recuperarSessao() {
     try {
 
         const usuarioSalvo =
-    localStorage.getItem("jpbet_user");
+            localStorage.getItem("jpbet_user");
 
-const tokenSalvo =
-    localStorage.getItem("jpbet_token");
+        const tokenSalvo =
+            localStorage.getItem("jpbet_token");
 
         if (usuarioSalvo) {
             usuarioAtual = JSON.parse(usuarioSalvo);
@@ -1726,7 +1735,20 @@ function fecharRoleta() {
         "none";
 }
 
+function polar(cx, cy, radius, angleDeg) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return {
+        x: cx + radius * Math.cos(rad),
+        y: cy + radius * Math.sin(rad)
+    };
+}
 
+function sectorPath(cx, cy, radius, startDeg, endDeg) {
+    const start = polar(cx, cy, radius, endDeg);
+    const end = polar(cx, cy, radius, startDeg);
+    const largeArc = (endDeg - startDeg) > 180 ? 1 : 0;
+    return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+}
 
 function svgText(parent, text, x, y, className, rotate = 0) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -2145,7 +2167,11 @@ async function girarRoleta() {
          *
          * A fatia vencedora vem do servidor.
          */
-        const indiceResultado = Number(spin.index);
+        const indiceResultado =
+            Number(
+                spin.index ??
+                spin.result
+            );
 
         if (
             !Number.isInteger(indiceResultado) ||
@@ -2230,7 +2256,10 @@ async function girarRoleta() {
             return;
         }
 
-        
+        /*
+         * A seleção fica limpa para a próxima rodada.
+         */
+
     } catch (erro) {
 
         console.error(
@@ -2310,7 +2339,7 @@ async function carregarSaldoServidor() {
         atualizarStatusBonus(usuarioAtual);
 
         localStorage.setItem(
-            "MyBets_user",
+            "jpbet_user",
             JSON.stringify(usuarioAtual)
         );
 
@@ -2550,11 +2579,11 @@ function escaparHTML(texto) {
 function logout() {
 
     localStorage.removeItem(
-        "MyBets_user"
+        "jpbet_user"
     );
 
     localStorage.removeItem(
-        "MyBets_token"
+        "jpbet_token"
     );
 
     usuarioAtual = null;
