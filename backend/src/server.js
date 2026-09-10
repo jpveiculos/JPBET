@@ -361,7 +361,7 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 32 FATIAS
+   ROLETA ÚNICA - 20 FATIAS
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
@@ -510,8 +510,10 @@ const ROLETTE_DEFAULT_SEGMENTS = [
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length !== 20) {
-  throw new Error("A roleta precisa ter exatamente 20 fatias.");
+    if ((type !== "zero" && !label) || !["zero", "sorte", "prize"].includes(type)) {
+  throw new Error(`Configuração inválida na fatia ${index + 1}.`);
+} 
+  throw new Error(`Configuração inválida na fatia ${index + 1}.`);
 }
     }
 
@@ -792,8 +794,9 @@ app.post(
           freeSpinsAvailable: requestedFreeSpin
             ? Math.max(0, freeSpinCount - 1 + (ganhouReplay ? 1 : 0))
             : freeSpinCount + (ganhouReplay ? 1 : 0),
+
           rtp: rtp,
-          weight: Number(resultado.weight || 0)
+          weight: Number(resultado.probability || 0)
         },
         user: {
           id: user.id,
