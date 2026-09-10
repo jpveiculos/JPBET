@@ -520,7 +520,9 @@ function carregarSegmentosRoleta(valor) {
       const multiplier = Number(segmento?.multiplier ?? 0);
       const weight = Number(segmento?.probability ?? 0);
 
-      if (!label || !["zero", "sorte", "prize"].includes(type)) {
+      if ((type !== "zero" && !label) || !["zero", "sorte", "prize"].includes(type)) {
+       throw new Error(`Configuração inválida na fatia ${index + 1}.`);
+      } 
         throw new Error(`Configuração inválida na fatia ${index + 1}.`);
       }
       if (!Number.isFinite(weight) || weight < 0) {
