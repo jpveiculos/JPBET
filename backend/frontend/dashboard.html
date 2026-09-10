@@ -417,33 +417,7 @@ button {
     aspect-ratio: 1;
     margin: 14px auto 10px;
     flex: 0 0 auto;
-    filter: drop-shadow(0 18px 35px rgba(0,0,0,.65));
-}
-
-.roulette-area.roulette-winner-glow {
-    animation: rouletteWholeGlow .16s ease-in-out 4 alternate;
-}
-
-@keyframes rouletteWholeGlow {
-    from { filter: drop-shadow(0 18px 35px rgba(0,0,0,.65)); }
-    to { filter: drop-shadow(0 18px 35px rgba(255,198,35,.85)); }
-}
-
-#wheel {
-    position: absolute;
-    inset: 0;
-    overflow: visible;
-    border-radius: 50%;
-    transform: rotate(0deg);
-    transform-origin: 50% 50%;
-    will-change: transform;
-}
-
-#rouletteSvg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    overflow: visible;
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,.55));
 }
 
 #wheel {
@@ -459,114 +433,55 @@ button {
     backface-visibility: hidden;
 }
 
-.roulette-center-cover {
-    position: absolute;
-    z-index: 48;
-    left: 50%;
-    top: 50%;
-    width: 39%;
-    aspect-ratio: 1;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 45% 35%, #252525 0%, #0c0c0c 55%, #030303 100%);
-    border: 6px solid #d99b19;
-    box-shadow:
-        0 0 0 3px #6b4208,
-        0 0 18px rgba(255, 193, 32, .55),
-        inset 0 0 18px rgba(255, 193, 32, .18);
+#rouletteSvg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    user-select: none;
     pointer-events: none;
 }
 
-.roulette-center-button {
-    z-index: 55;
-    width: 30%;
-    min-width: 118px;
-    max-width: 150px;
-    border: 6px solid #d89a12;
-    box-shadow:
-        0 0 0 3px #5c3b0b,
-        0 0 18px rgba(255,204,55,.42),
-        inset 0 0 22px rgba(255,190,30,.18),
-        0 8px 20px rgba(0,0,0,.55);
-}
-
-
-.roulette-sector.winner {
-    animation: rouletteSectorFlash .22s ease-in-out infinite alternate;
+.roulette-center-cover {
+    display: none;
 }
 
 .roulette-label {
     pointer-events: none;
     user-select: none;
     font-family: Arial, Helvetica, sans-serif;
-    font-weight: 900;
+    font-weight: 1000;
     text-anchor: middle;
     dominant-baseline: middle;
     paint-order: stroke fill;
-    stroke: rgba(0,0,0,.65);
-    stroke-width: 8px;
     stroke-linejoin: round;
-    fill: #fff8df;
-}
-
-.roulette-label.gold {
-    fill: #f6d58a;
+    letter-spacing: -1px;
 }
 
 .roulette-label.multiplier {
-    fill: #f3d18a;
-    stroke: rgba(20, 12, 3, .78);
-}
-
-.roulette-label.loss {
-    font-size: 58px;
-    fill: #ff4b58;
-    stroke: rgba(35, 3, 7, .88);
-    filter: drop-shadow(0 0 7px rgba(255,45,65,.42));
-}
-
-.roulette-label.sorte {
-    font-size: 62px;
-    fill: #9ff07a;
-    stroke: rgba(12, 30, 8, .8);
-    filter: drop-shadow(0 0 9px rgba(130,255,80,.4));
-}
-
-.roulette-label.mult-2, .roulette-label.mult-3, .roulette-label.mult-4 { font-size: 58px; }
-.roulette-label.mult-5 { font-size: 62px; }
-.roulette-label.mult-10 { font-size: clamp(34px, 6vw, 52px); }
-.roulette-label.mult-20, .roulette-label.mult-30 { font-size: clamp(34px, 6vw, 48px); }
-.roulette-label.mult-50 { font-size: clamp(40px, 7vw, 58px); }
-.roulette-label.mult-75 { font-size: clamp(46px, 8vw, 68px); }
-.roulette-label.mult-100 { font-size: clamp(50px, 9vw, 78px); }
-
-.roulette-label.small {
-    font-size: 25px;
-    stroke-width: 6px;
-}
-
-.roulette-label.medium {
-    font-size: 31px;
-}
-
-.roulette-label.large {
-    font-size: 42px;
-}
-
-.roulette-label.black {
-    fill: #17120a;
-    stroke: rgba(255,213,74,.25);
-}
-
-.roulette-label-mult {
-    font-size: 20px;
-    font-weight: 900;
-    letter-spacing: .5px;
-    fill: #fff8df;
-    stroke: rgba(0,0,0,.6);
+    font-size: 47px;
+    font-weight: 1000;
     stroke-width: 5px;
-    paint-order: stroke fill;
+}
+
+.roulette-label.multiplier-2 {
+    fill: #25e66b;
+    stroke: #06150a;
+}
+
+.roulette-label.multiplier-3 {
+    fill: #3195ff;
+    stroke: #06152d;
+}
+
+.roulette-label.multiplier-4 {
+    fill: #ff8b24;
+    stroke: #321100;
+}
+
+.roulette-label.multiplier-5 {
+    fill: #ff3b3b;
+    stroke: #300606;
 }
 
 .roulette-explanation {
@@ -581,73 +496,31 @@ button {
 
 .roulette-center-button {
     position: absolute;
-    z-index: 50;
+    z-index: 70;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: clamp(112px, 24%, 142px);
+    width: 31%;
     aspect-ratio: 1;
+    border: 0;
     border-radius: 50%;
-    border: 7px solid #d89a12;
-    background: radial-gradient(circle at 42% 35%, #4b3a16 0%, #17130b 52%, #050403 100%);
-    color: #ffd33d;
-    font-weight: 1000;
-    font-size: clamp(18px, 4vw, 25px);
-    letter-spacing: 1px;
-    box-shadow:
-        0 0 0 4px #5c3b0b,
-        0 0 0 9px rgba(255,204,55,.45),
-        inset 0 0 22px rgba(255,190,30,.2),
-        0 8px 20px rgba(0,0,0,.55);
-    transition: transform .15s, filter .15s;
+    background: transparent;
+    color: transparent;
+    box-shadow: none;
+    font-size: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
 .roulette-center-button:active {
-    transform: translate(-50%, -50%) scale(.95);
+    transform: translate(-50%, -50%) scale(.97);
 }
 
 .roulette-center-button.spinning {
-    animation: spinButtonPulse .45s infinite alternate;
+    animation: none;
 }
 
-.pointer {
-    position: absolute;
-    z-index: 60;
-    top: -34px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 76px;
-    height: 92px;
-    background: linear-gradient(145deg, #fff6bd 0%, #ffd24a 25%, #f0ad16 58%, #9a5200 100%);
-    clip-path: polygon(4% 0, 96% 0, 83% 56%, 50% 100%, 17% 56%);
-    filter: drop-shadow(0 6px 8px rgba(0,0,0,.9)) drop-shadow(0 0 7px rgba(255,190,35,.35));
-    pointer-events: none;
-}
-
-.pointer::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 7px;
-    width: 60px;
-    height: 72px;
-    transform: translateX(-50%);
-    background: linear-gradient(160deg, #241400 0%, #090909 55%, #000 100%);
-    clip-path: polygon(5% 0, 95% 0, 80% 58%, 50% 100%, 20% 58%);
-}
-
-.pointer::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 13px;
-    width: 48px;
-    height: 61px;
-    transform: translateX(-50%);
-    background: linear-gradient(155deg, #ff7373 0%, #ff1717 36%, #d30000 68%, #710000 100%);
-    clip-path: polygon(50% 100%, 0 0, 100% 0);
-    filter: drop-shadow(0 0 5px rgba(255,35,35,.8));
-}
+.pointer { display: none; }
 
 @keyframes spinButtonPulse {
     from { filter: brightness(1); }
@@ -799,22 +672,8 @@ button {
         margin-bottom: 8px;
     }
 
-    .roulette-label.loss {
-        font-size: 64px;
-    }
-
-    .roulette-label.sorte {
-        font-size: 68px;
-    }
-
-    .roulette-label.mult-2,
-    .roulette-label.mult-3,
-    .roulette-label.mult-4 {
-        font-size: 64px;
-    }
-
-    .roulette-label.mult-5 {
-        font-size: 68px;
+    .roulette-label.multiplier {
+        font-size: 48px;
     }
     .pointer {
         top: -28px;
@@ -979,7 +838,7 @@ button {
         </div>
 
         <div class="rules" id="rouletteRules">
-            X não gera prêmio • 🍀 concede um giro grátis automático • multiplique sua aposta pelo resultado.
+            2X paga o dobro do valor apostado. As áreas douradas não possuem multiplicador.
         </div>
 
         <div class="roulette-area" id="rouletteArea">
@@ -987,12 +846,12 @@ button {
             <!-- Ponteiro separado: fica FIXO enquanto somente a roda gira. -->
             <div class="pointer"></div>
 
-            <!-- A roda SVG gira; o ponteiro e o botão permanecem fixos. -->
+            <!-- A roda é desenhada integralmente por SVG/CSS; nenhuma imagem é usada. -->
             <div id="wheel">
                 <svg
                     id="rouletteSvg"
                     viewBox="0 0 500 500"
-                    aria-label="Roleta com 15 fatias"
+                    aria-label="Roleta 3D com 20 posições"
                     role="img"
                 ></svg>
             </div>
@@ -1012,7 +871,7 @@ button {
 
         <div class="roulette-explanation">
             <strong>Jogue seu valor e multiplique!</strong> Ex.: R$ 10 × 3 = R$ 30<br>
-            <small>X não gera prêmio e o valor apostado é perdido<br>
+            <small>As áreas douradas não possuem multiplicador.<br>
             Aposte de R$ 0,50 a R$ 100 • Prêmio: 2×</small>
         </div>
 
@@ -1162,7 +1021,7 @@ let configuracoes = {
     roulette_enabled: "true",
     roulette_min_bet: "0.50",
     roulette_max_bet: "100",
-    roulette_animation_ms: "4800",
+    roulette_animation_ms: "1800",
     roulette_sound_enabled: "true",
 
     roulette_primary_color: "#f5c542",
@@ -1176,23 +1035,12 @@ const ROLETAS = {
     sorte: {
         title: "Roda da Sorte",
         subtitle: "Faça sua aposta e gire a roda.",
-        rules: "X não gera prêmio • 2X paga o dobro do valor apostado.",
+        rules: "A roleta tem 20 fatias: 4 multiplicadores e 16 espaços dourados.",
         segments: [
-            "2X",
-            "X",
-            "X",
-            "2X",
-            "X",
-            "X",
-            "2X",
-            "X",
-            "X",
-            "2X",
-            "X",
-            "X",
-            "2X",
-            "X",
-            "X"
+            "2X", "", "", "", "",
+            "3X", "", "", "", "",
+            "4X", "", "", "", "",
+            "5X", "", "", "", ""
         ]
     }
 };
@@ -1406,7 +1254,7 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length === 15) {
+            if (Array.isArray(segmentos) && segmentos.length === 20) {
                 ROLETAS.sorte.segments = segmentos.map(item => String(item.label || ""));
             }
         } catch (_) {}
@@ -1788,13 +1636,37 @@ function criarRoda() {
 
     if (!wheel || !svg) return;
 
-    const roleta = ROLETAS[roletaAtual] || ROLETAS.sorte;
-    const segmentos = Array.isArray(roleta.segments) ? roleta.segments : [];
+    /*
+     * ROLETA EM CÓDIGO — 20 POSIÇÕES.
+     * 4 multiplicadores grandes + 16 posições vazias pequenas.
+     * As linhas internas das posições vazias ficam ocultas,
+     * mas cada posição continua existindo separadamente.
+     */
+    const setores = [
+        { label: "2X", type: "multiplier", colorClass: "multiplier-2", start: 0, end: 48 },
+        { label: "", type: "empty", start: 48, end: 58.5 },
+        { label: "", type: "empty", start: 58.5, end: 69 },
+        { label: "", type: "empty", start: 69, end: 79.5 },
+        { label: "", type: "empty", start: 79.5, end: 90 },
 
-    if (segmentos.length !== 15) {
-        console.error("A roleta precisa ter exatamente 15 fatias.");
-        return;
-    }
+        { label: "3X", type: "multiplier", colorClass: "multiplier-3", start: 90, end: 138 },
+        { label: "", type: "empty", start: 138, end: 148.5 },
+        { label: "", type: "empty", start: 148.5, end: 159 },
+        { label: "", type: "empty", start: 159, end: 169.5 },
+        { label: "", type: "empty", start: 169.5, end: 180 },
+
+        { label: "4X", type: "multiplier", colorClass: "multiplier-4", start: 180, end: 228 },
+        { label: "", type: "empty", start: 228, end: 238.5 },
+        { label: "", type: "empty", start: 238.5, end: 249 },
+        { label: "", type: "empty", start: 249, end: 259.5 },
+        { label: "", type: "empty", start: 259.5, end: 270 },
+
+        { label: "5X", type: "multiplier", colorClass: "multiplier-5", start: 270, end: 318 },
+        { label: "", type: "empty", start: 318, end: 328.5 },
+        { label: "", type: "empty", start: 328.5, end: 339 },
+        { label: "", type: "empty", start: 339, end: 349.5 },
+        { label: "", type: "empty", start: 349.5, end: 360 }
+    ];
 
     svg.innerHTML = "";
 
@@ -1802,92 +1674,148 @@ function criarRoda() {
     const cx = 250;
     const cy = 250;
     const radius = 238;
-    const labelRadius = 165;
-    const angle = 360 / 15;
+    const labelRadius = 163;
 
-    const gold = "#d9a62a";
-    const goldLight = "#f5d36b";
-    const black = "#080808";
-    const black2 = "#171717";
+    const defs = document.createElementNS(ns, "defs");
 
-    segmentos.forEach((label, index) => {
-        const startDeg = index * angle;
-        const endDeg = (index + 1) * angle;
-        const centerDeg = startDeg + angle / 2;
+    function gradiente(id, stops) {
+        const g = document.createElementNS(ns, "linearGradient");
+        g.setAttribute("id", id);
+        g.setAttribute("x1", "0%");
+        g.setAttribute("y1", "0%");
+        g.setAttribute("x2", "100%");
+        g.setAttribute("y2", "100%");
 
+        stops.forEach(([offset, color]) => {
+            const stop = document.createElementNS(ns, "stop");
+            stop.setAttribute("offset", offset);
+            stop.setAttribute("stop-color", color);
+            g.appendChild(stop);
+        });
+
+        defs.appendChild(g);
+    }
+
+    gradiente("wheelGold", [
+        ["0%", "#fff1a8"],
+        ["25%", "#f8d45b"],
+        ["55%", "#dca51e"],
+        ["82%", "#f5c43f"],
+        ["100%", "#a96608"]
+    ]);
+
+    gradiente("wheelBlack", [
+        ["0%", "#2b2b2b"],
+        ["45%", "#101010"],
+        ["100%", "#020202"]
+    ]);
+
+    gradiente("wheelRim", [
+        ["0%", "#fff4aa"],
+        ["28%", "#e5a313"],
+        ["50%", "#fff0a0"],
+        ["72%", "#c17b0a"],
+        ["100%", "#8b4e03"]
+    ]);
+
+    svg.appendChild(defs);
+
+    const base = document.createElementNS(ns, "circle");
+    base.setAttribute("cx", cx);
+    base.setAttribute("cy", cy);
+    base.setAttribute("r", "242");
+    base.setAttribute("fill", "#050505");
+    svg.appendChild(base);
+
+    setores.forEach((setor, index) => {
         const group = document.createElementNS(ns, "g");
         group.setAttribute("class", "roulette-sector");
         group.setAttribute("data-index", String(index));
+        group.setAttribute("data-type", setor.type);
 
         const path = document.createElementNS(ns, "path");
         path.setAttribute(
             "d",
-            sectorPath(cx, cy, radius, startDeg, endDeg)
+            sectorPath(cx, cy, radius, setor.start, setor.end)
         );
+
         path.setAttribute(
             "fill",
-            index % 2 === 0 ? gold : black
+            setor.type === "multiplier"
+                ? "url(#wheelBlack)"
+                : "url(#wheelGold)"
         );
-        path.setAttribute(
-            "stroke",
-            index % 2 === 0 ? goldLight : "#2d2d2d"
-        );
-        path.setAttribute("stroke-width", "3");
+
+        /* Multiplicadores ficam com divisória dourada.
+           As fatias vazias não mostram divisória interna. */
+        if (setor.type === "empty") {
+            path.setAttribute("stroke", "none");
+            path.setAttribute("stroke-width", "0");
+        } else {
+            path.setAttribute("stroke", "#e1a51c");
+            path.setAttribute("stroke-width", "3");
+        }
 
         group.appendChild(path);
 
-        const p = polar(cx, cy, labelRadius, centerDeg);
+        if (setor.type === "multiplier") {
+            const centro = (setor.start + setor.end) / 2;
+            const p = polar(cx, cy, labelRadius, centro);
 
-        const text = document.createElementNS(ns, "text");
-        text.textContent = String(label).toUpperCase();
-        text.setAttribute("x", p.x);
-        text.setAttribute("y", p.y);
-        text.setAttribute("class", "roulette-label");
-        text.setAttribute("font-size", "31");
-        text.setAttribute("fill", index % 2 === 0 ? "#111" : "#f7d778");
+            const text = document.createElementNS(ns, "text");
+            text.textContent = setor.label;
+            text.setAttribute("x", p.x);
+            text.setAttribute("y", p.y);
+            text.setAttribute(
+                "class",
+                `roulette-label multiplier ${setor.colorClass}`
+            );
 
-        /*
-         * Mantém todos os textos legíveis:
-         * o texto acompanha a posição radial, mas não fica de cabeça para baixo.
-         */
-        let rotation = centerDeg;
-        if (rotation > 90 && rotation < 270) {
-            rotation += 180;
+            let rotation = centro;
+            if (rotation > 90 && rotation < 270) {
+                rotation += 180;
+            }
+
+            text.setAttribute(
+                "transform",
+                `rotate(${rotation} ${p.x} ${p.y})`
+            );
+
+            group.appendChild(text);
         }
 
-        text.setAttribute(
-            "transform",
-            `rotate(${rotation} ${p.x} ${p.y})`
-        );
-
-        group.appendChild(text);
         svg.appendChild(group);
     });
 
-    /* Anel externo */
+    const outerShadow = document.createElementNS(ns, "circle");
+    outerShadow.setAttribute("cx", cx);
+    outerShadow.setAttribute("cy", cy);
+    outerShadow.setAttribute("r", "241");
+    outerShadow.setAttribute("fill", "none");
+    outerShadow.setAttribute("stroke", "#6b4007");
+    outerShadow.setAttribute("stroke-width", "12");
+    svg.appendChild(outerShadow);
+
     const outerRing = document.createElementNS(ns, "circle");
     outerRing.setAttribute("cx", cx);
     outerRing.setAttribute("cy", cy);
-    outerRing.setAttribute("r", radius);
+    outerRing.setAttribute("r", "240");
     outerRing.setAttribute("fill", "none");
-    outerRing.setAttribute("stroke", "#8f6410");
+    outerRing.setAttribute("stroke", "url(#wheelRim)");
     outerRing.setAttribute("stroke-width", "9");
     svg.appendChild(outerRing);
 
-    /* Anel interno */
-    const innerRing = document.createElementNS(ns, "circle");
-    innerRing.setAttribute("cx", cx);
-    innerRing.setAttribute("cy", cy);
-    innerRing.setAttribute("r", "78");
-    innerRing.setAttribute("fill", "none");
-    innerRing.setAttribute("stroke", "#8f6410");
-    innerRing.setAttribute("stroke-width", "5");
-    svg.appendChild(innerRing);
+    const centerRing = document.createElementNS(ns, "circle");
+    centerRing.setAttribute("cx", cx);
+    centerRing.setAttribute("cy", cy);
+    centerRing.setAttribute("r", "84");
+    centerRing.setAttribute("fill", "none");
+    centerRing.setAttribute("stroke", "url(#wheelRim)");
+    centerRing.setAttribute("stroke-width", "7");
+    svg.appendChild(centerRing);
 
-    /*
-     * A posição inicial é 0°:
-     * a fatia 0 fica centralizada exatamente no topo.
-     */
+    window.roletaGeometria = setores;
+
     wheel.style.transition = "none";
     wheel.style.transform = "rotate(0deg)";
 }
@@ -2014,77 +1942,48 @@ function tocarSom(tipo = "click") {
 }
 
 function animarRoleta(indiceResultado) {
-
     return new Promise(resolve => {
+        const wheel = document.getElementById("wheel");
+        const setores = Array.isArray(window.roletaGeometria)
+            ? window.roletaGeometria
+            : [];
 
-        const wheel =
-            document.getElementById("wheel");
+        if (!wheel || !setores[indiceResultado]) {
+            resolve();
+            return;
+        }
 
-        const total =
-            ROLETAS[roletaAtual].segments.length;
+        const setorVencedor = setores[indiceResultado];
+        const centro = (setorVencedor.start + setorVencedor.end) / 2;
+        const alvo = -centro;
 
-        const angulo =
-            360 / total;
-
-        /*
-         * O ponteiro está no topo.
-         *
-         * Levamos o centro da fatia vencedora
-         * até o ponteiro.
-         */
-        // O ponteiro fica fixo no topo e deve apontar para o
-        // CENTRO da fatia vencedora, não para a linha divisória.
-        // Cada setor começa em um limite angular, então somamos
-        // metade do ângulo para levar o centro exato ao ponteiro.
-        const alvo = -(indiceResultado * angulo + angulo / 2);
-
-        const voltas =
-            7 + Math.floor(Math.random() * 3);
-
-        const rotacao =
-            voltas * 360 + alvo;
+        const voltas = 3 + Math.floor(Math.random() * 2);
+        const rotacao = voltas * 360 + alvo;
 
         const duracao =
-            Number(configuracoes.roulette_animation_ms) || 3000;
+            Number(configuracoes.roulette_animation_ms) || 1800;
 
         wheel.style.transition =
-            `transform ${duracao}ms cubic-bezier(.12,.72,.12,1)`;
+            `transform ${duracao}ms cubic-bezier(.18,.78,.18,1)`;
 
         requestAnimationFrame(() => {
-
             requestAnimationFrame(() => {
-
-                wheel.style.transform =
-                    `rotate(${rotacao}deg)`;
-
+                wheel.style.transform = `rotate(${rotacao}deg)`;
             });
-
         });
 
         tocarSom("click");
 
         setTimeout(() => {
-
-            tocarSom("win");
-
             resolve();
-
-        }, duracao + 80);
+        }, duracao + 50);
     });
 }
 
-async function destacarVencedora(index) {
-    const area = document.getElementById("rouletteArea");
-    if (!area) return;
-
-    area.classList.add("roulette-winner-glow");
-
-    await new Promise(resolve =>
-        setTimeout(resolve, 650)
-    );
-
-    area.classList.remove("roulette-winner-glow");
+async function destacarVencedora() {
+    /* Sem brilho ou pisca: roleta leve e rápida. */
 }
+
 async function girarRoleta() {
 
     if (roletaGirando) return;
@@ -2167,22 +2066,32 @@ async function girarRoleta() {
          *
          * A fatia vencedora vem do servidor.
          */
-        const indiceResultado =
-            Number(
-                spin.index ??
-                spin.result
-            );
+        let indiceResultado = Number(spin.index);
+        const resultadoTipoServidor = String(spin.resultType || "").toLowerCase();
+        const resultadoLabelServidor = String(spin.result || "").toUpperCase();
 
-        if (
-            !Number.isInteger(indiceResultado) ||
-            indiceResultado < 0 ||
-            indiceResultado >=
-                ROLETAS[roletaAtual].segments.length
-        ) {
+        /*
+         * Compatibilidade com o servidor atual: se ele ainda estiver
+         * trabalhando com 15 posições, convertemos o resultado para uma
+         * das 20 posições visuais sem alterar o sorteio do servidor.
+         * Quando o servidor passar a 20 posições, o índice é usado diretamente.
+         */
+        if (!Number.isInteger(indiceResultado)) {
+            throw new Error("O servidor retornou um resultado inválido.");
+        }
 
-            throw new Error(
-                "O servidor retornou um resultado inválido."
-            );
+        if (indiceResultado >= 20) {
+            throw new Error("O servidor retornou um resultado inválido.");
+        }
+
+        if (indiceResultado < 15) {
+            if (resultadoTipoServidor === "prize" || /^\d+X$/.test(resultadoLabelServidor)) {
+                const multiplicadores = [0, 5, 10, 15];
+                indiceResultado = multiplicadores[indiceResultado % 4];
+            } else {
+                const vazias = [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19];
+                indiceResultado = vazias[indiceResultado % vazias.length];
+            }
         }
 
         /*
@@ -2230,7 +2139,7 @@ async function girarRoleta() {
             "block";
 
         const resultadoTipo = String(spin.resultType || "").toLowerCase();
-        const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado];
+        const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado] || (indiceResultado < 5 ? "2X" : indiceResultado < 10 ? "3X" : indiceResultado < 15 ? "4X" : "5X");
 
         if (ganhou) {
             resultMain.textContent = "🎉 VOCÊ GANHOU!";
@@ -2378,7 +2287,16 @@ async function girarRoletaGratis() {
         const data = await resposta.json();
         if (!resposta.ok) throw new Error(data.message || "Não foi possível usar o giro grátis.");
         const spin = data.spin || data.result || data;
-        const indiceResultado = Number(spin.index);
+        let indiceResultado = Number(spin.index);
+        if (!Number.isInteger(indiceResultado) || indiceResultado < 0) {
+            throw new Error("O servidor retornou um resultado inválido.");
+        }
+        if (indiceResultado < 15) {
+            const vazias = [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19];
+            indiceResultado = vazias[indiceResultado % vazias.length];
+        } else if (indiceResultado >= 20) {
+            throw new Error("O servidor retornou um resultado inválido.");
+        }
         await animarRoleta(indiceResultado);
         await destacarVencedora(indiceResultado);
         const premio = Number(spin.prize || 0) || 0;
