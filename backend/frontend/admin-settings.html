@@ -657,21 +657,6 @@
       </div>
 
       <div class="field">
-        <label for="roulette_title">Título da roleta</label>
-        <input type="text" id="roulette_title" maxlength="80">
-      </div>
-
-      <div class="field">
-        <label for="roulette_subtitle">Subtítulo da roleta</label>
-        <input type="text" id="roulette_subtitle" maxlength="120">
-      </div>
-
-      <div class="field">
-        <label for="roulette_rules">Texto das regras da roleta</label>
-        <textarea id="roulette_rules" maxlength="300"></textarea>
-      </div>
-
-      <div class="field">
 
         <label for="roulette_min_bet">
           Aposta mínima
@@ -757,7 +742,7 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de 2 a 40 fatias. Cada fatia é independente: use X para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
+          <strong>Modelo atual:</strong> roleta configurável de 12 a 40 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
           Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
         </div>
       </div>
@@ -1114,9 +1099,6 @@
       /* ROLETA */
 
       "roulette_enabled",
-      "roulette_title",
-      "roulette_subtitle",
-      "roulette_rules",
       "roulette_min_bet",
       "roulette_max_bet",
       "roulette_rtp",
@@ -1236,19 +1218,18 @@
     function renderizarEditorRoleta(segmentos) {
       const editor = document.getElementById("rouletteSegmentsEditor");
       if (!editor) return;
-      if (!Array.isArray(segmentos) || segmentos.length < 2 || segmentos.length > 40) {
-        editor.textContent = "A configuração precisa conter entre 2 e 40 fatias.";
+      if (!Array.isArray(segmentos) || segmentos.length !== 20) {
+        editor.textContent = "A configuração precisa conter exatamente 20 fatias.";
         return;
       }
       let html = `
         <table>
-          <thead><tr><th>#</th><th>Símbolo/Texto</th><th>Tipo</th><th>Multiplicador</th><th>Probabilidade (%)</th><th>Cor</th></tr></thead>
+          <thead><tr><th>#</th><th>Símbolo/Texto</th><th>Tipo</th><th>Multiplicador</th><th>Probabilidade (%)</th></tr></thead>
           <tbody>`;
       segmentos.forEach((item, index) => {
         const tipo = String(item.type || "zero").toLowerCase();
         const multiplicador = Number(item.multiplier || 0);
-        const peso = Number(item.probability ?? item.weight ?? 0);
-        const cor = /^#[0-9a-fA-F]{6}$/.test(String(item.color || "")) ? String(item.color) : "#171717";
+        const peso = Number(item.probability ?? 0);
         const esc = String(item.label || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
         html += `<tr data-segment-index="${index}">
           <td>${index + 1}</td>
@@ -1260,12 +1241,11 @@
           </select></td>
           <td><input class="segment-multiplier" type="number" min="0" max="100" step="1" value="${multiplicador}"></td>
           <td><input class="segment-probability" type="number" min="0" step="0.01" value="${peso}"></td>
-          <td><input class="segment-color" type="color" value="${cor}"></td>
         </tr>`;
       });
       html += `</tbody></table>`;
       editor.innerHTML = html;
-      editor.querySelectorAll(".segment-type, .segment-multiplier, .segment-probability, .segment-label, .segment-color").forEach(campo => {
+      editor.querySelectorAll(".segment-type, .segment-multiplier, .segment-probability, .segment-label").forEach(campo => {
         campo.addEventListener("input", atualizarChancesEditorRoleta);
         campo.addEventListener("change", atualizarChancesEditorRoleta);
       });
@@ -1287,39 +1267,6 @@
       });
     }
 
-    function obterSegmentosDoEditorRoleta() {
-      const linhas = document.querySelectorAll("#rouletteSegmentsEditor tbody tr");
-      return Array.from(linhas).map((linha) => ({
-        label: linha.querySelector(".segment-label")?.value.trim() || "X",
-        type: linha.querySelector(".segment-type")?.value || "zero",
-        multiplier: Number(linha.querySelector(".segment-multiplier")?.value) || 0,
-        probability: Number(linha.querySelector(".segment-probability")?.value) || 0,
-        color: linha.querySelector(".segment-color")?.value || "#171717"
-      }));
-    }
-
-    function adicionarFatiaRoleta() {
-      const atuais = obterSegmentosDoEditorRoleta();
-      if (atuais.length >= 40) {
-        mostrarMensagem("A roleta pode ter no máximo 40 fatias.", "error");
-        return;
-      }
-      atuais.push({ label: "X", type: "zero", multiplier: 0, probability: 0, color: "#171717" });
-      renderizarEditorRoleta(atuais);
-      mostrarMensagem("Fatia adicionada. Ajuste a probabilidade antes de salvar.");
-    }
-
-    function removerFatiaRoleta() {
-      const atuais = obterSegmentosDoEditorRoleta();
-      if (atuais.length <= 2) {
-        mostrarMensagem("A roleta precisa ter pelo menos 2 fatias.", "error");
-        return;
-      }
-      atuais.pop();
-      renderizarEditorRoleta(atuais);
-      mostrarMensagem("Última fatia removida. Ajuste a distribuição antes de salvar.");
-    }
-
     function sincronizarEditorRoleta() {
       const linhas = document.querySelectorAll("#rouletteSegmentsEditor tbody tr");
       const segmentos = [];
@@ -1329,8 +1276,7 @@
           label: linha.querySelector(".segment-label").value.trim(),
           type: linha.querySelector(".segment-type").value,
           multiplier: Number(linha.querySelector(".segment-multiplier").value) || 0,
-          probability: Number(linha.querySelector(".segment-probability")?.value) || 0,
-          color: linha.querySelector(".segment-color")?.value || ""
+          probability: Number(linha.querySelector(".segment-probability")?.value) || 0
         });
       });
 
@@ -1666,10 +1612,9 @@
 
         if (
           !Array.isArray(rouletteSegments) ||
-          rouletteSegments.length < 2 ||
-          rouletteSegments.length > 40
+          rouletteSegments.length !== 20
         ) {
-          mostrarMensagem("A roleta precisa ter entre 2 e 40 fatias.", "error");
+          mostrarMensagem("A roleta precisa ter exatamente 20 fatias.", "error");
           return;
         }
 
@@ -1705,8 +1650,7 @@
             label: String(linha?.querySelector(".segment-label")?.value || item.label || "").trim(),
             type: String(linha?.querySelector(".segment-type")?.value || item.type || "zero"),
             multiplier: Number(linha?.querySelector(".segment-multiplier")?.value || item.multiplier || 0),
-            probability: Number(linha?.querySelector(".segment-probability")?.value || item.probability || item.weight || 0),
-            color: linha?.querySelector(".segment-color")?.value || item.color || ""
+            probability: Number(linha?.querySelector(".segment-probability")?.value || item.probability || 0)
           };
         });
         const totalProbability = rouletteSegments.reduce((sum, item) => sum + Number(item.probability || 0), 0);
