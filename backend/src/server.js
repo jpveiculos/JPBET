@@ -510,8 +510,9 @@ const ROLETTE_DEFAULT_SEGMENTS = [
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length < 12 || parsed.length > 40) {
-      throw new Error("A roleta precisa ter entre 12 e 40 fatias.");
+    if (!Array.isArray(parsed) || parsed.length !== 20) {
+  throw new Error("A roleta precisa ter exatamente 20 fatias.");
+}
     }
 
     return parsed.map((segmento, index) => {
