@@ -361,43 +361,144 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 20 FATIAS
+   ROLETA ÚNICA - 32 FATIAS
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { label: "2x", type: "prize", multiplier: 2, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "2x", type: "prize", multiplier: 2, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "2x", type: "prize", multiplier: 2, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "2x", type: "prize", multiplier: 2, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 },
-  { label: "X", type: "zero", multiplier: 0, probability: 5 }
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "❌",
+    "type": "zero",
+    "multiplier": 0,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "2x",
+    "type": "prize",
+    "multiplier": 2,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "3x",
+    "type": "prize",
+    "multiplier": 3,
+    "probability": 5
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 5
+  },
+  {
+    "label": "5x",
+    "type": "prize",
+    "multiplier": 5,
+    "probability": 5
+  },
+  {
+    "label": "10x",
+    "type": "prize",
+    "multiplier": 10,
+    "probability": 5
+  },
+  {
+    "label": "20x",
+    "type": "prize",
+    "multiplier": 20,
+    "probability": 5
+  },
+  {
+    "label": "30x",
+    "type": "prize",
+    "multiplier": 30,
+    "probability": 5
+  },
+  {
+    "label": "50x",
+    "type": "prize",
+    "multiplier": 50,
+    "probability": 5
+  },
+  {
+    "label": "75x",
+    "type": "prize",
+    "multiplier": 75,
+    "probability": 5
+  },
+  {
+    "label": "100x",
+    "type": "prize",
+    "multiplier": 100,
+    "probability": 5
+  },
+  {
+    "label": "🍀",
+    "type": "sorte",
+    "multiplier": 0,
+    "probability": 5
+  }
 ];
+
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
-    if (!Array.isArray(parsed) || parsed.length !== 20) {
-      throw new Error("A roleta precisa ter exatamente 20 fatias.");
+    if (!Array.isArray(parsed) || parsed.length < 12 || parsed.length > 40) {
+      throw new Error("A roleta precisa ter entre 12 e 40 fatias.");
     }
 
     return parsed.map((segmento, index) => {
       const label = String(segmento?.label ?? "").trim();
       const type = String(segmento?.type ?? "zero").trim().toLowerCase();
       const multiplier = Number(segmento?.multiplier ?? 0);
-      const weight = Number(segmento?.probability ?? segmento?.weight ?? 0);
+      const weight = Number(segmento?.probability ?? 0);
 
       if (!label || !["zero", "sorte", "prize"].includes(type)) {
         throw new Error(`Configuração inválida na fatia ${index + 1}.`);
