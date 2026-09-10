@@ -365,146 +365,26 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  {
-    "index": 0,
-    "label": "2x",
-    "type": "prize",
-    "multiplier": 2,
-    "probability": 5
-  },
-  {
-    "index": 1,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 2,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 3,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 4,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 6
-  },
-  {
-    "index": 5,
-    "label": "3x",
-    "type": "prize",
-    "multiplier": 3,
-    "probability": 4
-  },
-  {
-    "index": 6,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 7,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 8,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 9,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 6
-  },
-  {
-    "index": 10,
-    "label": "4x",
-    "type": "prize",
-    "multiplier": 4,
-    "probability": 3
-  },
-  {
-    "index": 11,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 6
-  },
-  {
-    "index": 12,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 13,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 14,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 6
-  },
-  {
-    "index": 15,
-    "label": "5x",
-    "type": "prize",
-    "multiplier": 5,
-    "probability": 2
-  },
-  {
-    "index": 16,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 6
-  },
-  {
-    "index": 17,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 18,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  },
-  {
-    "index": 19,
-    "label": "",
-    "type": "zero",
-    "multiplier": 0,
-    "probability": 5
-  }
+  { index: 0, label: "2x", type: "prize", multiplier: 2, probability: 5 },
+  { index: 1, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 2, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 3, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 4, label: "", type: "zero", multiplier: 0, probability: 6 },
+  { index: 5, label: "3x", type: "prize", multiplier: 3, probability: 4 },
+  { index: 6, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 7, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 8, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 9, label: "", type: "zero", multiplier: 0, probability: 6 },
+  { index: 10, label: "4x", type: "prize", multiplier: 4, probability: 3 },
+  { index: 11, label: "", type: "zero", multiplier: 0, probability: 6 },
+  { index: 12, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 13, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 14, label: "", type: "zero", multiplier: 0, probability: 6 },
+  { index: 15, label: "5x", type: "prize", multiplier: 5, probability: 2 },
+  { index: 16, label: "", type: "zero", multiplier: 0, probability: 6 },
+  { index: 17, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 18, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 19, label: "", type: "zero", multiplier: 0, probability: 5 }
 ];
 
 function carregarSegmentosRoleta(valor) {
@@ -578,59 +458,82 @@ function carregarSegmentosRoleta(valor) {
   }
 }
 
-      return {
-        label,
-        type,
-        multiplier,
-        probability: weight
-      };
-    });
-  } catch (error) {
-    console.warn(
-      "Configuração da roleta inválida; usando padrão:",
-      error.message
-    );
-
-    return ROLETTE_DEFAULT_SEGMENTS;
-  }
-}
 function numeroAleatorioSeguro() {
   return Math.random();
 }
 
 function escolherIndiceComPesos(pesos) {
-  const total = pesos.reduce((soma, peso) => soma + Math.max(0, Number(peso) || 0), 0);
+  const total = pesos.reduce(
+    (soma, peso) =>
+      soma + Math.max(0, Number(peso) || 0),
+    0
+  );
+
   if (!(total > 0)) return 0;
 
-  let alvo = numeroAleatorioSeguro() * total;
+  let alvo =
+    numeroAleatorioSeguro() * total;
+
   for (let i = 0; i < pesos.length; i += 1) {
-    alvo -= Math.max(0, Number(pesos[i]) || 0);
+    alvo -= Math.max(
+      0,
+      Number(pesos[i]) || 0
+    );
+
     if (alvo < 0) return i;
   }
+
   return pesos.length - 1;
 }
 
 function normalizarPercentual(valor, padrao) {
   const numero = Number(valor);
-  if (!Number.isFinite(numero)) return padrao;
-  return Math.min(100, Math.max(0, numero));
+
+  if (!Number.isFinite(numero)) {
+    return padrao;
+  }
+
+  return Math.min(
+    100,
+    Math.max(0, numero)
+  );
 }
 
 function calcularPremioSegmento(segmento, bet) {
-  if (!segmento || segmento.type !== "prize") return 0;
-  return Number((bet * Number(segmento.multiplier)).toFixed(2));
+  if (
+    !segmento ||
+    segmento.type !== "prize"
+  ) {
+    return 0;
+  }
+
+  return Number(
+    (
+      bet *
+      Number(segmento.multiplier)
+    ).toFixed(2)
+  );
 }
 
 function sortearResultadoRoleta({ segmentos }) {
-  const pesos = segmentos.map((segmento) => Math.max(0, Number(segmento.probability) || 0));
+  const pesos =
+    segmentos.map(
+      segmento =>
+        Math.max(
+          0,
+          Number(segmento.probability) || 0
+        )
+    );
+
   return escolherIndiceComPesos(pesos);
 }
-
 
 app.post(
   "/api/roulette/spin",
   async (req, res) => {
-    const client = await pool.connect();
+    const client =
+      await pool.connect();
+
     try {
       const {
         userId,
@@ -642,134 +545,360 @@ app.post(
         freeSpin = false
       } = req.body;
 
-      const userIdNumber = Number(userId);
-      const requestedBet = Number(betAmount);
-      const requestedFreeSpin = freeSpin === true || freeSpin === "true";
+      const userIdNumber =
+        Number(userId);
 
-      if (!Number.isInteger(userIdNumber) || userIdNumber <= 0) {
-        return res.status(400).json({ ok: false, message: "Usuário inválido." });
+      const requestedBet =
+        Number(betAmount);
+
+      const requestedFreeSpin =
+        freeSpin === true ||
+        freeSpin === "true";
+
+      if (
+        !Number.isInteger(userIdNumber) ||
+        userIdNumber <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message: "Usuário inválido."
+        });
       }
 
-      if (!Number.isFinite(requestedBet) || requestedBet <= 0) {
-        return res.status(400).json({ ok: false, message: "Valor da aposta inválido." });
+      if (
+        !Number.isFinite(requestedBet) ||
+        requestedBet <= 0
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Valor da aposta inválido."
+        });
       }
 
- const userResult = await client.query(`
-  SELECT
-    id,
-    username,
-    balance,
-    bonus_balance,
-    cash_balance,
-    bonus_wager_progress,
-    reserved_balance,
-    roulette_free_spins,
-    roulette_free_spin_bet
-  FROM users
-  WHERE id = $1
-  FOR UPDATE
-`, [userIdNumber]);
+      const settingsResult =
+        await client.query(`
+          SELECT
+            setting_key,
+            setting_value
+          FROM site_settings
+          WHERE setting_key IN (
+            'roulette_enabled',
+            'virtual_credits_mode',
+            'roulette_free_spin_enabled',
+            'roulette_min_bet',
+            'roulette_max_bet',
+            'roulette_rtp',
+            'roulette_segments_json'
+          )
+        `);
 
       const settings = {};
-      for (const row of settingsResult.rows) settings[row.setting_key] = row.setting_value;
 
-      const rouletteEnabled = String(settings.roulette_enabled).toLowerCase() !== "false";
-      const virtualCreditsMode = String(settings.virtual_credits_mode).toLowerCase() !== "false";
-      const freeSpinEnabled = String(settings.roulette_free_spin_enabled).toLowerCase() !== "false";
-      const minBet = Number(settings.roulette_min_bet || 0.5);
-      const maxBet = Number(settings.roulette_max_bet || 100);
-      const rtp = normalizarPercentual(settings.roulette_rtp, 50);
-      const segmentos = carregarSegmentosRoleta(settings.roulette_segments_json);
+      for (
+        const row of settingsResult.rows
+      ) {
+        settings[row.setting_key] =
+          row.setting_value;
+      }
+
+      const rouletteEnabled =
+        String(
+          settings.roulette_enabled
+        ).toLowerCase() !== "false";
+
+      const virtualCreditsMode =
+        String(
+          settings.virtual_credits_mode
+        ).toLowerCase() !== "false";
+
+      const freeSpinEnabled =
+        String(
+          settings.roulette_free_spin_enabled
+        ).toLowerCase() !== "false";
+
+      const minBet =
+        Number(
+          settings.roulette_min_bet || 0.5
+        );
+
+      const maxBet =
+        Number(
+          settings.roulette_max_bet || 100
+        );
+
+      const rtp =
+        normalizarPercentual(
+          settings.roulette_rtp,
+          50
+        );
+
+      const segmentos =
+        carregarSegmentosRoleta(
+          settings.roulette_segments_json
+        );
 
       if (!rouletteEnabled) {
-        return res.status(403).json({ ok: false, message: "A roleta está desativada." });
-      }
-      if (!virtualCreditsMode) {
-        return res.status(403).json({ ok: false, message: "A roleta está configurada apenas para créditos virtuais." });
-      }
-      if (String(betType || "").toLowerCase() !== "roulette") {
-        return res.status(400).json({ ok: false, message: "Tipo de roleta inválido." });
-      }
-      if (String(rouletteId || "sorte").toLowerCase() !== "sorte") {
-        return res.status(400).json({ ok: false, message: "A MayBets utiliza uma única roleta." });
+        return res.status(403).json({
+          ok: false,
+          message:
+            "A roleta está desativada."
+        });
       }
 
-      const indiceEscolhido = null;
+      if (!virtualCreditsMode) {
+        return res.status(403).json({
+          ok: false,
+          message:
+            "A roleta está configurada apenas para créditos virtuais."
+        });
+      }
+
+      if (
+        String(
+          betType || ""
+        ).toLowerCase() !== "roulette"
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Tipo de roleta inválido."
+        });
+      }
+
+      if (
+        String(
+          rouletteId || "sorte"
+        ).toLowerCase() !== "sorte"
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "A MayBets utiliza uma única roleta."
+        });
+      }
 
       await client.query("BEGIN");
 
-      const userResult = await client.query(`
-        SELECT id, username, balance, bonus_balance, cash_balance, bonus_wager_progress, reserved_balance
-        FROM users
-        WHERE id = $1
-        FOR UPDATE
-      `, [userIdNumber]);
+      const userResult =
+        await client.query(`
+          SELECT
+            id,
+            username,
+            balance,
+            bonus_balance,
+            cash_balance,
+            bonus_wager_progress,
+            reserved_balance,
+            roulette_free_spins,
+            roulette_free_spin_bet
+          FROM users
+          WHERE id = $1
+          FOR UPDATE
+        `, [userIdNumber]);
 
-      if (userResult.rows.length === 0) {
-        await client.query("ROLLBACK");
-        return res.status(404).json({ ok: false, message: "Usuário não encontrado." });
+      if (
+        userResult.rows.length === 0
+      ) {
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+          ok: false,
+          message:
+            "Usuário não encontrado."
+        });
       }
 
-      const user = userResult.rows[0];
-      const saldoAtual = Number(user.balance || 0);
-      const bonusAtual = Number(user.bonus_balance || 0);
-      const cashAtual = Number(user.cash_balance || 0);
-      const progressoBonusAtual = Number(user.bonus_wager_progress || 0);
-      const saldoReservado = Number(user.reserved_balance || 0);
-      const regraBonus = obterRegraBonus(settings);
-      const freeSpinCount = Math.max(0, Number(user.roulette_free_spins || 0));
-      const freeSpinBet = Number(user.roulette_free_spin_bet || 0);
+      const user =
+        userResult.rows[0];
+
+      const saldoAtual =
+        Number(
+          user.balance || 0
+        );
+
+      const bonusAtual =
+        Number(
+          user.bonus_balance || 0
+        );
+
+      const cashAtual =
+        Number(
+          user.cash_balance || 0
+        );
+
+      const progressoBonusAtual =
+        Number(
+          user.bonus_wager_progress || 0
+        );
+
+      const saldoReservado =
+        Number(
+          user.reserved_balance || 0
+        );
+
+      const regraBonus =
+        obterRegraBonus(settings);
+
+      const freeSpinCount =
+        Math.max(
+          0,
+          Number(
+            user.roulette_free_spins || 0
+          )
+        );
+
+      const freeSpinBet =
+        Number(
+          user.roulette_free_spin_bet || 0
+        );
 
       if (requestedFreeSpin) {
         if (!freeSpinEnabled) {
-          await client.query("ROLLBACK");
-          return res.status(403).json({ ok: false, message: "Giro grátis desativado pelo administrador." });
+          await client.query(
+            "ROLLBACK"
+          );
+
+          return res.status(403).json({
+            ok: false,
+            message:
+              "Giro grátis desativado pelo administrador."
+          });
         }
-        if (freeSpinCount <= 0 || !(freeSpinBet > 0)) {
-          await client.query("ROLLBACK");
-          return res.status(400).json({ ok: false, message: "Nenhum giro grátis disponível." });
+
+        if (
+          freeSpinCount <= 0 ||
+          !(freeSpinBet > 0)
+        ) {
+          await client.query(
+            "ROLLBACK"
+          );
+
+          return res.status(400).json({
+            ok: false,
+            message:
+              "Nenhum giro grátis disponível."
+          });
         }
       }
 
-      const bet = requestedFreeSpin ? freeSpinBet : requestedBet;
+      const bet =
+        requestedFreeSpin
+          ? freeSpinBet
+          : requestedBet;
 
-      if (!requestedFreeSpin && (bet < minBet || bet > maxBet)) {
-        await client.query("ROLLBACK");
+      if (
+        !requestedFreeSpin &&
+        (
+          bet < minBet ||
+          bet > maxBet
+        )
+      ) {
+        await client.query(
+          "ROLLBACK"
+        );
+
         return res.status(400).json({
           ok: false,
-          message: `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
+          message:
+            `A aposta deve estar entre ${minBet} e ${maxBet} créditos.`
         });
       }
 
-      if (!requestedFreeSpin && totalSaldo(bonusAtual, cashAtual) < bet) {
-        await client.query("ROLLBACK");
+      if (
+        !requestedFreeSpin &&
+        totalSaldo(
+          bonusAtual,
+          cashAtual
+        ) < bet
+      ) {
+        await client.query(
+          "ROLLBACK"
+        );
+
         return res.status(400).json({
           ok: false,
-          message: "Saldo disponível insuficiente.",
-          balance: saldoAtual,
-          reservedBalance: saldoReservado
+          message:
+            "Saldo disponível insuficiente.",
+          balance:
+            saldoAtual,
+          reservedBalance:
+            saldoReservado
         });
       }
 
-      const indiceResultado = sortearResultadoRoleta({ segmentos });
+      const indiceResultado =
+        sortearResultadoRoleta({
+          segmentos
+        });
 
-      const resultado = segmentos[indiceResultado];
-      const escolhido = resultado;
-      const ganhou = resultado.type === "prize" && Number(resultado.multiplier) >= 2;
-      const premio = ganhou ? calcularPremioSegmento(resultado, bet) : 0;
-      const ganhouReplay = resultado.type === "sorte" && freeSpinEnabled;
-      const consumo = requestedFreeSpin
-        ? { bonusUsed: 0, cashUsed: 0, bonusAfter: bonusAtual, cashAfter: cashAtual }
-        : calcularConsumoAposta(bonusAtual, cashAtual, bet);
-      const novoBonus = consumo.bonusAfter;
-      const novoCash = Number((consumo.cashAfter + premio).toFixed(2));
-      const novoSaldo = totalSaldo(novoBonus, novoCash);
-      const novoProgressoBonus = requestedFreeSpin
-        ? progressoBonusAtual
-        : Number(Math.min(
-            regraBonus.requirement,
-            progressoBonusAtual + consumo.bonusUsed
-          ).toFixed(2));
+      const resultado =
+        segmentos[indiceResultado];
+
+      const escolhido =
+        resultado;
+
+      const ganhou =
+        resultado.type === "prize" &&
+        Number(resultado.multiplier) >= 2;
+
+      const premio =
+        ganhou
+          ? calcularPremioSegmento(
+              resultado,
+              bet
+            )
+          : 0;
+
+      const ganhouReplay =
+        resultado.type === "sorte" &&
+        freeSpinEnabled;
+
+      const consumo =
+        requestedFreeSpin
+          ? {
+              bonusUsed: 0,
+              cashUsed: 0,
+              bonusAfter:
+                bonusAtual,
+              cashAfter:
+                cashAtual
+            }
+          : calcularConsumoAposta(
+              bonusAtual,
+              cashAtual,
+              bet
+            );
+
+      const novoBonus =
+        consumo.bonusAfter;
+
+      const novoCash =
+        Number(
+          (
+            consumo.cashAfter +
+            premio
+          ).toFixed(2)
+        );
+
+      const novoSaldo =
+        totalSaldo(
+          novoBonus,
+          novoCash
+        );
+
+      const novoProgressoBonus =
+        requestedFreeSpin
+          ? progressoBonusAtual
+          : Number(
+              Math.min(
+                regraBonus.requirement,
+                progressoBonusAtual +
+                  consumo.bonusUsed
+              ).toFixed(2)
+            );
 
       if (requestedFreeSpin) {
         await client.query(`
@@ -779,13 +908,26 @@ app.post(
             bonus_balance = $2,
             cash_balance = $3,
             bonus_wager_progress = $4,
-            roulette_free_spins = GREATEST(0, roulette_free_spins - 1),
-            roulette_free_spin_bet = CASE
-              WHEN $5 THEN roulette_free_spin_bet
-              ELSE 0
-            END
+            roulette_free_spins =
+              GREATEST(
+                0,
+                roulette_free_spins - 1
+              ),
+            roulette_free_spin_bet =
+              CASE
+                WHEN $5
+                THEN roulette_free_spin_bet
+                ELSE 0
+              END
           WHERE id = $6
-        `, [novoSaldo, novoBonus, novoCash, novoProgressoBonus, ganhouReplay, userIdNumber]);
+        `, [
+          novoSaldo,
+          novoBonus,
+          novoCash,
+          novoProgressoBonus,
+          ganhouReplay,
+          userIdNumber
+        ]);
       } else {
         await client.query(`
           UPDATE users
@@ -794,75 +936,248 @@ app.post(
             bonus_balance = $2,
             cash_balance = $3,
             bonus_wager_progress = $4,
-            roulette_free_spins = CASE WHEN $5 THEN roulette_free_spins + 1 ELSE roulette_free_spins END,
-            roulette_free_spin_bet = CASE WHEN $5 THEN $6 ELSE roulette_free_spin_bet END
+            roulette_free_spins =
+              CASE
+                WHEN $5
+                THEN roulette_free_spins + 1
+                ELSE roulette_free_spins
+              END,
+            roulette_free_spin_bet =
+              CASE
+                WHEN $5
+                THEN $6
+                ELSE roulette_free_spin_bet
+              END
           WHERE id = $7
-        `, [novoSaldo, novoBonus, novoCash, novoProgressoBonus, ganhouReplay, bet, userIdNumber]);
+        `, [
+          novoSaldo,
+          novoBonus,
+          novoCash,
+          novoProgressoBonus,
+          ganhouReplay,
+          bet,
+          userIdNumber
+        ]);
       }
 
-      const resultadoTexto = `${indiceResultado}:${resultado.label}:${resultado.type}${ganhouReplay ? ":SORTE" : ""}`;
-      const spinResult = await client.query(`
-        INSERT INTO spins (user_id, result, amount)
-        VALUES ($1, $2, $3)
-        RETURNING id, created_at
-      `, [userIdNumber, resultadoTexto, premio]);
+      const resultadoTexto =
+        `${indiceResultado}:${resultado.label}:${resultado.type}${ganhouReplay ? ":SORTE" : ""}`;
+
+      const spinResult =
+        await client.query(`
+          INSERT INTO spins
+          (
+            user_id,
+            result,
+            amount
+          )
+          VALUES
+          ($1, $2, $3)
+          RETURNING id, created_at
+        `, [
+          userIdNumber,
+          resultadoTexto,
+          premio
+        ]);
 
       await client.query(`
-        INSERT INTO transactions (user_id, type, amount)
-        VALUES ($1, $2, $3)
+        INSERT INTO transactions
+        (
+          user_id,
+          type,
+          amount
+        )
+        VALUES
+        ($1, $2, $3)
       `, [
         userIdNumber,
-        ganhou ? (requestedFreeSpin ? "roulette_free_spin_win" : "roulette_win") : "roulette_bet",
-        requestedFreeSpin ? premio : (ganhou ? premio : -bet)
+        ganhou
+          ? (
+              requestedFreeSpin
+                ? "roulette_free_spin_win"
+                : "roulette_win"
+            )
+          : "roulette_bet",
+        requestedFreeSpin
+          ? premio
+          : (
+              ganhou
+                ? premio
+                : -bet
+            )
       ]);
 
-      await client.query("COMMIT");
+      await client.query(
+        "COMMIT"
+      );
 
       return res.json({
         ok: true,
-        spin: {
-          id: spinResult.rows[0].id,
-          rouletteId: "sorte",
-          index: indiceResultado,
-          result: resultado.label,
-          resultType: resultado.type,
-          multiplier: Number(resultado.multiplier),
-          selectedIndex: null,
-          selected: null,
-          betType: "roulette",
-          betAmount: bet,
-          freeSpin: requestedFreeSpin,
-          won: ganhou,
-          prize: premio,
-          replay: false,
-          sorte: ganhouReplay,
-          freeSpinsAvailable: requestedFreeSpin
-            ? Math.max(0, freeSpinCount - 1 + (ganhouReplay ? 1 : 0))
-            : freeSpinCount + (ganhouReplay ? 1 : 0),
 
-          rtp: rtp,
-          weight: Number(resultado.probability || 0)
+        spin: {
+          id:
+            spinResult.rows[0].id,
+
+          rouletteId:
+            "sorte",
+
+          index:
+            indiceResultado,
+
+          result:
+            resultado.label,
+
+          resultType:
+            resultado.type,
+
+          multiplier:
+            Number(
+              resultado.multiplier
+            ),
+
+          selectedIndex:
+            null,
+
+          selected:
+            null,
+
+          betType:
+            "roulette",
+
+          betAmount:
+            bet,
+
+          freeSpin:
+            requestedFreeSpin,
+
+          won:
+            ganhou,
+
+          prize:
+            premio,
+
+          replay:
+            false,
+
+          sorte:
+            ganhouReplay,
+
+          freeSpinsAvailable:
+            requestedFreeSpin
+              ? Math.max(
+                  0,
+                  freeSpinCount -
+                    1 +
+                    (
+                      ganhouReplay
+                        ? 1
+                        : 0
+                    )
+                )
+              : freeSpinCount +
+                (
+                  ganhouReplay
+                    ? 1
+                    : 0
+                ),
+
+          rtp:
+            rtp,
+
+          weight:
+            Number(
+              resultado.probability || 0
+            )
         },
+
         user: {
-          id: user.id,
-          username: user.username,
-          balance: Number(novoSaldo),
-          bonusBalance: Number(novoBonus),
-          cashBalance: Number(novoCash),
-          bonusWagerProgress: Number(novoProgressoBonus),
-          bonusWagerRequirement: Number(regraBonus.requirement),
-          withdrawalEnabled: saqueLiberado({ bonusBalance: novoBonus, bonusWagerProgress: novoProgressoBonus, requirement: regraBonus.requirement }),
-          reservedBalance: saldoReservado,
-          rouletteFreeSpins: requestedFreeSpin
-            ? Math.max(0, freeSpinCount - 1 + (ganhouReplay ? 1 : 0))
-            : freeSpinCount + (ganhouReplay ? 1 : 0),
-          rouletteFreeSpinBet: ganhouReplay ? Number(bet) : 0
+          id:
+            user.id,
+
+          username:
+            user.username,
+
+          balance:
+            Number(
+              novoSaldo
+            ),
+
+          bonusBalance:
+            Number(
+              novoBonus
+            ),
+
+          cashBalance:
+            Number(
+              novoCash
+            ),
+
+          bonusWagerProgress:
+            Number(
+              novoProgressoBonus
+            ),
+
+          bonusWagerRequirement:
+            Number(
+              regraBonus.requirement
+            ),
+
+          withdrawalEnabled:
+            saqueLiberado({
+              bonusBalance:
+                novoBonus,
+              bonusWagerProgress:
+                novoProgressoBonus,
+              requirement:
+                regraBonus.requirement
+            }),
+
+          reservedBalance:
+            saldoReservado,
+
+          rouletteFreeSpins:
+            requestedFreeSpin
+              ? Math.max(
+                  0,
+                  freeSpinCount -
+                    1 +
+                    (
+                      ganhouReplay
+                        ? 1
+                        : 0
+                    )
+                )
+              : freeSpinCount +
+                (
+                  ganhouReplay
+                    ? 1
+                    : 0
+                ),
+
+          rouletteFreeSpinBet:
+            ganhouReplay
+              ? Number(bet)
+              : 0
         }
       });
+
     } catch (error) {
-      try { await client.query("ROLLBACK"); } catch (_) {}
-      console.error("Erro na roleta:", error);
-      return res.status(500).json({ ok: false, message: "Erro interno ao executar a roleta." });
+      try {
+        await client.query(
+          "ROLLBACK"
+        );
+      } catch (_) {}
+
+      console.error(
+        "Erro na roleta:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        message:
+          "Erro interno ao executar a roleta."
+      });
     } finally {
       client.release();
     }
