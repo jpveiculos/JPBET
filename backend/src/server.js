@@ -654,7 +654,7 @@ app.post(
         return res.status(400).json({ ok: false, message: "Valor da aposta inválido." });
       }
 
-      const userResult = await client.query(`
+ const userResult = await client.query(`
   SELECT
     id,
     username,
