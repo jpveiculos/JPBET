@@ -20,19 +20,19 @@ function exigirAdmin(req, res, next) {
 }
 
 const segmentosRoletaPadrao = [
-  {label:"2x",type:"prize",multiplier:2,probability:5},
+  {label:"2x",type:"prize",multiplier:2,probability:15},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"3x",type:"prize",multiplier:3,probability:5},
+  {label:"3x",type:"prize",multiplier:3,probability:15},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"2x",type:"prize",multiplier:2,probability:5},
+  {label:"2x",type:"prize",multiplier:2,probability:15},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"3x",type:"prize",multiplier:5,probability:5},
+  {label:"3x",type:"prize",multiplier:3,probability:15},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5}
