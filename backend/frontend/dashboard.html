@@ -803,16 +803,61 @@ button {
     filter: none !important;
 }
 
-\n/* MYBETS_ROULETTE_CENTER_STYLE */\n.roulette-center-button {\n    font-size: 0 !important;\n    line-height: 1 !important;\n    display: flex !important;\n    flex-direction: column !important;\n    align-items: center !important;\n    justify-content: center !important;\n    gap: 3px !important;\n}\n.roulette-center-button::before {\n    content: "MyBets" !important;\n    display: block !important;\n    margin: 0 !important;\n    font-family: Arial, Helvetica, sans-serif !important;\n    font-size: clamp(20px, 4.5vw, 27px) !important;\n    font-style: italic !important;\n    font-weight: 900 !important;\n    letter-spacing: -1px !important;\n    color: #f7f7f7 !important;\n    text-shadow: 0 2px 5px rgba(0,0,0,.45) !important;\n}\n.roulette-center-button::after {\n    content: "GIRAR" !important;\n    display: block !important;\n    font-family: Arial, Helvetica, sans-serif !important;\n    font-size: clamp(15px, 3.5vw, 21px) !important;\n    font-weight: 1000 !important;\n    letter-spacing: 1px !important;\n    color: #ffd33d !important;\n    text-shadow: 0 2px 5px rgba(0,0,0,.5) !important;\n}\n.bet-area {\n    margin-top: 0 !important;\n}\n.quick-values {\n    margin-top: 8px !important;\n}\n</style>
+\n/* MYBETS_ROULETTE_CENTER_STYLE */
+.roulette-center-button {
+    font-size: 0 !important;
+    line-height: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+}
+.roulette-center-button::before {
+    content: "MyBets" !important;
+    display: block !important;
+    margin: 0 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: clamp(20px, 4.5vw, 27px) !important;
+    font-style: italic !important;
+    font-weight: 900 !important;
+    letter-spacing: -1px !important;
+    color: #f7f7f7 !important;
+    text-shadow: 0 2px 5px rgba(0,0,0,.45) !important;
+}
+.roulette-center-button::after {
+    content: "GIRAR" !important;
+    display: block !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: clamp(15px, 3.5vw, 21px) !important;
+    font-weight: 1000 !important;
+    letter-spacing: 1px !important;
+    color: #ffd33d !important;
+    text-shadow: 0 2px 5px rgba(0,0,0,.5) !important;
+}
+.bet-area {
+    margin-top: 0 !important;
+}
+.quick-values {
+    margin-top: 8px !important;
+}
+
+/* MYBETS_PLAYER_CLEANUP */
+.logo{ text-decoration:none!important; color:var(--gold)!important; font-style:italic; font-weight:1000; letter-spacing:-1px; }
+.player-back-button{ border:1px solid rgba(245,197,66,.22); background:rgba(245,197,66,.06); color:var(--gold2); border-radius:10px; width:38px; height:38px; font-size:22px; font-weight:900; }
+.balance-card{padding:18px}.balance-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}.balance-stat{padding:15px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(245,197,66,.18)}.balance-stat span{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}.balance-stat strong{display:block;color:var(--gold2);font-size:clamp(25px,7vw,38px);font-weight:1000}.bonus-stat strong{color:#d9ad36}.roulette-preview{display:flex;justify-content:center;align-items:center;margin-bottom:12px}.roulette-preview-wheel{width:118px;height:118px;border-radius:50%;border:7px solid #c99520;background:conic-gradient(#090909 0 22.5deg,#d7a126 22.5deg 45deg,#090909 45deg 67.5deg,#d7a126 67.5deg 90deg,#090909 90deg 112.5deg,#d7a126 112.5deg 135deg,#090909 135deg 157.5deg,#d7a126 157.5deg 180deg,#090909 180deg 202.5deg,#d7a126 202.5deg 225deg,#090909 225deg 247.5deg,#d7a126 247.5deg 270deg,#090909 270deg 292.5deg,#d7a126 292.5deg 315deg,#090909 315deg 337.5deg,#d7a126 337.5deg 360deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px #5c3b0b,0 10px 25px rgba(0,0,0,.5)}.roulette-preview-wheel:before{content:"";width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,#292929,#050505 72%);border:3px solid #d89a12;position:absolute}.roulette-preview-wheel span{position:relative;z-index:1;color:#f7f7f7;font-style:italic;font-size:12px;font-weight:1000}.games{grid-template-columns:1fr}
+</style>
 </head>
 
 <body>
 
 <header class="header">
-    <div class="logo">MyBets</div>
+    <a class="logo" href="/" aria-label="MyBets início">MyBets</a>
+
+    <button class="player-back-button" type="button" onclick="voltarPaginaMyBets()" aria-label="Voltar">←</button>
 
     <div class="header-right">
-        <div class="header-balance" id="headerBalance">0,00</div>
+        <span id="headerBalance" style="display:none">0,00</span>
         <button class="menu-button" onclick="abrirMenu()">☰</button>
     </div>
 </header>
@@ -821,43 +866,17 @@ button {
 
     <section class="welcome">
         <h1>Olá, <span id="userName">Jogador</span> 👋</h1>
-        <p>Bem-vindo ao MyBets.</p>
     </section>
 
     <section class="balance-card">
-
-        <div class="balance-label">Seu saldo</div>
-
-        <div class="balance-value" id="mainBalance">0,00</div>
-
-        <div class="balance-description">
-            Créditos virtuais para demonstração
+        <div class="balance-summary">
+            <div class="balance-stat"><span>Saldo</span><strong id="mainBalance">0,00</strong></div>
+            <div class="balance-stat bonus-stat"><span>Bônus</span><strong id="bonusBalanceValue">0,00</strong></div>
         </div>
-
-        <div class="bonus-box" id="bonusStatusBox">
-        <div class="bonus-title">🎁 Status do bônus</div>
-        <div class="bonus-value" id="bonusBalanceValue">R$ 0,00</div>
-        <div class="bonus-description" id="bonusStatusText">Carregando...</div>
-    </div>
-
-    <div class="reserved-box" id="reservedBalanceBox">
-            <div class="reserved-title">🔒 Crédito bloqueado</div>
-            <div class="reserved-value" id="reservedBalanceValue">0,00</div>
-            <div class="reserved-description">
-                Valor reservado para solicitações de saque em análise.
-            </div>
-        </div>
-
         <div class="balance-actions">
-            <button class="primary-button" onclick="abrirDeposito()">
-                + Depositar
-            </button>
-
-            <button class="secondary-button" onclick="abrirSaque()">
-                Sacar
-            </button>
+            <button class="primary-button" onclick="abrirDeposito()">+ Depositar</button>
+            <button class="secondary-button" onclick="abrirSaque()">Sacar</button>
         </div>
-
     </section>
 
     <h2 class="section-title">🎰 Roletas</h2>
@@ -865,9 +884,9 @@ button {
     <section class="games">
 
         <article class="game-card">
-            <div class="game-icon">🎡</div>
-            <h3>Roda da Sorte</h3>
-            <p>Faça sua aposta e gire a roda.</p>
+            <div class="roulette-preview" aria-label="Roleta MyBets"><div class="roulette-preview-wheel"><span>MyBets</span></div></div>
+            <h3>Roleta MyBets</h3>
+            
             <button class="game-button" onclick="abrirRoleta('sorte')">
                 JOGAR
             </button>
@@ -883,12 +902,6 @@ button {
                 <div class="history-title">Carregando histórico...</div>
             </div>
         </div>
-    </section>
-
-    <section class="info">
-        <strong>ℹ️ Importante</strong><br>
-        Os créditos exibidos nesta plataforma são virtuais e destinados à
-        demonstração do funcionamento do sistema.
     </section>
 
 </main>
@@ -2675,5 +2688,6 @@ animarRoleta = function(indiceResultado) {
     });
 };
 </script>
+  <script src="/navigation.js"></script>
 </body>
 </html>

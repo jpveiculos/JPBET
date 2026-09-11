@@ -42,5 +42,6 @@ async function carregar(){try{msg('Carregando...');const r=await fetch(API+'/set
 async function salvar(){try{const data=collect();if(data.length!==16)throw new Error('A roleta precisa ter exatamente 16 fatias.');for(let i=0;i<data.length;i++){const s=data[i];if(s.type==='prize'&&(s.multiplier<2||s.multiplier>100))throw new Error('O multiplicador da fatia '+(i+1)+' deve ficar entre 2x e 100x.');if(!Number.isFinite(s.probability)||s.probability<0)throw new Error('Peso inválido na fatia '+(i+1)+'.')}if(data.reduce((a,s)=>a+s.probability,0)<=0)throw new Error('A soma dos pesos deve ser maior que zero.');msg('Salvando...');const r=await fetch(API+'/settings/roulette',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({segments:data})});const d=await r.json();if(r.status===401){location.href='admin.html';return}if(!r.ok)throw new Error(d.message||'Erro ao salvar');segments=d.segments;render();msg('Roleta salva com sucesso.','success')}catch(e){console.error(e);msg(e.message||'Erro ao salvar','error')}}
 carregar();
 </script>
+  <script src="/navigation.js"></script>
 </body>
 </html>

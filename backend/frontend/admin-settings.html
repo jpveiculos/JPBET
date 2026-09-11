@@ -48,4 +48,5 @@ async function load(){try{const r=await fetch('/api/settings',{credentials:'same
 async function saveAll(){try{const roulette=collectSegments();if(roulette.reduce((a,s)=>a+s.probability,0)<=0)throw Error('A soma das probabilidades deve ser maior que zero.');msg('Salvando roleta...',true);const rr=await fetch('/api/settings/roulette',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({segments:roulette})});const rd=await rr.json();if(!rr.ok)throw Error(rd.message||'Erro ao salvar roleta');const out={};ids.forEach(id=>{const e=document.getElementById(id);if(e)out[id]=e.type==='checkbox'?String(e.checked):e.value});delete out.roulette_segments_json;const r=await fetch('/api/settings',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(out)});const d=await r.json();if(!r.ok)throw Error(d.message||'Erro ao salvar configurações gerais');segments=rd.segments;renderRoulette();syncPreviews();msg('Configurações salvas com sucesso!',true)}catch(e){console.error(e);msg(e.message||'Erro ao salvar')}}
 async function logout(){try{await fetch('/api/auth/admin-logout',{method:'POST',credentials:'same-origin'})}finally{location.href='admin.html'}}
 load();
-</script></body></html>
+</script>  <script src="/navigation.js"></script>
+</body></html>
