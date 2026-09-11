@@ -6,7 +6,7 @@
   name="viewport"
   content="width=device-width, initial-scale=1.0"
 >
-  <title>MyBets - Configurações</title>
+  <title>JPBET - Configurações</title>
 
   <style>
     * {
@@ -318,7 +318,7 @@
         ← VOLTAR PARA ADMINISTRAÇÃO
       </button>
 
-      <h1>MyBets</h1>
+      <h1>JPBET</h1>
 
       <p class="subtitle">
         Painel de configurações
@@ -341,7 +341,7 @@
         <input
           type="text"
           id="site_name"
-          placeholder="MyBets"
+          placeholder="JPBET"
         >
 
       </div>
@@ -355,7 +355,7 @@
         <input
           type="text"
           id="site_title"
-          placeholder="MyBets - Plataforma de Jogos"
+          placeholder="JPBET - Plataforma de Jogos"
         >
 
       </div>
@@ -382,7 +382,7 @@
         <input
           type="text"
           id="footer_text"
-          placeholder="© 2026 MyBets"
+          placeholder="© 2026 JPBET"
         >
 
       </div>
@@ -524,7 +524,7 @@
           type="text"
           id="pix_description"
           maxlength="50"
-          placeholder="MyBets"
+          placeholder="JPBET"
         >
 
       </div>
@@ -556,7 +556,7 @@
     <div class="card">
       <h2>📲 Notificações administrativas</h2>
       <p class="section-note">
-        Deixe esta área preparada para conectar o WhatsApp da MyBets depois. Você não precisa preencher agora. Quando a conta do serviço estiver criada, informe os dados da integração aqui.
+        Deixe esta área preparada para conectar o WhatsApp da JPBET depois. Você não precisa preencher agora. Quando a conta do serviço estiver criada, informe os dados da integração aqui.
       </p>
 
       <div class="field">
@@ -593,7 +593,7 @@
       </div>
 
       <div class="virtual-note">
-        🔐 Por segurança, não coloque senha de e-mail neste painel. O cadastro da conta do serviço de WhatsApp será feito separadamente. A MyBets já ficará preparada para receber o endereço/token da integração.
+        🔐 Por segurança, não coloque senha de e-mail neste painel. O cadastro da conta do serviço de WhatsApp será feito separadamente. A JPBET já ficará preparada para receber o endereço/token da integração.
       </div>
 
       <button type="button" class="save-button" onclick="testarNotificacao()">
@@ -745,7 +745,7 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de 12 a 40 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
+          <strong>Modelo atual:</strong> roleta configurável de exatamente 20 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x. O campo <strong>Multiplicador</strong> de cada prêmio é editável.
           Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
         </div>
       </div>
@@ -982,7 +982,7 @@
       <h2>👤 Adicionar novo administrador</h2>
 
       <div class="admin-note">
-        Cadastre um novo usuário com acesso à administração do MyBets.
+        Cadastre um novo usuário com acesso à administração do JPBET.
       </div>
 
       <div
@@ -1236,7 +1236,7 @@
         const esc = String(item.label || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
         html += `<tr data-segment-index="${index}">
           <td>${index + 1}</td>
-          <td><input class="segment-label" type="text" value="${esc}" maxlength="12"></td>
+          <td><input class="segment-label" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${esc}" maxlength="12"></td>
           <td><select class="segment-type">
             <option value="zero" ${tipo === "zero" ? "selected" : ""}>❌ Perda</option>
             <option value="sorte" ${tipo === "sorte" ? "selected" : ""}>🍀 Giro grátis</option>
@@ -1248,24 +1248,91 @@
       });
       html += `</tbody></table>`;
       editor.innerHTML = html;
-      editor.querySelectorAll(".segment-type, .segment-multiplier, .segment-probability, .segment-label").forEach(campo => {
-        campo.addEventListener("input", atualizarChancesEditorRoleta);
-        campo.addEventListener("change", atualizarChancesEditorRoleta);
+      // Edição no iPhone:
+      // o campo visível (2x/3x/5x) recebe o teclado numérico e NÃO é
+      // alterado enquanto o usuário apaga/digita.
+      editor.querySelectorAll(".segment-type, .segment-probability").forEach(campo => {
+        campo.addEventListener("change", () => atualizarChancesEditorRoleta(true));
       });
-      atualizarChancesEditorRoleta();
+
+      editor.querySelectorAll(".segment-label").forEach(campo => {
+        campo.addEventListener("input", () => {
+          const linha = campo.closest("tr");
+          const tipo = linha?.querySelector(".segment-type")?.value;
+          if (tipo !== "prize") return;
+
+          // Não mexer no campo durante a digitação.
+          // Apenas deixa o valor digitado pelo administrador na tela.
+        });
+
+        campo.addEventListener("blur", () => {
+          const linha = campo.closest("tr");
+          const tipo = linha?.querySelector(".segment-type")?.value;
+          const mult = linha?.querySelector(".segment-multiplier");
+          if (tipo !== "prize" || !mult) return;
+
+          const numeroTexto = String(campo.value || "").replace(/[^0-9]/g, "");
+          let numero = Number(numeroTexto);
+
+          if (!Number.isFinite(numero) || numero < 2) numero = 2;
+          if (numero > 100) numero = 100;
+
+          numero = Math.round(numero);
+          campo.value = `${numero}x`;
+          mult.value = String(numero);
+        });
+      });
+
+      // O campo numérico interno continua sincronizado, mas não interfere
+      // na digitação do campo visível.
+      editor.querySelectorAll(".segment-multiplier").forEach(campo => {
+        campo.style.display = "none";
+      });
+
+      atualizarChancesEditorRoleta(true);
     }
 
-    function atualizarChancesEditorRoleta() {
+    function atualizarChancesEditorRoleta(normalizar = false) {
       document.querySelectorAll("#rouletteSegmentsEditor tbody tr").forEach(linha => {
         const tipo = linha.querySelector(".segment-type").value;
         const mult = linha.querySelector(".segment-multiplier");
         const label = linha.querySelector(".segment-label");
-        if (tipo === "zero") { mult.value = "0"; label.value = "❌"; }
-        if (tipo === "sorte") { mult.value = "0"; label.value = "🍀"; }
+
+        if (tipo === "zero") {
+          mult.value = "0";
+          label.value = "❌";
+          label.readOnly = true;
+          label.removeAttribute("inputmode");
+          return;
+        }
+
+        if (tipo === "sorte") {
+          mult.value = "0";
+          label.value = "🍀";
+          label.readOnly = true;
+          label.removeAttribute("inputmode");
+          return;
+        }
+
         if (tipo === "prize") {
-          const n = Number(mult.value) || 2;
-          mult.value = String(Math.max(2, Math.min(100, Math.round(n))));
-          label.value = `${mult.value}x`;
+          label.readOnly = false;
+          label.setAttribute("inputmode", "numeric");
+
+          if (normalizar) {
+            const numeroTexto = String(label.value || "").replace(/[^0-9]/g, "");
+            let numero = Number(numeroTexto);
+
+            if (!Number.isFinite(numero) || numero < 2) {
+              numero = Number(mult.value);
+            }
+
+            if (!Number.isFinite(numero) || numero < 2) numero = 2;
+            if (numero > 100) numero = 100;
+
+            numero = Math.round(numero);
+            label.value = `${numero}x`;
+            mult.value = String(numero);
+          }
         }
       });
     }
@@ -1278,7 +1345,14 @@
         segmentos.push({
           label: linha.querySelector(".segment-label").value.trim(),
           type: linha.querySelector(".segment-type").value,
-          multiplier: Number(linha.querySelector(".segment-multiplier").value) || 0,
+          multiplier: (() => {
+            const tipo = linha.querySelector(".segment-type").value;
+            const label = String(linha.querySelector(".segment-label").value || "");
+            const interno = Number(linha.querySelector(".segment-multiplier").value) || 0;
+            if (tipo !== "prize") return 0;
+            const numero = Number(label.replace(/[^0-9]/g, ""));
+            return Number.isFinite(numero) ? Math.max(2, Math.min(100, Math.round(numero))) : interno;
+          })(),
           probability: Number(linha.querySelector(".segment-probability")?.value) || 0
         });
       });
@@ -1390,7 +1464,7 @@ if (
     { index: 7, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 8, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 9, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 10, label: "4x", type: "prize", multiplier: 4, probability: 3 },
+    { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 3 },
     { index: 11, label: "❌", type: "zero", multiplier: 0, probability: 6 },
     { index: 12, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 13, label: "❌", type: "zero", multiplier: 0, probability: 5 },
