@@ -2502,12 +2502,8 @@ iniciarDashboard();
 
 <script>
 function obterGeometriaRoletaPesada(segmentos) {
-    const pesos = segmentos.map(item => {
-        const peso = String(item || "").trim() !== "" ? 15 : 5;
-        return Number.isFinite(peso) && peso > 0 ? peso : 0;
-    });
-    let total = pesos.reduce((sum, peso) => sum + peso, 0);
-    if (!(total > 0)) { total = segmentos.length; pesos.fill(1); }
+    const pesos = segmentos.map(item => String(item || '').trim() !== '' ? 3 : 1);
+    const total = pesos.reduce((sum, peso) => sum + peso, 0) || 1;
     let cursor = 0;
     return segmentos.map((item, index) => {
         const startDeg = cursor;
@@ -2517,6 +2513,22 @@ function obterGeometriaRoletaPesada(segmentos) {
     });
 }
 
+function agruparSetoresAmarelos(segmentos, geometria) {
+    const grupos = [];
+    let grupo = null;
+    segmentos.forEach((label, index) => {
+        const premio = String(label || '').trim() !== '';
+        if (premio) { grupo = null; return; }
+        if (!grupo) {
+            grupo = { startDeg: geometria[index].startDeg, endDeg: geometria[index].endDeg };
+            grupos.push(grupo);
+        } else {
+            grupo.endDeg = geometria[index].endDeg;
+        }
+    });
+    return grupos;
+}
+
 criarRoda = function() {
     const wheel = document.getElementById('wheel');
     const svg = document.getElementById('rouletteSvg');
@@ -2524,45 +2536,56 @@ criarRoda = function() {
     const roleta = ROLETAS[roletaAtual] || ROLETAS.sorte;
     const segmentos = Array.isArray(roleta.segments) ? roleta.segments : [];
     if (segmentos.length !== 16) return;
+
     svg.innerHTML = '';
     const ns = 'http://www.w3.org/2000/svg';
     const cx = 250, cy = 250, radius = 238;
     const geometria = obterGeometriaRoletaPesada(segmentos);
+
+    agruparSetoresAmarelos(segmentos, geometria).forEach(setor => {
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
+        path.setAttribute('fill', '#c99724');
+        path.setAttribute('stroke', 'none');
+        svg.appendChild(path);
+    });
+
     segmentos.forEach((label, index) => {
+        if (String(label || '').trim() === '') return;
         const setor = geometria[index];
-        const premio = String(label || '').trim() !== '';
         const group = document.createElementNS(ns, 'g');
         group.setAttribute('data-index', String(index));
         const path = document.createElementNS(ns, 'path');
         path.setAttribute('d', sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
-        path.setAttribute('fill', premio ? '#080808' : '#c99724');
+        path.setAttribute('fill', '#050505');
         path.setAttribute('stroke', 'none');
         group.appendChild(path);
-        if (premio) {
-            const pos = polar(cx, cy, 150, setor.centerDeg);
-            const text = document.createElementNS(ns, 'text');
-            text.textContent = String(label).toUpperCase();
-            text.setAttribute('x', pos.x);
-            text.setAttribute('y', pos.y);
-            text.setAttribute('class', 'roulette-label multiplier');
-            text.setAttribute('font-size', '52');
-            text.setAttribute('fill', '#25e66b');
-            text.style.fill = '#25e66b';
-            text.dataset.x = String(pos.x);
-            text.dataset.y = String(pos.y);
-            text.setAttribute('transform', `rotate(0 ${pos.x} ${pos.y})`);
-            group.appendChild(text);
-        }
+
+        const pos = polar(cx, cy, 150, setor.centerDeg);
+        const text = document.createElementNS(ns, 'text');
+        text.textContent = String(label).toUpperCase();
+        text.setAttribute('x', pos.x);
+        text.setAttribute('y', pos.y);
+        text.setAttribute('class', 'roulette-label multiplier');
+        text.setAttribute('font-size', '52');
+        text.setAttribute('fill', '#25e66b');
+        text.style.fill = '#25e66b';
+        text.dataset.x = String(pos.x);
+        text.dataset.y = String(pos.y);
+        group.appendChild(text);
         svg.appendChild(group);
     });
+
     const ring = document.createElementNS(ns, 'circle');
     ring.setAttribute('cx', cx); ring.setAttribute('cy', cy); ring.setAttribute('r', radius);
     ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#a66f08'); ring.setAttribute('stroke-width', '11');
     svg.appendChild(ring);
+
     const highlight = document.createElementNS(ns, 'circle');
     highlight.setAttribute('cx', cx); highlight.setAttribute('cy', cy); highlight.setAttribute('r', radius - 7);
     highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', '#f5d66a'); highlight.setAttribute('stroke-width', '2');
     svg.appendChild(highlight);
+
     wheel.style.transition = 'none';
     wheel.style.transform = 'rotate(0deg)';
     roletaRotacaoAtual = 0;
@@ -2607,7 +2630,6 @@ animarRoleta = function(indiceResultado) {
         tocarSom('click');
     });
 };
-</script>
 </script>
 
 </body>
