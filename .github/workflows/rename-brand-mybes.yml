@@ -11,45 +11,72 @@ jobs:
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
-      - name: Substituir nome da marca
+      - name: Corrigir marca e roleta no arquivo original
         shell: python
         run: |
           from pathlib import Path
-          substituicoes={'JPBET':'MyBets','MayBets':'MyBets','Maybets':'MyBets','JP-BET':'MyBets','JP Bet':'MyBets'}
+          import re, json
+
           ignorar={'.git','node_modules'}
           extensoes={'.html','.css','.js','.json','.md','.txt','.sql','.yml','.yaml','.xml','.svg'}
+          substituicoes={'JPBET':'MyBets','MayBets':'MyBets','Maybets':'MyBets','JP-BET':'MyBets','JP Bet':'MyBets'}
+
           for caminho in Path('.').rglob('*'):
-              if not caminho.is_file() or any(parte in ignorar for parte in caminho.parts): continue
-              if caminho.name in {'rename-brand-mybes.yml','navigation.js','player-design.js'} or caminho.suffix.lower() not in extensoes: continue
-              try: texto=caminho.read_text(encoding='utf-8')
-              except (UnicodeDecodeError,OSError): continue
+              if not caminho.is_file() or any(parte in ignorar for parte in caminho.parts):
+                  continue
+              if caminho.name == 'rename-brand-mybes.yml' or caminho.suffix.lower() not in extensoes:
+                  continue
+              try:
+                  texto=caminho.read_text(encoding='utf-8')
+              except (UnicodeDecodeError,OSError):
+                  continue
               novo=texto
-              for antigo,atual in substituicoes.items(): novo=novo.replace(antigo,atual)
-              if novo!=texto: caminho.write_text(novo,encoding='utf-8')
-      - name: Ajustar roleta no arquivo original
-        shell: python
-        run: |
-          from pathlib import Path
-          import re,json
-          novos=[
-            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"5x","type":"prize","multiplier":5,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"10x","type":"prize","multiplier":10,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"3x","type":"prize","multiplier":3,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5}]
-          p=Path('backend/src/settings.js');s=p.read_text(encoding='utf-8');bloco='const segmentosRoletaPadrao = [\n'+',\n'.join('  '+json.dumps(x,ensure_ascii=False,separators=(',',':')) for x in novos)+'\n];';s,n=re.subn(r'const segmentosRoletaPadrao = \[[\s\S]*?\n\];',bloco,s,count=1)
-          if n!=1: raise SystemExit('segmentosRoletaPadrao não encontrado')
-          marker='// MYBETS_ROULETTE_MIGRATION_20260911'
-          if marker not in s:
-              alvo="    for (const [key,value] of configuracoesPadrao) {\n      await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);\n    }"
-              if alvo not in s: raise SystemExit('inicialização não encontrada')
-              s=s.replace(alvo,alvo+"\n    "+marker+"\n    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);",1)
-          p.write_text(s,encoding='utf-8')
-          p=Path('backend/frontend/dashboard.html');s=p.read_text(encoding='utf-8')
-          # Remove qualquer tentativa incompleta anterior da roleta visual.
-          s=re.sub(r'<style id="mybets-roulette-final">[\s\S]*?(?=</body>)','',s,count=1)
-          marker='MYBETS_HIDE_ROULETTE_RESULT_20260911'
-          if marker not in s:
-              s+='''\n\n<!-- MYBETS_HIDE_ROULETTE_RESULT_20260911 -->\n<style id="mybets-hide-roulette-result">\n#rouletteModal .roulette-result,#rouletteModal .roulette-result *{display:none!important;visibility:hidden!important}\n#rouletteModal .roulette-result{height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}\n</style>\n'''
+              for antigo,atual in substituicoes.items():
+                  novo=novo.replace(antigo,atual)
+              if novo!=texto:
+                  caminho.write_text(novo,encoding='utf-8')
+
+          p=Path('backend/src/settings.js')
+          if p.exists():
+              s=p.read_text(encoding='utf-8')
+              novos=[
+                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"5x","type":"prize","multiplier":5,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
+                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"10x","type":"prize","multiplier":10,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
+                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
+                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"3x","type":"prize","multiplier":3,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5}
+              ]
+              bloco='const segmentosRoletaPadrao = [\n'+',\n'.join('  '+json.dumps(x,ensure_ascii=False,separators=(',',':')) for x in novos)+'\n];'
+              s,n=re.subn(r'const segmentosRoletaPadrao = \[[\s\S]*?\n\];',bloco,s,count=1)
+              if n==1:
+                  marker='// MYBETS_ROULETTE_MIGRATION_20260911'
+                  if marker not in s:
+                      alvo="    for (const [key,value] of configuracoesPadrao) {\n      await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);\n    }"
+                      if alvo in s:
+                          s=s.replace(alvo,alvo+"\n    "+marker+"\n    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);",1)
+                  p.write_text(s,encoding='utf-8')
+
+          p=Path('backend/frontend/dashboard.html')
+          s=p.read_text(encoding='utf-8')
+
+          # A roleta do jogador continua sendo a existente em dashboard.html.
+          # Corrige apenas os dados/estilo dela; não cria outro arquivo ou outra roleta.
+          novo_segments='''segments: [\n            "", "", "5X", "",\n            "", "", "10X", "",\n            "", "", "2X", "",\n            "", "", "3X", ""\n        ]'''
+          s,n=re.subn(r'segments:\s*\[[\s\S]*?\n\s*\]',novo_segments,s,count=1)
+
+          s=s.replace('const prizeColors = {0:"#35ff78",4:"#3da5ff",8:"#ffc02e",12:"#ff4040"};','const prizeColors = {2:"#25e66b",6:"#25e66b",10:"#25e66b",14:"#25e66b"};')
+
+          # Remove o override antigo do ponteiro compacto, que desalinhava a seta.
+          s=re.sub(r'/\* Ponteiro compacto da roleta de 16 fatias \*/\s*\.pointer \{[\s\S]*?(?=</style>)','',s,count=1)
+
+          # Sem título, coroa ou notificação de resultado dentro da roleta.
+          s=s.replace('<h2 class="modal-title" id="rouletteTitle">Roda da Sorte</h2>','<h2 class="modal-title" id="rouletteTitle" aria-hidden="true"></h2>')
+          s=s.replace('.roulette-center-button::before {\n    content: "♛";','.roulette-center-button::before {\n    content: "MyBets";')
+          s=s.replace('font-size: 24px;\n    line-height: 1;\n    margin-bottom: 2px;','font-size: clamp(16px, 3.8vw, 22px);\n    line-height: 1;\n    margin-bottom: 3px;',1)
+
+          extra='''\n/* MYBETS_ROULETTE_APPROVED_16_20260911 */\n#rouletteTitle{display:none!important}\n#rouletteResult{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}\n.roulette-center-button::before{content:"MyBets"!important;color:#f4f4f4!important;font-style:italic!important;font-weight:1000!important;font-size:clamp(16px,3.8vw,22px)!important;line-height:1!important;margin-bottom:3px!important}\n.roulette-center-button{color:#ffd33d!important}\n.roulette-area{filter:drop-shadow(0 12px 24px rgba(0,0,0,.58))!important}\n'''
+          if 'MYBETS_ROULETTE_APPROVED_16_20260911' not in s:
+              s=s.replace('</style>',extra+'</style>',1)
+
           p.write_text(s,encoding='utf-8')
       - name: Publicar
         shell: bash
