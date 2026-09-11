@@ -745,7 +745,7 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de exatamente 20 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x. O campo <strong>Multiplicador</strong> de cada prêmio é editável.
+          <strong>Modelo atual:</strong> roleta configurável de exatamente 16 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x. O campo <strong>Multiplicador</strong> de cada prêmio é editável.
           Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
         </div>
       </div>
@@ -1033,17 +1033,17 @@
 
     </div>
 
-    <div
-      id="message"
-      class="message"
-    ></div>
-
     <button
       class="save-button"
       onclick="salvarConfiguracoes()"
     >
       💾 SALVAR CONFIGURAÇÕES
     </button>
+
+    <div
+      id="message"
+      class="message"
+    ></div>
 
     <button
       class="logout"
@@ -1221,8 +1221,8 @@
     function renderizarEditorRoleta(segmentos) {
       const editor = document.getElementById("rouletteSegmentsEditor");
       if (!editor) return;
-      if (!Array.isArray(segmentos) || segmentos.length !== 20) {
-        editor.textContent = "A configuração precisa conter exatamente 20 fatias.";
+      if (!Array.isArray(segmentos) || segmentos.length !== 16) {
+        editor.textContent = "A configuração precisa conter exatamente 16 fatias.";
         return;
       }
       let html = `
@@ -1395,39 +1395,23 @@ try {
     document.getElementById("roulette_segments_json").value || "[]"
   );
 } catch (_) {
-  segmentosRoleta = [];
-}
-
-/*
- * Se a configuração ainda não estiver gravada,
- * carrega a configuração padrão atual da roleta.
- * Não altera uma configuração já existente.
- */
-if (
-  !Array.isArray(segmentosRoleta) ||
-  segmentosRoleta.length !== 20
-) {
   segmentosRoleta = [
     { index: 0, label: "2x", type: "prize", multiplier: 2, probability: 5 },
     { index: 1, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 2, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 3, label: "❌", type: "zero", multiplier: 0, probability: 5 },
-    { index: 4, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 5, label: "3x", type: "prize", multiplier: 3, probability: 4 },
+    { index: 4, label: "3x", type: "prize", multiplier: 3, probability: 5 },
+    { index: 5, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 6, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 7, label: "❌", type: "zero", multiplier: 0, probability: 5 },
-    { index: 8, label: "❌", type: "zero", multiplier: 0, probability: 5 },
-    { index: 9, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 3 },
-    { index: 11, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 12, label: "❌", type: "zero", multiplier: 0, probability: 5 },
+    { index: 8, label: "2x", type: "prize", multiplier: 2, probability: 5 },
+    { index: 9, label: "❌", type: "zero", multiplier: 0, probability: 5 },
+    { index: 10, label: "❌", type: "zero", multiplier: 0, probability: 5 },
+    { index: 11, label: "❌", type: "zero", multiplier: 0, probability: 5 },
+    { index: 12, label: "5x", type: "prize", multiplier: 5, probability: 5 },
     { index: 13, label: "❌", type: "zero", multiplier: 0, probability: 5 },
-    { index: 14, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 15, label: "5x", type: "prize", multiplier: 5, probability: 2 },
-    { index: 16, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 17, label: "❌", type: "zero", multiplier: 0, probability: 5 },
-    { index: 18, label: "❌", type: "zero", multiplier: 0, probability: 5 },
-    { index: 19, label: "❌", type: "zero", multiplier: 0, probability: 5 }
+    { index: 14, label: "❌", type: "zero", multiplier: 0, probability: 5 },
+    { index: 15, label: "❌", type: "zero", multiplier: 0, probability: 5 }
   ];
 
   document.getElementById("roulette_segments_json").value =
@@ -1683,9 +1667,9 @@ renderizarEditorRoleta(segmentosRoleta);
 
         if (
           !Array.isArray(rouletteSegments) ||
-          rouletteSegments.length !== 20
+          rouletteSegments.length !== 16
         ) {
-          mostrarMensagem("A roleta precisa ter exatamente 20 fatias.", "error");
+          mostrarMensagem("A roleta precisa ter exatamente 16 fatias.", "error");
           return;
         }
 

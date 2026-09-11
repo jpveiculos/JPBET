@@ -760,6 +760,36 @@ button {
     }
 }
 
+
+/* Ponteiro compacto da roleta de 16 fatias */
+.pointer {
+    top: -7px !important;
+    width: 40px !important;
+    height: 48px !important;
+    background: linear-gradient(145deg,#fff5b8,#ffc52e 55%,#a86400) !important;
+    clip-path: polygon(0 0,100% 0,50% 100%) !important;
+    filter: drop-shadow(0 5px 7px rgba(0,0,0,.9)) !important;
+}
+.pointer::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 50% !important; top: 4px !important;
+    width: 28px !important; height: 34px !important;
+    transform: translateX(-50%) !important;
+    background: #151515 !important;
+    clip-path: polygon(0 0,100% 0,50% 100%) !important;
+}
+.pointer::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 50% !important; top: 7px !important;
+    width: 18px !important; height: 25px !important;
+    transform: translateX(-50%) !important;
+    background: #ff3434 !important;
+    clip-path: polygon(0 0,100% 0,50% 100%) !important;
+    filter: none !important;
+}
+
 </style>
 </head>
 
@@ -895,7 +925,7 @@ button {
         </div>
 
         <div class="rules" id="rouletteRules">
-            Os multiplicadores são 2×, 3×, 4× e 5×. As áreas douradas não possuem multiplicador.
+            A roleta tem 16 fatias: 4 multiplicadores e 12 áreas de perda.
         </div>
 
         <div class="roulette-area" id="rouletteArea">
@@ -908,7 +938,7 @@ button {
                 <svg
                     id="rouletteSvg"
                     viewBox="0 0 500 500"
-                    aria-label="Roleta com 20 posições"
+                    aria-label="Roleta com 16 posições"
                     role="img"
                 ></svg>
             </div>
@@ -929,7 +959,7 @@ button {
         <div class="roulette-explanation">
             <strong>Jogue seu valor e multiplique!</strong> Ex.: R$ 10 × 3 = R$ 30<br>
             <small>As áreas douradas não possuem multiplicador.<br>
-            Aposte de R$ 0,50 a R$ 100 • Prêmios: 2×, 3×, 4× e 5×</small>
+            Aposte de R$ 0,50 a R$ 100 • Prêmios: 2×, 3× e 5×</small>
         </div>
 
         <div class="bet-area">
@@ -1093,12 +1123,12 @@ const ROLETAS = {
     sorte: {
         title: "Roda da Sorte",
         subtitle: "Faça sua aposta e gire a roda.",
-        rules: "A roleta tem 20 fatias: 4 multiplicadores e 16 espaços dourados.",
+        rules: "A roleta tem 16 fatias: 4 multiplicadores e 12 áreas de perda.",
         segments: [
-            "2X", "", "", "", "",
-            "3X", "", "", "", "",
-            "2X", "", "", "", "",
-            "5X", "", "", "", ""
+            "2X", "", "", "",
+            "3X", "", "", "",
+            "2X", "", "", "",
+            "5X", "", "", ""
         ]
     }
 };
@@ -1312,7 +1342,7 @@ async function carregarConfiguracoes() {
 
         try {
             const segmentos = JSON.parse(String(configuracoes.roulette_segments_json || "[]"));
-            if (Array.isArray(segmentos) && segmentos.length === 20) {
+            if (Array.isArray(segmentos) && segmentos.length === 16) {
                 ROLETAS.sorte.segments = segmentos.map(item => {
                     const tipo = String(item?.type || "zero").toLowerCase();
                     const multiplicador = Number(item?.multiplier || 0);
@@ -1683,139 +1713,70 @@ function sectorPath(cx, cy, radius, startDeg, endDeg) {
 function criarRoda() {
     const wheel = document.getElementById("wheel");
     const svg = document.getElementById("rouletteSvg");
-
     if (!wheel || !svg) return;
 
     const roleta = ROLETAS[roletaAtual] || ROLETAS.sorte;
     const segmentos = Array.isArray(roleta.segments) ? roleta.segments : [];
-
-    if (segmentos.length !== 20) {
-        console.error("A roleta precisa ter exatamente 20 fatias.");
+    if (segmentos.length !== 16) {
+        console.error("A roleta precisa ter exatamente 16 fatias.");
         return;
     }
 
     svg.innerHTML = "";
-
     const ns = "http://www.w3.org/2000/svg";
-    const cx = 250;
-    const cy = 250;
-    const radius = 238;
-
-    /*
-     * 20 fatias reais:
-     * - 4 fatias pretas grandes de 45° com 2X, 3X, 4X e 5X
-     * - 16 fatias douradas pequenas de 11,25°
-     * - existem exatamente 4 posições douradas entre cada multiplicador
-     *
-     * As linhas internas das fatias douradas ficam ocultas de propósito,
-     * dando a aparência de uma única área dourada contínua.
-     */
-    const multiplierIndices = new Set([0, 5, 10, 15]);
-    const multiplierAngle = 45;
-    const emptyAngle = 11.25;
+    const cx = 250, cy = 250, radius = 238;
+    const angle = 360 / 16;
+    const prizeColors = {0:"#35ff78",4:"#3da5ff",8:"#ffc02e",12:"#ff4040"};
 
     segmentos.forEach((label, index) => {
-        const isMultiplier = multiplierIndices.has(index);
-        let startDeg;
-        let endDeg;
-
-        if (isMultiplier) {
-            const multiplierNumber = Math.floor(index / 5);
-            startDeg = multiplierNumber * 90 - multiplierAngle / 2;
-            endDeg = multiplierNumber * 90 + multiplierAngle / 2;
-        } else {
-            const previousMultiplier = Math.floor((index - 1) / 5);
-            const position = index - (previousMultiplier * 5);
-            startDeg = previousMultiplier * 90 + multiplierAngle / 2 + (position - 1) * emptyAngle;
-            endDeg = startDeg + emptyAngle;
-        }
-
+        const startDeg = index * angle;
+        const endDeg = startDeg + angle;
+        const isPrize = String(label || "").trim() !== "";
         const group = document.createElementNS(ns, "g");
         group.setAttribute("class", "roulette-sector");
         group.setAttribute("data-index", String(index));
-        group.setAttribute("data-type", isMultiplier ? "multiplier" : "empty");
 
         const path = document.createElementNS(ns, "path");
         path.setAttribute("d", sectorPath(cx, cy, radius, startDeg, endDeg));
-
-        if (isMultiplier) {
-            path.setAttribute("fill", "#080808");
-            path.setAttribute("stroke", "#d6a321");
-            path.setAttribute("stroke-width", "4");
-        } else {
-            /* Sem linha: as 16 fatias douradas continuam existindo,
-               mas visualmente formam uma única área dourada. */
-            path.setAttribute("fill", "#dca928");
-            path.setAttribute("stroke", "none");
-            path.setAttribute("stroke-width", "0");
-        }
-
+        path.setAttribute("fill", isPrize ? "#080808" : (index % 2 ? "#dca928" : "#c9941f"));
+        path.setAttribute("stroke", "#d6a321");
+        path.setAttribute("stroke-width", "2");
         group.appendChild(path);
 
-        if (isMultiplier) {
-            const centerDeg = startDeg + multiplierAngle / 2;
+        if (isPrize) {
+            const centerDeg = startDeg + angle / 2;
             const p = polar(cx, cy, 157, centerDeg);
-
             const text = document.createElementNS(ns, "text");
-            const texto = String(label || "2X").toUpperCase();
-            const cores = {
-                0: "#35ff78",
-                5: "#3da5ff",
-                10: "#ffc02e",
-                15: "#ff4040"
-            };
+            const texto = String(label).toUpperCase();
+            const cor = prizeColors[index] || "#25e66b";
             text.textContent = texto;
             text.setAttribute("x", p.x);
             text.setAttribute("y", p.y);
             text.setAttribute("class", "roulette-label multiplier");
-            text.setAttribute("font-size", "62");
-            text.setAttribute("fill", cores[index] || "#25e66b");
-            text.style.fill = cores[index] || "#25e66b";
-            text.style.color = cores[index] || "#25e66b";
+            text.setAttribute("font-size", "58");
+            text.setAttribute("fill", cor);
+            text.style.fill = cor;
             text.dataset.x = String(p.x);
             text.dataset.y = String(p.y);
-            /* A animação atualiza esta rotação para manter o número sempre de pé. */
             text.setAttribute("transform", `rotate(0 ${p.x} ${p.y})`);
             group.appendChild(text);
         }
-
         svg.appendChild(group);
     });
 
-    /* Anel externo dourado, inspirado no modelo enviado. */
     const outerRing = document.createElementNS(ns, "circle");
-    outerRing.setAttribute("cx", cx);
-    outerRing.setAttribute("cy", cy);
-    outerRing.setAttribute("r", radius);
-    outerRing.setAttribute("fill", "none");
-    outerRing.setAttribute("stroke", "#a66f08");
-    outerRing.setAttribute("stroke-width", "11");
+    outerRing.setAttribute("cx", cx); outerRing.setAttribute("cy", cy); outerRing.setAttribute("r", radius);
+    outerRing.setAttribute("fill", "none"); outerRing.setAttribute("stroke", "#a66f08"); outerRing.setAttribute("stroke-width", "11");
     svg.appendChild(outerRing);
 
     const outerHighlight = document.createElementNS(ns, "circle");
-    outerHighlight.setAttribute("cx", cx);
-    outerHighlight.setAttribute("cy", cy);
-    outerHighlight.setAttribute("r", radius - 7);
-    outerHighlight.setAttribute("fill", "none");
-    outerHighlight.setAttribute("stroke", "#f5d66a");
-    outerHighlight.setAttribute("stroke-width", "2");
+    outerHighlight.setAttribute("cx", cx); outerHighlight.setAttribute("cy", cy); outerHighlight.setAttribute("r", radius - 7);
+    outerHighlight.setAttribute("fill", "none"); outerHighlight.setAttribute("stroke", "#f5d66a"); outerHighlight.setAttribute("stroke-width", "2");
     svg.appendChild(outerHighlight);
-
-    /* Pequenos detalhes dourados apenas nos encontros entre multiplicador e ouro. */
-    [45, 135, 225, 315].forEach(deg => {
-        const p = polar(cx, cy, radius - 4, deg);
-        const dot = document.createElementNS(ns, "circle");
-        dot.setAttribute("cx", p.x);
-        dot.setAttribute("cy", p.y);
-        dot.setAttribute("r", "6");
-        dot.setAttribute("fill", "#e8b93d");
-        dot.setAttribute("stroke", "#6f4708");
-        dot.setAttribute("stroke-width", "2");
-        svg.appendChild(dot);
-    });
 
     wheel.style.transition = "none";
     wheel.style.transform = "rotate(0deg)";
+    roletaRotacaoAtual = 0;
 }
 
 function formatarResultadoRoleta(valor) {
@@ -1952,26 +1913,13 @@ function animarRoleta(indiceResultado) {
     return new Promise(resolve => {
         const wheel = document.getElementById("wheel");
         const visualIndex = Number(indiceResultado);
-
-        if (!wheel || !Number.isInteger(visualIndex) || visualIndex < 0 || visualIndex >= 20) {
+        if (!wheel || !Number.isInteger(visualIndex) || visualIndex < 0 || visualIndex >= 16) {
             resolve();
             return;
         }
 
-        /*
-         * A posição visual é fixa e corresponde exatamente ao índice do servidor:
-         * 0 = 2X, 5 = 3X, 10 = 4X, 15 = 5X.
-         * O centro da fatia vencedora é levado exatamente para o ponteiro (12h).
-         */
-        let centro;
-        if ([0, 5, 10, 15].includes(visualIndex)) {
-            centro = Math.floor(visualIndex / 5) * 90;
-        } else {
-            const grupo = Math.floor(visualIndex / 5);
-            const posicao = visualIndex - grupo * 5;
-            centro = grupo * 90 + 22.5 + (posicao - 1) * 11.25 + 5.625;
-        }
-
+        const angle = 360 / 16;
+        const centro = visualIndex * angle + angle / 2;
         const alvo = -centro;
         const atual = Number(roletaRotacaoAtual) || 0;
         const moduloAlvo = ((alvo % 360) + 360) % 360;
@@ -1979,49 +1927,28 @@ function animarRoleta(indiceResultado) {
         let ajuste = moduloAlvo - moduloAtual;
         if (ajuste < 0) ajuste += 360;
 
-        /*
-         * Giro intermediário: 3 voltas completas.
-         * Depois, uma desaceleração suave até a fatia exata.
-         * Assim a roda não fica “travando” no meio nem termina fora do ponteiro.
-         */
-        const voltas = 3 * 360;
-        const destino = atual + voltas + ajuste;
-        const duracao = 1750;
-
+        const destino = atual + 4 * 360 + ajuste;
+        const duracao = Math.max(1400, Number(configuracoes.roulette_animation_ms) || 1800);
         wheel.style.transition = "none";
         wheel.style.transform = `rotate(${atual}deg)`;
         manterNumerosRetos(atual);
 
         requestAnimationFrame(() => {
             const inicio = performance.now();
-
             function animar(agora) {
                 const progresso = Math.min(1, (agora - inicio) / duracao);
-
-                /*
-                 * Ease-out cúbico: começa rápido e desacelera progressivamente,
-                 * sem uma segunda parada brusca no final.
-                 */
                 const ease = 1 - Math.pow(1 - progresso, 3);
                 const rotacao = atual + (destino - atual) * ease;
-
                 wheel.style.transform = `rotate(${rotacao}deg)`;
                 manterNumerosRetos(rotacao);
-
-                if (progresso < 1) {
-                    requestAnimationFrame(animar);
-                    return;
-                }
-
+                if (progresso < 1) return requestAnimationFrame(animar);
                 roletaRotacaoAtual = destino;
                 wheel.style.transform = `rotate(${destino}deg)`;
                 manterNumerosRetos(destino);
                 resolve();
             }
-
             requestAnimationFrame(animar);
         });
-
         tocarSom("click");
     });
 }
@@ -2118,7 +2045,7 @@ async function girarRoleta() {
             throw new Error("O servidor retornou um resultado inválido.");
         }
 
-        if (indiceResultado >= 20) {
+        if (indiceResultado >= 16) {
             throw new Error("O servidor retornou um resultado inválido.");
         }
 
@@ -2317,7 +2244,7 @@ async function girarRoletaGratis() {
         if (!Number.isInteger(indiceResultado) || indiceResultado < 0) {
             throw new Error("O servidor retornou um resultado inválido.");
         }
-        if (indiceResultado >= 20) {
+        if (indiceResultado >= 16) {
             throw new Error("O servidor retornou um resultado inválido.");
         }
         await animarRoleta(indiceResultado);

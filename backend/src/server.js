@@ -361,7 +361,7 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 20 FATIAS
+   ROLETA ÚNICA - 16 FATIAS
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
@@ -369,29 +369,25 @@ const ROLETTE_DEFAULT_SEGMENTS = [
   { index: 1, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 2, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 3, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 4, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 5, label: "3x", type: "prize", multiplier: 3, probability: 4 },
+  { index: 4, label: "3x", type: "prize", multiplier: 3, probability: 5 },
+  { index: 5, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 6, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 7, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 8, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 9, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 10, label: "4x", type: "prize", multiplier: 4, probability: 3 },
-  { index: 11, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 12, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 8, label: "2x", type: "prize", multiplier: 2, probability: 5 },
+  { index: 9, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 10, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 11, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 12, label: "5x", type: "prize", multiplier: 5, probability: 5 },
   { index: 13, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 14, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 15, label: "5x", type: "prize", multiplier: 5, probability: 2 },
-  { index: 16, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 17, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 18, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 19, label: "", type: "zero", multiplier: 0, probability: 5 }
+  { index: 14, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 15, label: "", type: "zero", multiplier: 0, probability: 5 }
 ];
 
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
 
-    if (!Array.isArray(parsed) || parsed.length !== 20) {
+    if (!Array.isArray(parsed) || parsed.length !== 16) {
       throw new Error("A roleta precisa ter exatamente 20 fatias.");
     }
 

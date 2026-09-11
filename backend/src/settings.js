@@ -24,9 +24,7 @@ const segmentosRoletaPadrao = [
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"2x",type:"prize",multiplier:2,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"3x",type:"prize",multiplier:3,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
@@ -34,12 +32,10 @@ const segmentosRoletaPadrao = [
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"5x",type:"prize",multiplier:5,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"2x",type:"prize",multiplier:2,probability:5},
-  {label:"",type:"zero",multiplier:0,probability:0},
-  {label:"",type:"zero",multiplier:0,probability:0},
-  {label:"",type:"zero",multiplier:0,probability:0},
-  {label:"",type:"zero",multiplier:0,probability:0}
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5}
 ];
 
 const configuracoesPadrao = [
@@ -62,23 +58,18 @@ async function inicializarConfiguracoes() {
 
     const result = await pool.query(`SELECT setting_value FROM site_settings WHERE setting_key='roulette_segments_json' LIMIT 1`);
     const atual = String(result.rows[0]?.setting_value || "");
-    if (atual.includes("JOGUE NOVAMENTE") || atual.includes('"multiplier":1')) {
-      await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentosRoletaPadrao)]);
-    } else {
-      try {
+    try {
         let segmentos = JSON.parse(atual);
-        if (Array.isArray(segmentos) && segmentos.length === 20) {
-          let mudou = false;
-          segmentos = segmentos.slice(0,16).map((s,i)=>{
-            if (i===10 && String(s?.type||'').toLowerCase()==='prize' && Number(s?.multiplier)===4) { mudou=true; return {...s,label:'2x',multiplier:2}; }
-            return s;
-          });
-          while (segmentos.length<16) segmentos.push({label:'X',type:'zero',multiplier:0,probability:0});
-          const internos = segmentos.slice(0,16).concat([{label:"",type:"zero",multiplier:0,probability:0},{label:"",type:"zero",multiplier:0,probability:0},{label:"",type:"zero",multiplier:0,probability:0},{label:"",type:"zero",multiplier:0,probability:0}]);
-          if (mudou || JSON.stringify(internos)!==JSON.stringify(JSON.parse(atual))) await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(internos)]);
-        } else if (Array.isArray(segmentos) && segmentos.length === 16) {
-          const internos = segmentos.concat([{label:"",type:"zero",multiplier:0,probability:0},{label:"",type:"zero",multiplier:0,probability:0},{label:"",type:"zero",multiplier:0,probability:0},{label:"",type:"zero",multiplier:0,probability:0}]);
-          await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(internos)]);
+        if (Array.isArray(segmentos) && segmentos.length > 16) {
+          segmentos = segmentos.slice(0, 16);
+        }
+        if (Array.isArray(segmentos) && segmentos.length === 16) {
+          if (segmentos[8] && String(segmentos[8].type || '').toLowerCase() === 'prize' && Number(segmentos[8].multiplier) === 4) {
+            segmentos[8] = {...segmentos[8], label:'2x', multiplier:2};
+          }
+          await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);
+        } else {
+          await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentosRoletaPadrao)]);
         }
       } catch (error) { console.warn('Migração da roleta não aplicada:',error.message); }
     }
