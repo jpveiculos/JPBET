@@ -70,7 +70,6 @@ jobs:
           p = Path('backend/frontend/dashboard.html')
           s = p.read_text(encoding='utf-8')
 
-          # Remove o bloco malformado que foi anexado como texto literal no final.
           marker = r'\nfunction obterGeometriaRoletaPesada'
           pos = s.rfind(marker)
           if pos >= 0:
@@ -108,14 +107,8 @@ jobs:
           if count != 1:
               raise SystemExit('Função de geometria não encontrada para substituição.')
 
-          needle = "wheel.style.transform = 'rotate(0deg)';\n    roletaRotacaoAtual = 0;\n};\n\nanimarRoleta = function"
-          replacement = "wheel.style.transform = 'rotate(-33.75deg)';\n    roletaRotacaoAtual = -33.75;\n};\n\nanimarRoleta = function"
-          if needle not in s:
-              raise SystemExit('Inicialização da roleta não encontrada.')
-          s = s.replace(needle, replacement, 1)
-
           p.write_text(s, encoding='utf-8')
-          print('Alinhamento da roleta corrigido.')
+          print('Geometria da roleta corrigida.')
 
       - name: Remover workflows temporários
         shell: bash
