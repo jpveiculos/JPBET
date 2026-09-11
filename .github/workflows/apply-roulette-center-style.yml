@@ -20,10 +20,23 @@ jobs:
           p = Path('backend/frontend/dashboard.html')
           s = p.read_text(encoding='utf-8')
           marker = '/* MYBETS_ROULETTE_CENTER_STYLE */'
-          if marker not in s:
-              css = r'''\n/* MYBETS_ROULETTE_CENTER_STYLE */\n.roulette-center-button {\n    font-size: 0 !important;\n    line-height: 1 !important;\n    display: flex !important;\n    flex-direction: column !important;\n    align-items: center !important;\n    justify-content: center !important;\n    gap: 3px !important;\n}\n.roulette-center-button::before {\n    content: "MyBets" !important;\n    display: block !important;\n    margin: 0 !important;\n    font-family: Arial, Helvetica, sans-serif !important;\n    font-size: clamp(20px, 4.5vw, 27px) !important;\n    font-style: italic !important;\n    font-weight: 900 !important;\n    letter-spacing: -1px !important;\n    color: #f7f7f7 !important;\n    text-shadow: 0 2px 5px rgba(0,0,0,.45) !important;\n}\n.roulette-center-button::after {\n    content: "GIRAR" !important;\n    display: block !important;\n    font-family: Arial, Helvetica, sans-serif !important;\n    font-size: clamp(15px, 3.5vw, 21px) !important;\n    font-weight: 1000 !important;\n    letter-spacing: 1px !important;\n    color: #ffd33d !important;\n    text-shadow: 0 2px 5px rgba(0,0,0,.5) !important;\n}\n.bet-area {\n    margin-top: 0 !important;\n}\n.quick-values {\n    margin-top: 8px !important;\n}\n'''
+          if marker in s:
+              start = s.index(marker)
+              end = s.index('</style>', start)
+              block = s[start:end]
+              block = block.replace('\\n', '\n')
+              s = s[:start] + block + s[end:]
+          else:
+              css = '''
+/* MYBETS_ROULETTE_CENTER_STYLE */
+.roulette-center-button { font-size: 0 !important; line-height: 1 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 3px !important; }
+.roulette-center-button::before { content: "MyBets" !important; display: block !important; margin: 0 !important; font-family: Arial, Helvetica, sans-serif !important; font-size: clamp(20px, 4.5vw, 27px) !important; font-style: italic !important; font-weight: 900 !important; letter-spacing: -1px !important; color: #f7f7f7 !important; text-shadow: 0 2px 5px rgba(0,0,0,.45) !important; }
+.roulette-center-button::after { content: "GIRAR" !important; display: block !important; font-family: Arial, Helvetica, sans-serif !important; font-size: clamp(15px, 3.5vw, 21px) !important; font-weight: 1000 !important; letter-spacing: 1px !important; color: #ffd33d !important; text-shadow: 0 2px 5px rgba(0,0,0,.5) !important; }
+.bet-area { margin-top: 0 !important; }
+.quick-values { margin-top: 8px !important; }
+'''
               s = s.replace('</style>', css + '</style>', 1)
-              p.write_text(s, encoding='utf-8')
+          p.write_text(s, encoding='utf-8')
           PY
 
       - name: Commitar ajuste
