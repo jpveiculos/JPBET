@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
+
       - name: Substituir nome da marca
         shell: python
         run: |
@@ -29,6 +30,59 @@ jobs:
               if novo!=texto:
                   caminho.write_text(novo,encoding='utf-8');alterados.append(str(caminho))
           print('Arquivos alterados:',alterados)
+
+      - name: Ajustar roleta no arquivo original
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          import json
+
+          novos = [
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"5x","type":"prize","multiplier":5,"probability":15},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"10x","type":"prize","multiplier":10,"probability":15},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"2x","type":"prize","multiplier":2,"probability":15},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"3x","type":"prize","multiplier":3,"probability":15},
+            {"label":"","type":"zero","multiplier":0,"probability":5}
+          ]
+
+          # Mantém a configuração da roleta no próprio arquivo original.
+          p = Path('backend/src/settings.js')
+          s = p.read_text(encoding='utf-8')
+          bloco = 'const segmentosRoletaPadrao = [\n' + ',\n'.join('  ' + json.dumps(x, ensure_ascii=False, separators=(',',':')) for x in novos) + '\n];'
+          s, n = re.subn(r'const segmentosRoletaPadrao = \[[\s\S]*?\n\];', bloco, s, count=1)
+          if n != 1:
+              raise SystemExit('Não foi possível localizar segmentosRoletaPadrao em settings.js')
+
+          # Atualiza uma configuração antiga já existente no PostgreSQL uma única vez.
+          marker = '// MYBETS_ROULETTE_MIGRATION_20260911'
+          if marker not in s:
+              alvo = "    for (const [key,value] of configuracoesPadrao) {\n      await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);\n    }"
+              migracao = alvo + "\n    " + marker + "\n    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);"
+              if alvo not in s:
+                  raise SystemExit('Não foi possível localizar a inicialização das configurações em settings.js')
+              s = s.replace(alvo, migracao, 1)
+          p.write_text(s, encoding='utf-8')
+
+          # A notificação visual de resultado não deve ocupar espaço nem aparecer na roleta.
+          p = Path('backend/frontend/dashboard.html')
+          s = p.read_text(encoding='utf-8')
+          marker = 'MYBETS_HIDE_ROULETTE_RESULT_20260911'
+          if marker not in s:
+              s += '''\n\n<!-- MYBETS_HIDE_ROULETTE_RESULT_20260911 -->\n<style id="mybets-hide-roulette-result">\n#rouletteModal .roulette-result,\n#rouletteModal .roulette-result * {\n  display: none !important;\n  visibility: hidden !important;\n}\n#rouletteModal .roulette-result {\n  height: 0 !important;\n  min-height: 0 !important;\n  max-height: 0 !important;\n  margin: 0 !important;\n  padding: 0 !important;\n  overflow: hidden !important;\n}\n</style>\n'''
+          p.write_text(s, encoding='utf-8')
+
       - name: Publicar
         shell: bash
         run: |
