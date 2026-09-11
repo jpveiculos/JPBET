@@ -54,14 +54,8 @@ const configuracoesPadrao = [
 async function inicializarConfiguracoes() {
   try {
     await pool.query(`CREATE TABLE IF NOT EXISTS site_settings (id SERIAL PRIMARY KEY, setting_key VARCHAR(100) UNIQUE NOT NULL, setting_value TEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
-
-    // Os valores padrão só são usados quando a configuração ainda não existe.
-    // Nunca sobrescrever configurações já salvas, principalmente a roleta.
     for (const [key,value] of configuracoesPadrao) {
-      await pool.query(
-        `INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,
-        [key,value]
-      );
+      await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);
     }
   } catch(error) {
     console.error('Erro ao inicializar configurações:',error);
@@ -73,6 +67,47 @@ inicializarConfiguracoes();
 router.get('/public',async(req,res)=>{try{const result=await pool.query(`SELECT setting_key,setting_value FROM site_settings WHERE setting_key NOT LIKE 'notification_%' ORDER BY setting_key`);const settings={};for(const row of result.rows) settings[row.setting_key]=row.setting_value;res.json({ok:true,settings});}catch(error){console.error(error);res.status(500).json({ok:false,message:'Erro ao carregar configurações públicas.'});}});
 
 router.get('/',exigirAdmin,async(req,res)=>{try{const result=await pool.query(`SELECT setting_key,setting_value,updated_at FROM site_settings ORDER BY setting_key`);res.json({ok:true,settings:result.rows});}catch(error){console.error(error);res.status(500).json({ok:false,message:'Erro ao carregar configurações.'});}});
+
+// API dedicada da roleta: lê e grava somente roulette_segments_json.
+// Isso evita que o editor da roleta dependa do salvamento das outras configurações.
+router.get('/roulette', exigirAdmin, async (req,res) => {
+  try {
+    const result = await pool.query(`SELECT setting_value,updated_at FROM site_settings WHERE setting_key='roulette_segments_json' LIMIT 1`);
+    let segments;
+    try { segments = JSON.parse(result.rows[0]?.setting_value || ''); } catch (_) { segments = null; }
+    if (!Array.isArray(segments) || segments.length !== 16) segments = segmentosRoletaPadrao;
+    res.json({ok:true,segments,updated_at:result.rows[0]?.updated_at || null});
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({ok:false,message:'Erro ao carregar a configuração da roleta.'});
+  }
+});
+
+router.put('/roulette', exigirAdmin, async (req,res) => {
+  try {
+    const segments = req.body?.segments;
+    if (!Array.isArray(segments) || segments.length !== 16) return res.status(400).json({ok:false,message:'A roleta precisa ter exatamente 16 fatias.'});
+    const normalized = segments.map((item,index) => {
+      const type = String(item?.type || 'zero').toLowerCase();
+      const multiplier = Number(item?.multiplier ?? 0);
+      const probability = Number(item?.probability ?? 0);
+      let label = String(item?.label ?? '').trim();
+      if (type === 'zero') { label = '❌'; }
+      if (type === 'sorte') { label = '🍀'; }
+      if (type === 'prize') { if (!Number.isFinite(multiplier) || multiplier < 2 || multiplier > 100) throw new Error(`Multiplicador inválido na fatia ${index + 1}.`); label = `${Math.round(multiplier)}x`; }
+      if (!['zero','sorte','prize'].includes(type)) throw new Error(`Tipo inválido na fatia ${index + 1}.`);
+      if (!Number.isFinite(probability) || probability < 0) throw new Error(`Probabilidade inválida na fatia ${index + 1}.`);
+      return {label,type,multiplier:type === 'prize' ? Math.round(multiplier) : 0,probability};
+    });
+    const total = normalized.reduce((sum,item)=>sum+item.probability,0);
+    if (!(total > 0)) return res.status(400).json({ok:false,message:'A soma das probabilidades deve ser maior que zero.'});
+    const result = await pool.query(`INSERT INTO site_settings(setting_key,setting_value,updated_at) VALUES('roulette_segments_json',$1,CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=CURRENT_TIMESTAMP RETURNING setting_value,updated_at`,[JSON.stringify(normalized)]);
+    res.json({ok:true,message:'Roleta salva com sucesso.',segments:normalized,updated_at:result.rows[0].updated_at});
+  } catch(error) {
+    console.error(error);
+    res.status(400).json({ok:false,message:error.message || 'Erro ao salvar a configuração da roleta.'});
+  }
+});
 
 router.get('/:key',exigirAdmin,async(req,res)=>{try{const result=await pool.query(`SELECT setting_key,setting_value,updated_at FROM site_settings WHERE setting_key=$1 LIMIT 1`,[req.params.key]);if(!result.rows.length)return res.status(404).json({ok:false,message:'Configuração não encontrada.'});res.json({ok:true,setting:result.rows[0]});}catch(error){console.error(error);res.status(500).json({ok:false,message:'Erro ao buscar configuração.'});}});
 
