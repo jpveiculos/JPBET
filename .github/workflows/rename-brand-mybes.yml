@@ -45,6 +45,8 @@ jobs:
               s=s.replace(alvo,alvo+"\n    "+marker+"\n    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);",1)
           p.write_text(s,encoding='utf-8')
           p=Path('backend/frontend/dashboard.html');s=p.read_text(encoding='utf-8')
+          # Remove qualquer tentativa incompleta anterior da roleta visual.
+          s=re.sub(r'<style id="mybets-roulette-final">[\s\S]*?(?=</body>)','',s,count=1)
           marker='MYBETS_HIDE_ROULETTE_RESULT_20260911'
           if marker not in s:
               s+='''\n\n<!-- MYBETS_HIDE_ROULETTE_RESULT_20260911 -->\n<style id="mybets-hide-roulette-result">\n#rouletteModal .roulette-result,#rouletteModal .roulette-result *{display:none!important;visibility:hidden!important}\n#rouletteModal .roulette-result{height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}\n</style>\n'''
