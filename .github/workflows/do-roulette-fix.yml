@@ -1,0 +1,89 @@
+name: Do roulette fix
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix dashboard roulette
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('backend/frontend/dashboard.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Remove malformed escaped duplicate function, if present.
+          marker = r'\nfunction obterGeometriaRoletaPesada'
+          pos = s.rfind(marker)
+          if pos >= 0:
+              end = s.find(r'\n</script>', pos)
+              if end < 0:
+                  raise SystemExit('Fechamento do script não encontrado.')
+              s = s[:pos] + s[end:]
+
+          old = """function obterGeometriaRoletaPesada(segmentos) {
+              const pesos = segmentos.map(item => String(item || '').trim() !== '' ? 3 : 1);
+              const total = pesos.reduce((sum, peso) => sum + peso, 0) || 1;
+              let cursor = 0;
+              return segmentos.map((item, index) => {
+                  const startDeg = cursor;
+                  const endDeg = index === segmentos.length - 1 ? 360 : cursor + (pesos[index] / total) * 360;
+                  cursor = endDeg;
+                  return { startDeg, endDeg, centerDeg: startDeg + (endDeg - startDeg) / 2 };
+              });
+          }"""
+
+          new = """function obterGeometriaRoletaPesada(segmentos) {
+              const grupos = [
+                  { prize: 0, losses: [1, 2, 3], start: 0 },
+                  { prize: 4, losses: [5, 6, 7], start: 90 },
+                  { prize: 8, losses: [9, 10, 11], start: 180 },
+                  { prize: 12, losses: [13, 14, 15], start: 270 }
+              ];
+              const geometria = new Array(16);
+              grupos.forEach(({ prize, losses, start }) => {
+                  geometria[prize] = {
+                      startDeg: start,
+                      endDeg: start + 67.5,
+                      centerDeg: start + 33.75
+                  };
+                  losses.forEach((index, pos) => {
+                      const startDeg = start + 67.5 + pos * 7.5;
+                      geometria[index] = {
+                          startDeg,
+                          endDeg: startDeg + 7.5,
+                          centerDeg: startDeg + 3.75
+                      };
+                  });
+              });
+              return geometria;
+          }"""
+
+          if old not in s:
+              raise SystemExit('Função antiga não encontrada.')
+          s = s.replace(old, new, 1)
+
+          needle = "wheel.style.transform = 'rotate(0deg)';\n    roletaRotacaoAtual = 0;\n};\n\nanimarRoleta = function"
+          replacement = "wheel.style.transform = 'rotate(-33.75deg)';\n    roletaRotacaoAtual = -33.75;\n};\n\nanimarRoleta = function"
+          if needle not in s:
+              raise SystemExit('Inicialização da roleta não encontrada.')
+          s = s.replace(needle, replacement, 1)
+
+          p.write_text(s, encoding='utf-8')
+          print('CORREÇÃO APLICADA')
+          PY
+          rm -f .github/workflows/align-roulette-pointer.yml .github/workflows/fix-roulette-start.yml .github/workflows/repair-roulette-geometry.yml .github/workflows/repair-roulette-geometry-2.yml .github/workflows/repair-roulette-geometry-3.yml .github/workflows/finalize-roulette-alignment.yml .github/workflows/final-roulette-fix.yml .github/workflows/do-roulette-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix roulette pointer alignment"
+          git push
