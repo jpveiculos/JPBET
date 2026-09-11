@@ -1,32 +1,48 @@
 (()=>{
+function aplicarRoletaNova(){
+ try{
+  if(typeof ROLETAS==='undefined'||!ROLETAS.sorte)return;
+  ROLETAS.sorte.title='Roleta MyBets';
+  ROLETAS.sorte.subtitle='Faça sua aposta e gire a roleta.';
+  ROLETAS.sorte.rules='A roleta tem 16 fatias: 4 multiplicadores e 12 áreas de perda.';
+  ROLETAS.sorte.segments=[
+   '2X','','','',
+   '3X','','','',
+   '5X','','','',
+   '10X','','',''
+  ];
+  const title=document.getElementById('rouletteTitle');
+  if(title)title.textContent='Roleta MyBets';
+  const explanation=document.querySelector('.roulette-explanation');
+  if(explanation)explanation.innerHTML='<strong>Jogue seu valor e multiplique!</strong><br><small>Prêmios: 2x, 3x, 5x e 10x.</small>';
+  if(typeof criarRoda==='function')criarRoda();
+ }catch(e){console.warn('MyBets: falha ao aplicar nova roleta',e)}
+}
 function apply(){
  const container=document.querySelector('.container');
  const games=document.querySelector('.games');
  if(!container||!games)return;
 
- // O dashboard.html já contém o layout final aprovado.
- // Este script apenas limpa a duplicação antiga do título e garante
- // que a página permaneça responsiva no celular, sem reconstruir a roleta.
  document.querySelectorAll('.roulette-section-heading').forEach(el=>{
-   const nested=el.querySelectorAll('.roulette-section-heading');
-   nested.forEach(n=>n.remove());
+  const nested=el.querySelectorAll('.roulette-section-heading');
+  nested.forEach(n=>n.remove());
  });
 
  const headings=document.querySelectorAll('.roulette-section-heading');
  let heading=headings[0];
- headings.forEach((el,i)=>{ if(i>0) el.remove(); });
+ headings.forEach((el,i)=>{if(i>0)el.remove()});
  if(!heading){
-   heading=document.createElement('div');
-   heading.className='roulette-section-heading';
-   heading.innerHTML='<h2 class="section-title">🎰 Roletas</h2><span>GIRE E MULTIPLIQUE</span>';
-   games.parentNode.insertBefore(heading,games);
+  heading=document.createElement('div');
+  heading.className='roulette-section-heading';
+  heading.innerHTML='<h2 class="section-title">🎰 Roletas</h2><span>GIRE E MULTIPLIQUE</span>';
+  games.parentNode.insertBefore(heading,games);
  }
 
  let style=document.getElementById('mybets-player-safe-css');
  if(!style){
-   style=document.createElement('style');
-   style.id='mybets-player-safe-css';
-   style.textContent=`
+  style=document.createElement('style');
+  style.id='mybets-player-safe-css';
+  style.textContent=`
 html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden!important}
 *,*::before,*::after{box-sizing:border-box}
 .container{width:min(1100px,calc(100% - 28px))!important;max-width:1100px!important;margin-left:auto!important;margin-right:auto!important;min-width:0!important}
@@ -45,8 +61,11 @@ html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden!important}
  .roulette-promo-copy p{font-size:11px!important}
 }
 `;
-   document.head.appendChild(style);
+  document.head.appendChild(style);
  }
+ aplicarRoletaNova();
+ setTimeout(aplicarRoletaNova,250);
+ setTimeout(aplicarRoletaNova,900);
 }
 document.addEventListener('DOMContentLoaded',apply);
 if(document.readyState!=='loading')apply();
