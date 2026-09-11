@@ -16,11 +16,204 @@ jobs:
       - name: Baixar projeto
         uses: actions/checkout@v4
 
+      - name: Ajustar roleta 16 fatias com pesos visuais
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          # DASHBOARD: setores proporcionais ao peso e cores sólidas.
+          p = Path('backend/frontend/dashboard.html')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r'segments:\s*\[.*?\n\s*\]', '''segments: [
+              "2X", "", "", "",
+              "3X", "", "", "",
+              "2X", "", "", "",
+              "3X", "", "", ""
+          ]''', s, count=1, flags=re.S)
+          s = s.replace('Prêmios: 2×, 3× e 5×', 'Prêmios: 2×, 3×, 2× e 3×')
+
+          a = s.index('function criarRoda() {')
+          b = s.index('function formatarResultadoRoleta', a)
+          create = '''function obterGeometriaRoleta(segmentos) {
+    const pesos = segmentos.map(item => {
+        const peso = Number(item?.probability ?? 0);
+        return Number.isFinite(peso) && peso > 0 ? peso : 0;
+    });
+    let total = pesos.reduce((sum, peso) => sum + peso, 0);
+    if (!(total > 0)) { total = segmentos.length; pesos.fill(1); }
+    let cursor = 0;
+    return segmentos.map((item, index) => {
+        const startDeg = cursor;
+        const endDeg = index === segmentos.length - 1 ? 360 : cursor + (pesos[index] / total) * 360;
+        cursor = endDeg;
+        return { startDeg, endDeg, centerDeg: startDeg + (endDeg - startDeg) / 2 };
+    });
+}
+
+function criarRoda() {
+    const wheel = document.getElementById("wheel");
+    const svg = document.getElementById("rouletteSvg");
+    if (!wheel || !svg) return;
+    const roleta = ROLETAS[roletaAtual] || ROLETAS.sorte;
+    const segmentos = Array.isArray(roleta.segments) ? roleta.segments : [];
+    if (segmentos.length !== 16) { console.error("A roleta precisa ter exatamente 16 fatias."); return; }
+    svg.innerHTML = "";
+    const ns = "http://www.w3.org/2000/svg";
+    const cx = 250, cy = 250, radius = 238;
+    const geometria = obterGeometriaRoleta(segmentos);
+    segmentos.forEach((label, index) => {
+        const setor = geometria[index];
+        const isPrize = String(label || "").trim() !== "";
+        const group = document.createElementNS(ns, "g");
+        group.setAttribute("class", "roulette-sector");
+        group.setAttribute("data-index", String(index));
+        const path = document.createElementNS(ns, "path");
+        path.setAttribute("d", sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
+        path.setAttribute("fill", isPrize ? "#080808" : "#c99724");
+        path.setAttribute("stroke", "none");
+        group.appendChild(path);
+        if (isPrize) {
+            const p = polar(cx, cy, 150, setor.centerDeg);
+            const text = document.createElementNS(ns, "text");
+            text.textContent = String(label).toUpperCase();
+            text.setAttribute("x", p.x);
+            text.setAttribute("y", p.y);
+            text.setAttribute("class", "roulette-label multiplier");
+            text.setAttribute("font-size", "52");
+            text.setAttribute("fill", "#25e66b");
+            text.style.fill = "#25e66b";
+            text.dataset.x = String(p.x);
+            text.dataset.y = String(p.y);
+            text.setAttribute("transform", `rotate(0 ${p.x} ${p.y})`);
+            group.appendChild(text);
+        }
+        svg.appendChild(group);
+    });
+    const outerRing = document.createElementNS(ns, "circle");
+    outerRing.setAttribute("cx", cx); outerRing.setAttribute("cy", cy); outerRing.setAttribute("r", radius);
+    outerRing.setAttribute("fill", "none"); outerRing.setAttribute("stroke", "#a66f08"); outerRing.setAttribute("stroke-width", "11");
+    svg.appendChild(outerRing);
+    const outerHighlight = document.createElementNS(ns, "circle");
+    outerHighlight.setAttribute("cx", cx); outerHighlight.setAttribute("cy", cy); outerHighlight.setAttribute("r", radius - 7);
+    outerHighlight.setAttribute("fill", "none"); outerHighlight.setAttribute("stroke", "#f5d66a"); outerHighlight.setAttribute("stroke-width", "2");
+    svg.appendChild(outerHighlight);
+    wheel.style.transition = "none";
+    wheel.style.transform = "rotate(0deg)";
+    roletaRotacaoAtual = 0;
+}
+
+'''
+          s = s[:a] + create + s[b:]
+
+          a = s.index('function animarRoleta(indiceResultado) {')
+          b = s.index('async function destacarVencedora', a)
+          anim = '''function animarRoleta(indiceResultado) {
+    return new Promise(resolve => {
+        const wheel = document.getElementById("wheel");
+        const visualIndex = Number(indiceResultado);
+        const roleta = ROLETAS[roletaAtual] || ROLETAS.sorte;
+        const segmentos = Array.isArray(roleta.segments) ? roleta.segments : [];
+        const geometria = obterGeometriaRoleta(segmentos);
+        if (!wheel || !Number.isInteger(visualIndex) || visualIndex < 0 || visualIndex >= geometria.length) { resolve(); return; }
+        const centro = geometria[visualIndex].centerDeg;
+        const alvo = -centro;
+        const atual = Number(roletaRotacaoAtual) || 0;
+        const moduloAlvo = ((alvo % 360) + 360) % 360;
+        const moduloAtual = ((atual % 360) + 360) % 360;
+        let ajuste = moduloAlvo - moduloAtual;
+        if (ajuste < 0) ajuste += 360;
+        const destino = atual + 4 * 360 + ajuste;
+        const duracao = Math.max(1400, Number(configuracoes.roulette_animation_ms) || 1800);
+        wheel.style.transition = "none";
+        wheel.style.transform = `rotate(${atual}deg)`;
+        manterNumerosRetos(atual);
+        requestAnimationFrame(() => {
+            const inicio = performance.now();
+            function animar(agora) {
+                const progresso = Math.min(1, (agora - inicio) / duracao);
+                const ease = 1 - Math.pow(1 - progresso, 3);
+                const rotacao = atual + (destino - atual) * ease;
+                wheel.style.transform = `rotate(${rotacao}deg)`;
+                manterNumerosRetos(rotacao);
+                if (progresso < 1) return requestAnimationFrame(animar);
+                roletaRotacaoAtual = destino;
+                wheel.style.transform = `rotate(${destino}deg)`;
+                manterNumerosRetos(destino);
+                resolve();
+            }
+            requestAnimationFrame(animar);
+        });
+        tocarSom("click");
+    });
+}
+
+'''
+          s = s[:a] + anim + s[b:]
+          p.write_text(s, encoding='utf-8')
+
+          # SERVER: 4 prizes at weight 15 and 12 losses at weight 5.
+          p = Path('backend/src/server.js')
+          s = p.read_text(encoding='utf-8')
+          a = s.index('const ROLETTE_DEFAULT_SEGMENTS = [')
+          b = s.index('];', a) + 2
+          default = '''const ROLETTE_DEFAULT_SEGMENTS = [
+  { index: 0, label: "2x", type: "prize", multiplier: 2, probability: 15 },
+  { index: 1, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 2, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 3, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 4, label: "3x", type: "prize", multiplier: 3, probability: 15 },
+  { index: 5, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 6, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 7, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 8, label: "2x", type: "prize", multiplier: 2, probability: 15 },
+  { index: 9, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 10, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 11, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 12, label: "3x", type: "prize", multiplier: 3, probability: 15 },
+  { index: 13, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 14, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 15, label: "", type: "zero", multiplier: 0, probability: 5 }
+];'''
+          s = s[:a] + default + s[b:]
+          s = s.replace('A roleta precisa ter exatamente 20 fatias.', 'A roleta precisa ter exatamente 16 fatias.')
+          p.write_text(s, encoding='utf-8')
+
+          # SETTINGS: default plus one-time migration of the current 5x configuration.
+          p = Path('backend/src/settings.js')
+          s = p.read_text(encoding='utf-8')
+          a = s.index('const segmentosRoletaPadrao = [')
+          b = s.index('];', a) + 2
+          default = '''const segmentosRoletaPadrao = [
+  {label:"2x",type:"prize",multiplier:2,probability:15},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"3x",type:"prize",multiplier:3,probability:15},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"2x",type:"prize",multiplier:2,probability:15},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"3x",type:"prize",multiplier:3,probability:15},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5},
+  {label:"X",type:"zero",multiplier:0,probability:5}
+];'''
+          s = s[:a] + default + s[b:]
+          old = """      if (Array.isArray(segmentos) && segmentos.length === 16) {\n        if (segmentos[8] && String(segmentos[8].type || '').toLowerCase() === 'prize' && Number(segmentos[8].multiplier) === 4) {\n          segmentos[8] = {...segmentos[8], label:'2x', multiplier:2};\n        }\n        await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);\n      } else {"""
+          new = """      if (Array.isArray(segmentos) && segmentos.length === 16) {\n        const temPremio5x = segmentos.some(item => String(item?.type || '').toLowerCase() === 'prize' && Number(item?.multiplier) === 5);\n        if (temPremio5x) {\n          const indicesPremio = segmentos.map((item,index) => String(item?.type || '').toLowerCase() === 'prize' ? index : -1).filter(index => index >= 0);\n          const multiplicadores = [2,3,2,3];\n          indicesPremio.slice(0,4).forEach((index,pos) => {\n            segmentos[index] = {...segmentos[index], label:`${multiplicadores[pos]}x`, multiplier:multiplicadores[pos], probability:15};\n          });\n          segmentos.forEach((item,index) => {\n            if (!indicesPremio.includes(index)) segmentos[index] = {...item, label:'X', multiplier:0, probability:5};\n          });\n        }\n        await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);\n      } else {"""
+          if old not in s:
+              raise SystemExit('Migração esperada não encontrada em settings.js')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
       - name: Substituir nome da marca
         shell: python
         run: |
           from pathlib import Path
-
           substituicoes = {
               'JPBET': 'MyBets',
               'MayBets': 'MyBets',
@@ -28,13 +221,8 @@ jobs:
               'JP-BET': 'MyBets',
               'JP Bet': 'MyBets',
           }
-
           ignorar = {'.git', 'node_modules'}
-          extensoes_texto = {
-              '.html', '.css', '.js', '.json', '.md', '.txt', '.sql',
-              '.yml', '.yaml', '.env.example', '.xml', '.svg'
-          }
-
+          extensoes_texto = {'.html', '.css', '.js', '.json', '.md', '.txt', '.sql', '.yml', '.yaml', '.env.example', '.xml', '.svg'}
           alterados = []
           for caminho in Path('.').rglob('*'):
               if not caminho.is_file() or any(parte in ignorar for parte in caminho.parts):
@@ -43,23 +231,17 @@ jobs:
                   continue
               if caminho.suffix.lower() not in extensoes_texto:
                   continue
-
               try:
                   texto = caminho.read_text(encoding='utf-8')
               except (UnicodeDecodeError, OSError):
                   continue
-
               novo = texto
               for antigo, atual in substituicoes.items():
                   novo = novo.replace(antigo, atual)
-
               if novo != texto:
                   caminho.write_text(novo, encoding='utf-8')
                   alterados.append(str(caminho))
-
-          print('Arquivos alterados:')
-          for arquivo in alterados:
-              print(arquivo)
+          print('Arquivos alterados:', *alterados, sep='\n')
 
       - name: Publicar alteração da marca
         shell: bash
@@ -68,7 +250,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "Nenhuma alteração de marca encontrada."
+            echo "Nenhuma alteração encontrada."
             exit 0
           fi
           git commit -m "Atualizar marca MyBets"
