@@ -1,0 +1,45 @@
+name: Clean roulette player UI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  clean:
+    if: github.event.head_commit.message != 'Clean roulette player UI'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remove visual text clutter from roulette
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('backend/frontend/dashboard.html')
+          text = path.read_text(encoding='utf-8')
+
+          marker = '.roulette-area {\n'
+          if marker not in text:
+              raise SystemExit('Bloco .roulette-area não encontrado')
+
+          additions = '''/* Limpeza visual da área da roleta no jogador.\n   Mantém título, roleta, botão GIRAR e campo de aposta.\n   Regras e explicações continuam no código, mas não poluem a tela durante o jogo. */\n.modal-subtitle,\n.rules,\n.roulette-explanation {\n    display: none !important;\n}\n\n.roulette-area {\n    margin-top: 6px;\n}\n\n'''
+
+          if '/* Limpeza visual da área da roleta no jogador.' not in text:
+              text = text.replace(marker, additions + marker, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/dashboard.html
+          git rm .github/workflows/clean-roulette-text.yml
+          git diff --cached --quiet || git commit -m "Clean roulette player UI"
+          git push
