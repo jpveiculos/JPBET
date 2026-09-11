@@ -2503,7 +2503,7 @@ iniciarDashboard();
 <script>
 function obterGeometriaRoletaPesada(segmentos) {
     const pesos = segmentos.map(item => {
-        const peso = Number(item?.probability ?? 0);
+        const peso = String(item || "").trim() !== "" ? 15 : 5;
         return Number.isFinite(peso) && peso > 0 ? peso : 0;
     });
     let total = pesos.reduce((sum, peso) => sum + peso, 0);
