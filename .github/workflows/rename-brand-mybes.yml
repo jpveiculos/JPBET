@@ -1,0 +1,75 @@
+name: Atualizar marca MyBets
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  rename-brand:
+    if: ${{ !contains(github.event.head_commit.message, 'Atualizar marca MyBets') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Substituir nome da marca
+        shell: python
+        run: |
+          from pathlib import Path
+
+          substituicoes = {
+              'JPBET': 'MyBets',
+              'MayBets': 'MyBets',
+              'Maybets': 'MyBets',
+              'JP-BET': 'MyBets',
+              'JP Bet': 'MyBets',
+          }
+
+          ignorar = {'.git', 'node_modules'}
+          extensoes_texto = {
+              '.html', '.css', '.js', '.json', '.md', '.txt', '.sql',
+              '.yml', '.yaml', '.env.example', '.xml', '.svg'
+          }
+
+          alterados = []
+          for caminho in Path('.').rglob('*'):
+              if not caminho.is_file() or any(parte in ignorar for parte in caminho.parts):
+                  continue
+              if caminho.name == 'rename-brand-mybes.yml':
+                  continue
+              if caminho.suffix.lower() not in extensoes_texto:
+                  continue
+
+              try:
+                  texto = caminho.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+
+              novo = texto
+              for antigo, atual in substituicoes.items():
+                  novo = novo.replace(antigo, atual)
+
+              if novo != texto:
+                  caminho.write_text(novo, encoding='utf-8')
+                  alterados.append(str(caminho))
+
+          print('Arquivos alterados:')
+          for arquivo in alterados:
+              print(arquivo)
+
+      - name: Publicar alteração da marca
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração de marca encontrada."
+            exit 0
+          fi
+          git commit -m "Atualizar marca MyBets"
+          git push
