@@ -58,23 +58,27 @@ async function inicializarConfiguracoes() {
 
     const result = await pool.query(`SELECT setting_value FROM site_settings WHERE setting_key='roulette_segments_json' LIMIT 1`);
     const atual = String(result.rows[0]?.setting_value || "");
+
     try {
-        let segmentos = JSON.parse(atual);
-        if (Array.isArray(segmentos) && segmentos.length > 16) {
-          segmentos = segmentos.slice(0, 16);
+      let segmentos = JSON.parse(atual);
+      if (Array.isArray(segmentos) && segmentos.length > 16) {
+        segmentos = segmentos.slice(0, 16);
+      }
+      if (Array.isArray(segmentos) && segmentos.length === 16) {
+        if (segmentos[8] && String(segmentos[8].type || '').toLowerCase() === 'prize' && Number(segmentos[8].multiplier) === 4) {
+          segmentos[8] = {...segmentos[8], label:'2x', multiplier:2};
         }
-        if (Array.isArray(segmentos) && segmentos.length === 16) {
-          if (segmentos[8] && String(segmentos[8].type || '').toLowerCase() === 'prize' && Number(segmentos[8].multiplier) === 4) {
-            segmentos[8] = {...segmentos[8], label:'2x', multiplier:2};
-          }
-          await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);
-        } else {
-          await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentosRoletaPadrao)]);
-        }
-      } catch (error) { console.warn('Migração da roleta não aplicada:',error.message); }
+        await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);
+      } else {
+        await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentosRoletaPadrao)]);
+      }
+    } catch (error) {
+      console.warn('Migração da roleta não aplicada:',error.message);
     }
-    console.log('Configurações do My Bets inicializadas com sucesso.');
-  } catch(error) { console.error('Erro ao inicializar configurações:',error); }
+  } catch(error) {
+    console.error('Erro ao inicializar configurações:',error);
+  }
+  console.log('Configurações do My Bets inicializadas com sucesso.');
 }
 inicializarConfiguracoes();
 
