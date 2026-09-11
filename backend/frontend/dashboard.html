@@ -2500,7 +2500,6 @@ async function iniciarDashboard() {
 
 iniciarDashboard();
 
-<script>
 function obterGeometriaRoletaPesada(segmentos) {
     const pesos = segmentos.map(item => String(item || '').trim() !== '' ? 3 : 1);
     const total = pesos.reduce((sum, peso) => sum + peso, 0) || 1;
