@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administração - Roleta</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#111;color:#fff}.container{max-width:1000px;margin:auto;padding:18px}.card{background:#1d1d1d;border-radius:14px;padding:20px;margin-bottom:18px}h1{margin:8px 0 6px;font-size:30px}h2{margin-top:0}.note{color:#aaa;line-height:1.5;margin-bottom:16px}.table-wrap{overflow-x:auto;border:1px solid #444;border-radius:12px}.table-wrap table{width:100%;min-width:720px;border-collapse:collapse}.table-wrap th,.table-wrap td{padding:10px;border-bottom:1px solid #333;text-align:left}.table-wrap th{background:#292929}.table-wrap input,.table-wrap select{width:100%;padding:11px;border:1px solid #555;border-radius:8px;background:#111;color:#fff;font-size:16px}.table-wrap input[readonly]{opacity:.9}.button{width:100%;padding:15px;border:0;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer;margin-top:12px}.save{background:#ffd000;color:#111}.back{background:#444;color:#fff}.message{text-align:center;min-height:24px;margin-top:14px;font-weight:bold}.success{color:#48d66b}.error{color:#ff6b6b}.sum{font-size:18px;font-weight:bold;margin-top:14px}@media(max-width:650px){.container{padding:12px}h1{font-size:27px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <button class="button back" onclick="location.href='admin.html'">← VOLTAR PARA ADMINISTRAÇÃO</button>
+  <div class="card">
+    <h1>🎰 Configuração da Roleta</h1>
+    <div class="note">Esta tela grava diretamente a configuração das 16 fatias no banco de dados. O deploy não altera os valores salvos.</div>
+    <div id="editor" class="table-wrap">Carregando...</div>
+    <div id="sum" class="sum"></div>
+    <button class="button save" onclick="salvar()">💾 SALVAR ROLETA</button>
+    <div id="message" class="message"></div>
+  </div>
+</div>
+<script>
+const API='/api';
+let segments=[];
+const padrao=[
+{label:'2x',type:'prize',multiplier:2,probability:15},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},
+{label:'3x',type:'prize',multiplier:3,probability:15},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},
+{label:'2x',type:'prize',multiplier:2,probability:15},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},
+{label:'3x',type:'prize',multiplier:3,probability:15},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5},{label:'❌',type:'zero',multiplier:0,probability:5}];
+function msg(t,c=''){const e=document.getElementById('message');e.textContent=t;e.className='message '+c}
+function render(){
+ let html='<table><thead><tr><th>#</th><th>Prêmio</th><th>Tipo</th><th>Multiplicador</th><th>Peso/Probabilidade</th></tr></thead><tbody>';
+ segments.forEach((s,i)=>{const type=String(s.type||'zero');const mult=Number(s.multiplier||0);const p=Number(s.probability||0);html+=`<tr data-i="${i}"><td>${i+1}</td><td><input class="label" value="${type==='prize'?mult+'x':type==='sorte'?'🍀':'❌'}" readonly></td><td><select class="type"><option value="zero" ${type==='zero'?'selected':''}>❌ Perda</option><option value="sorte" ${type==='sorte'?'selected':''}>🍀 Giro grátis</option><option value="prize" ${type==='prize'?'selected':''}>Prêmio</option></select></td><td><input class="mult" type="number" min="0" max="100" step="1" value="${mult}"></td><td><input class="prob" type="number" min="0" step="0.01" value="${p}"></td></tr>`});
+ html+='</tbody></table>';document.getElementById('editor').innerHTML=html;
+ document.querySelectorAll('tr[data-i]').forEach(row=>{row.querySelector('.type').addEventListener('change',()=>syncRow(row));row.querySelector('.mult').addEventListener('input',()=>syncRow(row));row.querySelector('.prob').addEventListener('input',updateSum)});updateSum();
+}
+function syncRow(row){const type=row.querySelector('.type').value;const mult=row.querySelector('.mult');const label=row.querySelector('.label');if(type==='zero'){mult.value=0;label.value='❌'}else if(type==='sorte'){mult.value=0;label.value='🍀'}else{let n=Number(mult.value);if(!Number.isFinite(n)||n<2)n=2;if(n>100)n=100;mult.value=Math.round(n);label.value=Math.round(n)+'x'}updateSum()}
+function collect(){return [...document.querySelectorAll('tr[data-i]')].map(row=>{const type=row.querySelector('.type').value;let mult=Number(row.querySelector('.mult').value);let prob=Number(row.querySelector('.prob').value);if(type!=='prize')mult=0;return{type,multiplier:mult,probability:prob,label:type==='prize'?Math.round(mult)+'x':type==='sorte'?'🍀':'❌'}})}
+function updateSum(){const rows=document.querySelectorAll('tr[data-i]');let total=0;rows.forEach(r=>total+=Number(r.querySelector('.prob')?.value||0));document.getElementById('sum').textContent='Soma dos pesos: '+total.toFixed(2)}
+async function carregar(){try{msg('Carregando...');const r=await fetch(API+'/settings/roulette',{credentials:'same-origin'});const d=await r.json();if(r.status===401){location.href='admin.html';return}if(!r.ok)throw new Error(d.message||'Erro ao carregar');segments=Array.isArray(d.segments)&&d.segments.length===16?d.segments:padrao;render();msg('')}catch(e){console.error(e);segments=padrao;render();msg(e.message||'Erro ao carregar a roleta','error')}}
+async function salvar(){try{const data=collect();if(data.length!==16)throw new Error('A roleta precisa ter exatamente 16 fatias.');for(let i=0;i<data.length;i++){const s=data[i];if(s.type==='prize'&&(s.multiplier<2||s.multiplier>100))throw new Error('O multiplicador da fatia '+(i+1)+' deve ficar entre 2x e 100x.');if(!Number.isFinite(s.probability)||s.probability<0)throw new Error('Peso inválido na fatia '+(i+1)+'.')}if(data.reduce((a,s)=>a+s.probability,0)<=0)throw new Error('A soma dos pesos deve ser maior que zero.');msg('Salvando...');const r=await fetch(API+'/settings/roulette',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({segments:data})});const d=await r.json();if(r.status===401){location.href='admin.html';return}if(!r.ok)throw new Error(d.message||'Erro ao salvar');segments=d.segments;render();msg('Roleta salva com sucesso.','success')}catch(e){console.error(e);msg(e.message||'Erro ao salvar','error')}}
+carregar();
+</script>
+</body>
+</html>
