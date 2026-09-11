@@ -2629,6 +2629,7 @@ animarRoleta = function(indiceResultado) {
         tocarSom('click');
     });
 };
+\nfunction obterGeometriaRoletaPesada(segmentos) {\n    /* Geometria visual: 4 prêmios de 67,5° e 4 blocos amarelos de 22,5°.\n       As 16 posições lógicas permanecem; cada perda ocupa 7,5° dentro do bloco. */\n    const grupos = [\n        { prize: 0, losses: [1, 2, 3], start: 0 },\n        { prize: 4, losses: [5, 6, 7], start: 90 },\n        { prize: 8, losses: [9, 10, 11], start: 180 },\n        { prize: 12, losses: [13, 14, 15], start: 270 }\n    ];\n    const geometria = new Array(16);\n    grupos.forEach(({ prize, losses, start }) => {\n        geometria[prize] = { startDeg: start, endDeg: start + 67.5, centerDeg: start + 33.75 };\n        losses.forEach((index, pos) => {\n            const startDeg = start + 67.5 + pos * 7.5;\n            geometria[index] = { startDeg, endDeg: startDeg + 7.5, centerDeg: startDeg + 3.75 };\n        });\n    });\n    return geometria;\n}\n
 </script>
 
 </body>
