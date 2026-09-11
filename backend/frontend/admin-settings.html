@@ -745,7 +745,7 @@
 
       <div class="field">
         <div class="note" style="line-height:1.6;">
-          <strong>Modelo atual:</strong> roleta configurável de 12 a 40 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x.
+          <strong>Modelo atual:</strong> roleta configurável de exatamente 20 fatias. Use ❌ para perda, 🍀 para giro grátis e multiplicadores de 2x a 100x. O campo <strong>Multiplicador</strong> de cada prêmio é editável.
           Cada fatia possui um <strong>peso configurável</strong>. O servidor sorteia proporcionalmente aos pesos salvos.
         </div>
       </div>
@@ -1248,24 +1248,52 @@
       });
       html += `</tbody></table>`;
       editor.innerHTML = html;
-      editor.querySelectorAll(".segment-type, .segment-multiplier, .segment-probability, .segment-label").forEach(campo => {
-        campo.addEventListener("input", atualizarChancesEditorRoleta);
-        campo.addEventListener("change", atualizarChancesEditorRoleta);
+      editor.querySelectorAll(".segment-type, .segment-multiplier, .segment-probability").forEach(campo => {
+        campo.addEventListener("input", () => atualizarChancesEditorRoleta(false));
+        campo.addEventListener("change", () => atualizarChancesEditorRoleta(true));
       });
-      atualizarChancesEditorRoleta();
+
+      // O texto do prêmio é gerado automaticamente a partir do multiplicador.
+      editor.querySelectorAll(".segment-label").forEach(campo => {
+        campo.readOnly = true;
+      });
+
+      atualizarChancesEditorRoleta(true);
     }
 
-    function atualizarChancesEditorRoleta() {
+    function atualizarChancesEditorRoleta(normalizar = false) {
       document.querySelectorAll("#rouletteSegmentsEditor tbody tr").forEach(linha => {
         const tipo = linha.querySelector(".segment-type").value;
         const mult = linha.querySelector(".segment-multiplier");
         const label = linha.querySelector(".segment-label");
-        if (tipo === "zero") { mult.value = "0"; label.value = "❌"; }
-        if (tipo === "sorte") { mult.value = "0"; label.value = "🍀"; }
+
+        if (tipo === "zero") {
+          mult.value = "0";
+          label.value = "❌";
+          label.readOnly = true;
+          return;
+        }
+
+        if (tipo === "sorte") {
+          mult.value = "0";
+          label.value = "🍀";
+          label.readOnly = true;
+          return;
+        }
+
         if (tipo === "prize") {
-          const n = Number(mult.value) || 2;
-          mult.value = String(Math.max(2, Math.min(100, Math.round(n))));
-          label.value = `${mult.value}x`;
+          label.readOnly = true;
+
+          // Durante a edição, não substitui o valor digitado pelo administrador.
+          // Isso permite apagar o valor atual e digitar, por exemplo, 10, 25 ou 100.
+          if (normalizar) {
+            const n = Number(mult.value);
+            const valor = Number.isFinite(n) ? Math.round(n) : 2;
+            mult.value = String(Math.max(2, Math.min(100, valor)));
+          }
+
+          const valorAtual = String(mult.value || "").trim();
+          label.value = valorAtual ? `${valorAtual}x` : "";
         }
       });
     }
@@ -1390,7 +1418,7 @@ if (
     { index: 7, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 8, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 9, label: "❌", type: "zero", multiplier: 0, probability: 6 },
-    { index: 10, label: "4x", type: "prize", multiplier: 4, probability: 3 },
+    { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 3 },
     { index: 11, label: "❌", type: "zero", multiplier: 0, probability: 6 },
     { index: 12, label: "❌", type: "zero", multiplier: 0, probability: 5 },
     { index: 13, label: "❌", type: "zero", multiplier: 0, probability: 5 },
