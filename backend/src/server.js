@@ -149,7 +149,7 @@ async function inicializarBanco() {
       ON admin_audit_logs(created_at);
     `);
     console.log(
-      "Banco MayBets inicializado com sucesso."
+      "Banco MyBets inicializado com sucesso."
     );
   } catch (error) {
     console.error(
@@ -674,7 +674,7 @@ app.post(
         return res.status(400).json({
           ok: false,
           message:
-            "A MayBets utiliza uma única roleta."
+            "A MyBets utiliza uma única roleta."
         });
       }
 
@@ -3368,14 +3368,14 @@ inicializarBanco()
       PORT,
       () => {
         console.log(
-          `MayBets rodando na porta ${PORT}`
+          `MyBets rodando na porta ${PORT}`
         );
       }
     );
   })
   .catch(error => {
     console.error(
-      "MayBets não pôde iniciar:",
+      "MyBets não pôde iniciar:",
       error
     );
     process.exit(1);

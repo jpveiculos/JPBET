@@ -31,17 +31,17 @@ export function montarMensagemNotificacao(evento, dados = {}) {
   const motivo = dados.reason ? `\n📝 Motivo: ${dados.reason}` : "";
 
   const textos = {
-    deposit_requested: `🔔 MayBets — Novo depósito solicitado${usuario}${valor}${id}`,
-    withdrawal_requested: `🔔 MayBets — Novo saque solicitado${usuario}${valor}${id}`,
-    deposit_approved: `✅ MayBets — Depósito aprovado${usuario}${valor}${id}`,
-    deposit_rejected: `❌ MayBets — Depósito rejeitado${usuario}${valor}${id}${motivo}`,
-    withdrawal_approved: `✅ MayBets — Saque aprovado${usuario}${valor}${id}`,
-    withdrawal_rejected: `❌ MayBets — Saque rejeitado${usuario}${valor}${id}${motivo}`,
-    withdrawal_completed: `💸 MayBets — Saque concluído/pago${usuario}${valor}${id}`,
-    test: "🧪 MayBets — Notificação de teste configurada com sucesso."
+    deposit_requested: `🔔 MyBets — Novo depósito solicitado${usuario}${valor}${id}`,
+    withdrawal_requested: `🔔 MyBets — Novo saque solicitado${usuario}${valor}${id}`,
+    deposit_approved: `✅ MyBets — Depósito aprovado${usuario}${valor}${id}`,
+    deposit_rejected: `❌ MyBets — Depósito rejeitado${usuario}${valor}${id}${motivo}`,
+    withdrawal_approved: `✅ MyBets — Saque aprovado${usuario}${valor}${id}`,
+    withdrawal_rejected: `❌ MyBets — Saque rejeitado${usuario}${valor}${id}${motivo}`,
+    withdrawal_completed: `💸 MyBets — Saque concluído/pago${usuario}${valor}${id}`,
+    test: "🧪 MyBets — Notificação de teste configurada com sucesso."
   };
 
-  return textos[evento] || `🔔 MayBets — Movimentação registrada: ${evento}${usuario}${valor}${id}${motivo}`;
+  return textos[evento] || `🔔 MyBets — Movimentação registrada: ${evento}${usuario}${valor}${id}${motivo}`;
 }
 
 export async function enviarNotificacao(evento, dados = {}) {
@@ -71,19 +71,19 @@ export async function enviarNotificacao(evento, dados = {}) {
         recipient,
         message,
         data: dados,
-        source: "MayBets"
+        source: "MyBets"
       })
     });
 
     const responseText = await response.text();
     if (!response.ok) {
-      console.error("Falha na notificação externa MayBets:", response.status, responseText.slice(0, 500));
+      console.error("Falha na notificação externa MyBets:", response.status, responseText.slice(0, 500));
       return { ok: false, status: response.status };
     }
 
     return { ok: true, status: response.status };
   } catch (error) {
-    console.error("Erro ao enviar notificação MayBets:", error);
+    console.error("Erro ao enviar notificação MyBets:", error);
     return { ok: false, error: error.message };
   }
 }

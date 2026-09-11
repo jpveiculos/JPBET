@@ -1,6 +1,6 @@
 import { pool } from "./db.js";
 /**
- * Registra uma ação na auditoria do MayBets.
+ * Registra uma ação na auditoria do MyBets.
  *
  * Todos os valores são opcionais, exceto "action".
  */

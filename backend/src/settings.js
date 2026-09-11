@@ -49,10 +49,10 @@ function exigirAdmin(req, res, next) {
 
 const configuracoesPadrao = [
   /* IDENTIDADE */
-  ["site_name", "JPBET"],
-  ["site_title", "JPBET - Plataforma de Jogos"],
+  ["site_name", "MyBets"],
+  ["site_title", "MyBets - Plataforma de Jogos"],
   ["site_description", "Uma experiência de jogos moderna, rápida e pensada para dispositivos móveis."],
-  ["footer_text", "© 2026 JPBET — Plataforma de demonstração."],
+  ["footer_text", "© 2026 MyBets — Plataforma de demonstração."],
 
   /* BÔNUS E SAQUE */
   ["bonus_system_enabled", "true"],
@@ -105,7 +105,7 @@ const configuracoesPadrao = [
   ["maintenance_message", "Plataforma temporariamente em manutenção."],
 
   /* TEXTOS DO DASHBOARD */
-  ["dashboard_welcome_text", "Bem-vindo à plataforma JPBET."],
+  ["dashboard_welcome_text", "Bem-vindo à plataforma MyBets."],
   ["balance_title", "Seu saldo"],
   ["account_title", "Minha conta"],
   ["logout_button_text", "SAIR DA CONTA"],
@@ -125,7 +125,7 @@ const configuracoesPadrao = [
   ["pix_key_type", "aleatoria"],
   ["pix_receiver_name", "João Paulo da Silva"],
   ["pix_city", "Paramirim"],
-  ["pix_description", "JPBET"],
+  ["pix_description", "MyBets"],
   ["pix_instructions", "Após realizar o Pix, clique em JÁ FIZ O PIX. O crédito será liberado somente após a conferência do administrador."]
 ];
 
@@ -212,7 +212,7 @@ async function inicializarConfiguracoes() {
     }
 
     console.log(
-      "Configurações do JPBET inicializadas com sucesso."
+      "Configurações do MyBets inicializadas com sucesso."
     );
   } catch (error) {
     console.error(
