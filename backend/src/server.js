@@ -388,7 +388,7 @@ function carregarSegmentosRoleta(valor) {
     const parsed = JSON.parse(String(valor || ""));
 
     if (!Array.isArray(parsed) || parsed.length !== 16) {
-      throw new Error("A roleta precisa ter exatamente 20 fatias.");
+      throw new Error("A roleta precisa ter exatamente 16 fatias.");
     }
 
     return parsed.map((segmento, index) => {
