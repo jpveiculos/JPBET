@@ -54,29 +54,14 @@ const configuracoesPadrao = [
 async function inicializarConfiguracoes() {
   try {
     await pool.query(`CREATE TABLE IF NOT EXISTS site_settings (id SERIAL PRIMARY KEY, setting_key VARCHAR(100) UNIQUE NOT NULL, setting_value TEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
-    for (const [key,value] of configuracoesPadrao) await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);
 
-    const result = await pool.query(`SELECT setting_value FROM site_settings WHERE setting_key='roulette_segments_json' LIMIT 1`);
-    const atual = String(result.rows[0]?.setting_value || "");
-
-    try {
-      let segmentos = JSON.parse(atual);
-      if (Array.isArray(segmentos) && segmentos.length > 16) {
-        segmentos = segmentos.slice(0, 16);
-      }
-      if (Array.isArray(segmentos) && segmentos.length === 16) {
-        const premio5x = segmentos.find(item => String(item?.type || '').toLowerCase() === 'prize' && Number(item?.multiplier) === 5);
-        if (premio5x) {
-          premio5x.label = '3x';
-          premio5x.multiplier = 3;
-          segmentos.forEach(item => { item.probability = String(item?.type || '').toLowerCase() === 'prize' ? 15 : 5; });
-        }
-        await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);
-      } else {
-        await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentosRoletaPadrao)]);
-      }
-    } catch (error) {
-      console.warn('Migração da roleta não aplicada:',error.message);
+    // Os valores padrão só são usados quando a configuração ainda não existe.
+    // Nunca sobrescrever configurações já salvas, principalmente a roleta.
+    for (const [key,value] of configuracoesPadrao) {
+      await pool.query(
+        `INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,
+        [key,value]
+      );
     }
   } catch(error) {
     console.error('Erro ao inicializar configurações:',error);
