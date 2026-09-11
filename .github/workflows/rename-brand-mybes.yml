@@ -69,14 +69,12 @@ jobs:
           p = Path('backend/frontend/dashboard.html')
           s = p.read_text(encoding='utf-8')
 
-          # Remove eventual função duplicada malformada com \n literal.
+          # O bloco malformado de tentativas anteriores ficou no final do arquivo.
           marker = r'\nfunction obterGeometriaRoletaPesada'
           pos = s.rfind(marker)
           if pos >= 0:
-              end = s.find(r'\n</script>', pos)
-              if end < 0:
-                  raise SystemExit('Fechamento do script não encontrado.')
-              s = s[:pos] + s[end:]
+              s = s[:pos]
+              s = s.rstrip() + "\n</script>\n</body>\n</html>\n"
 
           old = """function obterGeometriaRoletaPesada(segmentos) {
               const pesos = segmentos.map(item => String(item || '').trim() !== '' ? 3 : 1);
