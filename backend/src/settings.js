@@ -32,7 +32,7 @@ const segmentosRoletaPadrao = [
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"5x",type:"prize",multiplier:5,probability:5},
+  {label:"3x",type:"prize",multiplier:5,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5},
   {label:"X",type:"zero",multiplier:0,probability:5}
@@ -65,8 +65,11 @@ async function inicializarConfiguracoes() {
         segmentos = segmentos.slice(0, 16);
       }
       if (Array.isArray(segmentos) && segmentos.length === 16) {
-        if (segmentos[8] && String(segmentos[8].type || '').toLowerCase() === 'prize' && Number(segmentos[8].multiplier) === 4) {
-          segmentos[8] = {...segmentos[8], label:'2x', multiplier:2};
+        const premio5x = segmentos.find(item => String(item?.type || '').toLowerCase() === 'prize' && Number(item?.multiplier) === 5);
+        if (premio5x) {
+          premio5x.label = '3x';
+          premio5x.multiplier = 3;
+          segmentos.forEach(item => { item.probability = String(item?.type || '').toLowerCase() === 'prize' ? 15 : 5; });
         }
         await pool.query(`UPDATE site_settings SET setting_value=$1,updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`,[JSON.stringify(segmentos)]);
       } else {
