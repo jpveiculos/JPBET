@@ -550,11 +550,11 @@ button {
 }
 
 .roulette-center-button::before {
-    content: "♛";
+    content: "MyBets";
     display: block;
-    font-size: 24px;
+    font-size: clamp(16px, 3.8vw, 22px);
     line-height: 1;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 }
 
 .roulette-center-button:active {
@@ -774,51 +774,13 @@ button {
 }
 
 
-/* Ponteiro compacto da roleta de 16 fatias */
-.pointer {
-    top: -7px !important;
-    width: 40px !important;
-    height: 48px !important;
-    background: linear-gradient(145deg,#fff5b8,#ffc52e 55%,#a86400) !important;
-    clip-path: polygon(0 0,100% 0,50% 100%) !important;
-    filter: drop-shadow(0 5px 7px rgba(0,0,0,.9)) !important;
-}
-.pointer::before {
-    content: "" !important;
-    position: absolute !important;
-    left: 50% !important; top: 4px !important;
-    width: 28px !important; height: 34px !important;
-    transform: translateX(-50%) !important;
-    background: #151515 !important;
-    clip-path: polygon(0 0,100% 0,50% 100%) !important;
-}
-.pointer::after {
-    content: "" !important;
-    position: absolute !important;
-    left: 50% !important; top: 7px !important;
-    width: 18px !important; height: 25px !important;
-    transform: translateX(-50%) !important;
-    background: #ff3434 !important;
-    clip-path: polygon(0 0,100% 0,50% 100%) !important;
-    filter: none !important;
-}
 
-\n
-
-
-
-
-
-
-
-/* MYBETS_FINAL_PLAYER_DESIGN */
-.mybets-logo{display:inline-flex!important;align-items:baseline;position:relative;text-decoration:none!important;font-style:italic!important;font-weight:1000!important;letter-spacing:-2px!important;line-height:1!important}.mybets-logo span{color:#f4f4f4!important}.mybets-logo b{color:var(--gold)!important;font-weight:1000}.mybets-logo::after{content:"";position:absolute;left:18%;right:0;bottom:-7px;height:4px;background:var(--gold);border-radius:50%;transform:skewX(-18deg)}
-.player-back-button{border:1px solid rgba(245,197,66,.45);background:#171710;color:var(--gold2);border-radius:16px;width:82px;height:54px;font-size:29px;font-weight:900;cursor:pointer}
-.welcome p{margin:8px 0 0;color:#9ca3af;font-size:clamp(18px,4.6vw,25px)}
-.balance-card{padding:18px!important;background:linear-gradient(145deg,rgba(41,35,18,.9),rgba(19,19,16,.96))!important}.balance-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px}.balance-stat{min-width:0;padding:17px 14px!important;border-radius:18px!important;background:rgba(255,255,255,.025)!important;border:1px solid rgba(245,197,66,.55)!important;display:flex;align-items:center;gap:12px}.balance-stat>div{min-width:0}.balance-stat span:not(.balance-icon){display:block;color:#a7adb8;font-size:16px;margin-bottom:4px}.balance-stat strong{display:block;color:#ffd34d;font-size:clamp(27px,7vw,39px);font-weight:1000;white-space:nowrap}.bonus-stat strong{color:#e3b32d}.balance-icon{width:44px;height:44px;display:grid;place-items:center;flex:0 0 44px;font-size:30px}.wallet-icon{color:#4df0b1;border:2px solid #4df0b1;border-radius:9px;font-size:22px}.balance-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.balance-actions button{min-height:64px!important;border-radius:17px!important;font-size:24px!important;font-weight:900!important}.action-icon{font-size:30px;vertical-align:-2px;margin-right:6px}
-.roulette-section-heading{display:flex;align-items:end;justify-content:space-between;gap:10px}.roulette-section-heading>span{color:#d9a923;font-size:14px;font-weight:900;letter-spacing:1.5px;padding-bottom:8px;text-align:right}.games{grid-template-columns:1fr!important;gap:18px}.roulette-feature-card{padding:0 0 16px!important;overflow:hidden;border:1px solid rgba(245,197,66,.75)!important;background:linear-gradient(145deg,#17130a,#090b0e 60%,#111)!important}.roulette-promo{min-height:355px;display:grid;grid-template-columns:42% 58%;align-items:center;padding:12px 18px 0;background:linear-gradient(120deg,#17140d,#0b0d10 55%,#12120f)}.roulette-promo-copy{align-self:center;position:relative;height:100%;display:flex;flex-direction:column;justify-content:center}.roulette-brand{font-size:39px;line-height:.9;font-weight:1000;font-style:italic}.roulette-brand i{display:block;color:#f5bd35}.roulette-brand strong{display:block;color:#f4f4f4}.roulette-promo-copy p{color:#bfc3cb;font-size:13px;line-height:1.35;font-weight:800;margin:20px 0 0}.chip-stack{position:absolute;bottom:5px;left:8px;width:120px;height:45px}.chip-stack span{position:absolute;width:55px;height:14px;border:3px solid #dba82b;border-radius:50%;background:#17120a;box-shadow:0 4px 0 #8d6515}.chip-stack span:nth-child(1){left:5px;bottom:4px}.chip-stack span:nth-child(2){left:38px;bottom:14px}.chip-stack span:nth-child(3){left:70px;bottom:3px}
-.roulette-art{position:relative;display:grid;place-items:center;height:100%}.roulette-pointer{position:absolute;top:0;z-index:5;color:#e51e25;font-size:42px;line-height:1;text-shadow:none}.roulette-wheel-art{position:relative;width:min(250px,45vw);aspect-ratio:1;border-radius:50%;border:10px solid #b77b0b;background:conic-gradient(#080808 0deg 22.5deg,#dca728 22.5deg 45deg,#080808 45deg 67.5deg,#dca728 67.5deg 90deg,#080808 90deg 112.5deg,#dca728 112.5deg 135deg,#080808 135deg 157.5deg,#dca728 157.5deg 180deg,#080808 180deg 202.5deg,#dca728 202.5deg 225deg,#080808 225deg 247.5deg,#dca728 247.5deg 270deg,#080808 270deg 292.5deg,#dca728 292.5deg 315deg,#080808 315deg 337.5deg,#dca728 337.5deg 360deg);box-shadow:0 0 0 5px #6c4709,0 7px 15px rgba(0,0,0,.5)}.roulette-wheel-art::before{content:"";position:absolute;inset:9%;border-radius:50%;border:2px solid rgba(255,220,100,.7)}.wheel-label{position:absolute;color:#54f2b1;font-size:clamp(21px,5vw,31px);font-weight:1000;text-shadow:none;z-index:2}.label-3x{top:25%;left:18%}.label-5x{top:25%;right:17%}.label-2x{bottom:22%;left:19%}.label-10x{bottom:22%;right:14%}.wheel-center{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:38%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#282828,#050505 72%);border:5px solid #c9901b;box-shadow:none}.wheel-center b{font-size:clamp(12px,3vw,18px);font-style:italic;color:#f4f4f4}.wheel-center b span{color:#f2bd38}.wheel-center strong{font-size:clamp(11px,2.8vw,16px);color:#ffd34d;margin-top:2px}.roulette-feature-card h3{padding:0 18px;margin:10px 0 12px;font-size:26px}.roulette-feature-card .game-button{margin:0 18px;width:calc(100% - 36px);min-height:62px;border-radius:18px;font-size:25px;font-weight:1000}
-@media(max-width:600px){.player-back-button{width:80px;height:54px}.roulette-promo{min-height:315px;padding:8px 8px 0}.roulette-brand{font-size:30px}.roulette-promo-copy p{font-size:11px;margin-top:15px}.roulette-wheel-art{width:min(220px,48vw)}.roulette-feature-card h3{font-size:23px}.balance-stat{padding:15px 10px!important;gap:8px}.balance-icon{width:36px;height:36px;flex-basis:36px;font-size:25px}.balance-stat strong{font-size:clamp(24px,7vw,33px)}}
+/* MYBETS_ROULETTE_APPROVED_16_20260911 */
+#rouletteTitle{display:none!important}
+#rouletteResult{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+.roulette-center-button::before{content:"MyBets"!important;color:#f4f4f4!important;font-style:italic!important;font-weight:1000!important;font-size:clamp(16px,3.8vw,22px)!important;line-height:1!important;margin-bottom:3px!important}
+.roulette-center-button{color:#ffd33d!important}
+.roulette-area{filter:drop-shadow(0 12px 24px rgba(0,0,0,.58))!important}
 </style>
 </head>
 
@@ -916,7 +878,7 @@ button {
 
         <button class="close" onclick="fecharRoleta()">×</button>
 
-        <h2 class="modal-title" id="rouletteTitle">Roda da Sorte</h2>
+        <h2 class="modal-title" id="rouletteTitle" aria-hidden="true"></h2>
 
         <div class="modal-subtitle" id="rouletteSubtitle">
             Faça sua aposta e gire a roda.
@@ -1123,11 +1085,11 @@ const ROLETAS = {
         subtitle: "Faça sua aposta e gire a roda.",
         rules: "A roleta tem 16 fatias: 4 multiplicadores e 12 áreas de perda.",
         segments: [
-              "2X", "", "", "",
-              "3X", "", "", "",
-              "2X", "", "", "",
-              "3X", "", "", ""
-          ]
+            "", "", "5X", "",
+            "", "", "10X", "",
+            "", "", "2X", "",
+            "", "", "3X", ""
+        ]
     }
 };
 
@@ -1742,7 +1704,7 @@ function criarRoda() {
     const ns = "http://www.w3.org/2000/svg";
     const cx = 250, cy = 250, radius = 238;
     const angle = 360 / 16;
-    const prizeColors = {0:"#35ff78",4:"#3da5ff",8:"#ffc02e",12:"#ff4040"};
+    const prizeColors = {2:"#25e66b",6:"#25e66b",10:"#25e66b",14:"#25e66b"};
 
     segmentos.forEach((label, index) => {
         const startDeg = index * angle;
