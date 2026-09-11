@@ -30,7 +30,7 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          import re,json,base64
+          import re,json
           novos=[
             {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"5x","type":"prize","multiplier":5,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
             {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"10x","type":"prize","multiplier":10,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
@@ -45,9 +45,9 @@ jobs:
               s=s.replace(alvo,alvo+"\n    "+marker+"\n    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);",1)
           p.write_text(s,encoding='utf-8')
           p=Path('backend/frontend/dashboard.html');s=p.read_text(encoding='utf-8')
-          if 'MYBETS_ROULETTE_FINAL_20260911' not in s:
-              injection=base64.b64decode('PHN0eWxlIGlkPSJteWJldHMtcm91bGV0dGUtZmluYWwiPgovKiBNWUJFVFNfUk9VTEVUVEVfRklOQUxfMjAyNjA5MTEgKi8KI3JvdWxldHRlTW9kYWx7YmFja2dyb3VuZDpyZ2JhKDIsNywxNCwuOTIpIWltcG9ydGFudH0KI3JvdWxldHRlTW9kYWwgLm1vZGFsLWNvbnRlbnR7d2lkdGg6bWluKDEwMDBweCxjYWxjKDEwMHZ3IC0gMThweCkpIWltcG9ydGFudDttYXgtd2lkdGg6Y2FsYygxMDB2dyAtIDE4cHgpIWltcG9ydGFudDttYXgtaGVpZ2h0Ojk2dmghaW1wb3J0YW50O3BhZGRpbmc6OHB4IDEycHggMThweCFpbXBvcnRhbnQ7Ym9yZGVyOjFweCBzb2xpZCAjMjYzMjQzIWltcG9ydGFudDtib3JkZXItcmFkaXVzOjI0cHghaW1wb3J0YW50O2JhY2tncm91bmQ6cmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCA1MCUgMTglLCMxNzIyMzEgMCwjMGEwZjE2IDU4JSwjMDUwODBkIDEwMCUpIWltcG9ydGFudDtib3gtc2hhZG93OjAgMThweCA1MHB4IHJnYmEoMCwwLDAsLjcpIWltcG9ydGFudH0KI3JvdWxldHRlTW9kYWwgLmNsb3Nle3RvcDoxMHB4IWltcG9ydGFudDtyaWdodDoxMnB4IWltcG9ydGFudDt3aWR0aDo1NHB4IWltcG9ydGFudDtoZWlnaHQ6NTRweCFpbXBvcnRhbnQ7Ym9yZGVyLXJhZGl1czoxOHB4IWltcG9ydGFudDtiYWNrZ3JvdW5kOiMxYTIyMzAhaW1wb3J0YW50O2JvcmRlcjoxcHggc29saWQgIzM0NDE1NCFpbXBvcnRhbnQ7Y29sb3I6I2ZmZiFpbXBvcnRhbnQ7Zm9udC1zaXplOjM2cHghaW1wb3J0YW50fQojcm91bGV0dGVNb2RhbCAubW9kYWwtdGl0bGUsI3JvdWxldHRlTW9kYWwgLm1vZGFsLXN1YnRpdGxlLCNyb3VsZXR0ZU1vZGFsIC5ydWxlcywjcm91bGV0dGVNb2RhbCAucm91bGV0dGUtZXhwbGFuYXRpb257ZGlzcGxheTpub25lIWltcG9ydGFudH0KI3JvdWxldHRlTW9kYWwgLnJvdWxldHRlLWFyZWF7d2lkdGg6bWluKDg1MHB4LDkydncpaW1wb3J0YW50O21hcmdpbjowIGF1dG8gOHB4IWltcG9ydGFudDtmaWx0ZXI6bm9uZSFpbXBvcnRhbnR9'.replace('dncpaW','dncpaW')).decode('utf-8')
-              s=s.replace('</body>',injection+'\n</body>',1)
+          marker='MYBETS_HIDE_ROULETTE_RESULT_20260911'
+          if marker not in s:
+              s+='''\n\n<!-- MYBETS_HIDE_ROULETTE_RESULT_20260911 -->\n<style id="mybets-hide-roulette-result">\n#rouletteModal .roulette-result,#rouletteModal .roulette-result *{display:none!important;visibility:hidden!important}\n#rouletteModal .roulette-result{height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}\n</style>\n'''
           p.write_text(s,encoding='utf-8')
       - name: Publicar
         shell: bash
