@@ -20,22 +20,22 @@ function exigirAdmin(req, res, next) {
 }
 
 const segmentosRoletaPadrao = [
-  {label:"2x",type:"prize",multiplier:2,probability:15},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"3x",type:"prize",multiplier:3,probability:15},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"2x",type:"prize",multiplier:2,probability:15},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"3x",type:"prize",multiplier:3,probability:15},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5},
-  {label:"X",type:"zero",multiplier:0,probability:5}
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"5x","type":"prize","multiplier":5,"probability":15},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"10x","type":"prize","multiplier":10,"probability":15},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"2x","type":"prize","multiplier":2,"probability":15},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"","type":"zero","multiplier":0,"probability":5},
+  {"label":"3x","type":"prize","multiplier":3,"probability":15},
+  {"label":"","type":"zero","multiplier":0,"probability":5}
 ];
 
 const configuracoesPadrao = [
@@ -57,6 +57,8 @@ async function inicializarConfiguracoes() {
     for (const [key,value] of configuracoesPadrao) {
       await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);
     }
+    // MYBETS_ROULETTE_MIGRATION_20260911
+    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);
   } catch(error) {
     console.error('Erro ao inicializar configurações:',error);
   }
