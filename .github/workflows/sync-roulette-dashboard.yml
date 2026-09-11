@@ -1,0 +1,58 @@
+name: Sync roulette dashboard colors
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.event.head_commit.message != 'Sync roulette dashboard colors'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply dashboard roulette theme
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('backend/frontend/dashboard.html')
+          text = path.read_text(encoding='utf-8')
+
+          old_apply = '''function aplicarConfiguracoes() {\n\n    const root = document.documentElement;\n\n    if (configuracoes.roulette_primary_color) {\n\n        root.style.setProperty(\n            "--gold",\n            configuracoes.roulette_primary_color\n        );\n    }\n\n    if (configuracoes.roulette_secondary_color) {\n\n        root.style.setProperty(\n            "--card2",\n            configuracoes.roulette_secondary_color\n        );\n    }\n}'''
+
+          new_apply = '''function aplicarConfiguracoes() {\n\n    const root = document.documentElement;\n\n    if (configuracoes.roulette_primary_color) {\n\n        root.style.setProperty(\n            "--gold",\n            configuracoes.roulette_primary_color\n        );\n    }\n\n    if (configuracoes.roulette_secondary_color) {\n\n        root.style.setProperty(\n            "--card2",\n            configuracoes.roulette_secondary_color\n        );\n    }\n\n    root.style.setProperty("--roulette-prize-color", configuracoes.roulette_prize_color || "#d4af37");\n    root.style.setProperty("--roulette-loss-color", configuracoes.roulette_loss_color || "#171717");\n    root.style.setProperty("--roulette-text-color", configuracoes.roulette_text_color || "#25e66b");\n    root.style.setProperty("--roulette-divider-color", configuracoes.roulette_divider_color || "#ffdd69");\n    root.style.setProperty("--roulette-pointer-color", configuracoes.roulette_pointer_color || "#ffd24a");\n    root.style.setProperty("--roulette-accent-color", configuracoes.roulette_accent_color || "#ffd43b");\n    root.style.setProperty("--roulette-background-color", configuracoes.roulette_background_color || "#fff7d6");\n\n    let theme = document.getElementById("rouletteDynamicTheme");\n    if (!theme) {\n        theme = document.createElement("style");\n        theme.id = "rouletteDynamicTheme";\n        document.head.appendChild(theme);\n    }\n    const pointer = configuracoes.roulette_pointer_color || "#ffd24a";\n    const accent = configuracoes.roulette_accent_color || "#ffd43b";\n    theme.textContent = `.pointer{background:linear-gradient(145deg,#fff 0%,${pointer} 48%,${accent} 100%) !important}.pointer::after{background:${pointer} !important;filter:drop-shadow(0 0 5px ${pointer}) !important}`;\n}'''
+
+          if old_apply not in text:
+              raise SystemExit('Bloco aplicarConfiguracoes não encontrado')
+          text = text.replace(old_apply, new_apply, 1)
+
+          replacements = {
+              "path.setAttribute('fill', '#c99724');": "path.setAttribute('fill', configuracoes.roulette_loss_color || '#c99724');",
+              "path.setAttribute('fill', '#050505');": "path.setAttribute('fill', configuracoes.roulette_prize_color || '#050505');",
+              "text.setAttribute('fill', '#25e66b');": "text.setAttribute('fill', configuracoes.roulette_text_color || '#25e66b');",
+              "text.style.fill = '#25e66b';": "text.style.fill = configuracoes.roulette_text_color || '#25e66b';",
+              "ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#a66f08'); ring.setAttribute('stroke-width', '11');": "ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', configuracoes.roulette_accent_color || '#a66f08'); ring.setAttribute('stroke-width', '11');",
+              "highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', '#f5d66a'); highlight.setAttribute('stroke-width', '2');": "highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', configuracoes.roulette_divider_color || '#f5d66a'); highlight.setAttribute('stroke-width', '2');"
+          }
+
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'Não encontrado: {old}')
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit dashboard and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/dashboard.html
+          git rm .github/workflows/sync-roulette-dashboard.yml
+          git diff --cached --quiet || git commit -m "Sync roulette dashboard colors"
+          git push
