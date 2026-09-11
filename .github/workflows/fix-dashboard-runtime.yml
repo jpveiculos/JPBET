@@ -1,0 +1,43 @@
+name: Corrigir dashboard
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix-dashboard:
+    if: ${{ !contains(github.event.head_commit.message, 'Corrigir dashboard automaticamente') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Corrigir script do dashboard
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('backend/frontend/dashboard.html')
+          texto = p.read_text(encoding='utf-8')
+          marcador = '\n<script>\nfunction obterGeometriaRoletaPesada'
+          if marcador not in texto:
+              raise SystemExit('Marcador do bloco de override não encontrado.')
+          texto = texto.replace(marcador, '\nfunction obterGeometriaRoletaPesada', 1)
+          p.write_text(texto, encoding='utf-8')
+          print('Corrigido: removido <script> aninhado no dashboard.')
+
+      - name: Publicar correção
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/dashboard.html
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração necessária."
+            exit 0
+          fi
+          git commit -m "Corrigir dashboard automaticamente"
+          git push
