@@ -1656,7 +1656,7 @@
             probability: Number(linha?.querySelector(".segment-probability")?.value || item.probability || 0)
           };
         });
-        const totalProbability = rouletteSegments.reduce(
+const totalProbability = rouletteSegments.reduce(
   (sum, item) => sum + Number(item.probability || 0),
   0
 );
