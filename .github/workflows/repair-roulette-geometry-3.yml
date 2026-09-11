@@ -1,0 +1,22 @@
+name: Repair roulette geometry 3
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair geometry
+        run: python3 -c "import base64,pathlib;p=pathlib.Path('backend/frontend/dashboard.html');s=p.read_text(encoding='utf-8');a=s.rfind(r'\\nfunction obterGeometriaRoletaPesada');b=s.find(r'\\n</script>',a);c=base64.b64decode('ZnVuY3Rpb24gb2J0ZXJHZW9tZXRyaWFSb2xldGFQZXNhZGEoc2VnbWVudG9zKSB7CiAgICAvKiBHZW9tZXRyaWEgdmlzdWFsOiA0IHByw6puamlvcyBkZSA2Nyw1wrogZSA0IGJsb2NvcyBhbWFyZWxvcyBkZSAyMiw1wrogLgogICAgICAgQXMgMTYgcG9zacOnw7VlcyBsw7NnaWNhcyBwZXJtYW5lY2VtOyBjYWRhIHBlcmRhIG9jdXBhIDcsNcKwIGRlbnRybyBkbyBibG9jby4gKi8KICAgIGNvbnN0IGdydXBvcyA9IFsKICAgICAgICB7IHByaXplOiAwLCBsb3NzZXM6IFsxLCAyLCAzXSwgc3RhcnQ6IDAgfSwKICAgICAgICB7IHByaXplOiA0LCBsb3NzZXM6IFs1LCA2LCA3XSwgc3RhcnQ6IDkwIH0sCiAgICAgICAgeyBwcml6ZTogOCwgbG9zc2VzOiBbOSwgMTAsIDExXSwgc3RhcnQ6IDE4MCB9LAogICAgICAgIHsgcHJpemU6IDEyLCBsb3NzZXM6IFsxMywgMTQsIDE1XSwgc3RhcnQ6IDI3MCB9CiAgICBdOwogICAgY29uc3QgZ2VvbWV0cmlhID0gbmV3IEFycmF5KDE2KTsKICAgIGdydXBvcy5mb3JFYWNoKCh7IHByaXplLCBsb3NzZXMsIHN0YXJ0IH0pID0+IHsKICAgICAgICBnZW9tZXRyaWFbcHJpemVdID0geyBzdGFydERlZzogc3RhcnQsIGVuZERlZzogc3RhcnQgKyA2Ny41LCBjZW50ZXJEZWc6IHN0YXJ0ICsgMzMuNzUgfTsKICAgICAgICBsb3NzZXMuZm9yRWFjaCgoaW5kZXgsIHBvcykgPT4gewogICAgICAgICAgICBjb25zdCBzdGFydERlZyA9IHN0YXJ0ICsgNjcuNSArIHBvcyAqIDcuNTsKICAgICAgICAgICAgZ2VvbWV0cmlhW2luZGV4XSA9IHsgc3RhcnREZWcsIGVuZERlZzogc3RhcnREZWcgKyA3LjUsIGNlbnRlckRlZzogc3RhcnREZWcgKyAzLjc1IH07CiAgICAgICAgfSk7CiAgICB9KTsKICAgIHJldHVybiBnZW9tZXRyaWE7Cn0K').decode();p.write_text(s[:a]+c+s[b:],encoding='utf-8')"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/dashboard.html
+          git commit -m "Repair roulette geometry block correctly"
+          git push
