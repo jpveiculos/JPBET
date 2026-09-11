@@ -1,60 +1,73 @@
 name: Atualizar marca MyBets
-on:
+"on":
   push:
-    branches: [main]
+    branches:
+      - main
 permissions:
   contents: write
 jobs:
-  rename-brand:
+  corrigir:
     if: ${{ !contains(github.event.head_commit.message, 'Atualizar marca MyBets') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Baixar projeto
+      - name: Baixar projeto completo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Corrigir marca e roleta no arquivo original
-        shell: python
+      - name: Corrigir dashboard original
+        shell: bash
         run: |
+          python3 - <<'PY'
           from pathlib import Path
-          import re, json, subprocess
+          import re, subprocess
 
-          subprocess.run(['git','checkout','62a3f5a845d5d4badef46dc9ba173c7287047a80','--','backend/frontend/dashboard.html'], check=True)
+          subprocess.run([
+              'git','checkout','62a3f5a845d5d4badef46dc9ba173c7287047a80',
+              '--','backend/frontend/dashboard.html'
+          ], check=True)
 
-          p=Path('backend/frontend/dashboard.html')
-          s=p.read_text(encoding='utf-8')
+          p = Path('backend/frontend/dashboard.html')
+          s = p.read_text(encoding='utf-8')
 
-          for caminho in Path('.').rglob('*'):
-              if not caminho.is_file() or any(parte in {'.git','node_modules'} for parte in caminho.parts):
-                  continue
-              if caminho.name == 'rename-brand-mybes.yml' or caminho.suffix.lower() not in {'.html','.css','.js','.json','.md','.txt','.sql','.yml','.yaml','.xml','.svg'}:
-                  continue
-              try: texto=caminho.read_text(encoding='utf-8')
-              except (UnicodeDecodeError,OSError): continue
-              novo=texto
-              for antigo,atual in {'JPBET':'MyBets','MayBets':'MyBets','Maybets':'MyBets','JP-BET':'MyBets','JP Bet':'MyBets'}.items():
-                  novo=novo.replace(antigo,atual)
-              if novo!=texto: caminho.write_text(novo,encoding='utf-8')
-
-          inicio=s.find('/* Ponteiro compacto da roleta de 16 fatias */')
-          fim=s.find('/* MYBETS_FINAL_PLAYER_DESIGN */', inicio)
+          # Remove somente o override compacto que trocava o ponteiro moderno por um triângulo pequeno.
+          inicio = s.find('/* Ponteiro compacto da roleta de 16 fatias */')
+          fim = s.find('/* MYBETS_FINAL_PLAYER_DESIGN */', inicio)
           if inicio >= 0 and fim > inicio:
-              s=s[:inicio]+s[fim:]
+              s = s[:inicio] + s[fim:]
 
-          novos_segments='''segments: [
-            "", "", "5X", "",
-            "", "", "10X", "",
-            "", "", "2X", "",
-            "", "", "3X", ""
-        ]'''
-          s,n=re.subn(r'segments:\s*\[[\s\S]*?\n\s*\]',novos_segments,s,count=1)
-          if n != 1: raise SystemExit('segments da roleta não encontrado')
+          # 16 fatias: 5X superior direito, 10X inferior direito,
+          # 2X inferior esquerdo e 3X superior esquerdo.
+          segmentos = '''segments: [
+              "", "", "5X", "",
+              "", "", "10X", "",
+              "", "", "2X", "",
+              "", "", "3X", ""
+          ]'''
+          s, n = re.subn(
+              r'segments:\s*\[[\s\S]*?\n\s*\]',
+              segmentos,
+              s,
+              count=1
+          )
+          if n != 1:
+              raise SystemExit('Não encontrei a configuração visual da roleta no dashboard.html')
 
-          s=s.replace('const prizeColors = {0:"#35ff78",4:"#3da5ff",8:"#ffc02e",12:"#ff4040"};','const prizeColors = {2:"#25e66b",6:"#25e66b",10:"#25e66b",14:"#25e66b"};')
-          s=s.replace('<h2 class="modal-title" id="rouletteTitle">Roda da Sorte</h2>','<h2 class="modal-title" id="rouletteTitle" aria-hidden="true"></h2>')
-          s=s.replace('content: "♛";','content: "MyBets";',1)
+          # Todos os quatro multiplicadores ficam verdes, como no modelo aprovado.
+          s = s.replace(
+              'const prizeColors = {0:"#35ff78",4:"#3da5ff",8:"#ffc02e",12:"#ff4040"};',
+              'const prizeColors = {2:"#25e66b",6:"#25e66b",10:"#25e66b",14:"#25e66b"};'
+          )
 
-          extra='''
+          # Título superior oculto: a identificação da roleta já existe no card do jogo.
+          s = s.replace(
+              '<h2 class="modal-title" id="rouletteTitle">Roda da Sorte</h2>',
+              '<h2 class="modal-title" id="rouletteTitle" aria-hidden="true"></h2>'
+          )
+
+          # Centro: MyBets em cima e GIRAR embaixo, sem coroa.
+          s = s.replace('content: "♛";', 'content: "MyBets";', 1)
+
+          extra = '''
 /* MYBETS_ROULETTE_APPROVED_16_20260911 */
 #rouletteTitle{display:none!important}
 #rouletteResult{display:none!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
@@ -65,30 +78,24 @@ jobs:
 .pointer::after{content:""!important;position:absolute!important;left:50%!important;top:13px!important;width:48px!important;height:60px!important;transform:translateX(-50%)!important;background:#ff3434!important;clip-path:polygon(5% 0,95% 0,80% 58%,50% 100%,20% 58%)!important;filter:none!important}
 '''
           if 'MYBETS_ROULETTE_APPROVED_16_20260911' not in s:
-              s=s.replace('</style>',extra+'</style>',1)
+              s = s.replace('</style>', extra + '</style>', 1)
 
-          s=re.sub(r'<div class="roulette-section-heading">[\s\S]*?<section class="games">','<div class="roulette-section-heading"><h2 class="section-title">🎰 Roletas</h2><span>GIRE E MULTIPLIQUE</span></div>\n\n    <section class="games">',s,count=1)
-          p.write_text(s,encoding='utf-8')
+          # Remove a duplicação visual que havia aparecido no título da seção.
+          s = re.sub(
+              r'<div class="roulette-section-heading">[\s\S]*?<section class="games">',
+              '<div class="roulette-section-heading"><h2 class="section-title">🎰 Roletas</h2><span>GIRE E MULTIPLIQUE</span></div>\n\n    <section class="games">',
+              s,
+              count=1
+          )
 
-          p=Path('backend/src/settings.js')
-          if p.exists():
-              s=p.read_text(encoding='utf-8')
-              novos=[
-                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"5x","type":"prize","multiplier":5,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
-                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"10x","type":"prize","multiplier":10,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
-                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
-                {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"3x","type":"prize","multiplier":3,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5}
-              ]
-              bloco='const segmentosRoletaPadrao = [\n'+',\n'.join('  '+json.dumps(x,ensure_ascii=False,separators=(',',':')) for x in novos)+'\n];'
-              s,n=re.subn(r'const segmentosRoletaPadrao = \[[\s\S]*?\n\];',bloco,s,count=1)
-              if n==1: p.write_text(s,encoding='utf-8')
-
-      - name: Publicar
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Publicar alteração no mesmo repositório
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add backend/frontend/dashboard.html
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Atualizar marca MyBets"
           git push
