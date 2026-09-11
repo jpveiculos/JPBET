@@ -5,25 +5,6 @@ const GOLD=new Set([0,4,8,12]);
 let visualRotation=0;
 let originalCriarRoda=null;
 
-function sincronizarConfiguracaoRoleta(){
- try{
-  if(typeof ROLETAS!=='undefined'&&ROLETAS.sorte){
-   ROLETAS.sorte.title='Roleta MyBets';
-   ROLETAS.sorte.subtitle='';
-   ROLETAS.sorte.rules='A roleta tem 16 fatias: 4 multiplicadores e 12 áreas de perda.';
-   ROLETAS.sorte.segments=['2X','','','', '3X','','','', '5X','','','', '10X','','',''];
-  }
- }catch(e){}
- const title=document.getElementById('rouletteTitle');
- if(title)title.textContent='Roleta MyBets';
- const subtitle=document.getElementById('rouletteSubtitle');
- if(subtitle)subtitle.textContent='';
- const rules=document.getElementById('rouletteRules');
- if(rules)rules.textContent='A roleta tem 16 fatias: 4 multiplicadores e 12 áreas de perda.';
- const explanation=document.querySelector('#rouletteModal .roulette-explanation small');
- if(explanation)explanation.textContent='Prêmios: 2×, 3×, 5× e 10×';
-}
-
 function polar(cx,cy,radius,angleDeg){
  const rad=(angleDeg-90)*Math.PI/180;
  return {x:cx+radius*Math.cos(rad),y:cy+radius*Math.sin(rad)};
@@ -87,7 +68,6 @@ function instalarRoletaReal(){
  originalCriarRoda=window.criarRoda;
  const base=originalCriarRoda;
  const wrapped=function(){
-  sincronizarConfiguracaoRoleta();
   base.apply(this,arguments);
   requestAnimationFrame(desenharLayoutAprovado);
  };
@@ -111,6 +91,11 @@ function instalarRoletaReal(){
   const duracao=Math.max(1400,Number(window.configuracoes?.roulette_animation_ms)||1800);
   wheel.style.transition='none';
   wheel.style.transform=`rotate(${atual}deg)`;
+  const labels=()=>document.querySelectorAll('#rouletteSvg .roulette-label.multiplier').forEach(label=>{
+   const x=Number(label.dataset.x||label.getAttribute('x')||0);
+   const y=Number(label.dataset.y||label.getAttribute('y')||0);
+   label.setAttribute('transform',`rotate(${-((atual)+(destino-atual))} ${x} ${y})`);
+  });
   await new Promise(resolve=>{
    requestAnimationFrame(()=>{
     const inicio=performance.now();
@@ -137,7 +122,6 @@ function instalarRoletaReal(){
 function ajustarCentro(){
  const modal=document.getElementById('rouletteModal');
  if(!modal)return;
- sincronizarConfiguracaoRoleta();
  const title=document.getElementById('rouletteTitle');
  if(title)title.style.display='none';
  const subtitle=document.getElementById('rouletteSubtitle');
@@ -195,7 +179,6 @@ function aplicarEstilo(){
 }
 
 function aplicarRoleta(){
- sincronizarConfiguracaoRoleta();
  instalarRoletaReal();
  ajustarCentro();
  aplicarEstilo();
