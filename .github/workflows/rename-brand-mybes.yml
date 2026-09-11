@@ -11,7 +11,6 @@ jobs:
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
-
       - name: Substituir nome da marca
         shell: python
         run: |
@@ -27,82 +26,30 @@ jobs:
               novo=texto
               for antigo,atual in substituicoes.items(): novo=novo.replace(antigo,atual)
               if novo!=texto: caminho.write_text(novo,encoding='utf-8')
-
       - name: Ajustar roleta no arquivo original
         shell: python
         run: |
           from pathlib import Path
-          import re,json
-
+          import re,json,base64
           novos=[
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"5x","type":"prize","multiplier":5,"probability":15},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"10x","type":"prize","multiplier":10,"probability":15},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"2x","type":"prize","multiplier":2,"probability":15},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"","type":"zero","multiplier":0,"probability":5},
-            {"label":"3x","type":"prize","multiplier":3,"probability":15},
-            {"label":"","type":"zero","multiplier":0,"probability":5}
-          ]
-
-          p=Path('backend/src/settings.js');s=p.read_text(encoding='utf-8')
-          bloco='const segmentosRoletaPadrao = [\n'+',\n'.join('  '+json.dumps(x,ensure_ascii=False,separators=(',',':')) for x in novos)+'\n];'
-          s,n=re.subn(r'const segmentosRoletaPadrao = \[[\s\S]*?\n\];',bloco,s,count=1)
+            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"5x","type":"prize","multiplier":5,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"10x","type":"prize","multiplier":10,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"2x","type":"prize","multiplier":2,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5},
+            {"label":"","type":"zero","multiplier":0,"probability":5},{"label":"","type":"zero","multiplier":0,"probability":5},{"label":"3x","type":"prize","multiplier":3,"probability":15},{"label":"","type":"zero","multiplier":0,"probability":5}]
+          p=Path('backend/src/settings.js');s=p.read_text(encoding='utf-8');bloco='const segmentosRoletaPadrao = [\n'+',\n'.join('  '+json.dumps(x,ensure_ascii=False,separators=(',',':')) for x in novos)+'\n];';s,n=re.subn(r'const segmentosRoletaPadrao = \[[\s\S]*?\n\];',bloco,s,count=1)
           if n!=1: raise SystemExit('segmentosRoletaPadrao não encontrado')
           marker='// MYBETS_ROULETTE_MIGRATION_20260911'
           if marker not in s:
               alvo="    for (const [key,value] of configuracoesPadrao) {\n      await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);\n    }"
-              if alvo not in s: raise SystemExit('inicialização de configurações não encontrada')
+              if alvo not in s: raise SystemExit('inicialização não encontrada')
               s=s.replace(alvo,alvo+"\n    "+marker+"\n    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);",1)
           p.write_text(s,encoding='utf-8')
-
           p=Path('backend/frontend/dashboard.html');s=p.read_text(encoding='utf-8')
-          if 'MYBETS_ROULETTE_FINAL_20260911' not in s:
-              s=s.replace('</body>',r'''<style id="mybets-roulette-final">
-/* MYBETS_ROULETTE_FINAL_20260911 */
-#rouletteModal{background:rgba(2,7,14,.92)!important}
-#rouletteModal .modal-content{width:min(1000px,calc(100vw - 18px))!important;max-width:calc(100vw - 18px)!important;max-height:96vh!important;padding:8px 12px 18px!important;border:1px solid #263243!important;border-radius:24px!important;background:radial-gradient(circle at 50% 18%,#172231 0,#0a0f16 58%,#05080d 100%)!important;box-shadow:0 18px 50px rgba(0,0,0,.7)!important}
-#rouletteModal .close{top:10px!important;right:12px!important;width:54px!important;height:54px!important;border-radius:18px!important;background:#1a2230!important;border:1px solid #344154!important;color:#fff!important;font-size:36px!important}
-#rouletteModal .modal-title,#rouletteModal .modal-subtitle,#rouletteModal .rules,#rouletteModal .roulette-explanation{display:none!important}
-#rouletteModal .roulette-area{width:min(850px,92vw)!important;margin:0 auto 8px!important;filter:none!important}
-#rouletteModal #wheel{filter:none!important}
-#rouletteModal .roulette-center-cover{width:39%!important;border:5px solid #e2aa18!important;box-shadow:0 0 0 2px #69460a!important;background:radial-gradient(circle at 45% 35%,#292929,#0b0b0b 65%,#030303)!important}
-#rouletteModal .roulette-center-button{width:31%!important;min-width:0!important;border:5px solid #e2aa18!important;background:radial-gradient(circle at 45% 35%,#282828,#090909 72%)!important;color:#ffd43d!important;box-shadow:0 0 0 2px #69460a,inset 0 0 14px rgba(255,198,44,.08),0 8px 18px rgba(0,0,0,.6)!important;font-size:clamp(18px,4vw,28px)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important}
-#rouletteModal .roulette-center-button::before{content:'MyBets'!important;display:block!important;color:#fff!important;font-size:clamp(21px,4.5vw,34px)!important;font-style:italic!important;font-weight:1000!important;letter-spacing:-1.5px!important;line-height:1!important}
-#rouletteModal .roulette-center-button::after{content:''!important;width:42%!important;height:3px!important;border-radius:50%!important;background:#f1bf38!important;transform:skewX(-18deg)!important}
-#rouletteModal .pointer{top:-4px!important;width:64px!important;height:82px!important;background:linear-gradient(145deg,#fff2a8,#f8bd25 58%,#9b5b00)!important;clip-path:polygon(3% 0,97% 0,79% 57%,50% 100%,21% 57%)!important;filter:drop-shadow(0 5px 6px rgba(0,0,0,.9))!important}
-#rouletteModal .pointer::before{left:50%!important;top:7px!important;width:49px!important;height:62px!important;background:#151515!important;clip-path:polygon(4% 0,96% 0,79% 57%,50% 100%,21% 57%)!important}
-#rouletteModal .pointer::after{left:50%!important;top:12px!important;width:38px!important;height:49px!important;background:#ff3131!important;clip-path:polygon(0 0,100% 0,50% 100%)!important}
-#rouletteModal .roulette-label.multiplier{fill:#27ef72!important;stroke:#04130a!important;stroke-width:4px!important;font-size:58px!important;font-weight:1000!important}
-#rouletteModal .bet-area{margin:4px 12px 0!important}
-#rouletteModal .input-label{font-size:18px!important;color:#8f99aa!important;margin-bottom:7px!important}
-#rouletteModal #betAmount{min-height:64px!important;border:2px solid #394456!important;border-radius:17px!important;background:#080d14!important;color:#fff!important;padding:14px 70px 14px 28px!important;font-size:24px!important}
-#rouletteModal .quick-values{grid-template-columns:repeat(3,1fr)!important;gap:10px!important;margin-top:12px!important}
-#rouletteModal .quick-button{min-height:57px!important;border:2px solid #d6a526!important;border-radius:15px!important;background:#1a2029!important;color:#fff!important;font-size:21px!important;font-weight:900!important}
-#rouletteModal .roulette-result{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
-@media(max-width:600px){#rouletteModal .modal-content{padding:8px 7px 16px!important}#rouletteModal .roulette-area{width:92vw!important}#rouletteModal .pointer{width:55px!important;height:70px!important}#rouletteModal .pointer::before{width:42px!important;height:54px!important}#rouletteModal .pointer::after{width:32px!important;height:42px!important}}
-</style>
-<script>
-(()=>{
-const NS='http://www.w3.org/2000/svg',ANG=22.5,prizes={2:'5X',6:'10X',10:'2X',14:'3X'},gold=new Set([0,4,8,12]);let rot=0;
-const P=(cx,cy,r,a)=>{const q=(a-90)*Math.PI/180;return{x:cx+r*Math.cos(q),y:cy+r*Math.sin(q)}};
-const D=(cx,cy,r,a,b)=>{const x=P(cx,cy,r,a),y=P(cx,cy,r,b);return `M ${cx} ${cy} L ${x.x} ${x.y} A ${r} ${r} 0 0 1 ${y.x} ${y.y} Z`};
-function draw(){const w=document.getElementById('wheel'),s=document.getElementById('rouletteSvg');if(!w||!s)return;s.innerHTML='';s.setAttribute('viewBox','0 0 500 500');for(let i=0;i<16;i++){const g=document.createElementNS(NS,'g'),p=document.createElementNS(NS,'path');p.setAttribute('d',D(250,250,238,i*ANG-ANG/2,i*ANG+ANG/2));p.setAttribute('fill',gold.has(i)?'#dca72a':'#050505');p.setAttribute('stroke','#e0ad2a');p.setAttribute('stroke-width','2');g.appendChild(p);if(prizes[i]){const q=P(250,250,166,i*ANG),t=document.createElementNS(NS,'text');t.textContent=prizes[i];t.setAttribute('x',q.x);t.setAttribute('y',q.y);t.setAttribute('class','roulette-label multiplier');t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');g.appendChild(t)}s.appendChild(g)}const c=document.createElementNS(NS,'circle');c.setAttribute('cx','250');c.setAttribute('cy','250');c.setAttribute('r','238');c.setAttribute('fill','none');c.setAttribute('stroke','#f3bd36');c.setAttribute('stroke-width','10');s.appendChild(c);w.style.transition='none';w.style.transform=`rotate(${rot}deg)`}
-function spin(i){const w=document.getElementById('wheel');if(!w)return;let n=Number(i);if(!Number.isInteger(n)||n<0||n>15)n=0;const alvo=-n*ANG,at=((rot%360)+360)%360,m=((alvo%360)+360)%360;let d=m-at;if(d<0)d+=360;const dest=rot+5*360+d,ms=Math.max(1400,Number(window.configuracoes?.roulette_animation_ms)||1800);w.style.transition=`transform ${ms}ms cubic-bezier(.17,.67,.16,1)`;w.style.transform=`rotate(${dest}deg)`;return new Promise(r=>setTimeout(()=>{rot=dest;w.style.transition='none';r()},ms+80))}
-window.criarRoda=draw;window.animarRoleta=spin;window.desenharRoletaMyBets=draw;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(draw,80));else setTimeout(draw,80);setTimeout(draw,500);window.addEventListener('resize',draw);
-})();
-</script>'''+"</body>",1)
+          marker='MYBETS_ROULETTE_FINAL_20260911'
+          if marker not in s:
+              injection=base64.b64decode('''REPLACE_ME''').decode('utf-8')
+              s=s.replace('</body>',injection+'\n</body>',1)
           p.write_text(s,encoding='utf-8')
-          print('Roleta final aplicada no dashboard original.')
-
       - name: Publicar
         shell: bash
         run: |
