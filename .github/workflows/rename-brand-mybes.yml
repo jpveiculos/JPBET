@@ -61,75 +61,14 @@ jobs:
           for arquivo in alterados:
               print(arquivo)
 
-      - name: Corrigir alinhamento da roleta
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
-
-          p = Path('backend/frontend/dashboard.html')
-          s = p.read_text(encoding='utf-8')
-
-          marker = r'\nfunction obterGeometriaRoletaPesada'
-          pos = s.rfind(marker)
-          if pos >= 0:
-              s = s[:pos].rstrip() + "\n</script>\n</body>\n</html>\n"
-
-          new = """function obterGeometriaRoletaPesada(segmentos) {
-              const grupos = [
-                  { prize: 0, losses: [1, 2, 3], start: 0 },
-                  { prize: 4, losses: [5, 6, 7], start: 90 },
-                  { prize: 8, losses: [9, 10, 11], start: 180 },
-                  { prize: 12, losses: [13, 14, 15], start: 270 }
-              ];
-              const geometria = new Array(16);
-              grupos.forEach(({ prize, losses, start }) => {
-                  geometria[prize] = {
-                      startDeg: start,
-                      endDeg: start + 67.5,
-                      centerDeg: start + 33.75
-                  };
-                  losses.forEach((index, pos) => {
-                      const startDeg = start + 67.5 + pos * 7.5;
-                      geometria[index] = {
-                          startDeg,
-                          endDeg: startDeg + 7.5,
-                          centerDeg: startDeg + 3.75
-                      };
-                  });
-              });
-              return geometria;
-          }"""
-
-          pattern = r"function obterGeometriaRoletaPesada\(segmentos\) \{.*?\n\}\n\nfunction agruparSetoresAmarelos"
-          replacement = new + "\n\nfunction agruparSetoresAmarelos"
-          s, count = re.subn(pattern, replacement, s, count=1, flags=re.S)
-          if count != 1:
-              raise SystemExit('Função de geometria não encontrada para substituição.')
-
-          p.write_text(s, encoding='utf-8')
-          print('Geometria da roleta corrigida.')
-
-      - name: Remover workflows temporários
-        shell: bash
-        run: |
-          rm -f .github/workflows/align-roulette-pointer.yml \
-                .github/workflows/fix-roulette-start.yml \
-                .github/workflows/repair-roulette-geometry.yml \
-                .github/workflows/repair-roulette-geometry-2.yml \
-                .github/workflows/repair-roulette-geometry-3.yml \
-                .github/workflows/finalize-roulette-alignment.yml \
-                .github/workflows/final-roulette-fix.yml \
-                .github/workflows/do-roulette-fix.yml
-
-      - name: Publicar alteração da marca e roleta
+      - name: Publicar alteração da marca
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "Nenhuma alteração encontrada."
+            echo "Nenhuma alteração de marca encontrada."
             exit 0
           fi
           git commit -m "Atualizar marca MyBets"
