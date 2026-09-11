@@ -16,11 +16,14 @@ jobs:
       - name: Baixar projeto
         uses: actions/checkout@v4
 
+      - name: Corrigir peso visual da roleta
+        shell: bash
+        run: python3 scripts/fix_geometry_weight.py
+
       - name: Substituir nome da marca
         shell: python
         run: |
           from pathlib import Path
-
           substituicoes = {
               'JPBET': 'MyBets',
               'MayBets': 'MyBets',
@@ -28,13 +31,8 @@ jobs:
               'JP-BET': 'MyBets',
               'JP Bet': 'MyBets',
           }
-
           ignorar = {'.git', 'node_modules'}
-          extensoes_texto = {
-              '.html', '.css', '.js', '.json', '.md', '.txt', '.sql',
-              '.yml', '.yaml', '.env.example', '.xml', '.svg'
-          }
-
+          extensoes_texto = {'.html', '.css', '.js', '.json', '.md', '.txt', '.sql', '.yml', '.yaml', '.env.example', '.xml', '.svg'}
           alterados = []
           for caminho in Path('.').rglob('*'):
               if not caminho.is_file() or any(parte in ignorar for parte in caminho.parts):
@@ -43,23 +41,17 @@ jobs:
                   continue
               if caminho.suffix.lower() not in extensoes_texto:
                   continue
-
               try:
                   texto = caminho.read_text(encoding='utf-8')
               except (UnicodeDecodeError, OSError):
                   continue
-
               novo = texto
               for antigo, atual in substituicoes.items():
                   novo = novo.replace(antigo, atual)
-
               if novo != texto:
                   caminho.write_text(novo, encoding='utf-8')
                   alterados.append(str(caminho))
-
-          print('Arquivos alterados:')
-          for arquivo in alterados:
-              print(arquivo)
+          print('Arquivos alterados:', *alterados, sep='\n')
 
       - name: Publicar alteração da marca
         shell: bash
@@ -68,7 +60,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "Nenhuma alteração de marca encontrada."
+            echo "Nenhuma alteração encontrada."
             exit 0
           fi
           git commit -m "Atualizar marca MyBets"
