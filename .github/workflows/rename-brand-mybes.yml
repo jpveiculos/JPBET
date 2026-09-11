@@ -61,6 +61,34 @@ jobs:
           for arquivo in alterados:
               print(arquivo)
 
+      - name: Ajustar centro da roleta
+        shell: python
+        run: |
+          from pathlib import Path
+
+          caminho = Path('backend/frontend/dashboard.html')
+          texto = caminho.read_text(encoding='utf-8')
+          marcador = '/* MYBETS_ROULETTE_CENTER_STYLE */'
+
+          if marcador in texto:
+              inicio = texto.index(marcador)
+              fim = texto.index('</style>', inicio)
+              bloco = texto[inicio:fim]
+              bloco = bloco.replace('\\n', '\n')
+              texto = texto[:inicio] + bloco + texto[fim:]
+          else:
+              css = '''
+/* MYBETS_ROULETTE_CENTER_STYLE */
+.roulette-center-button { font-size: 0 !important; line-height: 1 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 3px !important; }
+.roulette-center-button::before { content: "MyBets" !important; display: block !important; margin: 0 !important; font-family: Arial, Helvetica, sans-serif !important; font-size: clamp(20px, 4.5vw, 27px) !important; font-style: italic !important; font-weight: 900 !important; letter-spacing: -1px !important; color: #f7f7f7 !important; text-shadow: 0 2px 5px rgba(0,0,0,.45) !important; }
+.roulette-center-button::after { content: "GIRAR" !important; display: block !important; font-family: Arial, Helvetica, sans-serif !important; font-size: clamp(15px, 3.5vw, 21px) !important; font-weight: 1000 !important; letter-spacing: 1px !important; color: #ffd33d !important; text-shadow: 0 2px 5px rgba(0,0,0,.5) !important; }
+.bet-area { margin-top: 0 !important; }
+.quick-values { margin-top: 8px !important; }
+'''
+              texto = texto.replace('</style>', css + '</style>', 1)
+
+          caminho.write_text(texto, encoding='utf-8')
+
       - name: Publicar alteração da marca
         shell: bash
         run: |
@@ -68,7 +96,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "Nenhuma alteração de marca encontrada."
+            echo "Nenhuma alteração encontrada."
             exit 0
           fi
           git commit -m "Atualizar marca MyBets"
