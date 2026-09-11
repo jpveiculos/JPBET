@@ -856,6 +856,11 @@ button {
 .logo{ text-decoration:none!important; color:var(--gold)!important; font-style:italic; font-weight:1000; letter-spacing:-1px; }
 .player-back-button{ border:1px solid rgba(245,197,66,.22); background:rgba(245,197,66,.06); color:var(--gold2); border-radius:10px; width:38px; height:38px; font-size:22px; font-weight:900; }
 .balance-card{padding:18px}.balance-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}.balance-stat{padding:15px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(245,197,66,.18)}.balance-stat span{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}.balance-stat strong{display:block;color:var(--gold2);font-size:clamp(25px,7vw,38px);font-weight:1000}.bonus-stat strong{color:#d9ad36}.roulette-preview{display:flex;justify-content:center;align-items:center;margin-bottom:12px}.roulette-preview-wheel{width:118px;height:118px;border-radius:50%;border:7px solid #c99520;background:conic-gradient(#090909 0 22.5deg,#d7a126 22.5deg 45deg,#090909 45deg 67.5deg,#d7a126 67.5deg 90deg,#090909 90deg 112.5deg,#d7a126 112.5deg 135deg,#090909 135deg 157.5deg,#d7a126 157.5deg 180deg,#090909 180deg 202.5deg,#d7a126 202.5deg 225deg,#090909 225deg 247.5deg,#d7a126 247.5deg 270deg,#090909 270deg 292.5deg,#d7a126 292.5deg 315deg,#090909 315deg 337.5deg,#d7a126 337.5deg 360deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px #5c3b0b,0 10px 25px rgba(0,0,0,.5)}.roulette-preview-wheel:before{content:"";width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,#292929,#050505 72%);border:3px solid #d89a12;position:absolute}.roulette-preview-wheel span{position:relative;z-index:1;color:#f7f7f7;font-style:italic;font-size:12px;font-weight:1000}.games{grid-template-columns:1fr}
+
+/* MYBETS_PLAYER_CLEANUP */
+.logo{ text-decoration:none!important; color:var(--gold)!important; font-style:italic; font-weight:1000; letter-spacing:-1px; }
+.player-back-button{ border:1px solid rgba(245,197,66,.22); background:rgba(245,197,66,.06); color:var(--gold2); border-radius:10px; width:38px; height:38px; font-size:22px; font-weight:900; }
+.balance-card{padding:18px}.balance-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}.balance-stat{padding:15px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(245,197,66,.18)}.balance-stat span{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}.balance-stat strong{display:block;color:var(--gold2);font-size:clamp(25px,7vw,38px);font-weight:1000}.bonus-stat strong{color:#d9ad36}.roulette-preview{display:flex;justify-content:center;align-items:center;margin-bottom:12px}.roulette-preview-wheel{width:118px;height:118px;border-radius:50%;border:7px solid #c99520;background:conic-gradient(#090909 0 22.5deg,#d7a126 22.5deg 45deg,#090909 45deg 67.5deg,#d7a126 67.5deg 90deg,#090909 90deg 112.5deg,#d7a126 112.5deg 135deg,#090909 135deg 157.5deg,#d7a126 157.5deg 180deg,#090909 180deg 202.5deg,#d7a126 202.5deg 225deg,#090909 225deg 247.5deg,#d7a126 247.5deg 270deg,#090909 270deg 292.5deg,#d7a126 292.5deg 315deg,#090909 315deg 337.5deg,#d7a126 337.5deg 360deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px #5c3b0b,0 10px 25px rgba(0,0,0,.5)}.roulette-preview-wheel:before{content:"";width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,#292929,#050505 72%);border:3px solid #d89a12;position:absolute}.roulette-preview-wheel span{position:relative;z-index:1;color:#f7f7f7;font-style:italic;font-size:12px;font-weight:1000}.games{grid-template-columns:1fr}
 </style>
 </head>
 
@@ -863,6 +868,8 @@ button {
 
 <header class="header">
     <a class="logo" href="/" aria-label="MyBets início">MyBets</a>
+
+    <button class="player-back-button" type="button" onclick="voltarPaginaMyBets()" aria-label="Voltar">←</button>
 
     <button class="player-back-button" type="button" onclick="voltarPaginaMyBets()" aria-label="Voltar">←</button>
 
