@@ -411,6 +411,19 @@ button {
     font-size: 12px;
 }
 
+/* Limpeza visual da área da roleta no jogador.
+   Mantém título, roleta, botão GIRAR e campo de aposta.
+   Regras e explicações continuam no código, mas não poluem a tela durante o jogo. */
+.modal-subtitle,
+.rules,
+.roulette-explanation {
+    display: none !important;
+}
+
+.roulette-area {
+    margin-top: 6px;
+}
+
 .roulette-area {
     position: relative;
     width: min(470px, calc(100vw - 46px));
