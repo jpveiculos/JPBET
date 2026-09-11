@@ -16,6 +16,10 @@ jobs:
       - name: Baixar projeto
         uses: actions/checkout@v4
 
+      - name: Aplicar correção da roleta
+        shell: bash
+        run: python3 scripts/fix_weighted_roulette.py
+
       - name: Substituir nome da marca
         shell: python
         run: |
