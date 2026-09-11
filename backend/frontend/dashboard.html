@@ -1384,6 +1384,24 @@ function aplicarConfiguracoes() {
             configuracoes.roulette_secondary_color
         );
     }
+
+    root.style.setProperty("--roulette-prize-color", configuracoes.roulette_prize_color || "#d4af37");
+    root.style.setProperty("--roulette-loss-color", configuracoes.roulette_loss_color || "#171717");
+    root.style.setProperty("--roulette-text-color", configuracoes.roulette_text_color || "#25e66b");
+    root.style.setProperty("--roulette-divider-color", configuracoes.roulette_divider_color || "#ffdd69");
+    root.style.setProperty("--roulette-pointer-color", configuracoes.roulette_pointer_color || "#ffd24a");
+    root.style.setProperty("--roulette-accent-color", configuracoes.roulette_accent_color || "#ffd43b");
+    root.style.setProperty("--roulette-background-color", configuracoes.roulette_background_color || "#fff7d6");
+
+    let theme = document.getElementById("rouletteDynamicTheme");
+    if (!theme) {
+        theme = document.createElement("style");
+        theme.id = "rouletteDynamicTheme";
+        document.head.appendChild(theme);
+    }
+    const pointer = configuracoes.roulette_pointer_color || "#ffd24a";
+    const accent = configuracoes.roulette_accent_color || "#ffd43b";
+    theme.textContent = `.pointer{background:linear-gradient(145deg,#fff 0%,${pointer} 48%,${accent} 100%) !important}.pointer::after{background:${pointer} !important;filter:drop-shadow(0 0 5px ${pointer}) !important}`;
 }
 
 /* =========================
@@ -2558,7 +2576,7 @@ criarRoda = function() {
     agruparSetoresAmarelos(segmentos, geometria).forEach(setor => {
         const path = document.createElementNS(ns, 'path');
         path.setAttribute('d', sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
-        path.setAttribute('fill', '#c99724');
+        path.setAttribute('fill', configuracoes.roulette_loss_color || '#c99724');
         path.setAttribute('stroke', 'none');
         svg.appendChild(path);
     });
@@ -2570,7 +2588,7 @@ criarRoda = function() {
         group.setAttribute('data-index', String(index));
         const path = document.createElementNS(ns, 'path');
         path.setAttribute('d', sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
-        path.setAttribute('fill', '#050505');
+        path.setAttribute('fill', configuracoes.roulette_prize_color || '#050505');
         path.setAttribute('stroke', 'none');
         group.appendChild(path);
 
@@ -2581,8 +2599,8 @@ criarRoda = function() {
         text.setAttribute('y', pos.y);
         text.setAttribute('class', 'roulette-label multiplier');
         text.setAttribute('font-size', '52');
-        text.setAttribute('fill', '#25e66b');
-        text.style.fill = '#25e66b';
+        text.setAttribute('fill', configuracoes.roulette_text_color || '#25e66b');
+        text.style.fill = configuracoes.roulette_text_color || '#25e66b';
         text.dataset.x = String(pos.x);
         text.dataset.y = String(pos.y);
         group.appendChild(text);
@@ -2591,12 +2609,12 @@ criarRoda = function() {
 
     const ring = document.createElementNS(ns, 'circle');
     ring.setAttribute('cx', cx); ring.setAttribute('cy', cy); ring.setAttribute('r', radius);
-    ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#a66f08'); ring.setAttribute('stroke-width', '11');
+    ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', configuracoes.roulette_accent_color || '#a66f08'); ring.setAttribute('stroke-width', '11');
     svg.appendChild(ring);
 
     const highlight = document.createElementNS(ns, 'circle');
     highlight.setAttribute('cx', cx); highlight.setAttribute('cy', cy); highlight.setAttribute('r', radius - 7);
-    highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', '#f5d66a'); highlight.setAttribute('stroke-width', '2');
+    highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', configuracoes.roulette_divider_color || '#f5d66a'); highlight.setAttribute('stroke-width', '2');
     svg.appendChild(highlight);
 
     wheel.style.transition = 'none';
