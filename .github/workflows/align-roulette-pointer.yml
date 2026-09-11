@@ -2,7 +2,8 @@ name: Align roulette pointer
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -19,85 +20,17 @@ jobs:
           p = Path('backend/frontend/dashboard.html')
           s = p.read_text(encoding='utf-8')
 
-          old = '''function obterGeometriaRoletaPesada(segmentos) {
-    const pesos = segmentos.map(item => String(item || '').trim() !== '' ? 3 : 1);
-    const total = pesos.reduce((sum, peso) => sum + peso, 0) || 1;
-    let cursor = 0;
-    return segmentos.map((item, index) => {
-        const startDeg = cursor;
-        const endDeg = index === segmentos.length - 1 ? 360 : cursor + (pesos[index] / total) * 360;
-        cursor = endDeg;
-        return { startDeg, endDeg, centerDeg: startDeg + (endDeg - startDeg) / 2 };
-    });
-}
-'''
+          marker = "</script>\n\n</body>"
+          code = r'''\nfunction obterGeometriaRoletaPesada(segmentos) {\n    /* Geometria visual: 4 prêmios de 67,5° e 4 blocos amarelos de 22,5°.\n       As 16 posições lógicas permanecem; cada perda ocupa 7,5° dentro do bloco. */\n    const grupos = [\n        { prize: 0, losses: [1, 2, 3], start: 0 },\n        { prize: 4, losses: [5, 6, 7], start: 90 },\n        { prize: 8, losses: [9, 10, 11], start: 180 },\n        { prize: 12, losses: [13, 14, 15], start: 270 }\n    ];\n    const geometria = new Array(16);\n    grupos.forEach(({ prize, losses, start }) => {\n        geometria[prize] = { startDeg: start, endDeg: start + 67.5, centerDeg: start + 33.75 };\n        losses.forEach((index, pos) => {\n            const startDeg = start + 67.5 + pos * 7.5;\n            geometria[index] = { startDeg, endDeg: startDeg + 7.5, centerDeg: startDeg + 3.75 };\n        });\n    });\n    return geometria;\n}\n'''
 
-          new = '''function obterGeometriaRoletaPesada(segmentos) {
-    /*
-     * Geometria visual da roleta:
-     * 4 prêmios ocupam 67,5° cada (3 unidades visuais).
-     * Cada bloco amarelo ocupa 22,5° (3 perdas lógicas agrupadas).
-     * As 16 posições continuam existindo logicamente; dentro de cada
-     * bloco amarelo, cada perda ocupa 7,5° para manter o resultado preciso.
-     */
-    const grupos = [
-        { prize: 0, losses: [1, 2, 3], start: 0 },
-        { prize: 4, losses: [5, 6, 7], start: 90 },
-        { prize: 8, losses: [9, 10, 11], start: 180 },
-        { prize: 12, losses: [13, 14, 15], start: 270 }
-    ];
+          if marker not in s:
+              raise SystemExit('Marcador final não encontrado; nenhuma alteração feita.')
 
-    const geometria = new Array(16);
-
-    grupos.forEach(({ prize, losses, start }) => {
-        geometria[prize] = {
-            startDeg: start,
-            endDeg: start + 67.5,
-            centerDeg: start + 33.75
-        };
-
-        losses.forEach((index, pos) => {
-            const startDeg = start + 67.5 + pos * 7.5;
-            geometria[index] = {
-                startDeg,
-                endDeg: startDeg + 7.5,
-                centerDeg: startDeg + 3.75
-            };
-        });
-    });
-
-    return geometria;
-}
-'''
-
-          if old not in s:
-              raise SystemExit('Geometria antiga não encontrada; nenhuma alteração feita.')
-          s = s.replace(old, new, 1)
-
-          old2 = '''    agruparSetoresAmarelos(segmentos, geometria).forEach(setor => {
-        const path = document.createElementNS(ns, 'path');
-        path.setAttribute('d', sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
-        path.setAttribute('fill', '#c99724');
-        path.setAttribute('stroke', 'none');
-        svg.appendChild(path);
-    });
-'''
-
-          new2 = '''    /* Cada grupo amarelo é uma única área visual contínua. */
-    agruparSetoresAmarelos(segmentos, geometria).forEach(setor => {
-        const path = document.createElementNS(ns, 'path');
-        path.setAttribute('d', sectorPath(cx, cy, radius, setor.startDeg, setor.endDeg));
-        path.setAttribute('fill', '#c99724');
-        path.setAttribute('stroke', 'none');
-        svg.appendChild(path);
-    });
-'''
-
-          if old2 not in s:
-              raise SystemExit('Bloco amarelo não encontrado; nenhuma alteração feita.')
-          s = s.replace(old2, new2, 1)
-
-          p.write_text(s, encoding='utf-8')
+          if 'startDeg: start + 33.75' in s:
+              print('Geometria já corrigida.')
+          else:
+              s = s.replace(marker, code + "\n</script>\n\n</body>", 1)
+              p.write_text(s, encoding='utf-8')
           PY
 
           git config user.name "github-actions[bot]"
