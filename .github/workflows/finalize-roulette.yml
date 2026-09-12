@@ -1,0 +1,41 @@
+name: Finalize roulette
+on:
+  push:
+    branches: [roulette-final-cleanup]
+permissions:
+  contents: write
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove remaining trevo/free-spin UI
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('backend/frontend/dashboard.html')
+          s=p.read_text()
+          s=s.replace('                        freeSpin:\n                            false\n\n','')
+          s=re.sub(r'\nfunction formatarResultadoRoleta\(valor\) \{.*?\n\}\n\nfunction validarAposta', '\nfunction validarAposta', s, flags=re.S)
+          s=re.sub(r'\n        const resultado =\n            document.getElementById\("rouletteResult"\);\n\n        const resultMain =\n            document.getElementById\("resultMain"\);\n\n        const resultPrize =\n            document.getElementById\("resultPrize"\);\n\n        resultado.style.display =\n            "block";\n\n        const resultadoLabel = spin.result \|\| ROLETAS\[roletaAtual\]\.segments\[indiceResultado\];\n\n        if \(ganhou\) \{\n            resultMain\.textContent = "🎉 VOCÊ GANHOU!";\n            resultPrize\.textContent = `\$\{resultadoLabel\} • Prêmio: \$\{moeda\(premio\)\}`;\n        \}\n', '\n        if (ganhou) {\n            mostrarToast(`Você ganhou ${moeda(premio)}!`);\n            tocarSom("win");\n        }\n', s, flags=re.S)
+          s=s.replace('            if (v === "🍀") return "🍀";\n','')
+          s=s.replace('🍀','')
+          s=s.replace('Aposta sem prêmio nesta rodada.','')
+          s=re.sub(r'\n        <div class="roulette-result" id="rouletteResult">.*?</div>\n', '\n', s, flags=re.S)
+          p.write_text(s)
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/dashboard.html
+          git commit -m "Inserir e finalizar roleta MyBets" || exit 0
+          git push
+      - name: Remove workflow
+        if: always()
+        run: |
+          git rm .github/workflows/finalize-roulette.yml || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remover workflow temporário da roleta" || true
+          git push || true
