@@ -365,21 +365,21 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { index: 0, label: "2x", type: "prize", multiplier: 2, probability: 15 },
+  { index: 0, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 1, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 2, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 2, label: "5x", type: "prize", multiplier: 5, probability: 15 },
   { index: 3, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 4, label: "3x", type: "prize", multiplier: 3, probability: 15 },
+  { index: 4, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 5, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 6, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 6, label: "10x", type: "prize", multiplier: 10, probability: 15 },
   { index: 7, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 8, label: "2x", type: "prize", multiplier: 2, probability: 15 },
+  { index: 8, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 9, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 10, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 15 },
   { index: 11, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 12, label: "3x", type: "prize", multiplier: 3, probability: 15 },
+  { index: 12, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 13, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 14, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 14, label: "3x", type: "prize", multiplier: 3, probability: 15 },
   { index: 15, label: "", type: "zero", multiplier: 0, probability: 5 }
 ];
 
@@ -833,9 +833,6 @@ app.post(
       const resultado =
         segmentos[indiceResultado];
 
-      const escolhido =
-        resultado;
-
       const ganhou =
         resultado.type === "prize" &&
         Number(resultado.multiplier) >= 2;
@@ -1009,55 +1006,39 @@ app.post(
 
       return res.json({
         ok: true,
-
         spin: {
           id:
             spinResult.rows[0].id,
-
           rouletteId:
             "sorte",
-
           index:
             indiceResultado,
-
           result:
             resultado.label,
-
           resultType:
             resultado.type,
-
           multiplier:
             Number(
               resultado.multiplier
             ),
-
           selectedIndex:
             null,
-
           selected:
             null,
-
           betType:
             "roulette",
-
           betAmount:
             bet,
-
           freeSpin:
             requestedFreeSpin,
-
           won:
             ganhou,
-
           prize:
             premio,
-
           replay:
             false,
-
           sorte:
             ganhouReplay,
-
           freeSpinsAvailable:
             requestedFreeSpin
               ? Math.max(
@@ -1076,48 +1057,38 @@ app.post(
                     ? 1
                     : 0
                 ),
-
           rtp:
             rtp,
-
           weight:
             Number(
               resultado.probability || 0
             )
         },
-
         user: {
           id:
             user.id,
-
           username:
             user.username,
-
           balance:
             Number(
               novoSaldo
             ),
-
           bonusBalance:
             Number(
               novoBonus
             ),
-
           cashBalance:
             Number(
               novoCash
             ),
-
           bonusWagerProgress:
             Number(
               novoProgressoBonus
             ),
-
           bonusWagerRequirement:
             Number(
               regraBonus.requirement
             ),
-
           withdrawalEnabled:
             saqueLiberado({
               bonusBalance:
@@ -1127,10 +1098,8 @@ app.post(
               requirement:
                 regraBonus.requirement
             }),
-
           reservedBalance:
             saldoReservado,
-
           rouletteFreeSpins:
             requestedFreeSpin
               ? Math.max(
@@ -1149,7 +1118,6 @@ app.post(
                     ? 1
                     : 0
                 ),
-
           rouletteFreeSpinBet:
             ganhouReplay
               ? Number(bet)
@@ -2156,7 +2124,6 @@ app.post("/api/admin/notifications/test", exigirAdmin, async (req, res) => {
     return res.status(500).json({ ok: false, message: "Erro interno ao testar notificação." });
   }
 });
-
 /* =========================================================
    ADMIN - LISTAR SAQUES
 ========================================================= */
