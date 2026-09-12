@@ -18,7 +18,6 @@ jobs:
           s=s.replace('["roulette_free_spin_enabled","true"]','["roulette_free_spin_enabled","false"]')
           s=s.replace('["roulette_replay_probability","8"]','["roulette_replay_probability","0"]')
           Path('backend/src/settings.js').write_text(s)
-
           p=Path('backend/frontend/dashboard.html')
           s=p.read_text()
           s=s.replace("onclick=\"abrirRoleta('sorte')\"","onclick=\"abrirRoleta('roleta')\"")
@@ -34,3 +33,11 @@ jobs:
           s=s.replace('        } else if (resultadoTipo === "sorte" || resultadoLabel === "🍀") {\n            resultMain.textContent = "🍀";\n            resultPrize.textContent = "Giro grátis automático!";\n        } else {\n            resultMain.textContent = "X";\n            resultPrize.textContent = "Aposta sem prêmio nesta rodada.";\n        }','        }')
           s=s.replace('const resultadoTipo = String(spin.resultType || "").toLowerCase();\n        const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado];','const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado];')
           p.write_text(s)
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/settings.js backend/frontend/dashboard.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Remover trevo e alinhar roleta MyBets"
+          git push
