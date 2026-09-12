@@ -495,6 +495,24 @@ function normalizarPercentual(valor, padrao) {
   );
 }
 
+function calcularPesosComRtp(segmentos, rtpPercentual) {
+  const target = normalizarPercentual(rtpPercentual, 50) / 100;
+  const pesosOriginais = segmentos.map(segmento => Math.max(0, Number(segmento.probability) || 0));
+  const prizeWeight = segmentos.reduce((sum, segmento, index) => sum + (segmento.type === "prize" ? pesosOriginais[index] : 0), 0);
+  const otherWeight = segmentos.reduce((sum, segmento, index) => sum + (segmento.type === "prize" ? 0 : pesosOriginais[index]), 0);
+  const prizeContribution = segmentos.reduce((sum, segmento, index) => sum + (segmento.type === "prize" ? pesosOriginais[index] * Math.max(0, Number(segmento.multiplier) || 0) : 0), 0);
+
+  if (prizeWeight <= 0 || prizeContribution <= 0) return pesosOriginais;
+  if (target <= 0) return segmentos.map((segmento, index) => segmento.type === "prize" ? 0 : pesosOriginais[index]);
+
+  const denominator = prizeContribution - target * prizeWeight;
+  if (denominator <= 0 || otherWeight <= 0) return pesosOriginais;
+
+  const fatorPremio = (target * otherWeight) / denominator;
+
+  return segmentos.map((segmento, index) => segmento.type === "prize" ? pesosOriginais[index] * fatorPremio : pesosOriginais[index]);
+}
+
 function calcularPremioSegmento(segmento, bet) {
   if (
     !segmento ||
@@ -511,16 +529,8 @@ function calcularPremioSegmento(segmento, bet) {
   );
 }
 
-function sortearResultadoRoleta({ segmentos }) {
-  const pesos =
-    segmentos.map(
-      segmento =>
-        Math.max(
-          0,
-          Number(segmento.probability) || 0
-        )
-    );
-
+function sortearResultadoRoleta({ segmentos, rtp }) {
+  const pesos = calcularPesosComRtp(segmentos, rtp);
   return escolherIndiceComPesos(pesos);
 }
 
@@ -585,7 +595,11 @@ app.post(
             'roulette_min_bet',
             'roulette_max_bet',
             'roulette_rtp',
-            'roulette_segments_json'
+            'roulette_replay_probability',
+            'roulette_segments_json',
+            'bonus_system_enabled',
+            'initial_bonus_amount',
+            'bonus_wager_requirement'
           )
         `);
 
@@ -627,6 +641,12 @@ app.post(
         normalizarPercentual(
           settings.roulette_rtp,
           50
+        );
+
+      const replayProbability =
+        normalizarPercentual(
+          settings.roulette_replay_probability,
+          0
         );
 
       const segmentos =
@@ -827,7 +847,8 @@ app.post(
 
       const indiceResultado =
         sortearResultadoRoleta({
-          segmentos
+          segmentos,
+          rtp
         });
 
       const resultado =
@@ -847,7 +868,8 @@ app.post(
 
       const ganhouReplay =
         resultado.type === "sorte" &&
-        freeSpinEnabled;
+        freeSpinEnabled &&
+        numeroAleatorioSeguro() * 100 < replayProbability;
 
       const consumo =
         requestedFreeSpin
@@ -1036,7 +1058,7 @@ app.post(
           prize:
             premio,
           replay:
-            false,
+            ganhouReplay,
           sorte:
             ganhouReplay,
           freeSpinsAvailable:
@@ -1062,7 +1084,9 @@ app.post(
           weight:
             Number(
               resultado.probability || 0
-            )
+            ),
+          replayProbability:
+            replayProbability
         },
         user: {
           id:
