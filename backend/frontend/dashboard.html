@@ -949,8 +949,6 @@ button {
 
         </div>
 
-        <div class="roulette-result" id="rouletteResult">
-            <div class="result-main" id="resultMain"></div>
             <div class="result-prize" id="resultPrize"></div>
         </div>
 
@@ -1757,14 +1755,6 @@ function criarRoda() {
     roletaRotacaoAtual = 0;
 }
 
-function formatarResultadoRoleta(valor) {
-    const v = String(valor || "").toUpperCase();
-    if (v === "❌" || v === "X") return "X";
-    if (v === "🍀") return "🍀";
-    if (/^\d+X$/.test(v)) return v;
-    return v;
-}
-
 function validarAposta() {
 
     const bet =
@@ -1980,9 +1970,6 @@ async function girarRoleta() {
                         rouletteId:
                             roletaAtual,
 
-                        freeSpin:
-                            false
-
                     })
                 }
             );
@@ -2060,23 +2047,9 @@ async function girarRoleta() {
          */
         await carregarSaldoServidor();
 
-        const resultado =
-            document.getElementById("rouletteResult");
-
-        const resultMain =
-            document.getElementById("resultMain");
-
-        const resultPrize =
-            document.getElementById("resultPrize");
-
-        resultado.style.display =
-            "block";
-
-        const resultadoLabel = spin.result || ROLETAS[roletaAtual].segments[indiceResultado];
-
         if (ganhou) {
-            resultMain.textContent = "🎉 VOCÊ GANHOU!";
-            resultPrize.textContent = `${resultadoLabel} • Prêmio: ${moeda(premio)}`;
+            mostrarToast(`Você ganhou ${moeda(premio)}!`);
+            tocarSom("win");
         }
 
         await carregarHistorico();
