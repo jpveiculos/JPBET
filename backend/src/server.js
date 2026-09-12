@@ -149,7 +149,7 @@ async function inicializarBanco() {
       ON admin_audit_logs(created_at);
     `);
     console.log(
-      "Banco MayBets inicializado com sucesso."
+      "Banco MyBets inicializado com sucesso."
     );
   } catch (error) {
     console.error(
@@ -361,38 +361,34 @@ async function obterConfiguracao(chave, padrao = null) {
 
 /* =========================================================
    API DA ROLETA
-   ROLETA ÚNICA - 20 FATIAS
+   ROLETA ÚNICA - 16 FATIAS
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { index: 0, label: "2x", type: "prize", multiplier: 2, probability: 5 },
+  { index: 0, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 1, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 2, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 2, label: "5x", type: "prize", multiplier: 5, probability: 15 },
   { index: 3, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 4, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 5, label: "3x", type: "prize", multiplier: 3, probability: 4 },
-  { index: 6, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 4, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 5, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 6, label: "10x", type: "prize", multiplier: 10, probability: 15 },
   { index: 7, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 8, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 9, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 10, label: "4x", type: "prize", multiplier: 4, probability: 3 },
-  { index: 11, label: "", type: "zero", multiplier: 0, probability: 6 },
+  { index: 9, label: "", type: "zero", multiplier: 0, probability: 5 },
+  { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 15 },
+  { index: 11, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 12, label: "", type: "zero", multiplier: 0, probability: 5 },
   { index: 13, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 14, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 15, label: "5x", type: "prize", multiplier: 5, probability: 2 },
-  { index: 16, label: "", type: "zero", multiplier: 0, probability: 6 },
-  { index: 17, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 18, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 19, label: "", type: "zero", multiplier: 0, probability: 5 }
+  { index: 14, label: "3x", type: "prize", multiplier: 3, probability: 15 },
+  { index: 15, label: "", type: "zero", multiplier: 0, probability: 5 }
 ];
 
 function carregarSegmentosRoleta(valor) {
   try {
     const parsed = JSON.parse(String(valor || ""));
 
-    if (!Array.isArray(parsed) || parsed.length !== 20) {
-      throw new Error("A roleta precisa ter exatamente 20 fatias.");
+    if (!Array.isArray(parsed) || parsed.length !== 16) {
+      throw new Error("A roleta precisa ter exatamente 16 fatias.");
     }
 
     return parsed.map((segmento, index) => {
@@ -674,7 +670,7 @@ app.post(
         return res.status(400).json({
           ok: false,
           message:
-            "A MayBets utiliza uma única roleta."
+            "A MyBets utiliza uma única roleta."
         });
       }
 
@@ -836,9 +832,6 @@ app.post(
 
       const resultado =
         segmentos[indiceResultado];
-
-      const escolhido =
-        resultado;
 
       const ganhou =
         resultado.type === "prize" &&
@@ -1013,55 +1006,39 @@ app.post(
 
       return res.json({
         ok: true,
-
         spin: {
           id:
             spinResult.rows[0].id,
-
           rouletteId:
             "sorte",
-
           index:
             indiceResultado,
-
           result:
             resultado.label,
-
           resultType:
             resultado.type,
-
           multiplier:
             Number(
               resultado.multiplier
             ),
-
           selectedIndex:
             null,
-
           selected:
             null,
-
           betType:
             "roulette",
-
           betAmount:
             bet,
-
           freeSpin:
             requestedFreeSpin,
-
           won:
             ganhou,
-
           prize:
             premio,
-
           replay:
             false,
-
           sorte:
             ganhouReplay,
-
           freeSpinsAvailable:
             requestedFreeSpin
               ? Math.max(
@@ -1080,48 +1057,38 @@ app.post(
                     ? 1
                     : 0
                 ),
-
           rtp:
             rtp,
-
           weight:
             Number(
               resultado.probability || 0
             )
         },
-
         user: {
           id:
             user.id,
-
           username:
             user.username,
-
           balance:
             Number(
               novoSaldo
             ),
-
           bonusBalance:
             Number(
               novoBonus
             ),
-
           cashBalance:
             Number(
               novoCash
             ),
-
           bonusWagerProgress:
             Number(
               novoProgressoBonus
             ),
-
           bonusWagerRequirement:
             Number(
               regraBonus.requirement
             ),
-
           withdrawalEnabled:
             saqueLiberado({
               bonusBalance:
@@ -1131,10 +1098,8 @@ app.post(
               requirement:
                 regraBonus.requirement
             }),
-
           reservedBalance:
             saldoReservado,
-
           rouletteFreeSpins:
             requestedFreeSpin
               ? Math.max(
@@ -1153,7 +1118,6 @@ app.post(
                     ? 1
                     : 0
                 ),
-
           rouletteFreeSpinBet:
             ganhouReplay
               ? Number(bet)
@@ -2160,7 +2124,6 @@ app.post("/api/admin/notifications/test", exigirAdmin, async (req, res) => {
     return res.status(500).json({ ok: false, message: "Erro interno ao testar notificação." });
   }
 });
-
 /* =========================================================
    ADMIN - LISTAR SAQUES
 ========================================================= */
@@ -3368,14 +3331,14 @@ inicializarBanco()
       PORT,
       () => {
         console.log(
-          `MayBets rodando na porta ${PORT}`
+          `MyBets rodando na porta ${PORT}`
         );
       }
     );
   })
   .catch(error => {
     console.error(
-      "MayBets não pôde iniciar:",
+      "MyBets não pôde iniciar:",
       error
     );
     process.exit(1);
