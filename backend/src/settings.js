@@ -57,8 +57,6 @@ async function inicializarConfiguracoes() {
     for (const [key,value] of configuracoesPadrao) {
       await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);
     }
-    // MYBETS_ROULETTE_MIGRATION_20260911
-    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);
   } catch(error) {
     console.error('Erro ao inicializar configurações:',error);
   }
