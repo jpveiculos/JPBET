@@ -57,8 +57,7 @@ async function inicializarConfiguracoes() {
     for (const [key,value] of configuracoesPadrao) {
       await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);
     }
-    // MYBETS_ROULETTE_MIGRATION_20260911
-    await pool.query(`UPDATE site_settings SET setting_value=$1, updated_at=CURRENT_TIMESTAMP WHERE setting_key='roulette_segments_json'`, [JSON.stringify(segmentosRoletaPadrao)]);
+    // Não sobrescreve configurações já salvas pelo administrador.
   } catch(error) {
     console.error('Erro ao inicializar configurações:',error);
   }
@@ -71,7 +70,6 @@ router.get('/public',async(req,res)=>{try{const result=await pool.query(`SELECT 
 router.get('/',exigirAdmin,async(req,res)=>{try{const result=await pool.query(`SELECT setting_key,setting_value,updated_at FROM site_settings ORDER BY setting_key`);res.json({ok:true,settings:result.rows});}catch(error){console.error(error);res.status(500).json({ok:false,message:'Erro ao carregar configurações.'});}});
 
 // API dedicada da roleta: lê e grava somente roulette_segments_json.
-// Isso evita que o editor da roleta dependa do salvamento das outras configurações.
 router.get('/roulette', exigirAdmin, async (req,res) => {
   try {
     const result = await pool.query(`SELECT setting_value,updated_at FROM site_settings WHERE setting_key='roulette_segments_json' LIMIT 1`);
