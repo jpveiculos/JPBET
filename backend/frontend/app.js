@@ -58,7 +58,7 @@ async function entrar() {
     if (data.token) localStorage.setItem("jpbet_token", data.token);
     if (message) message.textContent = "Login realizado com sucesso!";
     setTimeout(() => {
-      window.location.href = data.redirect || "dashboard.html?v=20260912";
+      window.location.href = "/player.html";
     }, 500);
   } catch (error) {
     console.error(error);
@@ -97,9 +97,10 @@ async function cadastrar() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.message || data.error || "Não foi possível criar a conta.");
     if (data.user) localStorage.setItem("jpbet_user", JSON.stringify(data.user));
+    if (data.token) localStorage.setItem("jpbet_token", data.token);
     if (message) message.textContent = "Conta criada com sucesso! Entrando...";
     setTimeout(() => {
-      window.location.href = data.redirect || "dashboard.html?v=20260912";
+      window.location.href = "/player.html";
     }, 700);
   } catch (error) {
     console.error(error);
