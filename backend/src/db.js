@@ -184,4 +184,4 @@ async function inicializarBanco() {
   }
 }
 
-inicializarBanco();
+await inicializarBanco();
