@@ -7,13 +7,16 @@
   <meta name="description" content="MyBets — experiência premium com roleta própria, área do jogador e atendimento.">
   <title>MyBets | Experiência Premium</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .brand-main,.footer-brand,.modal-brand{position:relative;display:inline-block;padding-bottom:9px;line-height:1}
+    .brand-main::after,.footer-brand::after,.modal-brand::after{content:"";position:absolute;left:2px;right:-5px;bottom:0;height:7px;border-bottom:3px solid #f5c542;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35))}
+  </style>
 </head>
 
 <body>
   <header class="topbar">
     <a class="brand" href="index.html" aria-label="MyBets início">
-      <span class="brand-crown">♛</span>
-      <span class="brand-main">May<span>Bets</span></span>
+      <span class="brand-main">My<span>Bets</span></span>
     </a>
 
     <nav class="main-nav" aria-label="Navegação principal">
@@ -47,7 +50,7 @@
         </div>
 
         <div class="hero-points" aria-label="Destaques da plataforma">
-          <div><strong>♛</strong><span>Experiência<br>premium</span></div>
+          <div><strong>★</strong><span>Experiência<br>premium</span></div>
           <div><strong>🎰</strong><span>Roleta<br>MyBets</span></div>
           <div><strong>🛡</strong><span>Conta e acesso<br>protegidos</span></div>
         </div>
@@ -117,13 +120,12 @@
     </section>
   </main>
 
-  <!-- LOGIN / CADASTRO -->
   <div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <div class="modal-box">
       <button class="close-button" onclick="fecharLogin()" aria-label="Fechar">×</button>
 
       <div id="loginForm">
-        <div class="modal-brand">May<span>Bets</span></div>
+        <div class="modal-brand">My<span>Bets</span></div>
         <h2 id="loginTitle">Entrar</h2>
         <p>Acesse sua conta MyBets.</p>
 
@@ -137,7 +139,7 @@
       </div>
 
       <div id="registerForm" style="display: none;">
-        <div class="modal-brand">May<span>Bets</span></div>
+        <div class="modal-brand">My<span>Bets</span></div>
         <h2>Criar conta</h2>
         <p>Crie sua conta MyBets.</p>
 
@@ -154,7 +156,7 @@
   </div>
 
   <footer>
-    <div class="footer-brand">May<span>Bets</span></div>
+    <div class="footer-brand">My<span>Bets</span></div>
     <div class="footer-links">
       <a href="termos-uso.html">Termos de Uso</a>
       <span>•</span>
