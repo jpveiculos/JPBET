@@ -19,8 +19,7 @@ function criarRodaMyBets(){
  const r=(typeof ROLETAS!=='undefined'&&(ROLETAS[roletaAtual]||ROLETAS.sorte))||null;
  const seg=Array.isArray(r?.segments)?r.segments:[];
  if(seg.length!==16)return;
- const ns='http://www.w3.org/2000/svg',cx=250,cy=250,rad=238,g=geometriaMyBets();
- svg.innerHTML='';
+ const ns='http://www.w3.org/2000/svg',cx=250,cy=250,rad=238,g=geometriaMyBets();svg.innerHTML='';
  const lossColor=(typeof configuracoes!=='undefined'&&configuracoes.roulette_loss_color)||'#c99724';
  const prizeColor=(typeof configuracoes!=='undefined'&&configuracoes.roulette_prize_color)||'#050505';
  const textColor=(typeof configuracoes!=='undefined'&&configuracoes.roulette_text_color)||'#25e66b';
@@ -34,7 +33,6 @@ function criarRodaMyBets(){
  const hi=document.createElementNS(ns,'circle');hi.setAttribute('cx',cx);hi.setAttribute('cy',cy);hi.setAttribute('r',rad-7);hi.setAttribute('fill','none');hi.setAttribute('stroke','#f5d66a');hi.setAttribute('stroke-width','2');svg.appendChild(hi);
  wheel.style.transition='none';wheel.style.transform='rotate(0deg)';roletaRotacaoAtual=0;
 }
-
 window.__MYBETS_ROULETTE_GEOMETRY__=geometriaMyBets;
 criarRoda=criarRodaMyBets;
 
@@ -48,8 +46,14 @@ animarRoleta=function(indice){return new Promise(resolve=>{
 
 document.addEventListener('DOMContentLoaded',()=>{
  const style=document.createElement('style');style.id='mybets-approved-roulette-layout';style.textContent=`
-  /* Tela da roleta: layout aprovado */
-  body:has(#rouletteModal[style*="display: flex"]){overflow:hidden!important;}
+  .roulette-section-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:22px 0 14px!important;}
+  .roulette-section-heading .roulette-section-heading{display:none!important;}
+  .roulette-section-heading h2{margin:0!important;}
+  .roulette-section-heading>span{font-size:12px!important;color:#9299a6!important;font-weight:800!important;}
+  .roulette-promo{display:none!important;}
+  .roulette-feature-card{padding:22px!important;min-height:0!important;}
+  .roulette-feature-card h3{font-size:21px!important;margin:0 0 14px!important;}
+  .roulette-feature-card .game-button{margin-top:0!important;}
   #rouletteModal{padding:0!important;background:#05070b!important;align-items:stretch!important;justify-content:stretch!important;}
   #rouletteModal .modal-content{width:100%!important;max-width:none!important;height:100dvh!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 50% 45%,#17130a 0,#07090e 38%,#030406 100%)!important;padding:92px 22px 92px!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important;position:relative!important;}
   #rouletteModal .close,#rouletteModal #rouletteTitle,#rouletteModal #rouletteSubtitle,#rouletteModal #rouletteRules,#rouletteModal .roulette-explanation{display:none!important;}
@@ -63,55 +67,39 @@ document.addEventListener('DOMContentLoaded',()=>{
   #rouletteModal #betAmount{height:68px!important;font-size:28px!important;border:1px solid #303745!important;background:#07090d!important;border-radius:16px!important;padding:0 22px!important;box-sizing:border-box!important;}
   #rouletteModal .quick-values{gap:10px!important;margin-top:12px!important;}
   #rouletteModal .quick-button{height:58px!important;border:1px solid #f1c72f!important;border-radius:12px!important;background:linear-gradient(180deg,#17202b,#0d131b)!important;color:#fff!important;font-size:20px!important;font-weight:900!important;box-shadow:0 0 14px rgba(242,198,44,.12)!important;}
-  #rouletteModal .quick-button:active{transform:scale(.98)!important;}
-  #rouletteModal .roulette-balance-header{position:absolute!important;top:18px!important;left:50%!important;transform:translateX(-50%)!important;z-index:100!important;display:flex!important;align-items:center!important;gap:10px!important;padding:10px 18px!important;border:1px solid #80661b!important;border-radius:14px!important;background:rgba(7,9,13,.96)!important;box-shadow:0 5px 20px rgba(0,0,0,.5)!important;color:#aeb5c5!important;font-size:16px!important;font-weight:800!important;white-space:nowrap!important;}
+  #rouletteModal .roulette-balance-header{position:absolute!important;top:18px!important;right:18px!important;left:auto!important;transform:none!important;z-index:100!important;display:flex!important;align-items:center!important;gap:10px!important;padding:10px 18px!important;border:1px solid #80661b!important;border-radius:14px!important;background:rgba(7,9,13,.96)!important;box-shadow:0 5px 20px rgba(0,0,0,.5)!important;color:#aeb5c5!important;font-size:16px!important;font-weight:800!important;white-space:nowrap!important;}
   #rouletteModal .roulette-balance-header strong{color:#ffd84d!important;font-size:21px!important;}
   #rouletteModal .roulette-top-logo{position:absolute!important;top:20px!important;left:18px!important;z-index:100!important;color:#fff!important;font-size:25px!important;font-weight:900!important;font-style:italic!important;letter-spacing:-1px!important;}
   #rouletteModal .roulette-top-logo b{color:#f5c62f!important;}
   #rouletteModal .roulette-bottom-spin{width:min(900px,calc(100vw - 48px))!important;height:66px!important;margin:18px auto 18px!important;display:block!important;border:1px solid #ffd43b!important;border-radius:14px!important;background:linear-gradient(180deg,#ffd75a,#e9ad16)!important;color:#08090b!important;font-size:30px!important;font-weight:1000!important;box-shadow:0 7px 25px rgba(235,179,25,.24)!important;}
-  #rouletteModal .roulette-bottom-spin:active{transform:scale(.99)!important;}
   #rouletteModal .roulette-bottom-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;height:78px!important;z-index:110!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;background:rgba(3,5,9,.98)!important;border-top:1px solid #252b35!important;}
   #rouletteModal .roulette-bottom-nav button{border:0!important;background:transparent!important;color:#aeb5c5!important;font-size:11px!important;font-weight:800!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;}
   #rouletteModal .roulette-bottom-nav button.active{color:#ffdc42!important;}
   #rouletteModal .roulette-bottom-nav .nav-icon{font-size:25px!important;line-height:1!important;}
   #rouletteModal .roulette-result{display:none!important;height:0!important;margin:0!important;padding:0!important;}
   @media(max-width:600px){
-   #rouletteModal .modal-content{padding:78px 18px 92px!important;}
-   #rouletteModal .roulette-area{width:min(430px,calc(100vw - 32px))!important;margin-bottom:14px!important;}
+   #rouletteModal .modal-content{padding:76px 16px 92px!important;}
+   #rouletteModal .roulette-area{width:min(430px,calc(100vw - 28px))!important;margin-bottom:12px!important;}
    #rouletteModal .pointer{top:-10px!important;}
-   #rouletteModal .roulette-balance-header{top:12px!important;font-size:13px!important;padding:8px 13px!important;}
+   #rouletteModal .roulette-balance-header{top:12px!important;right:14px!important;left:auto!important;font-size:13px!important;padding:8px 11px!important;gap:7px!important;}
    #rouletteModal .roulette-balance-header strong{font-size:16px!important;}
    #rouletteModal .roulette-top-logo{top:14px!important;left:14px!important;font-size:20px!important;}
    #rouletteModal .roulette-bottom-spin{height:60px!important;font-size:26px!important;margin-top:14px!important;}
-   #rouletteModal .bet-area{width:calc(100vw - 32px)!important;}
+   #rouletteModal .bet-area{width:calc(100vw - 28px)!important;}
    #rouletteModal #betAmount{height:62px!important;font-size:25px!important;}
    #rouletteModal .quick-button{height:54px!important;font-size:18px!important;}
    #rouletteModal .roulette-bottom-nav{height:72px!important;}
   }
  `;document.head.appendChild(style);
-
- const heads=document.querySelectorAll('.roulette-section-heading');
- if(heads.length){const first=heads[0];first.innerHTML='<h2 class="section-title">🎰 Roletas</h2><span>GIRE E MULTIPLIQUE</span>';for(let i=1;i<heads.length;i++)heads[i].remove();}
-
+ const heads=document.querySelectorAll('.roulette-section-heading');if(heads.length){const first=heads[0];first.innerHTML='<h2 class="section-title">🎰 Roletas</h2><span>GIRE E MULTIPLIQUE</span>';for(let i=1;i<heads.length;i++)heads[i].remove();}
  const modal=document.getElementById('rouletteModal');
- if(modal){
-  const content=modal.querySelector('.modal-content');
-  if(content&&!content.querySelector('.roulette-top-logo')){
-   const logo=document.createElement('div');logo.className='roulette-top-logo';logo.innerHTML='My<b>Bets</b>';content.prepend(logo);
-  }
-  if(content&&!content.querySelector('.roulette-balance-header')){
-   const b=document.createElement('div');b.className='roulette-balance-header';b.innerHTML='Saldo <strong id="rouletteBalance">R$ 0,00</strong>';content.prepend(b);
-  }
-  if(content&&!content.querySelector('.roulette-bottom-spin')){
-   const spin=document.createElement('button');spin.type='button';spin.className='roulette-bottom-spin';spin.textContent='GIRAR';spin.onclick=()=>{if(typeof girarRoleta==='function')girarRoleta();};content.appendChild(spin);
-  }
-  if(!modal.querySelector('.roulette-bottom-nav')){
-   const nav=document.createElement('nav');nav.className='roulette-bottom-nav';nav.innerHTML='<button type="button" onclick="voltarPaginaMyBets()"><span class="nav-icon">⌂</span><span>Início</span></button><button type="button" class="active"><span class="nav-icon">◉</span><span>Roleta</span></button><button type="button"><span class="nav-icon">🎮</span><span>Jogos</span></button><button type="button" onclick="abrirDeposito();fecharRoleta()"><span class="nav-icon">▣</span><span>Depósito</span></button><button type="button" onclick="carregarHistorico();fecharRoleta()"><span class="nav-icon">◷</span><span>Histórico</span></button>';modal.appendChild(nav);
-  }
+ if(modal){const content=modal.querySelector('.modal-content');
+  if(content&&!content.querySelector('.roulette-top-logo')){const logo=document.createElement('div');logo.className='roulette-top-logo';logo.innerHTML='My<b>Bets</b>';content.prepend(logo);}
+  if(content&&!content.querySelector('.roulette-balance-header')){const b=document.createElement('div');b.className='roulette-balance-header';b.innerHTML='Saldo <strong id="rouletteBalance">R$ 0,00</strong>';content.prepend(b);}
+  if(content&&!content.querySelector('.roulette-bottom-spin')){const spin=document.createElement('button');spin.type='button';spin.className='roulette-bottom-spin';spin.textContent='GIRAR';spin.onclick=()=>{if(typeof girarRoleta==='function')girarRoleta();};content.appendChild(spin);}
+  if(!modal.querySelector('.roulette-bottom-nav')){const nav=document.createElement('nav');nav.className='roulette-bottom-nav';nav.innerHTML='<button type="button" onclick="voltarPaginaMyBets()"><span class="nav-icon">⌂</span><span>Início</span></button><button type="button" class="active"><span class="nav-icon">◉</span><span>Roleta</span></button><button type="button"><span class="nav-icon">🎮</span><span>Jogos</span></button><button type="button" onclick="abrirDeposito();fecharRoleta()"><span class="nav-icon">▣</span><span>Depósito</span></button><button type="button" onclick="carregarHistorico();fecharRoleta()"><span class="nav-icon">◷</span><span>Histórico</span></button>';modal.appendChild(nav);}
  }
-
- const sync=()=>{const el=document.getElementById('rouletteBalance');if(!el)return;let v=0;try{v=typeof obterSaldo==='function'?obterSaldo():(typeof usuarioAtual!=='undefined'?(usuarioAtual?.balance||0):0);}catch(_){}el.textContent='R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});};
- sync();
+ const sync=()=>{const el=document.getElementById('rouletteBalance');if(!el)return;let v=0;try{v=typeof obterSaldo==='function'?obterSaldo():(typeof usuarioAtual!=='undefined'?(usuarioAtual?.balance||0):0);}catch(_){}el.textContent='R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});};sync();
  const oldAtualizar=window.atualizarSaldo;if(typeof oldAtualizar==='function'&&!oldAtualizar.__mybetsWrapped){const wrapped=function(v){const r=oldAtualizar.apply(this,arguments);sync();return r;};wrapped.__mybetsWrapped=true;window.atualizarSaldo=wrapped;}
  const result=document.getElementById('rouletteResult');if(result)result.style.display='none';
  const e=document.querySelector('.roulette-explanation small');if(e)e.textContent='Aposte de R$ 0,50 a R$ 100 • Prêmios: 2×, 3×, 5× e 10×';
