@@ -1,0 +1,60 @@
+name: Apply MyBets Roulette 16
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[roulette16-auto]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('backend/frontend/games.js')
+          s=p.read_text()
+          a='''const ROULETTE_SEGMENTS = [
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"5X", type:"prize", multiplier:5},
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"10X", type:"prize", multiplier:10},
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"2X", type:"prize", multiplier:2},
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"X", type:"zero", multiplier:0},
+{label:"3X", type:"prize", multiplier:3},
+{label:"X", type:"zero", multiplier:0}
+];
+const ROULETTE_VISUAL_SEGMENTS = ROULETTE_SEGMENTS.map(seg => ({...seg}));'''
+          s,n=re.subn(r'const ROULETTE_SEGMENTS = \[.*?\];\s*/\* =========================================================\s*VISUAL DA ROLETA.*?const ROULETTE_VISUAL_SEGMENTS = \[.*?\];',a,s,count=1,flags=re.S)
+          if n!=1: raise SystemExit('blocos da roleta não encontrados')
+          s=s.replace('{v:"🍀"},','{v:"⭐"},')
+          s=s.replace('"RODA DA SORTE"','"ROLETA MYBETS"').replace('criarRoletaSorte','criarRoletaMyBets').replace('atualizarGiroGratis();\n','')
+          s=re.sub(r'/\* =========================================================\s*GIROS GRÁTIS\s*========================================================= \*/.*?/\* =========================================================\s*REELS','/* =========================================================\n   REELS',s,count=1,flags=re.S)
+          s=re.sub(r'  const u =\s*usuarioAtual\(\) \|\| \{\};.*?  const bet =\s*hasFree.*?\);','  const u = usuarioAtual() || {};\n\n  const bet = numero(rouletteBet, 0.5);',s,count=1,flags=re.S)
+          s=s.replace('    !hasFree &&\n    (\n      bet < min ||\n      bet > max\n    )','    bet < min ||\n    bet > max').replace('    !hasFree &&\n    bet > numero(u.balance,0)','    bet > numero(u.balance,0)')
+          s=s.replace('rouletteId:"sorte",\n            freeSpin:hasFree','rouletteId:"roleta"')
+          s=re.sub(r'\$\{\s*hasFree\s*\? " \(giro grátis\)"\s*: ""\s*\}','',s)
+          s=s.replace('15 FATIAS','16 FATIAS').replace('15 posições: 0 até 14.','16 posições: 0 até 15.').replace('Divide visualmente a roda em 15 partes.','Divide visualmente a roda em 16 partes.')
+          p.write_text(s)
+          p=Path('backend/frontend/games.html')
+          s=p.read_text().replace('<div id="rouletteFreeSpinStatus" class="roulette-free-spin-status" hidden></div>','').replace('  <script src="/roulette16.js?v=20260911-01"></script>\n','')
+          p.write_text(s)
+          PY
+          node --check backend/frontend/games.js
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add backend/frontend/games.js backend/frontend/games.html
+          git rm -f .github/workflows/apply-roulette16.yml
+          git commit -m '[roulette16-auto] integrar roleta MyBets 16 fatias'
+          git push
