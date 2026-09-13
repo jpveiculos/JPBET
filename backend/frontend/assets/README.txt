@@ -1,1 +1,0 @@
-Imagem principal da Home: mantenha os arquivos visuais desta pasta aqui.
