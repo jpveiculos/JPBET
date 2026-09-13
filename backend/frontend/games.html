@@ -75,6 +75,9 @@
       .slot-panel.fortune7-visual .slot-controls{left:13.5%;right:13.5%;bottom:5.3%;column-gap:5%;grid-template-columns:minmax(0,47%) minmax(0,48%)}
       .slot-panel.fortune7-visual .quick-bets button{padding:4px 1px}
     }
+    /* A Central é pública: saldo só existe visualmente para sessão válida. */
+    .game-header .header-balance{display:none!important}
+    .game-header.has-session .header-balance{display:block!important}
   </style>
 </head>
 <body>
@@ -118,94 +121,120 @@
   <div class="toast" id="toast"></div>
   <script src="/games.js?v=20260912-01"></script>
   <script>
-    document.addEventListener("click", function(event){
-      const button = event.target.closest(".lobby-play[data-game]");
-      if (!button) return;
-      if (localStorage.getItem("jpbet_user")) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      const gameId = String(button.dataset.game || "").trim();
-      if (!gameId) return;
-      localStorage.setItem("jpbet_pending_game", `/games.html?game=${encodeURIComponent(gameId)}`);
-      window.location.href = `/?login=1&game=${encodeURIComponent(gameId)}`;
-    }, true);
-
-    const CENTRAL_GAMES = [
-      {id:"roulette",name:"Roleta MyBets",tag:"JOGO PRINCIPAL",icon:"🎡",description:"A roleta própria da MyBets, com giro visual, resultado imediato e uma experiência direta para quem quer jogar sem complicação.",meta:"Roleta MyBets"},
-      {id:"fortune7",name:"Fortune 7",tag:"MÁQUINA",icon:"",fortune:true,description:"Máquina de estilo clássico com o visual Fortune 7, símbolos tradicionais, giros e combinações de prêmio.",meta:"Máquina de símbolos"},
-      {id:"diamondgold",name:"Diamond Gold",tag:"MÁQUINA",icon:"💎",description:"Uma máquina temática de brilho e riqueza, com diamantes, ouro e símbolos premium em uma experiência simples e rápida.",meta:"Tema premium"},
-      {id:"royaljackpot",name:"Royal Jackpot",tag:"MÁQUINA",icon:"👑",description:"Clima de realeza em uma máquina com coroas, símbolos especiais e a proposta de buscar grandes combinações.",meta:"Tema real"},
-      {id:"lucky7",name:"Lucky 7",tag:"MÁQUINA",icon:"🍀",description:"Uma máquina de sorte inspirada nos clássicos, reunindo o 7, trevos, frutas e outros símbolos conhecidos.",meta:"Clássico da sorte"}
-    ];
-
-    function renderCentralDeJogos(){
-      const box = document.getElementById("gamesContainer");
-      const message = document.getElementById("gamesMessage");
-      if (!box) return;
-      if (box.querySelector(".central-game-card")) return;
-      if (message) message.style.display = "none";
-      box.innerHTML = CENTRAL_GAMES.map(game => `
-        <article class="central-game-card ${game.fortune ? "fortune" : ""}">
-          <div>
-            <div class="central-game-top">
-              <div class="central-game-icon">${game.fortune ? "" : game.icon}</div>
-              <div><div class="central-game-tag">${game.tag}</div><h3>${game.name}</h3></div>
-            </div>
-            <p class="central-game-description">${game.description}</p>
-          </div>
-          <div class="central-game-bottom">
-            <span class="central-game-meta">${game.meta}</span>
-            <button class="lobby-play" type="button" data-game="${game.id}">JOGAR <span aria-hidden="true">→</span></button>
-          </div>
-        </article>
-      `).join("");
-      box.querySelectorAll(".lobby-play[data-game]").forEach(button => {
-        button.addEventListener("click", () => {
-          if (localStorage.getItem("jpbet_user") && typeof window.abrirJogo === "function") window.abrirJogo(button.dataset.game);
-        });
-      });
-    }
-
-    const centralObserver = new MutationObserver(() => renderCentralDeJogos());
-    document.addEventListener("DOMContentLoaded", () => {
-      const box = document.getElementById("gamesContainer");
-      if (box) {
-        centralObserver.observe(box, {childList:true});
-        renderCentralDeJogos();
-      }
-    });
-
     (function(){
-      const originalOpen = window.abrirInterfaceSlot;
-      if (typeof originalOpen === "function") {
-        window.abrirInterfaceSlot = function(config){
-          originalOpen(config);
-          const panel = document.getElementById("slotPanel");
-          if (panel) panel.classList.toggle("fortune7-visual", String(config?.id || "").toLowerCase() === "fortune7");
-        };
+      function lerUsuario(){
+        try{return JSON.parse(localStorage.getItem("jpbet_user")||"null");}catch(_){return null;}
       }
-      window.animarResultadoSlot = function(strips, result){
-        return new Promise(resolve => {
-          const values = result.map(normalizarSymbol);
-          strips.forEach((strip,i) => {
-            const symbols = SLOT_SYMBOLS[configuracaoAtual?.id] || SLOT_SYMBOLS.fortune7;
-            const pool = [];
-            for(let k=0;k<18+i*3;k++) pool.push(symbols[Math.floor(Math.random()*symbols.length)]);
-            values.forEach(v => pool.push({v}));
-            const reel = strip.parentElement;
-            strip.innerHTML = pool.map(s => `<div class="symbol ${s.cls || ""}">${s.v}</div>`).join("");
-            const h = Math.max(1, reel.clientHeight / 3);
-            const targetIndex = pool.length - 1;
-            strip.style.transition = "none";
-            strip.style.transform = "translateY(0)";
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              strip.style.transition = `transform ${1500+i*230}ms cubic-bezier(.12,.72,.12,1)`;
-              strip.style.transform = `translateY(-${targetIndex*h}px)`;
-            }));
+      function idUsuario(){const u=lerUsuario();return u?.id??u?.userId??null;}
+      function token(){return localStorage.getItem("jpbet_token")||"";}
+      function moeda(v){return Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+      async function carregarSaldoCentral(){
+        const id=idUsuario();
+        const header=document.querySelector(".game-header");
+        const balance=document.getElementById("balance");
+        const stage=document.getElementById("stageBalance");
+        if(!id){header?.classList.remove("has-session");return;}
+        try{
+          const r=await fetch(`/api/account/${encodeURIComponent(id)}`,{headers:token()?{Authorization:`Bearer ${token()}`}:{}});
+          if(!r.ok) throw new Error("sessao");
+          const d=await r.json();
+          const u=d.user||d.account||d;
+          const valor=Number(u?.balance);
+          if(!Number.isFinite(valor)) throw new Error("saldo");
+          header?.classList.add("has-session");
+          if(balance)balance.textContent=moeda(valor);
+          if(stage)stage.textContent=moeda(valor);
+        }catch(_){
+          header?.classList.remove("has-session");
+        }
+      }
+      function abrirCentralGame(gameId){
+        const id=String(gameId||"").trim();
+        if(!id)return;
+        if(!idUsuario()){
+          localStorage.setItem("jpbet_pending_game",`/games.html?game=${encodeURIComponent(id)}`);
+          window.location.href=`/?login=1&game=${encodeURIComponent(id)}`;
+          return;
+        }
+        window.location.href=`/games.html?game=${encodeURIComponent(id)}`;
+      }
+      document.addEventListener("click",function(event){
+        const button=event.target.closest(".lobby-play[data-game]");
+        if(!button)return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        abrirCentralGame(button.dataset.game);
+      },true);
+
+      const CENTRAL_GAMES = [
+        {id:"roulette",name:"Roleta MyBets",tag:"JOGO PRINCIPAL",icon:"🎡",description:"A roleta própria da MyBets, com giro visual, resultado imediato e uma experiência direta para quem quer jogar sem complicação.",meta:"Roleta MyBets"},
+        {id:"fortune7",name:"Fortune 7",tag:"MÁQUINA",icon:"",fortune:true,description:"Máquina de estilo clássico com o visual Fortune 7, símbolos tradicionais, giros e combinações de prêmio.",meta:"Máquina de símbolos"},
+        {id:"diamondgold",name:"Diamond Gold",tag:"MÁQUINA",icon:"💎",description:"Uma máquina temática de brilho e riqueza, com diamantes, ouro e símbolos premium em uma experiência simples e rápida.",meta:"Tema premium"},
+        {id:"royaljackpot",name:"Royal Jackpot",tag:"MÁQUINA",icon:"👑",description:"Clima de realeza em uma máquina com coroas, símbolos especiais e a proposta de buscar grandes combinações.",meta:"Tema real"},
+        {id:"lucky7",name:"Lucky 7",tag:"MÁQUINA",icon:"🍀",description:"Uma máquina de sorte inspirada nos clássicos, reunindo o 7, trevos, frutas e outros símbolos conhecidos.",meta:"Clássico da sorte"}
+      ];
+      function renderCentralDeJogos(){
+        const box=document.getElementById("gamesContainer");
+        const message=document.getElementById("gamesMessage");
+        if(!box)return;
+        if(box.querySelector(".central-game-card"))return;
+        if(message)message.style.display="none";
+        box.innerHTML=CENTRAL_GAMES.map(game=>`
+          <article class="central-game-card ${game.fortune?"fortune":""}">
+            <div>
+              <div class="central-game-top">
+                <div class="central-game-icon">${game.fortune?"":game.icon}</div>
+                <div><div class="central-game-tag">${game.tag}</div><h3>${game.name}</h3></div>
+              </div>
+              <p class="central-game-description">${game.description}</p>
+            </div>
+            <div class="central-game-bottom">
+              <span class="central-game-meta">${game.meta}</span>
+              <button class="lobby-play" type="button" data-game="${game.id}">JOGAR <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+        `).join("");
+      }
+      const centralObserver=new MutationObserver(()=>renderCentralDeJogos());
+      document.addEventListener("DOMContentLoaded",()=>{
+        const box=document.getElementById("gamesContainer");
+        if(box){centralObserver.observe(box,{childList:true});renderCentralDeJogos();}
+        carregarSaldoCentral();
+      });
+      window.addEventListener("pageshow",carregarSaldoCentral);
+
+      (function(){
+        const originalOpen=window.abrirInterfaceSlot;
+        if(typeof originalOpen==="function"){
+          window.abrirInterfaceSlot=function(config){
+            originalOpen(config);
+            const panel=document.getElementById("slotPanel");
+            if(panel)panel.classList.toggle("fortune7-visual",String(config?.id||"").toLowerCase()==="fortune7");
+          };
+        }
+        window.animarResultadoSlot=function(strips,result){
+          return new Promise(resolve=>{
+            const values=result.map(normalizarSymbol);
+            strips.forEach((strip,i)=>{
+              const symbols=SLOT_SYMBOLS[configuracaoAtual?.id]||SLOT_SYMBOLS.fortune7;
+              const pool=[];
+              for(let k=0;k<18+i*3;k++)pool.push(symbols[Math.floor(Math.random()*symbols.length)]);
+              values.forEach(v=>pool.push({v}));
+              const reel=strip.parentElement;
+              strip.innerHTML=pool.map(s=>`<div class="symbol ${s.cls||""}">${s.v}</div>`).join("");
+              const h=Math.max(1,reel.clientHeight/3);
+              const targetIndex=pool.length-1;
+              strip.style.transition="none";
+              strip.style.transform="translateY(0)";
+              requestAnimationFrame(()=>requestAnimationFrame(()=>{
+                strip.style.transition=`transform ${1500+i*230}ms cubic-bezier(.12,.72,.12,1)`;
+                strip.style.transform=`translateY(-${targetIndex*h}px)`;
+              }));
+            });
+            setTimeout(resolve,2200);
           });
-          setTimeout(resolve,2200);
-        });
-      };
+        };
+      })();
     })();
   </script>
   <script src="/roulette16.js?v=20260912-01"></script>
