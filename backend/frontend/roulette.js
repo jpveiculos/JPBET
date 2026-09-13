@@ -1,4 +1,5 @@
 /* MyBets — Roleta integrada ao dashboard.html */
+/* Restauração da versão aprovada — sem alteração funcional. */
 function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
 function path(r,a,b){const p=polar(r,a),q=polar(r,b),large=b-a>180?1:0;return`M250 250 L${p.x} ${p.y} A${r} ${r} 0 ${large} 1 ${q.x} ${q.y} Z`}
 function renderWheel(){
@@ -30,7 +31,7 @@ function configurarInterfaceRoleta(){
 `;
  if(!document.getElementById('mybets-roulette-modern'))document.head.appendChild(style);
  if(nav){nav.innerHTML='<button class="nav-item" data-nav="home"><span>⌂</span>Início</button><button class="nav-item" data-nav="player"><span>👤</span>Área do jogador</button><button class="nav-item" data-nav="games"><span>⌁</span>Jogos</button>';nav.style.gridTemplateColumns='repeat(3,1fr)';
-  const home=nav.querySelector('[data-nav="home"]),player=nav.querySelector('[data-nav="player"]'),games=nav.querySelector('[data-nav="games"]');home.onclick=()=>{location.href='/'};player.onclick=()=>{if(typeof window.closeRoulette==='function')window.closeRoulette();setTimeout(sync,0);setTimeout(sync,80)};games.onclick=()=>{location.href='/games.html'};
+  const home=nav.querySelector('[data-nav="home"]'),player=nav.querySelector('[data-nav="player"]'),games=nav.querySelector('[data-nav="games"]');home.onclick=()=>{location.href='/'};player.onclick=()=>{if(typeof window.closeRoulette==='function')window.closeRoulette();setTimeout(sync,0);setTimeout(sync,80)};games.onclick=()=>{location.href='/games.html'};
   const wrapOpen=window.openRoulette,wrapClose=window.closeRoulette;
   if(typeof wrapOpen==='function'&&!wrapOpen.__mybetsWrapped){const open=wrapOpen,close=wrapClose;const abrir=function(){const r=open.apply(this,arguments);setTimeout(sync,0);setTimeout(sync,80);return r};abrir.__mybetsWrapped=true;window.openRoulette=abrir;if(typeof close==='function')window.closeRoulette=function(){const r=close.apply(this,arguments);setTimeout(sync,0);setTimeout(sync,80);return r}}
  }
