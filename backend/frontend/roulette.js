@@ -31,9 +31,23 @@ async function spinRoulette(){
 function configurarInterfaceRoleta(){
  const nav=document.querySelector('.bottom-nav');
  const removerRetorno=()=>{document.querySelectorAll('.back-player').forEach(el=>el.remove())};
+ const sincronizarRolagem=()=>{
+   const rv=document.getElementById('rouletteView');
+   const pv=document.getElementById('playerView');
+   const roletaAtiva=!!(rv&&getComputedStyle(rv).display!=='none');
+   document.body.classList.toggle('mybets-roulette-lock',roletaAtiva);
+   document.body.classList.toggle('mybets-player-scroll',!roletaAtiva);
+   if(pv)pv.scrollTop=pv.scrollTop;
+ };
  removerRetorno();
  document.querySelectorAll('#bottomSpinButton').forEach(el=>el.remove());
  const style=document.createElement('style');style.id='mybets-roulette-modern';style.textContent=`
+html,body{overflow-x:hidden!important}
+body.mybets-player-scroll{overflow-y:auto!important;overflow-x:hidden!important;height:auto!important;min-height:100%!important}
+body.mybets-player-scroll #playerView{height:auto!important;min-height:calc(100vh - 66px)!important;overflow:visible!important;padding-bottom:90px!important}
+body.mybets-roulette-lock{overflow:hidden!important;height:100%!important}
+body.mybets-roulette-lock #rouletteView{height:calc(100vh - 66px)!important;overflow:hidden!important}
+body.mybets-roulette-lock #rouletteView .page{height:calc(100vh - 66px)!important;min-height:calc(100vh - 66px)!important;overflow:hidden!important}
 .back-player{display:none!important}
 .header .logo{position:relative!important;padding-bottom:8px!important;line-height:1!important;color:inherit!important;text-decoration:none!important;display:inline-block!important;font-weight:950!important;letter-spacing:-2.2px!important;text-shadow:0 0 .2px currentColor!important}
 .header .logo b{font-weight:950!important}
@@ -59,7 +73,7 @@ if(!document.getElementById('mybets-roulette-modern'))document.head.appendChild(
    nav.innerHTML='<button class="nav-item" data-nav="home"><span>⌂</span>Início</button><button class="nav-item" data-nav="roulette"><span>◉</span>Roleta</button><button class="nav-item" data-nav="player"><span>👤</span>Área do jogador</button><button class="nav-item" data-nav="games"><span>⌁</span>Jogos</button>';
    nav.style.gridTemplateColumns='repeat(4,1fr)';
    const items={home:nav.querySelector('[data-nav="home"]'),roulette:nav.querySelector('[data-nav="roulette"]'),player:nav.querySelector('[data-nav="player"]'),games:nav.querySelector('[data-nav="games"]')};
-   const syncActive=()=>{const rv=$('rouletteView');const rouletteVisible=rv&&getComputedStyle(rv).display!=='none';Object.values(items).forEach(i=>i.classList.remove('active'));(rouletteVisible?items.roulette:items.player).classList.add('active')};
+   const syncActive=()=>{const rv=$('rouletteView');const rouletteVisible=rv&&getComputedStyle(rv).display!=='none';Object.values(items).forEach(i=>i.classList.remove('active'));(rouletteVisible?items.roulette:items.player).classList.add('active');sincronizarRolagem()};
    items.home.onclick=()=>{location.href='/'};
    items.roulette.onclick=()=>{if(typeof openRoulette==='function')openRoulette();setTimeout(syncActive,0)};
    items.player.onclick=()=>{if(typeof closeRoulette==='function')closeRoulette();setTimeout(syncActive,0)};
@@ -69,6 +83,7 @@ if(!document.getElementById('mybets-roulette-modern'))document.head.appendChild(
    syncActive();
  }
  removerRetorno();
+ sincronizarRolagem();
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',configurarInterfaceRoleta);else configurarInterfaceRoleta();
