@@ -45,10 +45,10 @@ function configurarInterfaceRoleta(){
 .roulette-center-button:after{content:"GIRAR"!important;color:#ffd83d!important;font-size:clamp(26px,7vw,38px)!important;font-weight:950!important;letter-spacing:.6px!important;line-height:1!important;text-shadow:0 2px 3px #000,0 0 10px rgba(255,204,45,.28)!important}
 .bet-title{font-size:15px!important;margin-bottom:5px!important}
 .roulette-bet{gap:8px!important}
-.roulette-bet>button{width:52px!important;height:52px!important;border-radius:14px!important;font-size:29px!important}
-.roulette-bet-field input{height:52px!important;border-radius:14px!important;padding:0 16px!important;font-size:25px!important}
-.quick-bets{gap:6px!important;margin-top:6px!important}
-.quick-bets button{height:46px!important;border-radius:12px!important;font-size:17px!important;border-width:2px!important}
+.roulette-bet>button{width:50px!important;height:50px!important;border-radius:13px!important;font-size:27px!important}
+.roulette-bet-field input{height:50px!important;border-radius:13px!important;padding:0 15px!important;font-size:24px!important}
+.quick-bets{gap:5px!important;margin-top:5px!important}
+.quick-bets button{height:43px!important;border-radius:11px!important;font-size:16px!important;border-width:2px!important}
 .roulette-result{font-size:17px!important;min-height:20px!important;margin:2px 0 3px!important;top:0!important}
 `;
 if(!document.getElementById('mybets-roulette-modern'))document.head.appendChild(style);
