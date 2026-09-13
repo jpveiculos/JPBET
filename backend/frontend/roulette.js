@@ -52,6 +52,7 @@ function configurarInterfaceRoleta(){
  sync();
  const rv=document.getElementById('rouletteView'),pv=document.getElementById('playerView');
  if(window.MutationObserver){if(rv)new MutationObserver(()=>setTimeout(sync,0)).observe(rv,{attributes:true,attributeFilter:['style','class']});if(pv)new MutationObserver(()=>setTimeout(sync,0)).observe(pv,{attributes:true,attributeFilter:['style','class']})}
+ const logo=document.querySelector('.header .logo');if(logo){logo.style.cursor='pointer';logo.setAttribute('role','link');logo.setAttribute('aria-label','MyBets início');logo.onclick=()=>{location.href='/';};}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',configurarInterfaceRoleta);else configurarInterfaceRoleta();
 if(typeof renderWheel==='function')renderWheel();
