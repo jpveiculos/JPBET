@@ -1,0 +1,229 @@
+/*
+ * MyBets — Roleta
+ *
+ * Este arquivo concentra somente a lógica visual e de interação da roleta.
+ * A roleta continua sendo exibida dentro de dashboard.html.
+ * Regras/sorteio continuam no backend (/api/roulette/spin).
+ */
+
+function polar(r,d){
+  const a=(d-90)*Math.PI/180;
+  return {x:250+r*Math.cos(a),y:250+r*Math.sin(a)};
+}
+
+function path(r,a,b){
+  const p=polar(r,a),q=polar(r,b),large=b-a>180?1:0;
+  return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 ${large} 1 ${q.x} ${q.y} Z`;
+}
+
+function renderWheel(){
+  const svg=$('rouletteSvg');
+  if(!svg)return;
+
+  svg.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+
+  const defs=document.createElementNS(ns,'defs');
+
+  const grad=document.createElementNS(ns,'radialGradient');
+  grad.setAttribute('id','goldRing');
+  grad.innerHTML='<stop offset="0%" stop-color="#6b3c00"/><stop offset="72%" stop-color="#d88a08"/><stop offset="86%" stop-color="#fff0a0"/><stop offset="93%" stop-color="#ffd43b"/><stop offset="100%" stop-color="#8b4d00"/>';
+  defs.appendChild(grad);
+
+  const green=document.createElementNS(ns,'linearGradient');
+  green.setAttribute('id','prizeGreen');
+  green.setAttribute('x1','0%');
+  green.setAttribute('y1','0%');
+  green.setAttribute('x2','0%');
+  green.setAttribute('y2','100%');
+  green.innerHTML='<stop offset="0%" stop-color="#baffd0"/><stop offset="22%" stop-color="#3dff8a"/><stop offset="62%" stop-color="#10df69"/><stop offset="100%" stop-color="#009b45"/>';
+  defs.appendChild(green);
+
+  const white=document.createElementNS(ns,'linearGradient');
+  white.setAttribute('id','prizeWhite');
+  white.setAttribute('x1','0%');
+  white.setAttribute('y1','0%');
+  white.setAttribute('x2','0%');
+  white.setAttribute('y2','100%');
+  white.innerHTML='<stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#f8fbff"/><stop offset="100%" stop-color="#bfc9d6"/>';
+  defs.appendChild(white);
+
+  const blue=document.createElementNS(ns,'linearGradient');
+  blue.setAttribute('id','prizeBlue');
+  blue.setAttribute('x1','0%');
+  blue.setAttribute('y1','0%');
+  blue.setAttribute('x2','0%');
+  blue.setAttribute('y2','100%');
+  blue.innerHTML='<stop offset="0%" stop-color="#9ee6ff"/><stop offset="25%" stop-color="#28c1ff"/><stop offset="65%" stop-color="#008cff"/><stop offset="100%" stop-color="#0057d9"/>';
+  defs.appendChild(blue);
+
+  const orange=document.createElementNS(ns,'linearGradient');
+  orange.setAttribute('id','prizeOrange');
+  orange.setAttribute('x1','0%');
+  orange.setAttribute('y1','0%');
+  orange.setAttribute('x2','0%');
+  orange.setAttribute('y2','100%');
+  orange.innerHTML='<stop offset="0%" stop-color="#ffcf80"/><stop offset="22%" stop-color="#ffad32"/><stop offset="65%" stop-color="#ff8500"/><stop offset="100%" stop-color="#b84b00"/>';
+  defs.appendChild(orange);
+
+  const filter=document.createElementNS(ns,'filter');
+  filter.setAttribute('id','prize3D');
+  filter.setAttribute('x','-35%');
+  filter.setAttribute('y','-35%');
+  filter.setAttribute('width','170%');
+  filter.setAttribute('height','180%');
+  filter.innerHTML='<feDropShadow dx="3" dy="4" stdDeviation="1.2" flood-color="#001b0b" flood-opacity=".98"/><feDropShadow dx="-1" dy="-1" stdDeviation=".6" flood-color="#ffffff" flood-opacity=".45"/>';
+  defs.appendChild(filter);
+
+  svg.appendChild(defs);
+
+  const base=document.createElementNS(ns,'circle');
+  base.setAttribute('cx',250);
+  base.setAttribute('cy',250);
+  base.setAttribute('r',238);
+  base.setAttribute('fill','#f6b916');
+  svg.appendChild(base);
+
+  const prizes={2:'5X',6:'10X',10:'2X',14:'3X'};
+  const visualByIndex={0:-14,1:0,3:14,2:45,4:76,5:90,7:104,6:135,8:166,9:180,11:194,10:225,12:256,13:270,15:284,14:315};
+  const prizeFill={2:'url(#prizeBlue)',6:'url(#prizeOrange)',10:'url(#prizeGreen)',14:'url(#prizeWhite)'};
+  const prizeStroke={2:'#003c80',6:'#8a3d00',10:'#003d1b',14:'#59636e'};
+
+  for(const i of [2,6,10,14]){
+    const center=visualByIndex[i];
+    const p=document.createElementNS(ns,'path');
+    p.setAttribute('d',path(238,center-24,center+24));
+    p.setAttribute('fill','#020202');
+    p.setAttribute('stroke','#050505');
+    p.setAttribute('stroke-width','1');
+    svg.appendChild(p);
+
+    const q=polar(172,center);
+    const t=document.createElementNS(ns,'text');
+    t.textContent=prizes[i];
+    t.setAttribute('x',q.x);
+    t.setAttribute('y',q.y);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family','Arial,Helvetica,sans-serif');
+    t.setAttribute('font-size',prizes[i]==='10X'?'46':'54');
+    t.setAttribute('font-weight','900');
+    t.setAttribute('font-style','italic');
+    t.setAttribute('fill',prizeFill[i]);
+    t.setAttribute('stroke',prizeStroke[i]);
+    t.setAttribute('stroke-width','4');
+    t.setAttribute('paint-order','stroke fill');
+    t.setAttribute('filter','url(#prize3D)');
+    t.setAttribute('class','prize-label');
+    t.dataset.cx=q.x;
+    t.dataset.cy=q.y;
+    svg.appendChild(t);
+  }
+
+  const ring=document.createElementNS(ns,'circle');
+  ring.setAttribute('cx',250);
+  ring.setAttribute('cy',250);
+  ring.setAttribute('r',238);
+  ring.setAttribute('fill','none');
+  ring.setAttribute('stroke','url(#goldRing)');
+  ring.setAttribute('stroke-width','12');
+  svg.appendChild(ring);
+
+  const highlight=document.createElementNS(ns,'circle');
+  highlight.setAttribute('cx',250);
+  highlight.setAttribute('cy',250);
+  highlight.setAttribute('r',232);
+  highlight.setAttribute('fill','none');
+  highlight.setAttribute('stroke','#ffe66b');
+  highlight.setAttribute('stroke-width','2');
+  highlight.setAttribute('opacity','.8');
+  svg.appendChild(highlight);
+
+  $('wheel').style.transform=`rotate(${rotation}deg)`;
+}
+
+function updatePrizeOrientation(rr){
+  document.querySelectorAll('.prize-label').forEach(t=>{
+    const x=Number(t.dataset.cx),y=Number(t.dataset.cy);
+    t.setAttribute('transform',`translate(${x} ${y}) rotate(${-rr}) translate(${-x} ${-y})`);
+  });
+}
+
+async function spinRoulette(){
+  if(spinning)return;
+
+  const bet=Number($('betAmount').value);
+  const min=Number(settings.roulette_min_bet||.5);
+  const max=Number(settings.roulette_max_bet||100);
+
+  if(!(bet>=min&&bet<=max))
+    return toast(`A aposta deve estar entre ${money(min)} e ${money(max)}.`,'error');
+
+  if(bet>Number(user.balance||0))
+    return toast('Saldo insuficiente.','error');
+
+  spinning=true;
+  $('spinButton').disabled=true;
+  $('bottomSpinButton').disabled=true;
+  $('spinButton').style.opacity='.6';
+
+  try{
+    const r=await fetch(`${API}/roulette/spin`,{
+      method:'POST',
+      headers:headers(),
+      body:JSON.stringify({
+        userId:user.id,
+        betAmount:bet,
+        betType:'roulette',
+        rouletteId:'sorte'
+      })
+    });
+
+    const d=await r.json();
+    if(!r.ok)throw Error(d.message||'Não foi possível realizar a rodada.');
+
+    const spin=d.spin||d.result||d;
+    if(!Number.isInteger(Number(spin.index))||Number(spin.index)<0||Number(spin.index)>=16)
+      throw Error('Resultado inválido.');
+
+    const visualByIndex={0:-14,1:0,3:14,2:45,4:76,5:90,7:104,6:135,8:166,9:180,11:194,10:225,12:256,13:270,15:284,14:315};
+    const idx=Number(spin.index);
+    const center=visualByIndex[idx];
+    const target=((360-center-(rotation%360))+360)%360;
+    const turns=7+Math.floor(Math.random()*2);
+    const dest=rotation+turns*360+target;
+    const dur=Math.max(1800,Number(settings.roulette_animation_ms)||4800);
+    const start=performance.now();
+    const from=rotation;
+
+    await new Promise(resolve=>{
+      function frame(now){
+        const p=Math.min(1,(now-start)/dur);
+        const e=1-Math.pow(1-p,3);
+        const rr=from+(dest-from)*e;
+        $('wheel').style.transform=`rotate(${rr}deg)`;
+        updatePrizeOrientation(rr);
+        if(p<1)return requestAnimationFrame(frame);
+        rotation=dest;
+        $('wheel').style.transform=`rotate(${dest}deg)`;
+        updatePrizeOrientation(dest);
+        resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+
+    await loadAccount();
+
+    if(Number(spin.prize)>0)
+      toast(`Você ganhou ${money(spin.prize)}!`,'win');
+    else
+      toast(`Você perdeu ${money(bet)}!`,'loss');
+  }catch(e){
+    toast(e.message,'error');
+  }finally{
+    spinning=false;
+    $('spinButton').disabled=false;
+    $('bottomSpinButton').disabled=false;
+    $('spinButton').style.opacity='1';
+  }
+}
