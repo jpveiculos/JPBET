@@ -5,12 +5,10 @@ function sessaoJogadorAtiva() {
 }
 
 function abrirLogin() {
-  // A conta permanece identificada no navegador enquanto o jogador navega pelo site.
   if (sessaoJogadorAtiva()) {
     window.location.href = "/dashboard.html";
     return;
   }
-
   const modal = document.getElementById("loginModal");
   if (!modal) return;
   modal.classList.add("show");
@@ -90,13 +88,15 @@ document.addEventListener("keydown",event=>{if(event.key==="Escape")fecharLogin(
 
 document.addEventListener("DOMContentLoaded",()=>{
   const user=localStorage.getItem("jpbet_user");
+  const brand=document.querySelector(".brand");
+  const footerBrand=document.querySelector(".footer-brand");
+  if(brand){brand.setAttribute("href","/");brand.onclick=()=>{window.location.href="/";return false;};}
+  if(footerBrand){footerBrand.setAttribute("role","link");footerBrand.setAttribute("tabindex","0");footerBrand.style.cursor="pointer";footerBrand.onclick=()=>{window.location.href="/";};footerBrand.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();window.location.href="/";}};}
   if(!user)return;
   const accountButton=document.getElementById("homeAccountButton");
   const platformButton=document.getElementById("heroPlatformButton");
   const registerButton=document.getElementById("heroRegisterButton");
   const rouletteButton=document.getElementById("rouletteHomeButton");
-  const brand=document.querySelector(".brand");
-  if(brand){brand.setAttribute("href","/dashboard.html");brand.onclick=()=>{window.location.href="/dashboard.html";return false;};}
   if(accountButton){accountButton.textContent="MINHA CONTA";accountButton.onclick=()=>window.location.href="/dashboard.html";}
   if(platformButton){platformButton.innerHTML="IR PARA MINHA CONTA <span>→</span>";platformButton.onclick=()=>window.location.href="/dashboard.html";}
   if(registerButton){registerButton.textContent="CONTINUAR JOGANDO";registerButton.onclick=()=>window.location.href="/dashboard.html";}
