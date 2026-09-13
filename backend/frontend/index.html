@@ -4,12 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#050505">
-  <meta name="description" content="MyBets — experiência premium com roleta própria, área do jogador e atendimento.">
+  <meta name="description" content="MyBets — roleta própria, máquinas e área do jogador.">
   <title>MyBets | Experiência Premium</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .brand-main,.footer-brand,.modal-brand{position:relative;display:inline-block;padding-bottom:9px;line-height:1}
     .brand-main::after,.footer-brand::after,.modal-brand::after{content:"";position:absolute;left:2px;right:-5px;bottom:0;height:7px;border-bottom:3px solid #f5c542;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35))}
+
+    /* Jogos da plataforma — somente opções realmente oferecidas */
+    .games-showcase{width:min(1180px,92vw);margin:0 auto;padding:58px 0 78px}
+    .games-showcase-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px}
+    .games-showcase-head h2{margin-top:8px;font-size:clamp(32px,4vw,48px);line-height:1;letter-spacing:-1.8px}
+    .games-showcase-head p{max-width:460px;color:rgba(255,255,255,.55);font-size:14px;line-height:1.55}
+    .games-carousel-wrap{position:relative}
+    .games-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 12px}
+    .games-carousel::-webkit-scrollbar{display:none}
+    .home-game-card{flex:0 0 min(290px,78vw);scroll-snap-align:start;min-height:300px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(245,197,66,.25);border-radius:20px;background:linear-gradient(145deg,rgba(245,197,66,.075),rgba(255,255,255,.025)),#080808;box-shadow:inset 0 0 40px rgba(245,197,66,.025);overflow:hidden}
+    .home-game-icon{height:112px;display:grid;place-items:center;font-size:72px;border-radius:15px;background:radial-gradient(circle,rgba(245,197,66,.14),transparent 68%);text-shadow:0 10px 30px rgba(0,0,0,.65)}
+    .home-game-kicker{margin-top:18px;color:#f5c542;font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+    .home-game-card h3{margin-top:7px;font-size:24px}
+    .home-game-card p{margin-top:8px;color:rgba(255,255,255,.56);font-size:13px;line-height:1.5}
+    .home-game-card button{width:100%;min-height:48px;margin-top:18px;border:1px solid #f5c542;border-radius:11px;background:transparent;color:#f5c542;font-weight:900;letter-spacing:.7px;cursor:pointer}
+    .home-game-card button:hover{background:rgba(245,197,66,.08)}
+    .carousel-arrow{position:absolute;top:50%;z-index:3;width:42px;height:42px;margin-top:-21px;border:1px solid rgba(245,197,66,.55);border-radius:50%;background:rgba(5,5,5,.86);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.35)}
+    .carousel-arrow.left{left:-18px}.carousel-arrow.right{right:-18px}
+    .games-note{margin-top:14px;color:rgba(255,255,255,.34);font-size:11px}
+    @media(max-width:650px){
+      .games-showcase{padding:42px 0 60px}
+      .games-showcase-head{align-items:flex-start;flex-direction:column;gap:10px}
+      .games-showcase-head h2{font-size:34px}
+      .home-game-card{flex-basis:78vw;min-height:285px}
+      .carousel-arrow{display:none}
+    }
   </style>
 </head>
 
@@ -21,12 +47,11 @@
 
     <nav class="main-nav" aria-label="Navegação principal">
       <a href="#inicio" class="active">Início</a>
-      <a href="#roleta">Roleta</a>
-      <a href="#experiencia">Experiência</a>
+      <a href="#jogos">Jogos</a>
       <a href="termos-uso.html">Termos</a>
     </nav>
 
-    <button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Entrar</button>
+    <button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Minha Conta</button>
   </header>
 
   <main>
@@ -41,82 +66,87 @@
         <h1>JOGUE COM<br><span>ESTILO.</span></h1>
 
         <p class="hero-lead">
-          Uma experiência moderna, elegante e feita para colocar a sua diversão no centro.
+          Roleta própria, máquinas e uma área do jogador simples para você acompanhar tudo em um só lugar.
         </p>
 
         <div class="hero-actions">
-          <button class="primary-button" id="heroPlatformButton" onclick="abrirLogin()">ENTRAR NA PLATAFORMA <span>→</span></button>
+          <button class="primary-button" id="heroPlatformButton" onclick="abrirLogin()">IR PARA MINHA CONTA <span>→</span></button>
           <button class="secondary-button" id="heroRegisterButton" onclick="abrirLogin(); mostrarCadastro()">CRIAR CONTA</button>
         </div>
 
         <div class="hero-points" aria-label="Destaques da plataforma">
-          <div><strong>★</strong><span>Experiência<br>premium</span></div>
           <div><strong>🎰</strong><span>Roleta<br>MyBets</span></div>
+          <div><strong>🎰</strong><span>Máquinas<br>de jogos</span></div>
           <div><strong>🛡</strong><span>Conta e acesso<br>protegidos</span></div>
         </div>
       </div>
     </section>
 
-    <section class="experience" id="experiencia">
-      <div class="section-heading">
+    <section class="games-showcase" id="jogos" aria-label="Jogos oferecidos">
+      <div class="games-showcase-head">
         <div>
-          <span class="eyebrow">DENTRO DO MyBets</span>
-          <h2>Uma experiência feita para você</h2>
+          <span class="eyebrow">NOSSOS JOGOS</span>
+          <h2>Escolha seu jogo favorito</h2>
         </div>
-        <p>Sem inventar jogos de terceiros: aqui destacamos somente recursos que fazem parte da nossa plataforma.</p>
+        <p>Acesse diretamente as experiências disponíveis na plataforma: nossa roleta e nossas máquinas.</p>
       </div>
 
-      <div class="feature-grid">
-        <article class="feature-card featured" id="roleta">
-          <div class="feature-icon">🎰</div>
-          <div>
-            <span class="card-kicker">JOGO PRINCIPAL</span>
-            <h3>Roleta MyBets</h3>
-            <p>Roleta própria com multiplicadores, resultado visual e giro grátis automático quando o símbolo 🍀 for sorteado.</p>
-          </div>
-          <button class="card-button" id="rouletteHomeButton" onclick="abrirLogin()">JOGAR →</button>
-        </article>
+      <div class="games-carousel-wrap">
+        <button class="carousel-arrow left" type="button" aria-label="Jogos anteriores" onclick="moverJogos(-1)">‹</button>
+        <div class="games-carousel" id="homeGamesCarousel">
+          <article class="home-game-card">
+            <div>
+              <div class="home-game-icon">🎡</div>
+              <div class="home-game-kicker">JOGO PRINCIPAL</div>
+              <h3>Roleta MyBets</h3>
+              <p>Roleta própria com multiplicadores e giro visual.</p>
+            </div>
+            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
+          </article>
 
-        <article class="feature-card">
-          <div class="feature-icon">💎</div>
-          <div>
-            <span class="card-kicker">ÁREA DO JOGADOR</span>
-            <h3>Saldo e bônus</h3>
-            <p>Acompanhe seus créditos, bônus, progresso de apostas e movimentações diretamente na sua conta.</p>
-          </div>
-        </article>
+          <article class="home-game-card">
+            <div>
+              <div class="home-game-icon">🎰</div>
+              <div class="home-game-kicker">MÁQUINA</div>
+              <h3>Fortune 7</h3>
+              <p>Máquina de símbolos clássicos com giros e prêmios.</p>
+            </div>
+            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
+          </article>
 
-        <article class="feature-card">
-          <div class="feature-icon">📲</div>
-          <div>
-            <span class="card-kicker">PRATICIDADE</span>
-            <h3>Feito para celular</h3>
-            <p>Interface responsiva para acessar a plataforma pelo celular, tablet ou computador.</p>
-          </div>
-        </article>
+          <article class="home-game-card">
+            <div>
+              <div class="home-game-icon">💎</div>
+              <div class="home-game-kicker">MÁQUINA</div>
+              <h3>Diamond Gold</h3>
+              <p>Máquina temática com diamantes, coroas e símbolos premium.</p>
+            </div>
+            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
+          </article>
 
-        <article class="feature-card">
-          <div class="feature-icon">🛡</div>
-          <div>
-            <span class="card-kicker">TRANSPARÊNCIA</span>
-            <h3>Histórico e movimentações</h3>
-            <p>Consulte seus registros e acompanhe as operações realizadas dentro da área do jogador.</p>
-          </div>
-        </article>
+          <article class="home-game-card">
+            <div>
+              <div class="home-game-icon">👑</div>
+              <div class="home-game-kicker">MÁQUINA</div>
+              <h3>Royal Jackpot</h3>
+              <p>Máquina temática com símbolos reais e combinações especiais.</p>
+            </div>
+            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
+          </article>
+
+          <article class="home-game-card">
+            <div>
+              <div class="home-game-icon">🍀</div>
+              <div class="home-game-kicker">MÁQUINA</div>
+              <h3>Lucky 7</h3>
+              <p>Máquina de sorte com 7, trevos, frutas e símbolos clássicos.</p>
+            </div>
+            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
+          </article>
+        </div>
+        <button class="carousel-arrow right" type="button" aria-label="Próximos jogos" onclick="moverJogos(1)">›</button>
       </div>
-    </section>
-
-    <section class="luxury-strip" aria-label="Identidade visual MyBets">
-      <div class="luxury-copy">
-        <span class="eyebrow">DETALHES QUE MARCAM</span>
-        <h2>Presença. Potência. MyBets.</h2>
-        <p>A nova identidade visual combina o dourado da marca com uma supercarro vermelho e uma moto esportiva azul para criar uma atmosfera de alto padrão.</p>
-      </div>
-      <div class="luxury-stats">
-        <div><strong>01</strong><span>Roleta<br>própria</span></div>
-        <div><strong>02</strong><span>Área do<br>jogador</span></div>
-        <div><strong>03</strong><span>Visual<br>premium</span></div>
-      </div>
+      <div class="games-note">Deslize para ver os jogos disponíveis.</div>
     </section>
   </main>
 
@@ -167,6 +197,13 @@
     <p>© 2026 MyBets — Todos os direitos reservados.</p>
   </footer>
 
+  <script>
+    function moverJogos(direcao){
+      const el=document.getElementById('homeGamesCarousel');
+      if(!el)return;
+      el.scrollBy({left:direcao*Math.min(el.clientWidth*.82,320),behavior:'smooth'});
+    }
+  </script>
   <script src="app.js"></script>
   <script src="/navigation.js"></script>
 </body>
