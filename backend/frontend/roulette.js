@@ -33,6 +33,7 @@ async function spinRoulette(){
  const nav=document.querySelector('.bottom-nav');
  if(!nav)return;
  nav.innerHTML='<button class="nav-item" data-nav="home"><span>⌂</span>Início</button><button class="nav-item" data-nav="roulette"><span>◉</span>Roleta</button><button class="nav-item" data-nav="player"><span>👤</span>Área do jogador</button><button class="nav-item" data-nav="games"><span>⌁</span>Jogos</button>';
+ nav.style.gridTemplateColumns='repeat(4,1fr)';
  const items={home:nav.querySelector('[data-nav="home"]'),roulette:nav.querySelector('[data-nav="roulette"]'),player:nav.querySelector('[data-nav="player"]'),games:nav.querySelector('[data-nav="games"]')};
  const syncActive=()=>{const rouletteVisible=getComputedStyle($('rouletteView')).display!=='none';Object.values(items).forEach(i=>i.classList.remove('active'));(rouletteVisible?items.roulette:items.player).classList.add('active')};
  items.home.onclick=()=>{location.href='/'};
@@ -41,7 +42,7 @@ async function spinRoulette(){
  items.games.onclick=()=>{location.href='/games.html'};
  const logo=document.querySelector('.header .logo');
  if(logo){
-   const link=document.createElement('a');link.href='/';link.className='logo';link.setAttribute('aria-label','Página principal');link.innerHTML=logo.innerHTML;logo.replaceWith(link);
+   const link=document.createElement('a');link.href='/';link.className='logo';link.setAttribute('aria-label','Página principal');link.innerHTML=logo.innerHTML;link.style.color='inherit';link.style.textDecoration='none';link.style.display='inline-block';logo.replaceWith(link);
  }
  const back=document.querySelector('.back-player');if(back)back.remove();
  const playerView=$('playerView'),rouletteView=$('rouletteView');
