@@ -144,12 +144,13 @@ a { color: inherit; text-decoration: none; }
 .hero-visual {
   position: absolute;
   z-index: -3;
-  inset: 0 0 0 22%;
+  inset: 0 0 0 18%;
   background-image: url("assets/jpbet-hero-luxo-clean.png");
   background-position: center right;
   background-repeat: no-repeat;
   background-size: cover;
-  filter: saturate(1.12) contrast(1.08);
+  filter: saturate(1.18) contrast(1.10) brightness(1.03);
+  transform: scale(1.015);
 }
 
 .hero::after {
@@ -158,8 +159,8 @@ a { color: inherit; text-decoration: none; }
   z-index: -2;
   inset: 0;
   background:
-    linear-gradient(90deg, #030303 0%, rgba(3,3,3,.96) 20%, rgba(3,3,3,.60) 42%, rgba(3,3,3,.05) 76%),
-    linear-gradient(0deg, rgba(3,3,3,.90) 0%, transparent 28%, rgba(0,0,0,.05) 70%, rgba(0,0,0,.35) 100%);
+    linear-gradient(90deg, #030303 0%, rgba(3,3,3,.95) 18%, rgba(3,3,3,.58) 40%, rgba(3,3,3,.08) 76%),
+    linear-gradient(0deg, rgba(3,3,3,.88) 0%, transparent 28%, rgba(0,0,0,.04) 70%, rgba(0,0,0,.28) 100%);
 }
 
 .hero::before {
@@ -186,9 +187,11 @@ a { color: inherit; text-decoration: none; }
 .hero-glow-right { right: -180px; bottom: -120px; background: #0057ff; }
 
 .hero-content {
-  width: min(570px, 90vw);
+  width: min(600px, 90vw);
   margin-left: clamp(5vw, 8vw, 130px);
-  padding: 80px 0;
+  padding: 86px 0;
+  position: relative;
+  z-index: 2;
 }
 
 .badge,
@@ -204,12 +207,12 @@ a { color: inherit; text-decoration: none; }
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 9px 13px;
+  padding: 10px 15px;
   margin-bottom: 22px;
-  border: 1px solid rgba(245,197,66,.35);
+  border: 1px solid rgba(245,197,66,.42);
   border-radius: 999px;
-  background: rgba(0,0,0,.35);
-  box-shadow: inset 0 0 20px rgba(245,197,66,.04);
+  background: rgba(0,0,0,.42);
+  box-shadow: inset 0 0 20px rgba(245,197,66,.05), 0 8px 30px rgba(0,0,0,.20);
 }
 
 .hero h1 {
@@ -218,6 +221,7 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -4px;
   font-weight: 950;
   text-transform: uppercase;
+  text-shadow: 0 8px 30px rgba(0,0,0,.38);
 }
 
 .hero h1 span {
@@ -241,8 +245,8 @@ a { color: inherit; text-decoration: none; }
 }
 
 .primary-button {
-  min-height: 52px;
-  padding: 0 22px;
+  min-height: 54px;
+  padding: 0 23px;
   border-radius: 12px;
   background: linear-gradient(135deg, #ffe67c, #f2b700);
   color: #080808;
@@ -253,8 +257,8 @@ a { color: inherit; text-decoration: none; }
 .primary-button:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
 .secondary-button {
-  min-height: 52px;
-  padding: 0 22px;
+  min-height: 54px;
+  padding: 0 23px;
   border: 1px solid rgba(255,255,255,.18);
   border-radius: 12px;
   background: rgba(255,255,255,.04);
@@ -524,4 +528,25 @@ footer p { width: 100%; color: rgba(255,255,255,.30); font-size: 11px; }
 @supports (padding: max(0px)) {
   .topbar { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
   footer { padding-bottom: max(38px, env(safe-area-inset-bottom)); }
+}
+
+/* MyBets — refinamento visual do hero */
+.hero-visual { opacity: .98; }
+.hero-content { filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); }
+.hero-actions .primary-button { box-shadow: 0 14px 34px rgba(245,197,66,.22); }
+
+@media (max-width: 650px) {
+  .hero { min-height: 700px; }
+  .hero-visual {
+    background-position: 72% 14%;
+    background-size: auto 72%;
+  }
+  .hero::after {
+    background:
+      linear-gradient(180deg, rgba(3,3,3,.08) 0%, rgba(3,3,3,.30) 24%, rgba(3,3,3,.78) 48%, rgba(3,3,3,.98) 66%, #030303 100%);
+  }
+  .hero-content { padding-bottom: 40px; }
+  .badge { box-shadow: inset 0 0 18px rgba(245,197,66,.06), 0 8px 28px rgba(0,0,0,.24); }
+  .hero-actions .primary-button,
+  .hero-actions .secondary-button { min-height: 55px; }
 }
