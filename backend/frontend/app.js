@@ -6,20 +6,12 @@ function sessaoJogadorAtiva() {
 
 function destinoJogo(gameId) {
   const id = String(gameId || "").trim();
-  if (!id || id === "roulette") return "/dashboard.html";
+  if (!id) return "/games.html";
   return `/games.html?game=${encodeURIComponent(id)}`;
 }
 
 function abrirJogoComLogin(gameId) {
-  const destino = destinoJogo(gameId);
-
-  if (sessaoJogadorAtiva()) {
-    window.location.href = destino;
-    return;
-  }
-
-  localStorage.setItem("jpbet_pending_game", destino);
-  abrirLogin();
+  window.location.href = "/games.html";
 }
 
 function abrirLogin() {
