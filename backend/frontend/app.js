@@ -11,7 +11,13 @@ function destinoJogo(gameId) {
 }
 
 function abrirJogoComLogin(gameId) {
-  window.location.href = "/games.html";
+  const destino = destinoJogo(gameId);
+  if (sessaoJogadorAtiva()) {
+    window.location.href = destino;
+    return;
+  }
+  localStorage.setItem("jpbet_pending_game", destino);
+  abrirLogin();
 }
 
 function abrirLogin() {
@@ -125,5 +131,5 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(accountButton){accountButton.textContent="MINHA CONTA";accountButton.onclick=()=>window.location.href="/dashboard.html";}
   if(platformButton){platformButton.innerHTML="IR PARA MINHA CONTA <span>→</span>";platformButton.onclick=()=>window.location.href="/dashboard.html";}
   if(registerButton){registerButton.textContent="CONTINUAR JOGANDO";registerButton.onclick=()=>window.location.href="/dashboard.html";}
-  if(rouletteButton){rouletteButton.onclick=()=>window.location.href="/dashboard.html";}
+  if(rouletteButton){rouletteButton.onclick=()=>window.location.href=destinoJogo("roulette");}
 });
