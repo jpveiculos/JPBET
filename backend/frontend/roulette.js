@@ -39,6 +39,7 @@ function configurarInterfaceRoleta(){
    document.body.classList.toggle('mybets-player-scroll',!roletaAtiva);
    if(pv)pv.style.overflowY=roletaAtiva?'hidden':'visible';
    if(rv)rv.style.overflowY=roletaAtiva?'hidden':'visible';
+   if(nav){nav.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));const alvo=roletaAtiva?nav.querySelector('[data-nav="roulette"]'):nav.querySelector('[data-nav="player"]');if(alvo)alvo.classList.add('active')}
  };
  removerRetorno();
  document.querySelectorAll('#bottomSpinButton').forEach(el=>el.remove());
@@ -48,42 +49,42 @@ body.mybets-player-scroll{overflow-y:auto!important;overflow-x:hidden!important;
 body.mybets-player-scroll #playerView{height:auto!important;min-height:calc(100vh - 66px)!important;overflow:visible!important;padding-bottom:90px!important}
 body.mybets-roulette-lock{overflow:hidden!important;height:100%!important}
 body.mybets-roulette-lock #rouletteView{height:calc(100vh - 66px)!important;overflow:hidden!important}
-body.mybets-roulette-lock #rouletteView .page{height:calc(100vh - 66px)!important;min-height:calc(100vh - 66px)!important;overflow:hidden!important}
+body.mybets-roulette-lock #rouletteView .page{height:calc(100vh - 66px)!important;min-height:calc(100vh - 66px)!important;overflow:hidden!important;padding-bottom:92px!important}
 .back-player{display:none!important}
 .header .logo{position:relative!important;padding-bottom:8px!important;line-height:1!important;color:inherit!important;text-decoration:none!important;display:inline-block!important;font-weight:950!important;letter-spacing:-2.2px!important;text-shadow:0 0 .2px currentColor!important}
 .header .logo b{font-weight:950!important}
 .header .logo:after{content:"";position:absolute;left:2px;right:-3px;bottom:0;height:7px;border-bottom:4px solid #f6bd24;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(246,189,36,.35));pointer-events:none}
-.roulette-area{width:min(370px,calc(100vw - 24px))!important;margin:8px auto 4px!important}
+.roulette-area{width:min(360px,calc(100vw - 28px))!important;margin:6px auto 2px!important}
 .roulette-center-cover{width:42%!important;background:radial-gradient(circle at 38% 30%,#24211b 0%,#090909 58%,#020202 100%)!important;border:3px solid #d7a72b!important;box-shadow:0 0 0 2px #5a3b0b!important}
 .roulette-center-button{width:30%!important;min-width:92px!important;max-width:124px!important;height:30%!important;min-height:92px!important;max-height:124px!important;border:3px solid #f5c83f!important;border-radius:50%!important;background:radial-gradient(circle at 38% 22%,#5a4720 0%,#1b160c 42%,#030303 78%)!important;box-shadow:0 0 0 2px #4b330a,0 0 20px rgba(255,194,45,.42),inset 0 3px 10px rgba(255,231,130,.28),inset 0 -12px 20px rgba(0,0,0,.8)!important;color:#ffd83d!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;cursor:pointer!important}
 .roulette-center-button:before{content:"MyBets"!important;color:#fff!important;font-size:clamp(16px,4.3vw,23px)!important;font-weight:900!important;font-style:italic!important;line-height:1!important;margin:0!important;padding:0 0 6px!important;border-bottom:3px solid #ffd23d!important;border-radius:0 0 65% 55%!important;transform:skewX(-10deg) rotate(-2deg)!important;text-shadow:0 1px 2px #000,0 0 7px rgba(255,210,60,.22)!important}
 .roulette-center-button:after{content:"GIRAR"!important;color:#ffd83d!important;font-size:clamp(26px,7vw,38px)!important;font-weight:950!important;letter-spacing:.6px!important;line-height:1!important;text-shadow:0 2px 3px #000,0 0 10px rgba(255,204,45,.28)!important}
-.bet-title{font-size:15px!important;margin-bottom:5px!important}
-.roulette-bet{gap:8px!important}
-.roulette-bet>button{width:50px!important;height:50px!important;border-radius:13px!important;font-size:27px!important}
-.roulette-bet-field input{height:50px!important;border-radius:13px!important;padding:0 15px!important;font-size:24px!important}
-.quick-bets{gap:5px!important;margin-top:5px!important}
-.quick-bets button{height:43px!important;border-radius:11px!important;font-size:16px!important;border-width:2px!important}
-.roulette-result{font-size:17px!important;min-height:20px!important;margin:2px 0 3px!important;top:0!important}
-.rouletteView{padding-bottom:95px!important}
-#rouletteView .page{padding-bottom:125px!important;min-height:calc(100vh - 66px + 80px)!important}
-#rouletteView .quick-bets{margin-bottom:18px!important}
+.bet-title{font-size:15px!important;margin-bottom:4px!important}
+.roulette-bet{gap:7px!important}
+.roulette-bet>button{width:48px!important;height:48px!important;border-radius:13px!important;font-size:27px!important}
+.roulette-bet-field input{height:48px!important;border-radius:13px!important;padding:0 15px!important;font-size:24px!important}
+.quick-bets{gap:5px!important;margin-top:4px!important;margin-bottom:10px!important}
+.quick-bets button{height:39px!important;border-radius:11px!important;font-size:16px!important;border-width:2px!important}
+.roulette-result{font-size:17px!important;min-height:18px!important;margin:1px 0 2px!important;top:0!important}
+.rouletteView{padding-bottom:70px!important}
+#rouletteView .page{padding-bottom:92px!important;min-height:calc(100vh - 66px)!important}
 `;
 if(!document.getElementById('mybets-roulette-modern'))document.head.appendChild(style);
  if(nav){
    nav.innerHTML='<button class="nav-item" data-nav="home"><span>⌂</span>Início</button><button class="nav-item" data-nav="roulette"><span>◉</span>Roleta</button><button class="nav-item" data-nav="player"><span>👤</span>Área do jogador</button><button class="nav-item" data-nav="games"><span>⌁</span>Jogos</button>';
    nav.style.gridTemplateColumns='repeat(4,1fr)';
    const items={home:nav.querySelector('[data-nav="home"]'),roulette:nav.querySelector('[data-nav="roulette"]'),player:nav.querySelector('[data-nav="player"]'),games:nav.querySelector('[data-nav="games"]')};
-   const syncActive=()=>{const rv=$('rouletteView');const rouletteVisible=rv&&getComputedStyle(rv).display!=='none';Object.values(items).forEach(i=>i.classList.remove('active'));(rouletteVisible?items.roulette:items.player).classList.add('active');sincronizarRolagem()};
+   const syncActive=()=>sincronizarRolagem();
    items.home.onclick=()=>{location.href='/'};
-   items.roulette.onclick=()=>{if(typeof openRoulette==='function')openRoulette();setTimeout(syncActive,0)};
-   items.player.onclick=()=>{if(typeof closeRoulette==='function')closeRoulette();setTimeout(syncActive,0)};
+   items.roulette.onclick=()=>{if(typeof openRoulette==='function')openRoulette();setTimeout(syncActive,0);setTimeout(syncActive,80)};
+   items.player.onclick=()=>{if(typeof closeRoulette==='function')closeRoulette();setTimeout(syncActive,0);setTimeout(syncActive,80)};
    items.games.onclick=()=>{location.href='/games.html'};
    const logo=document.querySelector('.header .logo');
    if(logo){const link=document.createElement('a');link.href='/';link.className='logo';link.setAttribute('aria-label','Página principal');link.innerHTML=logo.innerHTML;link.style.color='inherit';link.style.textDecoration='none';link.style.display='inline-block';logo.replaceWith(link)}
    syncActive();
    const rv=document.getElementById('rouletteView');
-   if(rv&&window.MutationObserver){new MutationObserver(()=>setTimeout(sincronizarRolagem,0)).observe(rv,{attributes:true,attributeFilter:['style','class']})}
+   if(window.MutationObserver){new MutationObserver(()=>setTimeout(sincronizarRolagem,0)).observe(document.body,{attributes:true,attributeFilter:['style','class'],subtree:true});}
+   document.addEventListener('click',e=>{if(e.target.closest('.player-game button')){setTimeout(sincronizarRolagem,0);setTimeout(sincronizarRolagem,100)}});
  }
  removerRetorno();
  sincronizarRolagem();
