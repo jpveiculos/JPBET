@@ -28,5 +28,25 @@ async function spinRoulette(){
  try{const r=await fetch(`${API}/roulette/spin`,{method:'POST',headers:headers(),body:JSON.stringify({userId:user.id,betAmount:bet,betType:'roulette',rouletteId:'sorte'})});const d=await r.json();if(!r.ok)throw Error(d.message||'Não foi possível realizar a rodada.');const spin=d.spin||d.result||d;if(!Number.isInteger(Number(spin.index))||Number(spin.index)<0||Number(spin.index)>=16)throw Error('Resultado inválido.');const visualByIndex={0:-14,1:0,3:14,2:45,4:76,5:90,7:104,6:135,8:166,9:180,11:194,10:225,12:256,13:270,15:284,14:315};const idx=Number(spin.index),center=visualByIndex[idx],target=((360-center-(rotation%360))+360)%360,turns=7+Math.floor(Math.random()*2),dest=rotation+turns*360+target,dur=Math.max(1800,Number(settings.roulette_animation_ms)||4800),start=performance.now(),from=rotation;await new Promise(resolve=>{function frame(now){const p=Math.min(1,(now-start)/dur),e=1-Math.pow(1-p,3),rr=from+(dest-from)*e;$('wheel').style.transform=`rotate(${rr}deg)`;updatePrizeOrientation(rr);if(p<1)return requestAnimationFrame(frame);rotation=dest;$('wheel').style.transform=`rotate(${dest}deg)`;updatePrizeOrientation(dest);resolve()}requestAnimationFrame(frame)});await loadAccount();if(Number(spin.prize)>0)toast(`Você ganhou ${money(spin.prize)}!`,'win');else toast(`Você perdeu ${money(bet)}!`,'loss')}catch(e){toast(e.message,'error')}finally{spinning=false;$('spinButton').disabled=false;$('bottomSpinButton').disabled=false;$('spinButton').style.opacity='1'}
 }
 
-/* Re-render after this module is loaded so the dashboard uses this visual version. */
-if(typeof renderWheel==='function')renderWheel();
+/* Navegação única do dashboard: Início, Roleta, Área do jogador e Jogos. */
+(function configurarNavegacao(){
+ const nav=document.querySelector('.bottom-nav');
+ if(!nav)return;
+ nav.innerHTML='<button class="nav-item" data-nav="home"><span>⌂</span>Início</button><button class="nav-item" data-nav="roulette"><span>◉</span>Roleta</button><button class="nav-item" data-nav="player"><span>👤</span>Área do jogador</button><button class="nav-item" data-nav="games"><span>⌁</span>Jogos</button>';
+ const items={home:nav.querySelector('[data-nav="home"]'),roulette:nav.querySelector('[data-nav="roulette"]'),player:nav.querySelector('[data-nav="player"]'),games:nav.querySelector('[data-nav="games"]')};
+ const syncActive=()=>{const rouletteVisible=getComputedStyle($('rouletteView')).display!=='none';Object.values(items).forEach(i=>i.classList.remove('active'));(rouletteVisible?items.roulette:items.player).classList.add('active')};
+ items.home.onclick=()=>{location.href='/'};
+ items.roulette.onclick=()=>{if(typeof openRoulette==='function')openRoulette();setTimeout(syncActive,0)};
+ items.player.onclick=()=>{if(typeof closeRoulette==='function')closeRoulette();setTimeout(syncActive,0)};
+ items.games.onclick=()=>{location.href='/games.html'};
+ const logo=document.querySelector('.header .logo');
+ if(logo){
+   const link=document.createElement('a');link.href='/';link.className='logo';link.setAttribute('aria-label','Página principal');link.innerHTML=logo.innerHTML;logo.replaceWith(link);
+ }
+ const back=document.querySelector('.back-player');if(back)back.remove();
+ const playerView=$('playerView'),rouletteView=$('rouletteView');
+ const observer=new MutationObserver(syncActive);
+ if(playerView)observer.observe(playerView,{attributes:true,attributeFilter:['style']});
+ if(rouletteView)observer.observe(rouletteView,{attributes:true,attributeFilter:['style']});
+ syncActive();
+})();
