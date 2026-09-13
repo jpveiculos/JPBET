@@ -1,22 +1,5 @@
 const API_URL = "/api";
 
-// A navigation.js é necessária na área do jogador, mas não deve aplicar o layout da roleta na home.
-(function protegerPaginaInicial(){
-  const home = location.pathname === "/" || location.pathname === "/index.html";
-  if (!home) return;
-  const limpar = () => {
-    document.body?.classList.remove("mybets-roulette-open");
-    document.getElementById("mybetsBottomNav")?.remove();
-    document.getElementById("mybets-roulette-layout")?.remove();
-    const modal = document.getElementById("rouletteModal");
-    if (modal) modal.style.display = "";
-  };
-  const observer = new MutationObserver(limpar);
-  if (document.documentElement) observer.observe(document.documentElement, {subtree:true,childList:true,attributes:true,attributeFilter:["class","style"]});
-  setTimeout(() => observer.disconnect(), 5000);
-  limpar();
-})();
-
 function sessaoJogadorAtiva(){return !!localStorage.getItem("jpbet_user");}
 function destinoJogo(gameId){const id=String(gameId||"").trim();return id?`/games.html?game=${encodeURIComponent(id)}`:"/games.html";}
 function abrirJogoComLogin(gameId){const destino=destinoJogo(gameId);if(sessaoJogadorAtiva()){window.location.href=destino;return;}localStorage.setItem("jpbet_pending_game",destino);abrirLogin();}
