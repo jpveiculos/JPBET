@@ -6,7 +6,7 @@ function abrirLogin() {
   const user = localStorage.getItem("jpbet_user");
   const token = localStorage.getItem("jpbet_token");
   if (user && token) {
-    window.location.href = "/player.html";
+    window.location.href = "/dashboard.html";
     return;
   }
 
@@ -59,7 +59,7 @@ async function entrar() {
     if (data.user) localStorage.setItem("jpbet_user",JSON.stringify(data.user));
     if (data.token) localStorage.setItem("jpbet_token",data.token);
     if (message) message.textContent = "Login realizado com sucesso!";
-    setTimeout(()=>{window.location.href="/player.html";},500);
+    setTimeout(()=>{window.location.href="/dashboard.html";},500);
   } catch(error) { console.error(error); if(message) message.textContent=error.message||"Não foi possível entrar."; }
 }
 
@@ -80,15 +80,13 @@ async function cadastrar() {
     if(data.user)localStorage.setItem("jpbet_user",JSON.stringify(data.user));
     if(data.token)localStorage.setItem("jpbet_token",data.token);
     if(message)message.textContent="Conta criada com sucesso! Entrando...";
-    setTimeout(()=>{window.location.href="/player.html";},700);
+    setTimeout(()=>{window.location.href="/dashboard.html";},700);
   }catch(error){console.error(error);if(message)message.textContent=error.message||"Não foi possível criar a conta.";}
 }
 
 document.addEventListener("click",event=>{const modal=document.getElementById("loginModal");if(modal&&event.target===modal)fecharLogin();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")fecharLogin();if(event.key!=="Enter")return;const loginForm=document.getElementById("loginForm"),registerForm=document.getElementById("registerForm"),activeElement=document.activeElement;if(loginForm&&loginForm.style.display!=="none"&&(activeElement?.id==="username"||activeElement?.id==="password")){event.preventDefault();entrar();return;}if(registerForm&&registerForm.style.display!=="none"&&(activeElement?.id==="registerUsername"||activeElement?.id==="registerPassword"||activeElement?.id==="registerPasswordConfirm")){event.preventDefault();cadastrar();}});
 
-// Enquanto o jogador estiver navegando pelo site, a sessão permanece disponível.
-// Ao voltar para a página inicial, mostramos acesso direto à conta em vez de exigir novo login.
 document.addEventListener("DOMContentLoaded",()=>{
   const user=localStorage.getItem("jpbet_user");
   const token=localStorage.getItem("jpbet_token");
@@ -97,8 +95,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   const platformButton=document.getElementById("heroPlatformButton");
   const registerButton=document.getElementById("heroRegisterButton");
   const rouletteButton=document.getElementById("rouletteHomeButton");
-  if(accountButton){accountButton.textContent="MINHA CONTA";accountButton.onclick=()=>window.location.href="/player.html";}
-  if(platformButton){platformButton.innerHTML="IR PARA MINHA CONTA <span>→</span>";platformButton.onclick=()=>window.location.href="/player.html";}
-  if(registerButton){registerButton.textContent="CONTINUAR JOGANDO";registerButton.onclick=()=>window.location.href="/roulette.html";}
-  if(rouletteButton){rouletteButton.onclick=()=>window.location.href="/roulette.html";}
+  if(accountButton){accountButton.textContent="MINHA CONTA";accountButton.onclick=()=>window.location.href="/dashboard.html";}
+  if(platformButton){platformButton.innerHTML="IR PARA MINHA CONTA <span>→</span>";platformButton.onclick=()=>window.location.href="/dashboard.html";}
+  if(registerButton){registerButton.textContent="CONTINUAR JOGANDO";registerButton.onclick=()=>window.location.href="/dashboard.html";}
+  if(rouletteButton){rouletteButton.onclick=()=>window.location.href="/dashboard.html";}
 });
