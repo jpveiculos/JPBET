@@ -1,6 +1,15 @@
 const API_URL = "/api";
 
 function abrirLogin() {
+  // Se já existe uma sessão salva, nunca pedir login novamente.
+  // Qualquer botão da página inicial que chamaria o login leva direto à área do jogador.
+  const user = localStorage.getItem("jpbet_user");
+  const token = localStorage.getItem("jpbet_token");
+  if (user && token) {
+    window.location.href = "/player.html";
+    return;
+  }
+
   const modal = document.getElementById("loginModal");
   if (!modal) return;
   modal.classList.add("show");
@@ -87,7 +96,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   const accountButton=document.getElementById("homeAccountButton");
   const platformButton=document.getElementById("heroPlatformButton");
   const registerButton=document.getElementById("heroRegisterButton");
+  const rouletteButton=document.getElementById("rouletteHomeButton");
   if(accountButton){accountButton.textContent="MINHA CONTA";accountButton.onclick=()=>window.location.href="/player.html";}
   if(platformButton){platformButton.innerHTML="IR PARA MINHA CONTA <span>→</span>";platformButton.onclick=()=>window.location.href="/player.html";}
   if(registerButton){registerButton.textContent="CONTINUAR JOGANDO";registerButton.onclick=()=>window.location.href="/roulette.html";}
+  if(rouletteButton){rouletteButton.onclick=()=>window.location.href="/roulette.html";}
 });
