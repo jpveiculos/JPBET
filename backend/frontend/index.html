@@ -26,7 +26,7 @@
       <a href="termos-uso.html">Termos</a>
     </nav>
 
-    <button class="login-button" onclick="abrirLogin()">Entrar</button>
+    <button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Entrar</button>
   </header>
 
   <main>
@@ -45,8 +45,8 @@
         </p>
 
         <div class="hero-actions">
-          <button class="primary-button" onclick="abrirLogin()">ENTRAR NA PLATAFORMA <span>→</span></button>
-          <button class="secondary-button" onclick="abrirLogin(); mostrarCadastro()">CRIAR CONTA</button>
+          <button class="primary-button" id="heroPlatformButton" onclick="abrirLogin()">ENTRAR NA PLATAFORMA <span>→</span></button>
+          <button class="secondary-button" id="heroRegisterButton" onclick="abrirLogin(); mostrarCadastro()">CRIAR CONTA</button>
         </div>
 
         <div class="hero-points" aria-label="Destaques da plataforma">
@@ -74,7 +74,7 @@
             <h3>Roleta MyBets</h3>
             <p>Roleta própria com multiplicadores, resultado visual e giro grátis automático quando o símbolo 🍀 for sorteado.</p>
           </div>
-          <button class="card-button" onclick="abrirLogin()">JOGAR →</button>
+          <button class="card-button" id="rouletteHomeButton" onclick="abrirLogin()">JOGAR →</button>
         </article>
 
         <article class="feature-card">
