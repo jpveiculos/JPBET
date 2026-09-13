@@ -1,11 +1,12 @@
 const API_URL = "/api";
 
+function sessaoJogadorAtiva() {
+  return !!localStorage.getItem("jpbet_user");
+}
+
 function abrirLogin() {
-  // Se já existe uma sessão salva, nunca pedir login novamente.
-  // Qualquer botão da página inicial que chamaria o login leva direto à área do jogador.
-  const user = localStorage.getItem("jpbet_user");
-  const token = localStorage.getItem("jpbet_token");
-  if (user && token) {
+  // A conta permanece identificada no navegador enquanto o jogador navega pelo site.
+  if (sessaoJogadorAtiva()) {
     window.location.href = "/dashboard.html";
     return;
   }
@@ -89,12 +90,13 @@ document.addEventListener("keydown",event=>{if(event.key==="Escape")fecharLogin(
 
 document.addEventListener("DOMContentLoaded",()=>{
   const user=localStorage.getItem("jpbet_user");
-  const token=localStorage.getItem("jpbet_token");
-  if(!user||!token)return;
+  if(!user)return;
   const accountButton=document.getElementById("homeAccountButton");
   const platformButton=document.getElementById("heroPlatformButton");
   const registerButton=document.getElementById("heroRegisterButton");
   const rouletteButton=document.getElementById("rouletteHomeButton");
+  const brand=document.querySelector(".brand");
+  if(brand){brand.setAttribute("href","/dashboard.html");brand.onclick=()=>{window.location.href="/dashboard.html";return false;};}
   if(accountButton){accountButton.textContent="MINHA CONTA";accountButton.onclick=()=>window.location.href="/dashboard.html";}
   if(platformButton){platformButton.innerHTML="IR PARA MINHA CONTA <span>→</span>";platformButton.onclick=()=>window.location.href="/dashboard.html";}
   if(registerButton){registerButton.textContent="CONTINUAR JOGANDO";registerButton.onclick=()=>window.location.href="/dashboard.html";}
