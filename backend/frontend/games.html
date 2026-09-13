@@ -12,12 +12,6 @@
     .custom-roulette-machine{position:relative}
     .custom-roulette-machine .roulette-pointer{position:absolute;z-index:20;top:-8px;left:50%;width:0;height:0;transform:translateX(-50%);border-left:11px solid transparent;border-right:11px solid transparent;border-top:28px solid #f4c542;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55));pointer-events:none}
     .custom-roulette-machine .roulette-pointer::after{content:"";position:absolute;left:-5px;top:-25px;width:10px;height:10px;border-radius:50%;background:#fff4a8;box-shadow:0 0 8px rgba(255,216,77,.85)}
-
-    /* =====================================================
-       FORTUNE 7 — ARTE ESTÁTICA + CONTROLES REAIS
-       A imagem fornece somente a máquina/moldura.
-       Rolos, aposta, GIRAR, saldo e resultado continuam no JS.
-    ===================================================== */
     .slot-panel.fortune7-visual .slot-marquee{display:none!important}
     .slot-panel.fortune7-visual .slot-cabinet{position:relative;width:100%;aspect-ratio:3 / 2;min-height:0;padding:0!important;overflow:visible;border:0!important;border-radius:0!important;background:#000 url("/assets/fortune7-machine.PNG") center top / 100% 100% no-repeat;box-shadow:none!important}
     .slot-panel.fortune7-visual .slot-glow{display:none!important}
@@ -82,9 +76,21 @@
     </section>
   </main>
   <div class="toast" id="toast"></div>
-  <script src="/games-auth.js?v=20260913-01"></script>
   <script src="/games.js?v=20260912-01"></script>
   <script>
+    /* O lobby é público. O login só é exigido ao clicar em JOGAR. */
+    document.addEventListener("click", function(event){
+      const button = event.target.closest(".lobby-play[data-game]");
+      if (!button) return;
+      if (localStorage.getItem("jpbet_user")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const gameId = String(button.dataset.game || "").trim();
+      if (!gameId) return;
+      localStorage.setItem("jpbet_pending_game", `/games.html?game=${encodeURIComponent(gameId)}`);
+      window.location.href = `/?login=1&game=${encodeURIComponent(gameId)}`;
+    }, true);
+
     (function(){
       const originalOpen = window.abrirInterfaceSlot;
       if (typeof originalOpen === "function") {
@@ -103,8 +109,8 @@
             const pool = [];
             for(let k=0;k<18+i*3;k++) pool.push(symbols[Math.floor(Math.random()*symbols.length)]);
             values.forEach(v => pool.push({v}));
-            strip.innerHTML = pool.map(s => `<div class="symbol ${s.cls || ""}">${s.v}</div>`).join("");
             const reel = strip.parentElement;
+            strip.innerHTML = pool.map(s => `<div class="symbol ${s.cls || ""}">${s.v}</div>`).join("");
             const h = Math.max(1, reel.clientHeight / 3);
             const targetIndex = pool.length - 1;
             strip.style.transition = "none";
