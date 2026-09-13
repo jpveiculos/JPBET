@@ -6,20 +6,44 @@
   <meta name="theme-color" content="#08090d">
   <title>MyBets — Jogos</title>
   <link rel="stylesheet" href="/games.css?v=20260912-01">
-  <link rel="stylesheet" href="/fortune7.css?v=20260913-01">
   <style>
     .game-brand{position:relative;display:inline-block;padding-bottom:8px;line-height:1;letter-spacing:-1.5px;font-style:italic;font-weight:1000}
     .game-brand::after{content:"";position:absolute;left:1px;right:-4px;bottom:0;height:7px;border-bottom:3px solid #f5c542;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35))}
-    .custom-roulette-machine { position: relative; }
-    .custom-roulette-machine .roulette-pointer {
-      position: absolute; z-index: 20; top: -8px; left: 50%; width: 0; height: 0;
-      transform: translateX(-50%); border-left: 11px solid transparent;
-      border-right: 11px solid transparent; border-top: 28px solid #f4c542;
-      filter: drop-shadow(0 3px 5px rgba(0,0,0,.55)); pointer-events: none;
-    }
-    .custom-roulette-machine .roulette-pointer::after {
-      content: ""; position: absolute; left: -5px; top: -25px; width: 10px; height: 10px;
-      border-radius: 50%; background: #fff4a8; box-shadow: 0 0 8px rgba(255,216,77,.85);
+    .custom-roulette-machine{position:relative}
+    .custom-roulette-machine .roulette-pointer{position:absolute;z-index:20;top:-8px;left:50%;width:0;height:0;transform:translateX(-50%);border-left:11px solid transparent;border-right:11px solid transparent;border-top:28px solid #f4c542;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55));pointer-events:none}
+    .custom-roulette-machine .roulette-pointer::after{content:"";position:absolute;left:-5px;top:-25px;width:10px;height:10px;border-radius:50%;background:#fff4a8;box-shadow:0 0 8px rgba(255,216,77,.85)}
+
+    /* =====================================================
+       FORTUNE 7 — ARTE ESTÁTICA + CONTROLES REAIS
+       A imagem fornece somente a máquina/moldura.
+       Rolos, aposta, GIRAR, saldo e resultado continuam no JS.
+    ===================================================== */
+    .slot-panel.fortune7-visual .slot-marquee{display:none!important}
+    .slot-panel.fortune7-visual .slot-cabinet{position:relative;width:100%;aspect-ratio:3 / 2;min-height:0;padding:0!important;overflow:visible;border:0!important;border-radius:0!important;background:#000 url("/assets/fortune7-machine.PNG") center top / 100% 100% no-repeat;box-shadow:none!important}
+    .slot-panel.fortune7-visual .slot-glow{display:none!important}
+    .slot-panel.fortune7-visual .slot-screen{position:absolute;z-index:4;left:19.3%;top:37.2%;width:58.2%;height:45.9%;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:hidden}
+    .slot-panel.fortune7-visual .reels-window{width:100%;height:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:2.2%;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;overflow:hidden}
+    .slot-panel.fortune7-visual .reel{height:100%;min-width:0;border-radius:8px;background:transparent!important;box-shadow:none!important;overflow:hidden}
+    .slot-panel.fortune7-visual .reel-strip{width:100%;transform:translateY(0)}
+    .slot-panel.fortune7-visual .symbol{height:33.333333%;min-height:1px;flex:0 0 33.333333%;display:flex;align-items:center;justify-content:center;font-size:clamp(28px,5.2vw,64px);line-height:1;color:#15171b;text-shadow:0 2px 2px rgba(255,255,255,.8)}
+    .slot-panel.fortune7-visual .symbol.seven{color:#c91835;font-family:Georgia,serif;font-size:clamp(42px,6.7vw,82px);text-shadow:0 2px 0 #fff,0 4px 0 #771020}
+    .slot-panel.fortune7-visual .payline,.slot-panel.fortune7-visual .screen-caption{display:none!important}
+    .slot-panel.fortune7-visual .slot-controls{position:absolute;z-index:8;left:14%;right:14%;bottom:5.1%;padding:0!important;display:grid;grid-template-columns:minmax(0,48%) minmax(0,46%);grid-template-rows:auto auto;column-gap:6%;align-items:center}
+    .slot-panel.fortune7-visual .bet-row{grid-column:1;grid-row:1;grid-template-columns:clamp(34px,4vw,58px) minmax(0,1fr) clamp(34px,4vw,58px);gap:5px}
+    .slot-panel.fortune7-visual .bet-adjust,.slot-panel.fortune7-visual .bet-value{height:clamp(38px,5vw,58px);border-radius:10px}
+    .slot-panel.fortune7-visual .bet-adjust{font-size:clamp(20px,3vw,30px);background:rgba(7,8,10,.94);border-color:rgba(245,197,66,.6)}
+    .slot-panel.fortune7-visual .bet-value{background:rgba(5,6,8,.94);border-color:rgba(245,197,66,.55)}
+    .slot-panel.fortune7-visual .bet-value small{font-size:clamp(6px,1.1vw,9px)}
+    .slot-panel.fortune7-visual .bet-value strong{font-size:clamp(12px,2.1vw,21px)}
+    .slot-panel.fortune7-visual .spin-button{grid-column:2;grid-row:1;width:100%;min-height:clamp(42px,6vw,66px);margin:0!important;border:2px solid #ffd85d;border-radius:16px;background:linear-gradient(145deg,#ff4b43,#d51622 60%,#8c0710);color:#fff6d0;font-size:clamp(18px,3.2vw,30px);font-weight:1000;text-shadow:0 2px 4px rgba(0,0,0,.55);box-shadow:0 7px 18px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.7),0 0 14px rgba(255,55,35,.35)}
+    .slot-panel.fortune7-visual .quick-bets{grid-column:1 / -1;grid-row:2;margin-top:6px!important;gap:5px}
+    .slot-panel.fortune7-visual .quick-bets button{min-width:0;padding:5px 2px;border-radius:7px;font-size:clamp(9px,1.8vw,14px);background:rgba(5,6,8,.94);border-color:rgba(245,197,66,.45);color:#fff}
+    .slot-panel.fortune7-visual .slot-status{display:none!important}
+    .slot-panel.fortune7-visual .slot-paytable{margin-top:14px}
+    @media(max-width:650px){
+      .slot-panel.fortune7-visual .slot-screen{left:19.1%;top:37.1%;width:58.4%;height:46%}
+      .slot-panel.fortune7-visual .slot-controls{left:13.5%;right:13.5%;bottom:5.3%;column-gap:5%;grid-template-columns:minmax(0,47%) minmax(0,48%)}
+      .slot-panel.fortune7-visual .quick-bets button{padding:4px 1px}
     }
   </style>
 </head>
@@ -59,7 +83,41 @@
   </main>
   <div class="toast" id="toast"></div>
   <script src="/games.js?v=20260912-01"></script>
-  <script src="/fortune7-machine.js?v=20260913-01"></script>
+  <script>
+    (function(){
+      const originalOpen = window.abrirInterfaceSlot;
+      if (typeof originalOpen === "function") {
+        window.abrirInterfaceSlot = function(config){
+          originalOpen(config);
+          const panel = document.getElementById("slotPanel");
+          if (panel) panel.classList.toggle("fortune7-visual", String(config?.id || "").toLowerCase() === "fortune7");
+        };
+      }
+
+      window.animarResultadoSlot = function(strips, result){
+        return new Promise(resolve => {
+          const values = result.map(normalizarSymbol);
+          strips.forEach((strip,i) => {
+            const symbols = SLOT_SYMBOLS[configuracaoAtual?.id] || SLOT_SYMBOLS.fortune7;
+            const pool = [];
+            for(let k=0;k<18+i*3;k++) pool.push(symbols[Math.floor(Math.random()*symbols.length)]);
+            values.forEach(v => pool.push({v}));
+            strip.innerHTML = pool.map(s => `<div class="symbol ${s.cls || ""}">${s.v}</div>`).join("");
+            const reel = strip.parentElement;
+            const h = Math.max(1, reel.clientHeight / 3);
+            const targetIndex = pool.length - 1;
+            strip.style.transition = "none";
+            strip.style.transform = "translateY(0)";
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              strip.style.transition = `transform ${1500+i*230}ms cubic-bezier(.12,.72,.12,1)`;
+              strip.style.transform = `translateY(-${targetIndex*h}px)`;
+            }));
+          });
+          setTimeout(resolve,2200);
+        });
+      };
+    })();
+  </script>
   <script src="/roulette16.js?v=20260912-01"></script>
   <script src="/navigation.js?v=20260912-01"></script>
 </body>
