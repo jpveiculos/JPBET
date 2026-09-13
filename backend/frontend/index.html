@@ -35,14 +35,20 @@
     .carousel-arrow.left{left:-18px}.carousel-arrow.right{right:-18px}
     .games-note{margin-top:14px;color:rgba(255,255,255,.34);font-size:11px}
     @media(max-width:650px){
-      .hero{min-height:280px!important;height:280px!important}
+      .hero{min-height:230px!important;height:230px!important}
       .hero-visual{background-size:contain!important;background-position:center center!important;filter:saturate(1.14) contrast(1.03) brightness(1.24)!important}
       .hero::after{background:linear-gradient(90deg,rgba(3,3,3,.10) 0%,rgba(3,3,3,.02) 55%,rgba(3,3,3,.08) 100%),linear-gradient(0deg,rgba(3,3,3,.14) 0%,transparent 62%,rgba(0,0,0,.02) 100%)!important}
-      .games-showcase{padding:16px 0 52px}
-      .games-showcase-head{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px}
-      .games-showcase-head h2{font-size:34px}
-      .games-showcase-head p{font-size:13px}
-      .home-game-card{flex-basis:78vw;min-height:285px}
+      .games-showcase{padding:12px 0 24px}
+      .games-showcase-head{align-items:flex-start;flex-direction:row;gap:8px;margin-bottom:10px}
+      .games-showcase-head h2{font-size:25px;letter-spacing:-1px}
+      .games-showcase-head p{display:none}
+      .home-game-card{flex:0 0 112px;min-height:126px;height:126px;padding:10px;border-radius:14px;justify-content:flex-start;gap:4px}
+      .home-game-icon{height:58px;min-height:58px;font-size:38px;border-radius:10px}
+      .home-game-kicker{margin-top:4px;font-size:7px;letter-spacing:1px}
+      .home-game-card h3{margin-top:3px;font-size:14px;line-height:1.05}
+      .home-game-card p,.home-game-card button{display:none}
+      .games-carousel{gap:8px;padding:2px 2px 6px}
+      .games-note{margin-top:5px;font-size:9px}
       .carousel-arrow{display:none}
     }
   </style>
