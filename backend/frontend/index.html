@@ -11,8 +11,11 @@
     .brand-main,.footer-brand,.modal-brand{position:relative;display:inline-block;padding-bottom:9px;line-height:1}
     .brand-main::after,.footer-brand::after,.modal-brand::after{content:"";position:absolute;left:2px;right:-5px;bottom:0;height:7px;border-bottom:3px solid #f5c542;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35))}
 
-    .hero{min-height:clamp(430px,60vh,590px);align-items:flex-end}
+    .hero{min-height:420px!important;height:420px!important;align-items:flex-end}
     .hero-content{display:none!important}
+    .hero-visual{background-size:contain!important;background-position:center center!important;filter:saturate(1.12) contrast(1.04) brightness(1.18)!important}
+    .hero::after{background:linear-gradient(90deg,rgba(3,3,3,.18) 0%,rgba(3,3,3,.04) 50%,rgba(3,3,3,.12) 100%),linear-gradient(0deg,rgba(3,3,3,.22) 0%,transparent 55%,rgba(0,0,0,.04) 100%)!important}
+    .hero .hero-glow{opacity:.08!important}
 
     .games-showcase{width:min(1180px,92vw);margin:0 auto;padding:18px 0 64px}
     .games-showcase-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}
@@ -32,7 +35,9 @@
     .carousel-arrow.left{left:-18px}.carousel-arrow.right{right:-18px}
     .games-note{margin-top:14px;color:rgba(255,255,255,.34);font-size:11px}
     @media(max-width:650px){
-      .hero{min-height:clamp(400px,55vh,520px)}
+      .hero{min-height:280px!important;height:280px!important}
+      .hero-visual{background-size:contain!important;background-position:center center!important;filter:saturate(1.14) contrast(1.03) brightness(1.24)!important}
+      .hero::after{background:linear-gradient(90deg,rgba(3,3,3,.10) 0%,rgba(3,3,3,.02) 55%,rgba(3,3,3,.08) 100%),linear-gradient(0deg,rgba(3,3,3,.14) 0%,transparent 62%,rgba(0,0,0,.02) 100%)!important}
       .games-showcase{padding:16px 0 52px}
       .games-showcase-head{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px}
       .games-showcase-head h2{font-size:34px}
@@ -42,160 +47,41 @@
     }
   </style>
 </head>
-
 <body>
   <header class="topbar">
-    <a class="brand" href="index.html" aria-label="MyBets início">
-      <span class="brand-main">My<span>Bets</span></span>
-    </a>
-
-    <nav class="main-nav" aria-label="Navegação principal">
-      <a href="#inicio" class="active">Início</a>
-      <a href="#jogos">Jogos</a>
-      <a href="termos-uso.html">Termos</a>
-    </nav>
-
+    <a class="brand" href="index.html" aria-label="MyBets início"><span class="brand-main">My<span>Bets</span></span></a>
+    <nav class="main-nav" aria-label="Navegação principal"><a href="#inicio" class="active">Início</a><a href="#jogos">Jogos</a><a href="termos-uso.html">Termos</a></nav>
     <button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Minha Conta</button>
   </header>
-
   <main>
     <section class="hero" id="inicio">
       <div class="hero-visual" aria-hidden="true"></div>
       <div class="hero-glow hero-glow-left" aria-hidden="true"></div>
       <div class="hero-glow hero-glow-right" aria-hidden="true"></div>
-
-      <div class="hero-content">
-        <div class="badge">MyBets • EXPERIÊNCIA PREMIUM</div>
-        <h1 aria-hidden="true">JOGUE COM<br><span>ESTILO.</span></h1>
-        <p class="hero-lead" aria-hidden="true">Roleta própria, máquinas e uma área do jogador simples para você acompanhar tudo em um só lugar.</p>
-        <div class="hero-actions" aria-hidden="true"></div>
-        <div class="hero-points" aria-hidden="true"></div>
-      </div>
+      <div class="hero-content"><div class="badge">MyBets • EXPERIÊNCIA PREMIUM</div><h1 aria-hidden="true">JOGUE COM<br><span>ESTILO.</span></h1><p class="hero-lead" aria-hidden="true">Roleta própria, máquinas e uma área do jogador simples para você acompanhar tudo em um só lugar.</p><div class="hero-actions" aria-hidden="true"></div><div class="hero-points" aria-hidden="true"></div></div>
     </section>
-
     <section class="games-showcase" id="jogos" aria-label="Jogos oferecidos">
-      <div class="games-showcase-head">
-        <div>
-          <span class="eyebrow">NOSSOS JOGOS</span>
-          <h2>Escolha seu jogo favorito</h2>
-        </div>
-        <p>Acesse diretamente as experiências disponíveis na plataforma: nossa roleta e nossas máquinas.</p>
-      </div>
-
+      <div class="games-showcase-head"><div><span class="eyebrow">NOSSOS JOGOS</span><h2>Escolha seu jogo favorito</h2></div><p>Acesse diretamente as experiências disponíveis na plataforma: nossa roleta e nossas máquinas.</p></div>
       <div class="games-carousel-wrap">
         <button class="carousel-arrow left" type="button" aria-label="Jogos anteriores" onclick="moverJogos(-1)">‹</button>
         <div class="games-carousel" id="homeGamesCarousel">
-          <article class="home-game-card">
-            <div>
-              <div class="home-game-icon">🎡</div>
-              <div class="home-game-kicker">JOGO PRINCIPAL</div>
-              <h3>Roleta MyBets</h3>
-              <p>Roleta própria com multiplicadores e giro visual.</p>
-            </div>
-            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
-          </article>
-
-          <article class="home-game-card">
-            <div>
-              <div class="home-game-icon">🎰</div>
-              <div class="home-game-kicker">MÁQUINA</div>
-              <h3>Fortune 7</h3>
-              <p>Máquina de símbolos clássicos com giros e prêmios.</p>
-            </div>
-            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
-          </article>
-
-          <article class="home-game-card">
-            <div>
-              <div class="home-game-icon">💎</div>
-              <div class="home-game-kicker">MÁQUINA</div>
-              <h3>Diamond Gold</h3>
-              <p>Máquina temática com diamantes, coroas e símbolos premium.</p>
-            </div>
-            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
-          </article>
-
-          <article class="home-game-card">
-            <div>
-              <div class="home-game-icon">👑</div>
-              <div class="home-game-kicker">MÁQUINA</div>
-              <h3>Royal Jackpot</h3>
-              <p>Máquina temática com símbolos reais e combinações especiais.</p>
-            </div>
-            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
-          </article>
-
-          <article class="home-game-card">
-            <div>
-              <div class="home-game-icon">🍀</div>
-              <div class="home-game-kicker">MÁQUINA</div>
-              <h3>Lucky 7</h3>
-              <p>Máquina de sorte com 7, trevos, frutas e símbolos clássicos.</p>
-            </div>
-            <button type="button" onclick="abrirLogin()">JOGAR AGORA →</button>
-          </article>
+          <article class="home-game-card"><div><div class="home-game-icon">🎡</div><div class="home-game-kicker">JOGO PRINCIPAL</div><h3>Roleta MyBets</h3><p>Roleta própria com multiplicadores e giro visual.</p></div><button type="button" onclick="abrirLogin()">JOGAR AGORA →</button></article>
+          <article class="home-game-card"><div><div class="home-game-icon">🎰</div><div class="home-game-kicker">MÁQUINA</div><h3>Fortune 7</h3><p>Máquina de símbolos clássicos com giros e prêmios.</p></div><button type="button" onclick="abrirLogin()">JOGAR AGORA →</button></article>
+          <article class="home-game-card"><div><div class="home-game-icon">💎</div><div class="home-game-kicker">MÁQUINA</div><h3>Diamond Gold</h3><p>Máquina temática com diamantes, coroas e símbolos premium.</p></div><button type="button" onclick="abrirLogin()">JOGAR AGORA →</button></article>
+          <article class="home-game-card"><div><div class="home-game-icon">👑</div><div class="home-game-kicker">MÁQUINA</div><h3>Royal Jackpot</h3><p>Máquina temática com símbolos reais e combinações especiais.</p></div><button type="button" onclick="abrirLogin()">JOGAR AGORA →</button></article>
+          <article class="home-game-card"><div><div class="home-game-icon">🍀</div><div class="home-game-kicker">MÁQUINA</div><h3>Lucky 7</h3><p>Máquina de sorte com 7, trevos, frutas e símbolos clássicos.</p></div><button type="button" onclick="abrirLogin()">JOGAR AGORA →</button></article>
         </div>
         <button class="carousel-arrow right" type="button" aria-label="Próximos jogos" onclick="moverJogos(1)">›</button>
       </div>
       <div class="games-note">Deslize para ver os jogos disponíveis.</div>
     </section>
   </main>
-
-  <div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <div class="modal-box">
-      <button class="close-button" onclick="fecharLogin()" aria-label="Fechar">×</button>
-
-      <div id="loginForm">
-        <div class="modal-brand">My<span>Bets</span></div>
-        <h2 id="loginTitle">Entrar</h2>
-        <p>Acesse sua conta MyBets.</p>
-
-        <input type="text" id="username" placeholder="Usuário" autocomplete="username">
-        <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
-
-        <button class="primary-button" onclick="entrar()">ENTRAR</button>
-        <p id="loginMessage" class="login-message"></p>
-
-        <button type="button" class="secondary-button modal-secondary" onclick="mostrarCadastro()">CRIAR CONTA</button>
-      </div>
-
-      <div id="registerForm" style="display: none;">
-        <div class="modal-brand">My<span>Bets</span></div>
-        <h2>Criar conta</h2>
-        <p>Crie sua conta MyBets.</p>
-
-        <input type="text" id="registerUsername" placeholder="Escolha um usuário" autocomplete="username">
-        <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
-        <input type="password" id="registerPasswordConfirm" placeholder="Confirme sua senha" autocomplete="new-password">
-
-        <button class="primary-button" onclick="cadastrar()">CRIAR CONTA</button>
-        <p id="registerMessage" class="login-message"></p>
-
-        <button type="button" class="secondary-button modal-secondary" onclick="mostrarLogin()">JÁ TENHO UMA CONTA</button>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    <div class="footer-brand">My<span>Bets</span></div>
-    <div class="footer-links">
-      <a href="termos-uso.html">Termos de Uso</a>
-      <span>•</span>
-      <a href="termos-uso.html">Jogo Responsável</a>
-      <span>•</span>
-      <a href="#inicio">Voltar ao topo</a>
-    </div>
-    <p>© 2026 MyBets — Todos os direitos reservados.</p>
-  </footer>
-
-  <script>
-    function moverJogos(direcao){
-      const el=document.getElementById('homeGamesCarousel');
-      if(!el)return;
-      el.scrollBy({left:direcao*Math.min(el.clientWidth*.82,320),behavior:'smooth'});
-    }
-  </script>
-  <script src="app.js"></script>
-  <script src="/navigation.js"></script>
+  <div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle"><div class="modal-box"><button class="close-button" onclick="fecharLogin()" aria-label="Fechar">×</button>
+    <div id="loginForm"><div class="modal-brand">My<span>Bets</span></div><h2 id="loginTitle">Entrar</h2><p>Acesse sua conta MyBets.</p><input type="text" id="username" placeholder="Usuário" autocomplete="username"><input type="password" id="password" placeholder="Senha" autocomplete="current-password"><button class="primary-button" onclick="entrar()">ENTRAR</button><p id="loginMessage" class="login-message"></p><button type="button" class="secondary-button modal-secondary" onclick="mostrarCadastro()">CRIAR CONTA</button></div>
+    <div id="registerForm" style="display: none;"><div class="modal-brand">My<span>Bets</span></div><h2>Criar conta</h2><p>Crie sua conta MyBets.</p><input type="text" id="registerUsername" placeholder="Escolha um usuário" autocomplete="username"><input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password"><input type="password" id="registerPasswordConfirm" placeholder="Confirme sua senha" autocomplete="new-password"><button class="primary-button" onclick="cadastrar()">CRIAR CONTA</button><p id="registerMessage" class="login-message"></p><button type="button" class="secondary-button modal-secondary" onclick="mostrarLogin()">JÁ TENHO UMA CONTA</button></div>
+  </div></div>
+  <footer><div class="footer-brand">My<span>Bets</span></div><div class="footer-links"><a href="termos-uso.html">Termos de Uso</a><span>•</span><a href="termos-uso.html">Jogo Responsável</a><span>•</span><a href="#inicio">Voltar ao topo</a></div><p>© 2026 MyBets — Todos os direitos reservados.</p></footer>
+  <script>function moverJogos(direcao){const el=document.getElementById('homeGamesCarousel');if(!el)return;el.scrollBy({left:direcao*Math.min(el.clientWidth*.82,320),behavior:'smooth'});}</script>
+  <script src="app.js"></script><script src="/navigation.js"></script>
 </body>
 </html>
