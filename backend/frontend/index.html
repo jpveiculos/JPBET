@@ -11,12 +11,10 @@
     .brand-main,.footer-brand,.modal-brand{position:relative;display:inline-block;padding-bottom:9px;line-height:1}
     .brand-main::after,.footer-brand::after,.modal-brand::after{content:"";position:absolute;left:2px;right:-5px;bottom:0;height:7px;border-bottom:3px solid #f5c542;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35))}
 
-    .hero{min-height:clamp(520px,72vh,760px);align-items:flex-end}
-    .hero-content{width:100%;max-width:none;margin:0;padding:0 5vw 24px;display:flex;justify-content:center;z-index:3}
-    .hero-content > *:not(.badge){display:none!important}
-    .hero .badge{margin:0 auto;padding:10px 18px;font-size:10px;background:rgba(0,0,0,.62);box-shadow:0 8px 28px rgba(0,0,0,.38)}
+    .hero{min-height:clamp(430px,60vh,590px);align-items:flex-end}
+    .hero-content{display:none!important}
 
-    .games-showcase{width:min(1180px,92vw);margin:0 auto;padding:34px 0 64px}
+    .games-showcase{width:min(1180px,92vw);margin:0 auto;padding:18px 0 64px}
     .games-showcase-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}
     .games-showcase-head h2{margin-top:8px;font-size:clamp(32px,4vw,48px);line-height:1;letter-spacing:-1.8px}
     .games-showcase-head p{max-width:460px;color:rgba(255,255,255,.55);font-size:14px;line-height:1.55}
@@ -34,11 +32,9 @@
     .carousel-arrow.left{left:-18px}.carousel-arrow.right{right:-18px}
     .games-note{margin-top:14px;color:rgba(255,255,255,.34);font-size:11px}
     @media(max-width:650px){
-      .hero{min-height:clamp(430px,60vh,590px)}
-      .hero-content{padding:0 16px 16px}
-      .hero .badge{font-size:9px;padding:9px 14px}
-      .games-showcase{padding:24px 0 52px}
-      .games-showcase-head{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:16px}
+      .hero{min-height:clamp(400px,55vh,520px)}
+      .games-showcase{padding:16px 0 52px}
+      .games-showcase-head{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px}
       .games-showcase-head h2{font-size:34px}
       .games-showcase-head p{font-size:13px}
       .home-game-card{flex-basis:78vw;min-height:285px}
