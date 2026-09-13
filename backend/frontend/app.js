@@ -4,6 +4,24 @@ function sessaoJogadorAtiva() {
   return !!localStorage.getItem("jpbet_user");
 }
 
+function destinoJogo(gameId) {
+  const id = String(gameId || "").trim();
+  if (!id || id === "roulette") return "/dashboard.html";
+  return `/games.html?game=${encodeURIComponent(id)}`;
+}
+
+function abrirJogoComLogin(gameId) {
+  const destino = destinoJogo(gameId);
+
+  if (sessaoJogadorAtiva()) {
+    window.location.href = destino;
+    return;
+  }
+
+  localStorage.setItem("jpbet_pending_game", destino);
+  abrirLogin();
+}
+
 function abrirLogin() {
   if (sessaoJogadorAtiva()) {
     window.location.href = "/dashboard.html";
@@ -45,6 +63,12 @@ function mostrarCadastro() {
   setTimeout(() => document.getElementById("registerUsername")?.focus(), 100);
 }
 
+function redirecionarDepoisDoLogin() {
+  const destino = localStorage.getItem("jpbet_pending_game");
+  localStorage.removeItem("jpbet_pending_game");
+  window.location.href = destino || "/dashboard.html";
+}
+
 async function entrar() {
   const username = document.getElementById("username")?.value.trim();
   const password = document.getElementById("password")?.value;
@@ -58,7 +82,7 @@ async function entrar() {
     if (data.user) localStorage.setItem("jpbet_user",JSON.stringify(data.user));
     if (data.token) localStorage.setItem("jpbet_token",data.token);
     if (message) message.textContent = "Login realizado com sucesso!";
-    setTimeout(()=>{window.location.href="/dashboard.html";},500);
+    setTimeout(redirecionarDepoisDoLogin,500);
   } catch(error) { console.error(error); if(message) message.textContent=error.message||"Não foi possível entrar."; }
 }
 
@@ -79,7 +103,7 @@ async function cadastrar() {
     if(data.user)localStorage.setItem("jpbet_user",JSON.stringify(data.user));
     if(data.token)localStorage.setItem("jpbet_token",data.token);
     if(message)message.textContent="Conta criada com sucesso! Entrando...";
-    setTimeout(()=>{window.location.href="/dashboard.html";},700);
+    setTimeout(redirecionarDepoisDoLogin,700);
   }catch(error){console.error(error);if(message)message.textContent=error.message||"Não foi possível criar a conta.";}
 }
 
@@ -92,6 +116,15 @@ document.addEventListener("DOMContentLoaded",()=>{
   const footerBrand=document.querySelector(".footer-brand");
   if(brand){brand.setAttribute("href","/");brand.onclick=()=>{window.location.href="/";return false;};}
   if(footerBrand){footerBrand.setAttribute("role","link");footerBrand.setAttribute("tabindex","0");footerBrand.style.cursor="pointer";footerBrand.onclick=()=>{window.location.href="/";};footerBrand.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();window.location.href="/";}};}
+
+  const params=new URLSearchParams(window.location.search);
+  const pendingFromUrl=params.get("game");
+  if(params.get("login")==="1" && pendingFromUrl && !user){
+    localStorage.setItem("jpbet_pending_game",destinoJogo(pendingFromUrl));
+    abrirLogin();
+    return;
+  }
+
   if(!user)return;
   const accountButton=document.getElementById("homeAccountButton");
   const platformButton=document.getElementById("heroPlatformButton");
