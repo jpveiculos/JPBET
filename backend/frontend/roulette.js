@@ -37,7 +37,8 @@ function configurarInterfaceRoleta(){
    const roletaAtiva=!!(rv&&getComputedStyle(rv).display!=='none');
    document.body.classList.toggle('mybets-roulette-lock',roletaAtiva);
    document.body.classList.toggle('mybets-player-scroll',!roletaAtiva);
-   if(pv)pv.scrollTop=pv.scrollTop;
+   if(pv)pv.style.overflowY=roletaAtiva?'hidden':'visible';
+   if(rv)rv.style.overflowY=roletaAtiva?'hidden':'visible';
  };
  removerRetorno();
  document.querySelectorAll('#bottomSpinButton').forEach(el=>el.remove());
@@ -81,6 +82,8 @@ if(!document.getElementById('mybets-roulette-modern'))document.head.appendChild(
    const logo=document.querySelector('.header .logo');
    if(logo){const link=document.createElement('a');link.href='/';link.className='logo';link.setAttribute('aria-label','Página principal');link.innerHTML=logo.innerHTML;link.style.color='inherit';link.style.textDecoration='none';link.style.display='inline-block';logo.replaceWith(link)}
    syncActive();
+   const rv=document.getElementById('rouletteView');
+   if(rv&&window.MutationObserver){new MutationObserver(()=>setTimeout(sincronizarRolagem,0)).observe(rv,{attributes:true,attributeFilter:['style','class']})}
  }
  removerRetorno();
  sincronizarRolagem();
