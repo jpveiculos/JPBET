@@ -10,46 +10,54 @@
   <style>
     .brand-main,.footer-brand,.modal-brand{position:relative;display:inline-block;padding-bottom:9px;line-height:1}
     .brand-main::after,.footer-brand::after,.modal-brand::after{content:"";position:absolute;left:2px;right:-5px;bottom:0;height:7px;border-bottom:3px solid #f5c542;border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35))}
-    .hero{min-height:420px!important;height:420px!important;align-items:flex-end}
-    .hero-content{display:none!important}
-    .hero-visual{background-size:contain!important;background-position:center center!important;filter:saturate(1.12) contrast(1.04) brightness(1.18)!important}
-    .hero::after{background:linear-gradient(90deg,rgba(3,3,3,.18) 0%,rgba(3,3,3,.04) 50%,rgba(3,3,3,.12) 100%),linear-gradient(0deg,rgba(3,3,3,.22) 0%,transparent 55%,rgba(0,0,0,.04) 100%)!important}
-    .hero .hero-glow{opacity:.08!important}
-    .games-showcase{width:min(1180px,92vw);margin:0 auto;padding:18px 0 64px}
-    .games-showcase-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}
-    .games-showcase-head h2{margin-top:8px;font-size:clamp(32px,4vw,48px);line-height:1;letter-spacing:-1.8px}
-    .games-showcase-head p{max-width:460px;color:rgba(255,255,255,.55);font-size:14px;line-height:1.55}
-    .games-carousel-wrap{position:relative}
-    .games-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 12px}
-    .games-carousel::-webkit-scrollbar{display:none}
-    .home-game-card{flex:0 0 min(290px,78vw);scroll-snap-align:start;min-height:300px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(245,197,66,.25);border-radius:20px;background:linear-gradient(145deg,rgba(245,197,66,.075),rgba(255,255,255,.025)),#080808;box-shadow:inset 0 0 40px rgba(245,197,66,.025);overflow:hidden;cursor:pointer}
-    .home-game-icon{height:112px;display:grid;place-items:center;font-size:72px;border-radius:15px;background:radial-gradient(circle,rgba(245,197,66,.14),transparent 68%);text-shadow:0 10px 30px rgba(0,0,0,.65)}
-    .home-game-card.fortune-card .home-game-icon{height:150px;background:#050505 url('/assets/fortune7-machine.PNG') center center/contain no-repeat;cursor:pointer;filter:drop-shadow(0 8px 18px rgba(245,197,66,.12))}
-    .home-game-kicker{margin-top:18px;color:#f5c542;font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase}
-    .home-game-card h3{margin-top:7px;font-size:24px}
-    .home-game-card p{margin-top:8px;color:rgba(255,255,255,.56);font-size:13px;line-height:1.5}
-    .home-game-card button{width:100%;min-height:48px;margin-top:18px;border:1px solid #f5c542;border-radius:11px;background:transparent;color:#f5c542;font-weight:900;letter-spacing:.7px;cursor:pointer}
-    .home-game-card button:hover{background:rgba(245,197,66,.08)}
-    .carousel-arrow{position:absolute;top:50%;z-index:3;width:42px;height:42px;margin-top:-21px;border:1px solid rgba(245,197,66,.55);border-radius:50%;background:rgba(5,5,5,.86);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.35)}
+
+    /* Página inicial estática e bem alinhada */
+    .hero{height:390px!important;min-height:390px!important;align-items:center!important;overflow:hidden!important;}
+    .hero-visual{inset:0!important;background-size:cover!important;background-position:center center!important;background-attachment:scroll!important;transform:none!important;animation:none!important;}
+    .hero-content,.hero-glow,.hero::before,.hero::after{animation:none!important;transform:none!important;}
+    .hero-content{display:none!important;}
+    .hero-glow{pointer-events:none!important;}
+
+    .games-showcase{width:min(1180px,92vw);margin:0 auto;padding:24px 0 54px;}
+    .games-showcase-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:18px;}
+    .games-showcase-head h2{margin-top:8px;font-size:clamp(30px,4vw,46px);line-height:1;letter-spacing:-1.8px;}
+    .games-showcase-head p{max-width:460px;color:rgba(255,255,255,.55);font-size:14px;line-height:1.55;}
+    .games-carousel-wrap{position:relative;}
+    .games-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 12px;overscroll-behavior-x:contain;}
+    .games-carousel::-webkit-scrollbar{display:none;}
+    .home-game-card{flex:0 0 min(290px,78vw);scroll-snap-align:start;min-height:300px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(245,197,66,.25);border-radius:20px;background:linear-gradient(145deg,rgba(245,197,66,.075),rgba(255,255,255,.025)),#080808;box-shadow:inset 0 0 40px rgba(245,197,66,.025);overflow:hidden;cursor:pointer;transform:none!important;animation:none!important;}
+    .home-game-icon{height:112px;display:grid;place-items:center;font-size:72px;border-radius:15px;background:radial-gradient(circle,rgba(245,197,66,.14),transparent 68%);text-shadow:0 10px 30px rgba(0,0,0,.65);}
+    .home-game-card.fortune-card .home-game-icon{height:150px;background:#050505 url('/assets/fortune7-machine.PNG') center center/contain no-repeat;cursor:pointer;filter:drop-shadow(0 8px 18px rgba(245,197,66,.12));}
+    .home-game-kicker{margin-top:18px;color:#f5c542;font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+    .home-game-card h3{margin-top:7px;font-size:24px;}
+    .home-game-card p{margin-top:8px;color:rgba(255,255,255,.56);font-size:13px;line-height:1.5;}
+    .home-game-card button{width:100%;min-height:48px;margin-top:18px;border:1px solid #f5c542;border-radius:11px;background:transparent;color:#f5c542;font-weight:900;letter-spacing:.7px;cursor:pointer;transform:none!important;animation:none!important;}
+    .carousel-arrow{position:absolute;top:50%;z-index:3;width:42px;height:42px;margin-top:-21px;border:1px solid rgba(245,197,66,.55);border-radius:50%;background:rgba(5,5,5,.86);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.35);transform:none!important;animation:none!important;}
     .carousel-arrow.left{left:-18px}.carousel-arrow.right{right:-18px}
-    .games-note{margin-top:14px;color:rgba(255,255,255,.34);font-size:11px}
+    .games-note{margin-top:10px;color:rgba(255,255,255,.34);font-size:11px;}
+
     @media(max-width:650px){
-      .hero{min-height:230px!important;height:230px!important}
-      .hero-visual{background-size:contain!important;background-position:center center!important;filter:saturate(1.14) contrast(1.03) brightness(1.24)!important}
-      .hero::after{background:linear-gradient(90deg,rgba(3,3,3,.10) 0%,rgba(3,3,3,.02) 55%,rgba(3,3,3,.08) 100%),linear-gradient(0deg,rgba(3,3,3,.14) 0%,transparent 62%,rgba(0,0,0,.02) 100%)!important}
-      .games-showcase{padding:12px 0 24px}
-      .games-showcase-head{align-items:flex-start;flex-direction:row;gap:8px;margin-bottom:10px}
-      .games-showcase-head h2{font-size:25px;letter-spacing:-1px}
-      .games-showcase-head p{display:none}
-      .home-game-card{flex:0 0 112px;min-height:126px;height:126px;padding:10px;border-radius:14px;justify-content:flex-start;gap:4px}
-      .home-game-icon{height:58px;min-height:58px;font-size:38px;border-radius:10px}
-      .home-game-card.fortune-card .home-game-icon{height:58px;min-height:58px;background-size:110% auto}
-      .home-game-kicker{margin-top:4px;font-size:7px;letter-spacing:1px}
-      .home-game-card h3{margin-top:3px;font-size:14px;line-height:1.05}
-      .home-game-card p,.home-game-card button{display:none}
-      .games-carousel{gap:8px;padding:2px 2px 6px}
-      .games-note{margin-top:5px;font-size:9px}
-      .carousel-arrow{display:none}
+      .topbar{min-height:66px!important;padding:8px 16px!important;}
+      .brand-main{font-size:26px!important;}
+      .main-nav{gap:14px!important;}
+      .main-nav a{font-size:10px!important;padding:10px 0!important;}
+      .login-button{min-height:40px!important;padding:0 13px!important;font-size:10px!important;}
+      .hero{height:250px!important;min-height:250px!important;}
+      .hero-visual{background-size:cover!important;background-position:center center!important;}
+      .games-showcase{padding:16px 0 26px!important;}
+      .games-showcase-head{align-items:flex-start;flex-direction:row;gap:8px;margin-bottom:10px;}
+      .games-showcase-head h2{font-size:25px;letter-spacing:-1px;}
+      .games-showcase-head p{display:none;}
+      .home-game-card{flex:0 0 112px;min-height:126px;height:126px;padding:10px;border-radius:14px;justify-content:flex-start;gap:4px;}
+      .home-game-icon{height:58px;min-height:58px;font-size:38px;border-radius:10px;}
+      .home-game-card.fortune-card .home-game-icon{height:58px;min-height:58px;background-size:110% auto;}
+      .home-game-kicker{margin-top:4px;font-size:7px;letter-spacing:1px;}
+      .home-game-card h3{margin-top:3px;font-size:14px;line-height:1.05;}
+      .home-game-card p,.home-game-card button{display:none;}
+      .games-carousel{gap:8px;padding:2px 2px 6px;scroll-behavior:auto!important;}
+      .games-note{margin-top:5px;font-size:9px;}
+      .carousel-arrow{display:none;}
+      footer{padding:28px 16px 36px!important;}
     }
   </style>
 </head>
