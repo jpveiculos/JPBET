@@ -34,14 +34,30 @@
     for(let i=0;i<8;i++){
       const p=document.createElementNS(ns,'path');p.setAttribute('d',path(239,i*step-step/2,(i+1)*step-step/2));p.setAttribute('fill',colors[i]);p.setAttribute('stroke','none');svg.appendChild(p);
       if(i%2===0){
-        const prizeIndex=i/2;const q=polar(166,i*step);const t=document.createElementNS(ns,'text');t.textContent=labels[prizeIndex];t.setAttribute('x',q.x);t.setAttribute('y',q.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size','30');t.setAttribute('font-weight','900');t.setAttribute('fill','#fff');t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','4');t.setAttribute('paint-order','stroke fill');t.setAttribute('transform',`rotate(${i*step} ${q.x} ${q.y})`);t.dataset.x=q.x;t.dataset.y=q.y;t.dataset.angle=i*step;t.classList.add('prize-label');svg.appendChild(t);
+        const prizeIndex=i/2;
+        const q=polar(166,i*step);
+        const t=document.createElementNS(ns,'text');
+        t.textContent=labels[prizeIndex];
+        t.setAttribute('x',q.x);
+        t.setAttribute('y',q.y);
+        t.setAttribute('text-anchor','middle');
+        t.setAttribute('dominant-baseline','middle');
+        t.setAttribute('font-family','Arial Black,Arial,sans-serif');
+        t.setAttribute('font-size','30');
+        t.setAttribute('font-weight','900');
+        t.setAttribute('fill','#fff');
+        t.setAttribute('stroke','#050505');
+        t.setAttribute('stroke-width','4');
+        t.setAttribute('paint-order','stroke fill');
+        // O valor fica preso à própria fatia e gira junto com ela.
+        // Mantemos a leitura vertical, como na referência visual.
+        t.setAttribute('transform',`rotate(90 ${q.x} ${q.y})`);
+        svg.appendChild(t);
       }
     }
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
-    updateLabels(rotation);$('wheel').style.transform=`rotate(${rotation}deg)`;
+    $('wheel').style.transform=`rotate(${rotation}deg)`;
   }
-
-  function updateLabels(rr){document.querySelectorAll('.prize-label').forEach(t=>{const x=Number(t.dataset.x),y=Number(t.dataset.y),a=Number(t.dataset.angle)||0;t.setAttribute('transform',`rotate(${a-rr} ${x} ${y})`)})}
 
   async function spin(){
     if(spinning)return;
@@ -54,7 +70,7 @@
       if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');
       const s=d.spin||{};const vi=visualIndexFromLogical(Number(s.index));
       const center=vi*45;const target=((360-center-(rotation%360))+360)%360;const turns=7;const dest=rotation+turns*360+target;const dur=1900;const start=performance.now(),from=rotation;
-      await new Promise(resolve=>{function frame(now){const p=Math.min(1,(now-start)/dur),e=1-Math.pow(1-p,3),rr=from+(dest-from)*e;$('wheel').style.transform=`rotate(${rr}deg)`;updateLabels(rr);if(p<1)return requestAnimationFrame(frame);rotation=dest;resolve()}requestAnimationFrame(frame)});
+      await new Promise(resolve=>{function frame(now){const p=Math.min(1,(now-start)/dur),e=1-Math.pow(1-p,3),rr=from+(dest-from)*e;$('wheel').style.transform=`rotate(${rr}deg)`;if(p<1)return requestAnimationFrame(frame);rotation=dest;resolve()}requestAnimationFrame(frame)});
       $('result').textContent=Number(s.prize)>0?`🎉 Você ganhou ${money(s.prize)}!`:`Você perdeu ${money(bet)}.`;$('result').className=Number(s.prize)>0?'win':'loss';
       if(d.user){localStorage.setItem('jpbet_user',JSON.stringify({...user,...d.user}));}
     }catch(e){$('result').textContent=e.message;$('result').className='error'}finally{spinning=false;$('spinButton').disabled=false}
