@@ -13,6 +13,27 @@
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
 
+  // MODELO VISUAL IGUAL AO DA ROLETA DE 16:
+  // Cada setor preto de prêmio ocupa UMA fatia visual.
+  // Os setores de perda são comprimidos dentro de uma única fatia colorida.
+  // Assim:
+  //   Standard: 40 setores reais = 4 prêmios individuais + 4 blocos de 9 perdas.
+  //   Premium:  60 setores reais = 4 prêmios individuais + 4 blocos de 14 perdas.
+  // A roleta mostra 8 fatias visuais, mas o sorteio continua usando 40/60 posições reais.
+  function visualIndexFromLogical(index){
+    const n=Number(index);
+    const p=prizeIndexes.indexOf(n);
+    if(p>=0)return p*2;
+    const lossBlockSize=(slices-prizeIndexes.length)/prizeIndexes.length;
+    let block=0;
+    for(let i=0;i<prizeIndexes.length;i++){
+      const start=prizeIndexes[i]+1;
+      const end=(i+1<prizeIndexes.length?prizeIndexes[i+1]:slices)-1;
+      if(n>=start&&n<=end){block=i;break}
+    }
+    return block*2+1;
+  }
+
   function renderWheel(){
     const svg=$('rouletteSvg');if(!svg)return;
     svg.innerHTML='';
@@ -21,57 +42,40 @@
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
 
-    const colors=['#ef1b2d','#146bff','#12c83a','#8b19ff'];
-    const step=360/slices;
+    // Exatamente 8 fatias visuais, como na roleta de 16 da referência:
+    // 4 pretas = prêmios; 4 coloridas = grupos comprimidos de perdas.
+    const visualStep=45;
+    const lossColor='#f7b915';
+    const prizeTextColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df'];
 
-    // IMPORTANTE: a roda é desenhada setor por setor.
-    // Standard = exatamente 40 setores de 9 graus.
-    // Premium = exatamente 60 setores de 6 graus.
-    // Não existe mais um desenho visual de 8 blocos.
-    for(let i=0;i<slices;i++){
-      const prizePos=prizeIndexes.indexOf(i);
-      const a=i*step-step/2;
-      const b=(i+1)*step-step/2;
-      const p=document.createElementNS(ns,'path');
-      p.setAttribute('d',path(239,a,b));
-      p.setAttribute('fill',prizePos>=0?colors[prizePos]:'#050505');
-      p.setAttribute('stroke','#151a22');
-      p.setAttribute('stroke-width',slices>=60?'1.2':'1.6');
-      p.setAttribute('vector-effect','non-scaling-stroke');
-      p.dataset.sector=i;
-      p.setAttribute('aria-label',`Setor ${i+1} de ${slices}`);
-      svg.appendChild(p);
+    for(let v=0;v<8;v++){
+      const a=v*visualStep-visualStep/2;
+      const b=(v+1)*visualStep-visualStep/2;
+      const sector=document.createElementNS(ns,'path');
+      sector.setAttribute('d',path(239,a,b));
+      sector.setAttribute('fill',v%2===0?'#050505':lossColor);
+      sector.setAttribute('stroke','#080808');
+      sector.setAttribute('stroke-width','2');
+      sector.setAttribute('vector-effect','non-scaling-stroke');
+      sector.dataset.visualSector=v;
+      svg.appendChild(sector);
+
+      if(v%2===0){
+        const prizePos=v/2;
+        const q=polar(176,v*visualStep);
+        const t=document.createElementNS(ns,'text');
+        t.textContent=money(prizes[prizePos]);
+        t.setAttribute('x',q.x);t.setAttribute('y',q.y);
+        t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+        t.setAttribute('font-family','Arial Black,Arial,sans-serif');
+        t.setAttribute('font-size',slices>=60?'22':'25');t.setAttribute('font-weight','900');
+        t.setAttribute('fill',prizeTextColors[prizePos]);
+        t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','4');t.setAttribute('paint-order','stroke fill');
+        // O prêmio pertence à fatia preta e gira exatamente junto com a roda.
+        t.setAttribute('transform',`rotate(${v*visualStep+90} ${q.x} ${q.y})`);
+        svg.appendChild(t);
+      }
     }
-
-    // Marcadores radiais de cada setor: deixam a quantidade de setores visível
-    // sem transformar os blocos pretos em oito áreas agrupadas.
-    for(let i=0;i<slices;i++){
-      const p=polar(239,i*step-step/2);
-      const q=polar(218,i*step-step/2);
-      const line=document.createElementNS(ns,'line');
-      line.setAttribute('x1',p.x);line.setAttribute('y1',p.y);
-      line.setAttribute('x2',q.x);line.setAttribute('y2',q.y);
-      line.setAttribute('stroke','rgba(255,255,255,.12)');
-      line.setAttribute('stroke-width',slices>=60?'1':'1.3');
-      line.setAttribute('vector-effect','non-scaling-stroke');
-      svg.appendChild(line);
-    }
-
-    // Os quatro prêmios pertencem a quatro setores individuais reais.
-    // O texto gira com a roda e mantém a orientação visual da referência.
-    prizeIndexes.forEach((sectorIndex,prizePos)=>{
-      const q=polar(181,sectorIndex*step);
-      const t=document.createElementNS(ns,'text');
-      t.textContent=money(prizes[prizePos]);
-      t.setAttribute('x',q.x);t.setAttribute('y',q.y);
-      t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-      t.setAttribute('font-family','Arial Black,Arial,sans-serif');
-      t.setAttribute('font-size',slices>=60?'16':'21');
-      t.setAttribute('font-weight','900');
-      t.setAttribute('fill','#fff');t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3');t.setAttribute('paint-order','stroke fill');
-      t.setAttribute('transform',`rotate(${sectorIndex*step+90} ${q.x} ${q.y})`);
-      svg.appendChild(t);
-    });
 
     const ring=document.createElementNS(ns,'circle');
     ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);
@@ -89,9 +93,8 @@
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');
       const s=d.spin||{};
-      const logicalIndex=Number(s.index);
-      const step=360/slices;
-      const center=logicalIndex*step;
+      const vi=visualIndexFromLogical(Number(s.index));
+      const center=vi*45;
       const target=((360-center-(rotation%360))+360)%360;
       const turns=7;
       const dest=rotation+turns*360+target;
