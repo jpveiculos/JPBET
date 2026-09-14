@@ -495,22 +495,49 @@ function normalizarPercentual(valor, padrao) {
   );
 }
 
-function calcularPesosComRtp(segmentos, rtpPercentual) {
-  const target = normalizarPercentual(rtpPercentual, 50) / 100;
-  const pesosOriginais = segmentos.map(segmento => Math.max(0, Number(segmento.probability) || 0));
-  const prizeWeight = segmentos.reduce((sum, segmento, index) => sum + (segmento.type === "prize" ? pesosOriginais[index] : 0), 0);
-  const otherWeight = segmentos.reduce((sum, segmento, index) => sum + (segmento.type === "prize" ? 0 : pesosOriginais[index]), 0);
-  const prizeContribution = segmentos.reduce((sum, segmento, index) => sum + (segmento.type === "prize" ? pesosOriginais[index] * Math.max(0, Number(segmento.multiplier) || 0) : 0), 0);
+function validarProbabilidadesRoleta(segmentos) {
+  if (!Array.isArray(segmentos) || segmentos.length !== 16) {
+    throw new Error(
+      "A roleta precisa ter exatamente 16 fatias."
+    );
+  }
 
-  if (prizeWeight <= 0 || prizeContribution <= 0) return pesosOriginais;
-  if (target <= 0) return segmentos.map((segmento, index) => segmento.type === "prize" ? 0 : pesosOriginais[index]);
+  const total = segmentos.reduce(
+    (soma, segmento) =>
+      soma + Math.max(
+        0,
+        Number(segmento?.probability) || 0
+      ),
+    0
+  );
 
-  const denominator = prizeContribution - target * prizeWeight;
-  if (denominator <= 0 || otherWeight <= 0) return pesosOriginais;
+  if (!Number.isFinite(total) || total <= 0) {
+    throw new Error(
+      "A roleta precisa ter probabilidades válidas."
+    );
+  }
 
-  const fatorPremio = (target * otherWeight) / denominator;
+  if (Math.abs(total - 100) > 0.000001) {
+    throw new Error(
+      `A soma das probabilidades da roleta deve ser 100%. Total atual: ${total}%.`
+    );
+  }
 
-  return segmentos.map((segmento, index) => segmento.type === "prize" ? pesosOriginais[index] * fatorPremio : pesosOriginais[index]);
+  return true;
+}
+
+function sortearResultadoRoleta({ segmentos }) {
+  validarProbabilidadesRoleta(segmentos);
+
+  const pesos = segmentos.map(
+    segmento =>
+      Math.max(
+        0,
+        Number(segmento?.probability) || 0
+      )
+  );
+
+  return escolherIndiceComPesos(pesos);
 }
 
 function calcularPremioSegmento(segmento, bet) {
@@ -594,7 +621,6 @@ app.post(
             'roulette_free_spin_enabled',
             'roulette_min_bet',
             'roulette_max_bet',
-            'roulette_rtp',
             'roulette_replay_probability',
             'roulette_segments_json',
             'bonus_system_enabled',
@@ -635,12 +661,6 @@ app.post(
       const maxBet =
         Number(
           settings.roulette_max_bet || 100
-        );
-
-      const rtp =
-        normalizarPercentual(
-          settings.roulette_rtp,
-          50
         );
 
       const replayProbability =
@@ -848,7 +868,6 @@ app.post(
       const indiceResultado =
         sortearResultadoRoleta({
           segmentos,
-          rtp
         });
 
       const resultado =
@@ -1079,8 +1098,6 @@ app.post(
                     ? 1
                     : 0
                 ),
-          rtp:
-            rtp,
           weight:
             Number(
               resultado.probability || 0
