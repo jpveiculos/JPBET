@@ -24,14 +24,35 @@
     const n=Number(index);
     const p=prizeIndexes.indexOf(n);
     if(p>=0)return p*2;
-    const lossBlockSize=(slices-prizeIndexes.length)/prizeIndexes.length;
-    let block=0;
     for(let i=0;i<prizeIndexes.length;i++){
       const start=prizeIndexes[i]+1;
       const end=(i+1<prizeIndexes.length?prizeIndexes[i+1]:slices)-1;
-      if(n>=start&&n<=end){block=i;break}
+      if(n>=start&&n<=end)return i*2+1;
     }
-    return block*2+1;
+    return 1;
+  }
+
+  // Retorna o centro FÍSICO do setor lógico sorteado.
+  // Nos blocos coloridos, cada setor de perda ocupa uma pequena posição
+  // diferente dentro da mesma fatia visual. Isso impede que todos os losses
+  // terminem no centro do bloco e reproduz o comportamento da roleta de 16.
+  function angleFromLogical(index){
+    const n=Number(index);
+    const prizePos=prizeIndexes.indexOf(n);
+    if(prizePos>=0)return prizePos*90;
+
+    const blockSize=(slices-prizeIndexes.length)/prizeIndexes.length;
+    for(let i=0;i<prizeIndexes.length;i++){
+      const start=prizeIndexes[i]+1;
+      const end=(i+1<prizeIndexes.length?prizeIndexes[i+1]:slices)-1;
+      if(n>=start&&n<=end){
+        const ordinal=n-start;
+        const visualIndex=i*2+1;
+        const blockStart=visualIndex*45-22.5;
+        return blockStart+(ordinal+0.5)*(45/blockSize);
+      }
+    }
+    return 0;
   }
 
   function renderWheel(){
@@ -93,8 +114,7 @@
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');
       const s=d.spin||{};
-      const vi=visualIndexFromLogical(Number(s.index));
-      const center=vi*45;
+      const center=angleFromLogical(Number(s.index));
       const target=((360-center-(rotation%360))+360)%360;
       const turns=7;
       const dest=rotation+turns*360+target;
