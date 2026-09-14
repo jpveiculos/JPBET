@@ -13,67 +13,65 @@
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
 
-  // O jogo continua tendo 40/60 setores lógicos.
-  // Visualmente, porém, eles são agrupados em 8 blocos sólidos:
-  // 4 blocos de prêmio + 4 blocos pretos de perda.
-  // Assim o usuário enxerga a mesma proporção visual da referência,
-  // sem perder a quantidade real de posições sorteáveis.
-  function visualIndexFromLogical(index){
-    const p=prizeIndexes.indexOf(Number(index));
-    if(p>=0)return p*2;
-    const group=slices/4;
-    return Math.min(7,Math.floor(Number(index)/group)*2+1);
-  }
-
   function renderWheel(){
     const svg=$('rouletteSvg');if(!svg)return;
     svg.innerHTML='';
     const ns='http://www.w3.org/2000/svg';
     const defs=document.createElementNS(ns,'defs');
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
-
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
 
-    // Mantém as 40/60 posições lógicas no DOM, sem linhas internas.
-    const logical=document.createElementNS(ns,'g');
-    logical.setAttribute('id','logicalSectors');
-    logical.setAttribute('aria-hidden','true');
-    logical.style.display='none';
-    const logicalStep=360/slices;
-    for(let i=0;i<slices;i++){
-      const lp=document.createElementNS(ns,'path');
-      lp.setAttribute('d',path(239,i*logicalStep-logicalStep/2,(i+1)*logicalStep-logicalStep/2));
-      lp.dataset.sector=i;
-      logical.appendChild(lp);
-    }
-    svg.appendChild(logical);
-
     const colors=['#ef1b2d','#146bff','#12c83a','#8b19ff'];
-    const visualStep=45;
+    const step=360/slices;
 
-    for(let i=0;i<8;i++){
+    // IMPORTANTE: a roda é desenhada setor por setor.
+    // Standard = exatamente 40 setores de 9 graus.
+    // Premium = exatamente 60 setores de 6 graus.
+    // Não existe mais um desenho visual de 8 blocos.
+    for(let i=0;i<slices;i++){
+      const prizePos=prizeIndexes.indexOf(i);
+      const a=i*step-step/2;
+      const b=(i+1)*step-step/2;
       const p=document.createElementNS(ns,'path');
-      p.setAttribute('d',path(239,i*visualStep-visualStep/2,(i+1)*visualStep-visualStep/2));
-      p.setAttribute('fill',i%2===0?colors[i/2]:'#050505');
-      p.setAttribute('stroke','none');
-      p.dataset.visualSector=i;
+      p.setAttribute('d',path(239,a,b));
+      p.setAttribute('fill',prizePos>=0?colors[prizePos]:'#050505');
+      p.setAttribute('stroke','#151a22');
+      p.setAttribute('stroke-width',slices>=60?'1.2':'1.6');
+      p.setAttribute('vector-effect','non-scaling-stroke');
+      p.dataset.sector=i;
+      p.setAttribute('aria-label',`Setor ${i+1} de ${slices}`);
       svg.appendChild(p);
-
-      if(i%2===0){
-        const prizeIndex=i/2;
-        const q=polar(166,i*visualStep);
-        const t=document.createElementNS(ns,'text');
-        t.textContent=money(prizes[prizeIndex]);
-        t.setAttribute('x',q.x);t.setAttribute('y',q.y);
-        t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-        t.setAttribute('font-family','Arial Black,Arial,sans-serif');
-        t.setAttribute('font-size',slices>=60?'26':'30');t.setAttribute('font-weight','900');
-        t.setAttribute('fill','#fff');t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','4');t.setAttribute('paint-order','stroke fill');
-        // O valor faz parte do bloco e gira no mesmo eixo da roda.
-        t.setAttribute('transform',`rotate(90 ${q.x} ${q.y})`);
-        svg.appendChild(t);
-      }
     }
+
+    // Marcadores radiais de cada setor: deixam a quantidade de setores visível
+    // sem transformar os blocos pretos em oito áreas agrupadas.
+    for(let i=0;i<slices;i++){
+      const p=polar(239,i*step-step/2);
+      const q=polar(218,i*step-step/2);
+      const line=document.createElementNS(ns,'line');
+      line.setAttribute('x1',p.x);line.setAttribute('y1',p.y);
+      line.setAttribute('x2',q.x);line.setAttribute('y2',q.y);
+      line.setAttribute('stroke','rgba(255,255,255,.12)');
+      line.setAttribute('stroke-width',slices>=60?'1':'1.3');
+      line.setAttribute('vector-effect','non-scaling-stroke');
+      svg.appendChild(line);
+    }
+
+    // Os quatro prêmios pertencem a quatro setores individuais reais.
+    // O texto gira com a roda e mantém a orientação visual da referência.
+    prizeIndexes.forEach((sectorIndex,prizePos)=>{
+      const q=polar(181,sectorIndex*step);
+      const t=document.createElementNS(ns,'text');
+      t.textContent=money(prizes[prizePos]);
+      t.setAttribute('x',q.x);t.setAttribute('y',q.y);
+      t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-family','Arial Black,Arial,sans-serif');
+      t.setAttribute('font-size',slices>=60?'16':'21');
+      t.setAttribute('font-weight','900');
+      t.setAttribute('fill','#fff');t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3');t.setAttribute('paint-order','stroke fill');
+      t.setAttribute('transform',`rotate(${sectorIndex*step+90} ${q.x} ${q.y})`);
+      svg.appendChild(t);
+    });
 
     const ring=document.createElementNS(ns,'circle');
     ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);
@@ -91,8 +89,9 @@
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');
       const s=d.spin||{};
-      const vi=visualIndexFromLogical(Number(s.index));
-      const center=vi*45;
+      const logicalIndex=Number(s.index);
+      const step=360/slices;
+      const center=logicalIndex*step;
       const target=((360-center-(rotation%360))+360)%360;
       const turns=7;
       const dest=rotation+turns*360+target;
