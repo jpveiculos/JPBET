@@ -4,28 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#070707">
-  <meta name="description" content="MyBets — Roleta própria e área do jogador.">
-  <title>MyBets | Roleta</title>
+  <meta name="description" content="MyBets — Roletas e área do jogador.">
+  <title>MyBets | Roletas</title>
   <link rel="stylesheet" href="style.css">
   <style>
     :root{--gold:#f5c542;--bg:#070707;--text:#fff}
     html{scroll-behavior:auto;background:var(--bg)}
     body{background:#070707;color:var(--text);overflow-x:hidden}
-
     .topbar{position:relative;z-index:20;min-height:78px;padding:12px clamp(18px,5vw,70px);display:flex;align-items:center;justify-content:space-between;gap:24px;background:rgba(7,7,7,.96);border-bottom:1px solid rgba(245,197,66,.28);backdrop-filter:none}
     .brand{min-width:auto}.brand-main{font-size:31px}.main-nav{gap:28px}.main-nav a{font-size:12px}.login-button{min-height:46px;padding:0 22px;border-radius:12px}
 
-    /* HERO ESTÁTICO: imagem mais clara e visível */
+    /* HERO ESTÁTICO: cenário livre, imagem clara e personagens em destaque */
     .hero{position:relative;height:430px;min-height:430px;display:flex;align-items:center;overflow:hidden;isolation:isolate;border-bottom:1px solid var(--gold);background:#101010}
     .hero-visual{position:absolute;z-index:-3;inset:0;background-image:url("assets/jpbet-hero-luxo-clean.PNG");background-repeat:no-repeat;background-size:cover;background-position:center center;background-attachment:scroll;filter:saturate(1.10) contrast(1.03) brightness(1.08);transform:none;animation:none}
-    .hero::after{content:"";position:absolute;z-index:-2;inset:0;background:linear-gradient(90deg,rgba(3,3,3,.42) 0%,rgba(3,3,3,.12) 42%,rgba(3,3,3,.04) 72%,rgba(3,3,3,.08) 100%),linear-gradient(0deg,rgba(3,3,3,.28) 0%,transparent 46%,rgba(0,0,0,.08) 100%)}
+    .hero::after{content:"";position:absolute;z-index:-2;inset:0;background:linear-gradient(90deg,rgba(3,3,3,.58) 0%,rgba(3,3,3,.16) 35%,rgba(3,3,3,.02) 68%,rgba(3,3,3,.06) 100%),linear-gradient(0deg,rgba(3,3,3,.18) 0%,transparent 42%,rgba(0,0,0,.05) 100%)}
     .hero::before{content:"";position:absolute;z-index:-1;inset:auto 0 0;height:1px;background:var(--gold);box-shadow:0 0 22px rgba(245,197,66,.7)}
-    .hero-glow{display:none}.hero-content{width:min(560px,88vw);margin-left:clamp(5vw,8vw,110px);padding:60px 0;position:relative;z-index:2}
-    .hero-content .badge{margin-bottom:16px;padding:8px 13px;background:rgba(0,0,0,.48);border-color:rgba(245,197,66,.55)}
-    .hero-content h1{font-size:clamp(44px,6vw,72px);letter-spacing:-3px;line-height:.94;text-shadow:0 5px 22px rgba(0,0,0,.45)}
-    .hero-lead{max-width:460px;margin:18px 0 24px;font-size:15px;line-height:1.55;color:rgba(255,255,255,.86);text-shadow:0 2px 10px rgba(0,0,0,.6)}
-    .hero-actions{display:flex}.hero-actions::after{content:'ENTRAR NA ROLETA →';display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:1px solid var(--gold);border-radius:11px;background:var(--gold);color:#080808;font-size:12px;font-weight:900;letter-spacing:.8px;box-shadow:0 8px 24px rgba(0,0,0,.28)}
-    .hero-actions::after{cursor:pointer}
+    .hero-glow{display:none}
+    .hero-content{width:min(560px,88vw);margin-left:clamp(5vw,8vw,110px);padding:0;position:relative;z-index:2;align-self:flex-start;margin-top:42px}
+    .hero-content .badge{margin-bottom:12px;padding:7px 12px;background:rgba(0,0,0,.40);border-color:rgba(245,197,66,.55)}
+    .hero-content h1{font-size:clamp(44px,6vw,72px);letter-spacing:-3px;line-height:.90;text-shadow:0 5px 22px rgba(0,0,0,.45)}
+    .hero-lead{max-width:460px;margin:14px 0 0;font-size:15px;line-height:1.45;color:rgba(255,255,255,.86);text-shadow:0 2px 10px rgba(0,0,0,.6)}
+    .hero-actions,.hero-points{display:none}
 
     .home-main{width:min(1040px,92vw);margin:0 auto;padding:48px 0 58px}
     .home-heading{text-align:center;margin-bottom:28px}.home-heading .eyebrow{font-size:10px;letter-spacing:2.5px}.home-heading h2{margin-top:8px;font-size:clamp(28px,4vw,42px);letter-spacing:-1.5px}.home-heading p{max-width:520px;margin:12px auto 0;color:rgba(255,255,255,.60);font-size:14px;line-height:1.55}
@@ -38,10 +37,8 @@
 
     @media(max-width:720px){
       .topbar{min-height:68px;padding:9px 16px}.brand-main{font-size:27px}.main-nav{display:none}.login-button{min-height:42px;padding:0 15px;font-size:10px}
-      .hero{height:330px;min-height:330px}.hero-visual{background-position:center center;filter:saturate(1.10) contrast(1.02) brightness(1.12)}
-      .hero::after{background:linear-gradient(90deg,rgba(3,3,3,.28) 0%,rgba(3,3,3,.06) 58%,rgba(3,3,3,.04) 100%),linear-gradient(0deg,rgba(3,3,3,.25),transparent 52%,rgba(0,0,0,.05))}
-      .hero-content{width:88vw;margin:0 auto;padding:30px 0;display:flex;flex-direction:column;justify-content:flex-end;height:100%}.hero-content .badge{align-self:flex-start;font-size:9px;margin-bottom:10px}.hero-content h1{font-size:42px;letter-spacing:-2.5px}.hero-lead{font-size:12px;margin:11px 0 15px;max-width:340px}.hero-actions::after{min-height:43px;padding:0 17px;font-size:10px}
-      .home-main{padding:36px 0 44px}.home-heading{margin-bottom:21px}.home-heading h2{font-size:29px}.home-heading p{font-size:12px}.roulette-card{grid-template-columns:1fr;border-radius:20px}.roulette-visual{min-height:210px;padding:20px}.roulette-wheel-icon{width:150px;height:150px;border-width:9px}.roulette-copy{padding:24px}.roulette-copy h3{font-size:26px}.roulette-copy p{font-size:13px}.roulette-copy ul{margin:14px 0 18px;font-size:11px}
+      .hero{height:330px;min-height:330px}.hero-visual{background-position:center center}.hero-content{width:88vw;margin:0 auto;padding:0;display:block;height:auto;align-self:flex-start;margin-top:26px}.hero-content .badge{font-size:9px;margin-bottom:8px}.hero-content h1{font-size:39px;letter-spacing:-2.2px;line-height:.88}.hero-lead{font-size:12px;margin-top:10px;max-width:320px}
+      .home-main{padding:38px 0 46px}.home-heading{margin-bottom:22px}.home-heading h2{font-size:29px}.home-heading p{font-size:12px}.roulette-card{grid-template-columns:1fr;border-radius:20px}.roulette-visual{min-height:220px;padding:22px}.roulette-wheel-icon{width:150px;height:150px;border-width:9px}.roulette-copy{padding:24px}.roulette-copy h3{font-size:26px}.roulette-copy p{font-size:13px}.roulette-copy ul{margin:14px 0 18px;font-size:11px}
       footer{padding:28px 16px 34px;text-align:center}footer .footer-brand{margin:0 auto}.footer-links{justify-content:center;flex-wrap:wrap;font-size:11px}footer p{font-size:10px}
     }
   </style>
@@ -49,26 +46,42 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#inicio" aria-label="MyBets início"><span class="brand-main">My<span>Bets</span></span></a>
-    <nav class="main-nav" aria-label="Navegação principal"><a href="#inicio" class="active">Início</a><a href="#roleta">Roleta</a><a href="termos-uso.html">Termos</a></nav>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a href="#inicio" class="active">Início</a>
+      <a href="#roletas">Roletas</a>
+      <a href="termos-uso.html">Termos</a>
+    </nav>
     <button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Minha Conta</button>
   </header>
 
   <main>
     <section class="hero" id="inicio">
       <div class="hero-visual" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-left" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-right" aria-hidden="true"></div>
       <div class="hero-content">
         <div class="badge">MyBets • EXPERIÊNCIA PREMIUM</div>
-        <h1>ROLETA.<br><span>JOGUE.</span></h1>
-        <p class="hero-lead">Uma experiência simples, elegante e direta. Entre na sua conta e acesse a Roleta MyBets.</p>
-        <div class="hero-actions" aria-hidden="true"></div>
+        <h1>ROLE<span>TAS.</span><br>MYBETS.</h1>
+        <p class="hero-lead">Uma experiência simples, elegante e direta. Entre na sua conta e acesse nossas roletas.</p>
       </div>
     </section>
 
-    <section class="home-main" id="roleta" aria-label="Roleta MyBets">
-      <div class="home-heading"><span class="eyebrow">JOGO PRINCIPAL</span><h2>Roleta MyBets</h2><p>Nossa roleta oficial, em um único lugar. Sem máquinas extras e sem informações desnecessárias.</p></div>
+    <section class="home-main" id="roletas" aria-label="Roletas MyBets">
+      <div class="home-heading">
+        <span class="eyebrow">JOGOS PRINCIPAIS</span>
+        <h2>Roletas MyBets</h2>
+        <p>Nossas roletas oficiais, em um único lugar. Sem máquinas extras e sem informações desnecessárias.</p>
+      </div>
+
       <article class="roulette-card">
         <div class="roulette-visual" aria-hidden="true"><div class="roulette-wheel-icon"></div></div>
-        <div class="roulette-copy"><span class="card-kicker">EXPERIÊNCIA MYBETS</span><h3>Roleta oficial</h3><p>Entre na sua conta para acessar a roleta e acompanhar seu saldo e suas jogadas na área do jogador.</p><ul><li>Interface premium e objetiva</li><li>Roleta oficial da plataforma</li><li>Área do jogador integrada</li></ul><button class="roulette-button" type="button" onclick="abrirJogoComLogin('roulette')">ENTRAR NA ROLETA →</button></div>
+        <div class="roulette-copy">
+          <span class="card-kicker">EXPERIÊNCIA MYBETS</span>
+          <h3>Roletas oficiais</h3>
+          <p>Entre na sua conta para acessar nossas roletas e acompanhar seu saldo e suas jogadas na área do jogador.</p>
+          <ul><li>Interface premium e objetiva</li><li>Roletas oficiais da plataforma</li><li>Área do jogador integrada</li></ul>
+          <button class="roulette-button" type="button" onclick="abrirJogoComLogin('roulette')">ACESSAR ROLETAS →</button>
+        </div>
       </article>
     </section>
   </main>
@@ -81,7 +94,7 @@
     </div>
   </div>
 
-  <footer><div class="footer-brand">My<span>Bets</span></div><div class="footer-links"><a href="#inicio">Início</a><span>•</span><a href="#roleta">Roleta</a><span>•</span><a href="termos-uso.html">Termos de Uso</a></div><p>© 2026 MyBets — Todos os direitos reservados.</p></footer>
+  <footer><div class="footer-brand">My<span>Bets</span></div><div class="footer-links"><a href="#inicio">Início</a><span>•</span><a href="#roletas">Roletas</a><span>•</span><a href="termos-uso.html">Termos de Uso</a></div><p>© 2026 MyBets — Todos os direitos reservados.</p></footer>
   <script src="app.js"></script>
 </body>
 </html>
