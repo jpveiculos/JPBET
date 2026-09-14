@@ -1,11 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Roleta oficial MyBets">
-<defs><radialGradient id="bg"><stop stop-color="#171717"/><stop offset="1" stop-color="#070707"/></radialGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe06a"/><stop offset=".45" stop-color="#f5bd22"/><stop offset="1" stop-color="#9b6800"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-opacity=".65"/></filter></defs>
-<circle cx="300" cy="300" r="292" fill="url(#bg)" stroke="#2b2b2b" stroke-width="14"/>
-<circle cx="300" cy="300" r="270" fill="none" stroke="url(#gold)" stroke-width="8"/>
-<g transform="translate(300 300)" stroke="#0a0a0a" stroke-width="4">
-<path d="M0 0 L0 -258 A258 258 0 0 1 99 -238 Z" fill="url(#gold)"/><path d="M0 0 L99 -238 A258 258 0 0 1 183 -182 Z" fill="#090909"/><path d="M0 0 L183 -182 A258 258 0 0 1 238 -99 Z" fill="url(#gold)"/><path d="M0 0 L238 -99 A258 258 0 0 1 258 0 Z" fill="#090909"/><path d="M0 0 L258 0 A258 258 0 0 1 238 99 Z" fill="url(#gold)"/><path d="M0 0 L238 99 A258 258 0 0 1 183 182 Z" fill="#090909"/><path d="M0 0 L183 182 A258 258 0 0 1 99 238 Z" fill="url(#gold)"/><path d="M0 0 L99 238 A258 258 0 0 1 0 258 Z" fill="#090909"/><path d="M0 0 L0 258 A258 258 0 0 1 -99 238 Z" fill="url(#gold)"/><path d="M0 0 L-99 238 A258 258 0 0 1 -183 182 Z" fill="#090909"/><path d="M0 0 L-183 182 A258 258 0 0 1 -238 99 Z" fill="url(#gold)"/><path d="M0 0 L-238 99 A258 258 0 0 1 -258 0 Z" fill="#090909"/><path d="M0 0 L-258 0 A258 258 0 0 1 -238 -99 Z" fill="url(#gold)"/><path d="M0 0 L-238 -99 A258 258 0 0 1 -183 -182 Z" fill="#090909"/><path d="M0 0 L-183 -182 A258 258 0 0 1 -99 -238 Z" fill="url(#gold)"/><path d="M0 0 L-99 -238 A258 258 0 0 1 0 -258 Z" fill="#090909"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 760" role="img" aria-label="Roleta MyBets em preto e dourado">
+<defs>
+<radialGradient id="bg" cx="50%" cy="45%"><stop offset="0" stop-color="#35270a"/><stop offset=".48" stop-color="#15120b"/><stop offset="1" stop-color="#080808"/></radialGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1a0"/><stop offset=".25" stop-color="#f5c542"/><stop offset=".62" stop-color="#b47a0b"/><stop offset="1" stop-color="#ffd95a"/></linearGradient>
+<linearGradient id="gold2" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffd95a"/><stop offset="1" stop-color="#9a690d"/></linearGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".8"/></filter>
+<filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="900" height="760" rx="34" fill="url(#bg)"/>
+<ellipse cx="450" cy="690" rx="310" ry="28" fill="#f5c542" opacity=".18" filter="url(#soft)"/>
+<g opacity=".7" filter="url(#glow)"><circle cx="450" cy="380" r="302" fill="none" stroke="#f5c542" stroke-width="3" opacity=".18"/><circle cx="450" cy="380" r="286" fill="none" stroke="#f5c542" stroke-width="2" opacity=".45"/></g>
+<g filter="url(#shadow)">
+<circle cx="450" cy="380" r="270" fill="#050505" stroke="url(#gold)" stroke-width="12"/>
+<circle cx="450" cy="380" r="250" fill="#101010" stroke="#c18b1b" stroke-width="4"/>
+<g transform="translate(450 380)">
+<path d="M0 0L0-245A245 245 0 0 1 94-226Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L94-226A245 245 0 0 1 173-173Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L173-173A245 245 0 0 1 226-94Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L226-94A245 245 0 0 1 245 0Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L245 0A245 245 0 0 1 226 94Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L226 94A245 245 0 0 1 173 173Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L173 173A245 245 0 0 1 94 226Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L94 226A245 245 0 0 1 0 245Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L0 245A245 245 0 0 1-94 226Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L-94 226A245 245 0 0 1-173 173Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L-173 173A245 245 0 0 1-226 94Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L-226 94A245 245 0 0 1-245 0Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L-245 0A245 245 0 0 1-226-94Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L-226-94A245 245 0 0 1-173-173Z" fill="#111" stroke="#080808" stroke-width="4"/>
+<path d="M0 0L-173-173A245 245 0 0 1-94-226Z" fill="url(#gold2)" stroke="#080808" stroke-width="4"/><path d="M0 0L-94-226A245 245 0 0 1 0-245Z" fill="#111" stroke="#080808" stroke-width="4"/>
 </g>
-<g fill="#fff" font-family="Arial,sans-serif" font-weight="900" text-anchor="middle"><text x="300" y="125" font-size="58" fill="#ffb62e" stroke="#161616" stroke-width="5">10X</text><text x="448" y="325" font-size="58" fill="#39e878" stroke="#161616" stroke-width="5">2X</text><text x="300" y="505" font-size="58" fill="#fff" stroke="#161616" stroke-width="5">3X</text><text x="148" y="325" font-size="58" fill="#39a9ff" stroke="#161616" stroke-width="5">5X</text></g>
-<circle cx="300" cy="300" r="82" fill="#0a0a0a" stroke="url(#gold)" stroke-width="9" filter="url(#shadow)"/><circle cx="300" cy="300" r="62" fill="#111" stroke="#f5c542" stroke-width="3"/><text x="300" y="288" fill="#fff" font-family="Arial,sans-serif" font-size="28" font-weight="700" font-style="italic" text-anchor="middle">MyBets</text><text x="300" y="330" fill="#f5c542" font-family="Arial,sans-serif" font-size="34" font-weight="900" text-anchor="middle">GIRAR</text>
-<path d="M300 5 L278 62 L300 52 L322 62 Z" fill="#f5c542" stroke="#0a0a0a" stroke-width="5"/>
+<circle cx="450" cy="380" r="246" fill="none" stroke="#f7d15b" stroke-width="3" opacity=".8"/>
+<g fill="#fff" font-family="Arial,sans-serif" font-size="30" font-weight="900" text-anchor="middle"><text x="450" y="174">2X</text><text x="544" y="193">5X</text><text x="623" y="255">3X</text><text x="655" y="389">10X</text><text x="625" y="519">2X</text><text x="544" y="580">5X</text><text x="450" y="606">3X</text><text x="356" y="580">2X</text><text x="275" y="519">5X</text><text x="245" y="389">10X</text><text x="277" y="255">2X</text><text x="356" y="193">3X</text></g>
+<circle cx="450" cy="380" r="83" fill="#090909" stroke="url(#gold)" stroke-width="8"/>
+<text x="450" y="375" fill="#fff" font-family="Arial,sans-serif" font-size="27" font-style="italic" font-weight="900" text-anchor="middle">My<tspan fill="#f5c542">Bets</tspan></text>
+<path d="M410 394 Q450 412 490 394" fill="none" stroke="#f5c542" stroke-width="5" stroke-linecap="round"/>
+</g>
+<g filter="url(#glow)" fill="url(#gold)"><circle cx="450" cy="119" r="7"/><circle cx="590" cy="166" r="7"/><circle cx="682" cy="270" r="7"/><circle cx="712" cy="380" r="7"/><circle cx="682" cy="490" r="7"/><circle cx="590" cy="594" r="7"/><circle cx="450" cy="641" r="7"/><circle cx="310" cy="594" r="7"/><circle cx="218" cy="490" r="7"/><circle cx="188" cy="380" r="7"/><circle cx="218" cy="270" r="7"/><circle cx="310" cy="166" r="7"/></g>
+<path d="M450 77 L423 129 L477 129 Z" fill="#fff2a2" stroke="#f5c542" stroke-width="5" filter="url(#glow)"/>
+<g transform="translate(92 190) rotate(-15)"><circle cx="0" cy="0" r="48" fill="#0b0b0b" stroke="#d29b22" stroke-width="8"/><circle cx="0" cy="0" r="38" fill="none" stroke="#f5c542" stroke-width="3"/><path d="M-17 3 L-5 14 L20-16 L10-20 L-4-4 L-13-10Z" fill="#f5c542"/></g>
+<g transform="translate(808 505) rotate(15)"><circle cx="0" cy="0" r="48" fill="#0b0b0b" stroke="#d29b22" stroke-width="8"/><circle cx="0" cy="0" r="38" fill="none" stroke="#f5c542" stroke-width="3"/><path d="M-17 3 L-5 14 L20-16 L10-20 L-4-4 L-13-10Z" fill="#f5c542"/></g>
 </svg>
