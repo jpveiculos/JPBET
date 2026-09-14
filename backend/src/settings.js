@@ -68,8 +68,6 @@ router.get('/public',async(req,res)=>{try{const result=await pool.query(`SELECT 
 
 router.get('/',exigirAdmin,async(req,res)=>{try{const result=await pool.query(`SELECT setting_key,setting_value,updated_at FROM site_settings ORDER BY setting_key`);res.json({ok:true,settings:result.rows});}catch(error){console.error(error);res.status(500).json({ok:false,message:'Erro ao carregar configurações.'});}});
 
-// API dedicada da roleta: lê e grava somente roulette_segments_json.
-// Isso evita que o editor da roleta dependa do salvamento das outras configurações.
 router.get('/roulette', exigirAdmin, async (req,res) => {
   try {
     const result = await pool.query(`SELECT setting_value,updated_at FROM site_settings WHERE setting_key='roulette_segments_json' LIMIT 1`);
@@ -107,6 +105,55 @@ router.put('/roulette', exigirAdmin, async (req,res) => {
     console.error(error);
     res.status(400).json({ok:false,message:error.message || 'Erro ao salvar a configuração da roleta.'});
   }
+});
+
+router.post('/roulette-large/spin', async (req,res) => {
+  const client = await pool.connect();
+  try {
+    const rouletteId = String(req.body?.rouletteId || '').toLowerCase();
+    const userId = Number(req.body?.userId);
+    const betAmount = Number(req.body?.betAmount);
+    const configs = {
+      roleta40: { slices: 40, bet: 5, prizes: [100,200,300,400], prizeIndexes: [0,10,20,30] },
+      roleta60: { slices: 60, bet: 10, prizes: [200,400,600,800], prizeIndexes: [0,15,30,45] }
+    };
+    const cfg = configs[rouletteId];
+    if (!cfg) return res.status(400).json({ok:false,message:'Roleta inválida.'});
+    if (!Number.isInteger(userId) || userId <= 0) return res.status(400).json({ok:false,message:'Usuário inválido.'});
+    if (!Number.isFinite(betAmount) || Math.abs(betAmount - cfg.bet) > 0.001) return res.status(400).json({ok:false,message:`A aposta nesta roleta é fixa em R$ ${cfg.bet.toFixed(2).replace('.',',')}.`});
+
+    await client.query('BEGIN');
+    const userResult = await client.query(`SELECT id,username,balance,bonus_balance,cash_balance,bonus_wager_progress,reserved_balance FROM users WHERE id=$1 FOR UPDATE`,[userId]);
+    if (!userResult.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ok:false,message:'Usuário não encontrado.'}); }
+    const user = userResult.rows[0];
+    const bonus = Math.max(0,Number(user.bonus_balance||0));
+    const cash = Math.max(0,Number(user.cash_balance||0));
+    const available = Number((bonus+cash).toFixed(2));
+    if (available < cfg.bet) { await client.query('ROLLBACK'); return res.status(400).json({ok:false,message:'Saldo disponível insuficiente.',balance:Number(user.balance||0),reservedBalance:Number(user.reserved_balance||0)}); }
+
+    const index = Math.floor(Math.random()*cfg.slices);
+    const prizePos = cfg.prizeIndexes.indexOf(index);
+    const prize = prizePos >= 0 ? cfg.prizes[prizePos] : 0;
+    const bonusUsed = Math.min(bonus,cfg.bet);
+    const cashUsed = cfg.bet - bonusUsed;
+    const newBonus = Number((bonus-bonusUsed).toFixed(2));
+    const newCash = Number((cash-cashUsed+prize).toFixed(2));
+    const newBalance = Number((newBonus+newCash).toFixed(2));
+    const requirement = Number(await (async()=>{try{const r=await client.query(`SELECT setting_value FROM site_settings WHERE setting_key='bonus_wager_requirement' LIMIT 1`);return r.rows[0]?.setting_value||'100';}catch{return '100';}})()) || 100;
+    const newProgress = Number(Math.min(requirement,Number(user.bonus_wager_progress||0)+bonusUsed).toFixed(2));
+
+    await client.query(`UPDATE users SET balance=$1,bonus_balance=$2,cash_balance=$3,bonus_wager_progress=$4 WHERE id=$5`,[newBalance,newBonus,newCash,newProgress,userId]);
+    const resultText = `${index}:${prize > 0 ? `R$ ${prize.toFixed(2)}` : 'PERCA'}:${prize > 0 ? 'prize' : 'loss'}`;
+    const spinResult = await client.query(`INSERT INTO spins(user_id,result,amount) VALUES($1,$2,$3) RETURNING id,created_at`,[userId,resultText,prize]);
+    await client.query(`INSERT INTO transactions(user_id,type,amount) VALUES($1,$2,$3)`,[userId,prize>0?'roulette_fixed_prize_win':'roulette_fixed_bet',prize>0?prize:-cfg.bet]);
+    await client.query('COMMIT');
+
+    return res.json({ok:true,spin:{id:spinResult.rows[0].id,rouletteId,index,result:prize>0?`R$ ${prize.toFixed(2)}`:'PERCA',resultType:prize>0?'prize':'loss',prize,betAmount:cfg.bet,slices:cfg.slices,prizeIndex:prizePos,prizeIndexes:cfg.prizeIndexes},user:{id:user.id,username:user.username,balance:newBalance,bonusBalance:newBonus,cashBalance:newCash,bonusWagerProgress:newProgress,bonusWagerRequirement:requirement,reservedBalance:Number(user.reserved_balance||0)}});
+  } catch(error) {
+    try { await client.query('ROLLBACK'); } catch (_) {}
+    console.error('Erro na roleta fixa:',error);
+    return res.status(500).json({ok:false,message:'Erro interno ao executar a roleta.'});
+  } finally { client.release(); }
 });
 
 router.get('/:key',exigirAdmin,async(req,res)=>{try{const result=await pool.query(`SELECT setting_key,setting_value,updated_at FROM site_settings WHERE setting_key=$1 LIMIT 1`,[req.params.key]);if(!result.rows.length)return res.status(404).json({ok:false,message:'Configuração não encontrada.'});res.json({ok:true,setting:result.rows[0]});}catch(error){console.error(error);res.status(500).json({ok:false,message:'Erro ao buscar configuração.'});}});
