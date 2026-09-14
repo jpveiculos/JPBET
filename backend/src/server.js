@@ -365,22 +365,22 @@ async function obterConfiguracao(chave, padrao = null) {
 ========================================================= */
 
 const ROLETTE_DEFAULT_SEGMENTS = [
-  { index: 0, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 1, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 2, label: "5x", type: "prize", multiplier: 5, probability: 15 },
-  { index: 3, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 4, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 5, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 6, label: "10x", type: "prize", multiplier: 10, probability: 15 },
-  { index: 7, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 8, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 9, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 15 },
-  { index: 11, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 12, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 13, label: "", type: "zero", multiplier: 0, probability: 5 },
-  { index: 14, label: "3x", type: "prize", multiplier: 3, probability: 15 },
-  { index: 15, label: "", type: "zero", multiplier: 0, probability: 5 }
+  { index: 0, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 1, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 2, label: "5x", type: "prize", multiplier: 5, probability: 5 },
+  { index: 3, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 4, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 5, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 6, label: "10x", type: "prize", multiplier: 10, probability: 1 },
+  { index: 7, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 8, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 9, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 10, label: "2x", type: "prize", multiplier: 2, probability: 5 },
+  { index: 11, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 12, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 13, label: "", type: "zero", multiplier: 0, probability: 7 },
+  { index: 14, label: "3x", type: "prize", multiplier: 3, probability: 5 },
+  { index: 15, label: "", type: "zero", multiplier: 0, probability: 7 }
 ];
 
 function carregarSegmentosRoleta(valor) {
