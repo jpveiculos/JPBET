@@ -13,6 +13,7 @@
   async function refreshBalance(){try{const u=session();if(!u||u.id==null)return;const r=await fetch(`/api/user/${encodeURIComponent(u.id)}`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();const fresh=d.user||d;if(fresh&&fresh.balance!=null)setUser(fresh)}catch(e){}}
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
+  function normalizeCenterBrand(){document.querySelectorAll('.center .brand').forEach(el=>{if(el.querySelector('.my,.bets'))return;if(el.textContent.trim()!=='MyBets')return;el.textContent='';const my=document.createElement('span');my.className='my';my.textContent='My';const bets=document.createElement('span');bets.className='bets';bets.textContent='Bets';el.append(my,bets)})}
 
   // Visualmente existem 10 setores iguais: 5 pretos de prêmio e 5 amarelos
   // de perda. As perdas continuam tendo todas as suas posições lógicas e
@@ -87,7 +88,7 @@
       $('result').textContent=Number(s.prize)>0?`🎉 Você ganhou ${money(s.prize)}!`:`Você perdeu ${money(bet)}.`;$('result').className=Number(s.prize)>0?'win':'loss';if(d.user)setUser(d.user);await refreshBalance();
     }catch(e){$('result').textContent=e.message;$('result').className='error'}finally{spinning=false;$('spinButton').disabled=false}
   }
-  document.addEventListener('DOMContentLoaded',()=>{user=session();if(user)setUser(user);$('authHint').textContent=user?`Aposta fixa: ${money(bet)}`:'Faça login para jogar.';renderWheel();$('spinButton').onclick=spin;refreshBalance();setInterval(refreshBalance,3000)})
+  document.addEventListener('DOMContentLoaded',()=>{user=session();if(user)setUser(user);normalizeCenterBrand();$('authHint').textContent=user?`Aposta fixa: ${money(bet)}`:'Faça login para jogar.';renderWheel();$('spinButton').onclick=spin;refreshBalance();setInterval(refreshBalance,3000)})
 })();
 
 document.addEventListener('DOMContentLoaded',()=>{
