@@ -46,7 +46,6 @@ async function garantirInfraPush() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
-
   const existing = await pool.query(`SELECT id FROM admin_push_config WHERE id=1 LIMIT 1`);
   if (!existing.rows.length) {
     const keys = gerarChavesVapid();
@@ -76,10 +75,7 @@ async function obterConfiguracoesNotificacao() {
 }
 
 function formatarMoeda(valor) {
-  return Number(valor || 0).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  });
+  return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 export function montarMensagemNotificacao(evento, dados = {}) {
@@ -87,7 +83,6 @@ export function montarMensagemNotificacao(evento, dados = {}) {
   const valor = dados.amount !== undefined ? `\n💰 Valor: ${formatarMoeda(dados.amount)}` : "";
   const id = dados.id ? `\n🆔 ID: ${dados.id}` : "";
   const motivo = dados.reason ? `\n📝 Motivo: ${dados.reason}` : "";
-
   const textos = {
     deposit_requested: `🔔 MyBets — Novo depósito solicitado${usuario}${valor}${id}`,
     withdrawal_requested: `🔔 MyBets — Novo saque solicitado${usuario}${valor}${id}`,
@@ -98,11 +93,10 @@ export function montarMensagemNotificacao(evento, dados = {}) {
     withdrawal_completed: `💸 MyBets — Saque concluído/pago${usuario}${valor}${id}`,
     test: "🧪 MyBets — Notificação de teste configurada com sucesso."
   };
-
   return textos[evento] || `🔔 MyBets — Movimentação registrada: ${evento}${usuario}${valor}${id}${motivo}`;
 }
 
-async function obterBadgeCount() {
+export async function obterBadgeCount() {
   try {
     const result = await pool.query(`
       SELECT
@@ -127,7 +121,6 @@ export async function salvarAssinaturaPush(subscription) {
   const p256dh = String(subscription.keys?.p256dh || "").trim();
   const auth = String(subscription.keys?.auth || "").trim();
   if (!endpoint || !p256dh || !auth || endpoint.length > 2000) throw new Error("Assinatura de push incompleta.");
-
   await pool.query(
     `INSERT INTO admin_push_subscriptions(endpoint,subscription_json,updated_at)
      VALUES($1,$2,CURRENT_TIMESTAMP)
@@ -150,24 +143,11 @@ export async function enviarPushAdmin({ title, body, url = "/admin.html", badge 
   webpush.setVapidDetails(config.subject, config.public_key, config.private_key);
   const result = await pool.query(`SELECT id,endpoint,subscription_json FROM admin_push_subscriptions`);
   if (!result.rows.length) return { ok: false, sent: 0, reason: "no_subscriptions" };
-
-  const payload = JSON.stringify({
-    title,
-    body,
-    url,
-    badge,
-    tag,
-    icon: "/assets/admin-icon.svg",
-    badgeIcon: "/assets/admin-icon.svg"
-  });
-
+  const payload = JSON.stringify({ title, body, url, badge, tag, icon: "/assets/admin-icon.svg", badgeIcon: "/assets/admin-icon.svg" });
   let sent = 0;
   for (const row of result.rows) {
     try {
-      await webpush.sendNotification(JSON.parse(row.subscription_json), payload, {
-        TTL: 300,
-        urgency: "high"
-      });
+      await webpush.sendNotification(JSON.parse(row.subscription_json), payload, { TTL: 300, urgency: "high" });
       sent += 1;
     } catch (error) {
       const status = Number(error?.statusCode || 0);
@@ -178,29 +158,23 @@ export async function enviarPushAdmin({ title, body, url = "/admin.html", badge 
       }
     }
   }
-
   return { ok: sent > 0, sent };
 }
 
 export async function enviarNotificacao(evento, dados = {}) {
   try {
     const settings = await obterConfiguracoesNotificacao();
-    const enabled = asBool(settings.notification_enabled, false);
     const eventEnabled = asBool(settings[`notification_${evento}`], true);
-    if (!enabled || !eventEnabled) {
-      return { ok: false, skipped: true, reason: !enabled ? "disabled" : "event_disabled" };
-    }
-
+    if (!eventEnabled) return { ok: false, skipped: true, reason: "event_disabled" };
     const message = montarMensagemNotificacao(evento, dados);
     const badge = await obterBadgeCount();
-    const result = await enviarPushAdmin({
+    return await enviarPushAdmin({
       title: "MyBets Admin",
       body: message,
       url: "/admin.html",
       badge,
       tag: `mybets-${evento}`
     });
-    return result;
   } catch (error) {
     console.error("Erro ao enviar notificação push MyBets:", error);
     return { ok: false, error: error.message };
