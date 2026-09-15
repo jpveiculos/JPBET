@@ -13,26 +13,63 @@
   async function refreshBalance(){try{const u=session();if(!u||u.id==null)return;const r=await fetch(`/api/user/${encodeURIComponent(u.id)}`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();const fresh=d.user||d;if(fresh&&fresh.balance!=null)setUser(fresh)}catch(e){}}
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
-  function angleFromLogical(index){return Number(index)*(360/slices)}
+
+  // A roleta continua tendo todas as probabilidades lógicas no backend,
+  // mas visualmente comprime as perdas em 5 setores amarelos e os ganhos
+  // em 5 setores pretos, todos exatamente do mesmo tamanho.
+  const visualStep=36;
+  function angleFromLogical(index){
+    const i=((Number(index)%slices)+slices)%slices;
+    const prizeSet=new Set(prizeIndexes.map(Number));
+    if(prizeSet.has(i)){
+      const prizePos=prizeIndexes.indexOf(i);
+      return prizePos*72;
+    }
+    const block=Math.min(4,Math.floor(i/(slices/5)));
+    return block*72+36;
+  }
   function updatePrizeOrientation(rr){document.querySelectorAll('.large-prize-label').forEach(t=>{const x=Number(t.dataset.cx),y=Number(t.dataset.cy);t.setAttribute('transform',`translate(${x} ${y}) rotate(${-rr}) translate(${-x} ${-y})`)})}
   function renderWheel(){
     const svg=$('rouletteSvg');if(!svg)return;svg.innerHTML='';
     const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
-    const step=360/slices,prizeSet=new Set(prizeIndexes.map(Number));
+
+    const prizeSet=new Set(prizeIndexes.map(Number));
     const textColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df','#ff5d68'];
-    for(let i=0;i<slices;i++){
-      const a=i*step-step/2,b=(i+1)*step-step/2,sector=document.createElementNS(ns,'path');
+
+    // 10 setores visuais: 5 pretos de ganho + 5 amarelos de perda.
+    for(let i=0;i<10;i++){
+      const a=i*visualStep-visualStep/2,b=(i+1)*visualStep-visualStep/2;
+      const sector=document.createElementNS(ns,'path');
       sector.setAttribute('d',path(239,a,b));
-      sector.setAttribute('fill',i%2===0?'#050505':'#f7b915');
-      sector.setAttribute('stroke','#080808');sector.setAttribute('stroke-width',slices>=100?'0.9':'1.2');svg.appendChild(sector);
-      if(prizeSet.has(i)){
-        const prizePos=prizeIndexes.indexOf(i),prize=prizes[prizePos],pos=polar(slices>=100?177:172,i*step),t=document.createElementNS(ns,'text');
-        t.textContent=money(prize);t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-        t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size',slices>=100?'14':(slices>=80?'17':'21'));t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[prizePos%textColors.length]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width',slices>=100?'2.5':'3.5');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=pos.x;t.dataset.cy=pos.y;svg.appendChild(t);
+      const isPrize=i%2===0;
+      sector.setAttribute('fill',isPrize?'#050505':'#f7b915');
+      sector.setAttribute('stroke','#080808');
+      sector.setAttribute('stroke-width','1.5');
+      svg.appendChild(sector);
+
+      if(isPrize){
+        const prizePos=i/2;
+        const prize=prizes[prizePos];
+        if(prize!=null){
+          const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');
+          t.textContent=money(prize);
+          t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);
+          t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+          t.setAttribute('font-family','Arial Black,Arial,sans-serif');
+          t.setAttribute('font-size',slices>=200?'14':'17');
+          t.setAttribute('font-weight','900');
+          t.setAttribute('fill',textColors[prizePos%textColors.length]);
+          t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','2.8');
+          t.setAttribute('paint-order','stroke fill');
+          t.classList.add('large-prize-label');
+          t.dataset.cx=pos.x;t.dataset.cy=pos.y;
+          svg.appendChild(t);
+        }
       }
     }
+
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
     const hi=document.createElementNS(ns,'circle');hi.setAttribute('cx',250);hi.setAttribute('cy',250);hi.setAttribute('r',233);hi.setAttribute('fill','none');hi.setAttribute('stroke','#ffe66b');hi.setAttribute('stroke-width','2');hi.setAttribute('opacity','.8');svg.appendChild(hi);
     if($('wheel')){$('wheel').style.transformOrigin='50% 50%';$('wheel').style.transformBox='fill-box';$('wheel').style.transform=`rotate(${rotation}deg)`;updatePrizeOrientation(rotation)}
