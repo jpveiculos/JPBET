@@ -14,19 +14,12 @@
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
   function normalizeCenterBrand(){document.querySelectorAll('.center .brand').forEach(el=>{if(el.querySelector('.my,.bets'))return;if(el.textContent.trim()!=='MyBets')return;el.textContent='';const my=document.createElement('span');my.className='my';my.textContent='My';const bets=document.createElement('span');bets.className='bets';bets.textContent='Bets';el.append(my,bets)})}
-
-  // Visualmente existem 10 setores iguais: 5 pretos de prêmio e 5 amarelos
-  // de perda. As perdas continuam tendo todas as suas posições lógicas e
-  // cada posição é distribuída dentro do respectivo setor amarelo.
   const visualStep=36;
   const lossesPerBlock=Math.max(1,Math.round(slices/prizeIndexes.length)-1);
   function angleFromLogical(index){
     const i=((Number(index)%slices)+slices)%slices;
     const prizeSet=new Set(prizeIndexes.map(Number));
-    if(prizeSet.has(i)){
-      const prizePos=prizeIndexes.indexOf(i);
-      return prizePos*72;
-    }
+    if(prizeSet.has(i)){const prizePos=prizeIndexes.indexOf(i);return prizePos*72}
     const blockSize=slices/prizeIndexes.length;
     const block=Math.min(prizeIndexes.length-1,Math.floor(i/blockSize));
     const start=block*blockSize;
@@ -42,45 +35,25 @@
     const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
-
     const textColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df','#ff5d68'];
     for(let i=0;i<10;i++){
       const a=i*visualStep-visualStep/2,b=(i+1)*visualStep-visualStep/2;
-      const sector=document.createElementNS(ns,'path');
-      sector.setAttribute('d',path(239,a,b));
-      const isPrize=i%2===0;
-      sector.setAttribute('fill',isPrize?'#050505':'#f7b915');
-      sector.setAttribute('stroke','#080808');
-      sector.setAttribute('stroke-width','1.5');
-      svg.appendChild(sector);
-
-      if(isPrize){
-        const prizePos=i/2;
-        const prize=prizes[prizePos];
-        if(prize!=null){
-          const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');
-          t.textContent=money(prize);
-          t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);
-          t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-          t.setAttribute('font-family','Arial Black,Arial,sans-serif');
-          t.setAttribute('font-size','22');
-          t.setAttribute('font-weight','900');
-          t.setAttribute('fill',textColors[prizePos%textColors.length]);
-          t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3.2');
-          t.setAttribute('paint-order','stroke fill');
-          t.classList.add('large-prize-label');
-          t.dataset.cx=pos.x;t.dataset.cy=pos.y;
-          svg.appendChild(t);
-        }
-      }
+      const sector=document.createElementNS(ns,'path');sector.setAttribute('d',path(239,a,b));
+      const isPrize=i%2===0;sector.setAttribute('fill',isPrize?'#050505':'#f7b915');sector.setAttribute('stroke','#080808');sector.setAttribute('stroke-width','1.5');svg.appendChild(sector);
+      if(isPrize){const prizePos=i/2,prize=prizes[prizePos];if(prize!=null){const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');t.textContent=money(prize);t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size','22');t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[prizePos%textColors.length]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3.2');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=pos.x;t.dataset.cy=pos.y;svg.appendChild(t)}}
     }
-
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
     const hi=document.createElementNS(ns,'circle');hi.setAttribute('cx',250);hi.setAttribute('cy',250);hi.setAttribute('r',233);hi.setAttribute('fill','none');hi.setAttribute('stroke','#ffe66b');hi.setAttribute('stroke-width','2');hi.setAttribute('opacity','.8');svg.appendChild(hi);
     if($('wheel')){$('wheel').style.transformOrigin='50% 50%';$('wheel').style.transformBox='fill-box';$('wheel').style.transform=`rotate(${rotation}deg)`;updatePrizeOrientation(rotation)}
   }
   async function spin(){
-    if(spinning)return;user=session();if(!user){location.href='/dashboard.html';return}
+    if(spinning)return;
+    user=session();
+    if(!user){
+      localStorage.setItem('jpbet_pending_game',location.pathname+location.search);
+      window.location.href='/?login=1';
+      return;
+    }
     spinning=true;$('spinButton').disabled=true;$('result').textContent='';$('result').className='result';
     try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:user.id,betAmount:bet,rouletteId:cfg.id})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');const s=d.spin||{};
       const center=angleFromLogical(Number(s.index)),target=((360-center-(rotation%360))+360)%360,dest=rotation+6*360+target,dur=3000,start=performance.now(),from=rotation;
