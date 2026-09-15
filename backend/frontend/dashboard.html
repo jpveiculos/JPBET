@@ -17,11 +17,9 @@
 </head>
 <body>
 <header class="header"><div class="logo">My<b>Bets</b></div><div class="header-right"><div class="header-balance">Saldo<strong id="headerBalance">R$ 0,00</strong></div><button class="menu-button" onclick="openMenu()">☰</button></div></header>
-
 <section id="playerView" class="player-dashboard">
   <div class="player-welcome"><h1>Olá, <span id="playerName">Jogador</span> 👋</h1><p>Bem-vindo à sua área do jogador.</p></div>
   <div class="player-card"><div class="player-card-label">Seu saldo</div><div class="player-card-balance" id="playerBalance">R$ 0,00</div><div class="player-card-sub">Créditos virtuais disponíveis</div><div class="player-actions"><button class="player-action primary" onclick="openDeposit()">+ Depositar</button><button class="player-action" onclick="openWithdraw()">Sacar</button></div></div>
-
   <h2 class="player-section-title">🎰 Escolha sua roleta</h2>
   <div class="games-grid">
     <article class="game-card"><div class="game-logo"></div><div class="game-brand">MYBETS</div><h3>Roleta R$ 1</h3><p>Aposta fixa de R$ 1,00.</p><div class="game-prize">Máximo R$ 50,00</div><button onclick="goToGame('/roulette1.html')">JOGAR AGORA</button></article>
@@ -29,33 +27,27 @@
     <article class="game-card"><div class="game-logo"></div><div class="game-brand">MYBETS</div><h3>Roleta R$ 10</h3><p>Aposta fixa de R$ 10,00.</p><div class="game-prize">Máximo R$ 1.000,00</div><button onclick="goToGame('/roulette40.html')">JOGAR AGORA</button></article>
     <article class="game-card"><div class="game-logo"></div><div class="game-brand">MYBETS</div><h3>Roleta R$ 20</h3><p>Aposta fixa de R$ 20,00.</p><div class="game-prize">Máximo R$ 1.500,00</div><button onclick="goToGame('/roulette60.html')">JOGAR AGORA</button></article>
   </div>
-
-  <h2 class="player-section-title">📋 Minha conta</h2><div class="player-info">Aqui você acompanha seu saldo e acessa depósitos, saques e as quatro roletas MyBets.</div>
+  <h2 class="player-section-title">📋 Minha conta</h2><div class="player-info">Aqui você acompanha seu saldo, saldo reservado e acessa depósitos, saques e as quatro roletas MyBets.</div>
 </section>
-
 <div class="drawer-backdrop" id="menu" onclick="if(event.target===this)closeMenu()"><aside class="drawer"><button class="close" onclick="closeMenu()">×</button><h2>Menu</h2><button class="drawer-button" onclick="openDeposit();closeMenu()">Depositar</button><button class="drawer-button" onclick="openWithdraw();closeMenu()">Sacar</button><button class="drawer-button" onclick="goToGame('/roulette1.html');closeMenu()">Roleta R$ 1</button><button class="drawer-button" onclick="goToGame('/roulette5.html');closeMenu()">Roleta R$ 5</button><button class="drawer-button" onclick="goToGame('/roulette40.html');closeMenu()">Roleta R$ 10</button><button class="drawer-button" onclick="goToGame('/roulette60.html');closeMenu()">Roleta R$ 20</button><button class="drawer-button" onclick="logout()">Sair</button></aside></div>
-
 <div class="modal" id="depositModal"><div class="modal-content"><button class="close" onclick="closeDeposit()">×</button><h2 class="modal-title">Depositar</h2><p>Informe o valor do depósito.</p><input class="field" id="depositAmount" type="number" min="1" step="0.01" placeholder="R$ 0,00"><button class="modal-action" onclick="requestDeposit()">SOLICITAR DEPÓSITO</button></div></div>
 <div class="modal" id="withdrawModal"><div class="modal-content"><button class="close" onclick="closeWithdraw()">×</button><h2 class="modal-title">Sacar</h2><p>Informe o valor e sua chave Pix.</p><input class="field" id="withdrawAmount" type="number" min="1" step="0.01" placeholder="Valor"><input class="field" id="withdrawPixKey" type="text" placeholder="Chave Pix"><button class="modal-action" onclick="requestWithdraw()">SOLICITAR SAQUE</button></div></div>
-
 <nav class="bottom-nav"><button class="nav-item active"><span>⌂</span>Início</button><button class="nav-item" onclick="goToGame('/roulette1.html')"><span>◉</span>Roletas</button><button class="nav-item" onclick="openDeposit()"><span>▣</span>Depósito</button><button class="nav-item" onclick="openMenu()"><span>◷</span>Menu</button></nav>
-
 <script>
 const API='/api';let user=null,token=null;const $=id=>document.getElementById(id);const money=v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function headers(){return {'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})}}
 function session(){try{user=JSON.parse(localStorage.getItem('jpbet_user')||'null');token=localStorage.getItem('jpbet_token')||null}catch(e){user=null;token=null}if(!user?.id){location.href='/';return false}return true}
 function renderUser(u){user={...user,...u};const name=user.name||user.nome||user.username||user.email||'Jogador';$('playerName').textContent=name;const bal=Number(user.balance||0);$('headerBalance').textContent='R$ '+money(bal);$('playerBalance').textContent='R$ '+money(bal);localStorage.setItem('jpbet_user',JSON.stringify(user))}
 async function loadAccount(){try{const r=await fetch(`${API}/account/${encodeURIComponent(user.id)}`,{headers:headers(),cache:'no-store'});if(r.ok){const d=await r.json();renderUser(d.user||d.account||d)}}catch(e){}}
-function goToGame(path){window.location.href=path}
-function openMenu(){$('menu').style.display='flex'}function closeMenu(){$('menu').style.display='none'}
-function openDeposit(){$('depositAmount').value='';$('depositModal').style.display='flex'}function closeDeposit(){$('depositModal').style.display='none'}
-function openWithdraw(){$('withdrawAmount').value='';$('withdrawPixKey').value='';$('withdrawModal').style.display='flex'}function closeWithdraw(){$('withdrawModal').style.display='none'}
+function goToGame(path){window.location.href=path} function openMenu(){$('menu').style.display='flex'} function closeMenu(){$('menu').style.display='none'}
+function openDeposit(){$('depositAmount').value='';$('depositModal').style.display='flex'} function closeDeposit(){$('depositModal').style.display='none'}
+function openWithdraw(){$('withdrawAmount').value='';$('withdrawPixKey').value='';$('withdrawModal').style.display='flex'} function closeWithdraw(){$('withdrawModal').style.display='none'}
 async function requestDeposit(){const amount=Number($('depositAmount').value);if(!(amount>0))return alert('Informe um valor válido.');try{const r=await fetch(`${API}/deposits`,{method:'POST',headers:headers(),body:JSON.stringify({userId:user.id,amount})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||'Não foi possível solicitar o depósito.');closeDeposit();alert('Solicitação de depósito enviada.')}catch(e){alert(e.message)}}
 async function requestWithdraw(){const amount=Number($('withdrawAmount').value),pixKey=$('withdrawPixKey').value.trim();if(!(amount>0))return alert('Informe um valor válido.');if(!pixKey)return alert('Informe sua chave Pix.');try{const r=await fetch(`${API}/withdrawals`,{method:'POST',headers:headers(),body:JSON.stringify({userId:user.id,amount,pixKey})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||'Não foi possível solicitar o saque.');closeWithdraw();alert('Saque solicitado e enviado para análise.');await loadAccount()}catch(e){alert(e.message)}}
 function logout(){localStorage.removeItem('jpbet_user');localStorage.removeItem('jpbet_token');location.href='/'}
 async function init(){if(!session())return;renderUser(user);await loadAccount()}
 init();document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDeposit();closeWithdraw();closeMenu()}});
 </script>
-<script src="/navigation.js?v=3" defer></script>
+<script src="/navigation.js?v=4" defer></script>
 </body>
 </html>
