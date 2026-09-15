@@ -56,5 +56,6 @@ function logout(){localStorage.removeItem('jpbet_user');localStorage.removeItem(
 async function init(){if(!session())return;renderUser(user);await loadAccount()}
 init();document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDeposit();closeWithdraw();closeMenu()}});
 </script>
+<script src="/navigation.js?v=3" defer></script>
 </body>
 </html>
