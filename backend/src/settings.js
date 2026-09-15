@@ -113,8 +113,8 @@ router.post('/roulette-large/spin', async (req,res) => {
     const userId = Number(req.body?.userId);
     const betAmount = Number(req.body?.betAmount);
     const configs = {
-      roleta40: { slices: 40, bet: 5, prizes: [100,200,300,400], prizeIndexes: [0,10,20,30] },
-      roleta60: { slices: 60, bet: 10, prizes: [200,400,600,800], prizeIndexes: [0,15,30,45] }
+      roleta40: { slices: 40, bet: 10, prizes: [100,200,300,400], prizeIndexes: [0,10,20,30] },
+      roleta60: { slices: 60, bet: 20, prizes: [200,400,600,800], prizeIndexes: [0,15,30,45] }
     };
     const cfg = configs[rouletteId];
     if (!cfg) return res.status(400).json({ok:false,message:'Roleta inválida.'});
