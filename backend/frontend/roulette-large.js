@@ -34,14 +34,20 @@
   function renderWheel(){
     const svg=$('rouletteSvg');if(!svg)return;svg.innerHTML='';
     const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');
-    const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
+    const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);
+    const prizeGlow=document.createElementNS(ns,'filter');
+    prizeGlow.id='prize3D';
+    prizeGlow.setAttribute('x','-30%');prizeGlow.setAttribute('y','-30%');prizeGlow.setAttribute('width','160%');prizeGlow.setAttribute('height','160%');
+    prizeGlow.innerHTML='<feDropShadow dx="2" dy="4" stdDeviation="1.8" flood-color="#000000" flood-opacity=".95"/><feDropShadow dx="0" dy="0" stdDeviation="1.2" flood-color="#ffffff" flood-opacity=".28"/>';
+    defs.appendChild(prizeGlow);
+    svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
-    const textColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df','#ff5d68'];
+    const textColors=['#ffd21f','#42e8ff','#35ff73','#ff72d2','#ff5b3d'];
     for(let i=0;i<10;i++){
       const a=i*visualStep-visualStep/2,b=(i+1)*visualStep-visualStep/2;
       const sector=document.createElementNS(ns,'path');sector.setAttribute('d',path(239,a,b));
       const isPrize=i%2===0;sector.setAttribute('fill',isPrize?'#050505':'#f7b915');sector.setAttribute('stroke','#080808');sector.setAttribute('stroke-width','1.5');svg.appendChild(sector);
-      if(isPrize){const prizePos=i/2,prize=prizes[prizePos];if(prize!=null){const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');t.textContent=prizeMoney(prize);t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size','22');t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[prizePos%textColors.length]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3.2');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=pos.x;t.dataset.cy=pos.y;svg.appendChild(t)}}
+      if(isPrize){const prizePos=i/2,prize=prizes[prizePos];if(prize!=null){const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');t.textContent=prizeMoney(prize);t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Impact, Arial Black, Arial, sans-serif');t.setAttribute('font-size','25');t.setAttribute('font-weight','900');t.setAttribute('letter-spacing','.3');t.setAttribute('fill',textColors[prizePos%textColors.length]);t.setAttribute('stroke','#070707');t.setAttribute('stroke-width','5');t.setAttribute('paint-order','stroke fill');t.setAttribute('filter','url(#prize3D)');t.classList.add('large-prize-label');t.dataset.cx=pos.x;t.dataset.cy=pos.y;svg.appendChild(t)}}
     }
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
     const hi=document.createElementNS(ns,'circle');hi.setAttribute('cx',250);hi.setAttribute('cy',250);hi.setAttribute('r',233);hi.setAttribute('fill','none');hi.setAttribute('stroke','#ffe66b');hi.setAttribute('stroke-width','2');hi.setAttribute('opacity','.8');svg.appendChild(hi);
@@ -87,6 +93,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     .bet-title{font-size:13px!important;margin:0 0 4px 3px!important}
     .bet-value{height:46px!important;font-size:24px!important}
     .hint{margin-top:5px!important}
+    .large-prize-label{font-family:Impact,Arial Black,Arial,sans-serif!important;font-weight:900!important;letter-spacing:.3px!important}
   `;
   document.head.appendChild(style);
 });
