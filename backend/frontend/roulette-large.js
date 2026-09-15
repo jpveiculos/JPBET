@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     .center:before{content:"";position:absolute;z-index:-2;inset:-9px;border-radius:50%;background:#050505;border:5px solid #5b3907;box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5)}
     .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
     .center .brand,.center .go{position:relative;z-index:2}
+    .result{margin-top:58px!important;position:relative;z-index:15}
   `;
   document.head.appendChild(style);
 });
