@@ -76,7 +76,16 @@
     window.carregarPagamentosAprovados();
   }
 
+  function carregarInterfaceDeposito() {
+    if (location.pathname !== "/dashboard.html") return;
+    if (document.getElementById("deposit-ui-script")) return;
+    const script = document.createElement("script");
+    script.id = "deposit-ui-script";
+    script.src = "/deposit-ui.js?v=1";
+    document.body.appendChild(script);
+  }
+
   addManifest();
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { atualizarReservaJogador(); instalarPagamentosAdmin(); });
-  else { atualizarReservaJogador(); instalarPagamentosAdmin(); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { atualizarReservaJogador(); instalarPagamentosAdmin(); carregarInterfaceDeposito(); });
+  else { atualizarReservaJogador(); instalarPagamentosAdmin(); carregarInterfaceDeposito(); }
 })();
