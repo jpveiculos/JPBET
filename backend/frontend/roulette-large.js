@@ -57,7 +57,7 @@
     }
     spinning=true;$('spinButton').disabled=true;$('result').textContent='';$('result').className='result';
     try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:user.id,betAmount:bet,rouletteId:cfg.id})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');const s=d.spin||{};
-      const center=angleFromLogical(Number(s.index)),target=((360-center-(rotation%360))+360)%360,dest=rotation+6*360+target,dur=3000,start=performance.now(),from=rotation;
+      const center=angleFromLogical(Number(s.index)),target=((360-center-(rotation%360))+360)%360,dest=rotation+2*360+target,dur=2200,start=performance.now(),from=rotation;
       await new Promise(resolve=>{function frame(now){const p=Math.min(1,(now-start)/dur);const e=p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;const rr=from+(dest-from)*e;$('wheel').style.transform=`rotate(${rr}deg)`;updatePrizeOrientation(rr);if(p<1)return requestAnimationFrame(frame);rotation=dest;$('wheel').style.transform=`rotate(${dest}deg)`;updatePrizeOrientation(dest);resolve()}requestAnimationFrame(frame)});
       $('result').textContent=Number(s.prize)>0?`🎉 Você ganhou ${money(s.prize)}!`:`Você perdeu ${money(bet)}.`;$('result').className=Number(s.prize)>0?'win':'loss';if(d.user)setUser(d.user);await refreshBalance();
     }catch(e){$('result').textContent=e.message;$('result').className='error'}finally{spinning=false;$('spinButton').disabled=false}
