@@ -16,7 +16,7 @@
 
   // Visualmente existem 10 setores iguais: 5 pretos de prêmio e 5 amarelos
   // de perda. As perdas continuam tendo todas as suas posições lógicas e
-  // agora cada posição é distribuída dentro do respectivo setor amarelo.
+  // cada posição é distribuída dentro do respectivo setor amarelo.
   const visualStep=36;
   const lossesPerBlock=Math.max(1,Math.round(slices/prizeIndexes.length)-1);
   function angleFromLogical(index){
@@ -97,8 +97,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     .wheel{top:62px!important;width:min(340px,calc(100vw - 44px))!important}
     .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
     .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
-    .pointer{top:-15px!important;width:52px!important;height:66px!important;background:linear-gradient(180deg,#ffe98a 0%,#f4c42d 24%,#b77a08 70%,#6a4305 100%)!important;border:3px solid #e2aa20!important;clip-path:polygon(0 0,100% 0,88% 64%,50% 100%,12% 64%)!important;filter:drop-shadow(0 3px 3px rgba(0,0,0,.8));}
-    .pointer:after{content:"";position:absolute;left:50%;top:11px;transform:translateX(-50%);width:26px;height:38px;background:linear-gradient(180deg,#ff5260 0%,#ff3345 55%,#b51222 100%);clip-path:polygon(50% 100%,0 0,100% 0);border:5px solid #090909;box-sizing:border-box;}
+    .pointer{position:absolute!important;z-index:10!important;left:50%!important;top:-8px!important;transform:translateX(-50%)!important;width:44px!important;height:50px!important;background:linear-gradient(180deg,#ffe98a,#dca51c 24%,#9d6908 68%,#5d3a00)!important;clip-path:polygon(4% 0,96% 0,78% 58%,50% 100%,22% 58%)!important;filter:drop-shadow(0 5px 7px rgba(0,0,0,.95))!important;pointer-events:none!important;border:0!important}
+    .pointer:before{content:"";position:absolute;left:8px;top:6px;width:28px;height:35px;background:#05070a;clip-path:polygon(4% 0,96% 0,72% 58%,50% 100%,28% 58%)}
+    .pointer:after{content:"";position:absolute;left:13px;top:9px;width:18px;height:27px;background:linear-gradient(180deg,#ff6673,#ff3045 55%,#b5001b);clip-path:polygon(0 0,100% 0,50% 100%)}
     .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
     .center:before{content:"";position:absolute;z-index:-2;inset:-9px;border-radius:50%;background:#050505;border:5px solid #5b3907;box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5)}
     .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
