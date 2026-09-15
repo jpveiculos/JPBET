@@ -47,15 +47,14 @@
 document.addEventListener('DOMContentLoaded',()=>{
   const style=document.createElement('style');
   style.textContent=`
+    .wheel{top:32px!important}
     .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
     .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
     .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
     .center:before{content:"";position:absolute;z-index:-2;inset:-9px;border-radius:50%;background:#050505;border:5px solid #5b3907;box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5)}
     .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
     .center .brand,.center .go{position:relative;z-index:2}
-    .wheel{top:18px!important}
-    .result{position:absolute!important;top:342px!important;left:0!important;width:100%!important;min-height:24px!important;margin:0!important;padding:0 14px!important;z-index:25!important;line-height:24px!important}
-    .bet-area{position:fixed!important;left:0!important;right:0!important;bottom:74px!important;max-width:570px!important;margin:0 auto!important;padding:0 7px!important;z-index:26!important}
+    .result{position:absolute!important;top:366px!important;left:0!important;width:100%!important;min-height:24px;margin:0!important;padding:0 14px!important;z-index:15!important;text-align:center}
   `;
   document.head.appendChild(style);
 });
