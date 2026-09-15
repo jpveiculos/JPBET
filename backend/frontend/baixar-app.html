@@ -10,54 +10,26 @@
     :root{--gold:#f5c542;--bg:#050505;--muted:#a9a9a9}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
-    body{min-height:100vh}
-    .page{width:min(980px,92vw);margin:0 auto;padding:0 0 40px}
+    body{min-height:100vh}.page{width:min(980px,92vw);margin:0 auto;padding:0 0 40px}
     .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0 10px}
-    .brand{font-size:29px;font-weight:950;letter-spacing:-1.5px;color:var(--gold);text-decoration:none}
-    .brand span{color:#fff}
+    .brand{position:relative;display:inline-block;padding-bottom:8px;font-size:29px;font-weight:950;letter-spacing:-1.5px;color:var(--gold);text-decoration:none}
+    .brand span{color:#fff}.brand:after{content:"";position:absolute;left:0;right:-4px;bottom:0;height:7px;border-bottom:4px solid var(--gold);border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg)}
     .back{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border:1px solid rgba(245,197,66,.55);border-radius:11px;color:#fff;text-decoration:none;font-size:12px;font-weight:900}
     .hero{text-align:center;padding:4px 0 18px;margin:0;min-height:0;height:auto;display:block;position:static;background:none;border:0;overflow:visible}
-    .eyebrow{display:block;color:var(--gold);font-size:11px;font-weight:900;letter-spacing:3px;margin:0 0 4px}
-    .hero h1{margin:0 0 7px;padding:0;font-size:clamp(32px,7vw,52px);line-height:.98;letter-spacing:-2px;font-weight:950}
-    .hero p{max-width:650px;margin:0 auto;color:#aaa;font-size:14px;line-height:1.45}
-    .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:0}
-    .card{background:linear-gradient(145deg,#14120c,#090909 68%);border:1px solid rgba(245,197,66,.45);border-radius:20px;padding:25px;box-shadow:0 18px 45px rgba(0,0,0,.35)}
-    .card.iphone{background:linear-gradient(145deg,#10151c,#090909 68%)}
-    .icon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#171717;border:1px solid rgba(245,197,66,.5);font-size:28px;margin-bottom:16px}.iphone .icon{border-color:rgba(255,255,255,.25)}
-    .card h2{margin:0 0 9px;font-size:24px}.card p{margin:0 0 18px;color:#aaa;font-size:13px;line-height:1.55}
-    .button{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border:1px solid rgba(245,197,66,.8);border-radius:12px;background:linear-gradient(135deg,#ffd34a,#efb92c);color:#070707;text-decoration:none;font-size:12px;font-weight:950;letter-spacing:.8px}
-    .note{margin-top:13px;color:#777;font-size:10px;line-height:1.5}.steps{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}.steps li{display:flex;gap:10px;align-items:flex-start;color:#ddd;font-size:13px;line-height:1.45}.num{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#191919;border:1px solid rgba(245,197,66,.5);color:var(--gold);font-weight:900;font-size:11px}.tip{margin-top:18px;padding:14px;border-radius:12px;background:#111;border:1px solid rgba(255,255,255,.08);color:#aaa;font-size:11px;line-height:1.5}.tip strong{color:#fff}footer{text-align:center;color:#777;font-size:10px;padding:30px 0}footer a{color:#aaa}
+    .eyebrow{display:block;color:var(--gold);font-size:11px;font-weight:900;letter-spacing:3px;margin:0 0 4px}.hero h1{margin:0 0 7px;padding:0;font-size:clamp(32px,7vw,52px);line-height:.98;letter-spacing:-2px;font-weight:950}.hero p{max-width:650px;margin:0 auto;color:#aaa;font-size:14px;line-height:1.45}
+    .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:0}.card{background:linear-gradient(145deg,#14120c,#090909 68%);border:1px solid rgba(245,197,66,.45);border-radius:20px;padding:25px;box-shadow:0 18px 45px rgba(0,0,0,.35)}.card.iphone{background:linear-gradient(145deg,#10151c,#090909 68%)}
+    .icon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#171717;border:1px solid rgba(245,197,66,.5);font-size:28px;margin-bottom:16px}.iphone .icon{border-color:rgba(255,255,255,.25)}.card h2{margin:0 0 9px;font-size:24px}.card p{margin:0 0 18px;color:#aaa;font-size:13px;line-height:1.55}
+    .button{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border:1px solid rgba(245,197,66,.8);border-radius:12px;background:linear-gradient(135deg,#ffd34a,#efb92c);color:#070707;text-decoration:none;font-size:12px;font-weight:950;letter-spacing:.8px}.note{margin-top:13px;color:#777;font-size:10px;line-height:1.5}.steps{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}.steps li{display:flex;gap:10px;align-items:flex-start;color:#ddd;font-size:13px;line-height:1.45}.num{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#191919;border:1px solid rgba(245,197,66,.5);color:var(--gold);font-weight:900;font-size:11px}.tip{margin-top:18px;padding:14px;border-radius:12px;background:#111;border:1px solid rgba(255,255,255,.08);color:#aaa;font-size:11px;line-height:1.5}.tip strong{color:#fff}footer{text-align:center;color:#777;font-size:10px;padding:30px 0}footer a{color:#aaa}
     @media(max-width:720px){.page{width:92vw;padding:0 0 30px}.top{padding:8px 0 6px}.brand{font-size:25px}.back{min-height:40px;padding:0 14px}.hero{padding:2px 0 14px}.eyebrow{margin-bottom:3px}.hero h1{font-size:34px;margin-bottom:6px}.hero p{font-size:12px;line-height:1.4}.cards{grid-template-columns:1fr}.card{padding:21px}}
   </style>
 </head>
 <body>
   <div class="page">
     <header class="top"><a class="brand" href="/">My<span>Bets</span></a><a class="back" href="/">VOLTAR AO SITE</a></header>
-    <section class="hero">
-      <span class="eyebrow">APLICATIVO MYBETS</span>
-      <h1>Baixar aplicativo</h1>
-      <p>Escolha a opção do seu celular. No Android, baixe o APK. No iPhone, coloque o MyBets na tela inicial para abrir como um aplicativo.</p>
-    </section>
+    <section class="hero"><span class="eyebrow">APLICATIVO MYBETS</span><h1>Baixar aplicativo</h1><p>Escolha a opção do seu celular. No Android, baixe o APK. No iPhone, coloque o MyBets na tela inicial para abrir como um aplicativo.</p></section>
     <section class="cards" aria-label="Opções de aplicativo">
-      <article class="card android">
-        <div class="icon" aria-hidden="true">🤖</div>
-        <h2>Android</h2>
-        <p>Baixe o aplicativo MyBets para Android e instale o arquivo APK no seu celular.</p>
-        <a class="button" href="https://raw.githubusercontent.com/jpveiculos/JPBET/main/backend/frontend/downloads/MyBets.apk">BAIXAR APLICATIVO ANDROID</a>
-        <div class="note">Se o download não iniciar, tente novamente. O APK é gerado pelo sistema de build do MyBets.</div>
-      </article>
-      <article class="card iphone">
-        <div class="icon" aria-hidden="true"></div>
-        <h2>iPhone</h2>
-        <p>Não é necessário instalar APK. Use o Safari para colocar o MyBets diretamente na tela inicial.</p>
-        <ol class="steps">
-          <li><span class="num">1</span><span>Abra o <strong>MyBets</strong> pelo Safari.</span></li>
-          <li><span class="num">2</span><span>Toque no botão <strong>Compartilhar</strong> (quadrado com a seta para cima).</span></li>
-          <li><span class="num">3</span><span>Role o menu e toque em <strong>Adicionar à Tela de Início</strong>.</span></li>
-          <li><span class="num">4</span><span>Confirme em <strong>Adicionar</strong>. O ícone do MyBets aparecerá na tela do iPhone.</span></li>
-        </ol>
-        <div class="tip"><strong>Dica:</strong> se “Adicionar à Tela de Início” não aparecer, confirme que a página está aberta no <strong>Safari</strong>, e não dentro do navegador de outro aplicativo.</div>
-      </article>
+      <article class="card android"><div class="icon" aria-hidden="true">🤖</div><h2>Android</h2><p>Baixe o aplicativo MyBets para Android e instale o arquivo APK no seu celular.</p><a class="button" href="https://raw.githubusercontent.com/jpveiculos/JPBET/main/backend/frontend/downloads/MyBets.apk">BAIXAR APLICATIVO ANDROID</a><div class="note">Se o download não iniciar, tente novamente. O APK é gerado pelo sistema de build do MyBets.</div></article>
+      <article class="card iphone"><div class="icon" aria-hidden="true"></div><h2>iPhone</h2><p>Não é necessário instalar APK. Use o Safari para colocar o MyBets diretamente na tela inicial.</p><ol class="steps"><li><span class="num">1</span><span>Abra o <strong>MyBets</strong> pelo Safari.</span></li><li><span class="num">2</span><span>Toque no botão <strong>Compartilhar</strong> (quadrado com a seta para cima).</span></li><li><span class="num">3</span><span>Role o menu e toque em <strong>Adicionar à Tela de Início</strong>.</span></li><li><span class="num">4</span><span>Confirme em <strong>Adicionar</strong>. O ícone do MyBets aparecerá na tela do iPhone.</span></li></ol><div class="tip"><strong>Dica:</strong> se “Adicionar à Tela de Início” não aparecer, confirme que a página está aberta no <strong>Safari</strong>, e não dentro do navegador de outro aplicativo.</div></article>
     </section>
     <footer><a href="/">MyBets</a> · <a href="termos-uso.html">Termos de Uso</a></footer>
   </div>
