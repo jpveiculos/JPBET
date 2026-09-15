@@ -103,7 +103,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
     .center:before{content:"";position:absolute;z-index:-2;inset:-9px;border-radius:50%;background:#050505;border:5px solid #5b3907;box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5)}
     .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
-    .center .brand,.center .go{position:relative;z-index:2}
+    .center .brand{position:relative;z-index:2;display:inline-block!important;color:#fff!important;text-shadow:0 1px 2px #000}
+    .center .brand:after{content:"";display:block;width:100%;height:3px;margin:3px auto 0;background:#f6bd24;border-radius:70% 55% 70% 55%;transform:skewX(-18deg) rotate(-2deg);box-shadow:0 1px 2px rgba(0,0,0,.8)}
+    .center .brand .my{color:#f6bd24!important}.center .brand .bets{color:#fff!important}
+    .center .go{position:relative;z-index:2}
     .result{position:absolute!important;top:365px!important;left:0!important;width:100%!important;min-height:24px;margin:0!important;padding:0 14px!important;z-index:16!important;text-align:center}
     .bet-area{position:fixed!important;left:16px!important;right:16px!important;bottom:82px!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;z-index:60!important}
     .bet-title{font-size:13px!important;margin:0 0 4px 3px!important}
