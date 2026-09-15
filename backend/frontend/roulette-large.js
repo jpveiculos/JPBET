@@ -7,7 +7,7 @@
   const api='/api/settings/roulette-large/spin';
   const $=id=>document.getElementById(id);
   let rotation=0,spinning=false,user=null;
-  function money(v){return `R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})`}
+  function money(v){return `R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`}
   function session(){try{return JSON.parse(localStorage.getItem('jpbet_user')||'null')}catch{return null}}
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
@@ -44,54 +44,14 @@
   document.addEventListener('DOMContentLoaded',()=>{user=session();$('authHint').textContent=user?`Aposta fixa: ${money(bet)}`:'Faça login para jogar.';renderWheel();$('spinButton').onclick=spin})
 })();
 
-/* Acabamento visual fiel ao modelo de referência: aros concêntricos e dois arcos no botão central. */
 document.addEventListener('DOMContentLoaded',()=>{
   const style=document.createElement('style');
   style.textContent=`
-    .wheel:before{
-      inset:-12px;
-      background:transparent!important;
-      border:2px solid #080808;
-      box-shadow:
-        0 0 0 2px #5b3605,
-        0 0 0 5px #9a5c05,
-        0 0 0 8px #e2a515,
-        0 0 0 11px #f8c52c,
-        0 0 0 13px #4a2b03,
-        0 0 0 15px #090909;
-    }
-    .wheel:after{
-      inset:-1px;
-      border:2px solid #f8d34b;
-      box-shadow:inset 0 0 0 2px #5b3605, inset 0 0 0 4px #0a0a0a;
-      z-index:4;
-    }
-    .center{
-      border:0!important;
-      box-shadow:none!important;
-      background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;
-      overflow:visible!important;
-    }
-    .center:before{
-      content:"";
-      position:absolute;
-      z-index:-2;
-      inset:-9px;
-      border-radius:50%;
-      background:#050505;
-      border:5px solid #5b3907;
-      box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5);
-    }
-    .center:after{
-      content:"";
-      position:absolute;
-      z-index:-1;
-      inset:-2px;
-      border-radius:50%;
-      border:2px solid #ffd33e;
-      box-shadow:inset 0 0 0 2px #2a1a04;
-      pointer-events:none;
-    }
+    .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
+    .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
+    .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
+    .center:before{content:"";position:absolute;z-index:-2;inset:-9px;border-radius:50%;background:#050505;border:5px solid #5b3907;box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5)}
+    .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
     .center .brand,.center .go{position:relative;z-index:2}
   `;
   document.head.appendChild(style);
