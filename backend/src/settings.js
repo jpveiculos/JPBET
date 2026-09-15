@@ -42,7 +42,7 @@ const configuracoesPadrao = [
   ["site_name","My Bets"],["site_title","My Bets - Plataforma de Jogos"],["site_description","Uma experiência de jogos moderna, rápida e pensada para dispositivos móveis."],["footer_text","© 2026 My Bets — Plataforma de demonstração."],
   ["bonus_system_enabled","true"],["initial_bonus_amount","100"],["bonus_wager_requirement","100"],
   ["notification_enabled","false"],["notification_deposit_requested","true"],["notification_withdrawal_requested","true"],["notification_deposit_approved","true"],["notification_deposit_rejected","true"],["notification_withdrawal_approved","true"],["notification_withdrawal_rejected","true"],["notification_withdrawal_completed","true"],["notification_webhook_url",""],["notification_webhook_token",""],["notification_recipient",""],
-  ["roulette_enabled","true"],["roulette_min_bet","0.50"],["roulette_max_bet","100"],["roulette_replay_probability","0"],["roulette_free_spin_enabled","false"],["roulette_segments_json",JSON.stringify(segmentosRoletaPadrao)],["roulette_animation_ms","1800"],["roulette_red_color","#e51f35"],["roulette_black_color","#171717"],["roulette_green_color","#08a83e"],["roulette_accent_color","#ffd43b"],["roulette_background_color","#fff7d6"],["roulette_prize_color","#d4af37"],["roulette_loss_color","#171717"],["roulette_text_color","#25e66b"],["roulette_divider_color","#ffdd69"],["roulette_pointer_color","#ffd24a"],
+  ["roulette_enabled","true"],["roulette_min_bet","0.50"],["roulette_max_bet","100"],["roulette_segments_json",JSON.stringify(segmentosRoletaPadrao)],["roulette_animation_ms","1800"],["roulette_red_color","#e51f35"],["roulette_black_color","#171717"],["roulette_green_color","#08a83e"],["roulette_accent_color","#ffd43b"],["roulette_background_color","#fff7d6"],["roulette_prize_color","#d4af37"],["roulette_loss_color","#171717"],["roulette_text_color","#25e66b"],["roulette_divider_color","#ffdd69"],["roulette_pointer_color","#ffd24a"],
   ["dashboard_background","#f5f7ff"],["dashboard_card_color","#ffffff"],["dashboard_primary_color","#ffcc00"],["dashboard_secondary_color","#6c3cff"],["dashboard_text_color","#171717"],
   ["primary_button_text","ENTRAR NA PLATAFORMA"],["login_button_text","ENTRAR"],["register_button_text","CRIAR CONTA"],["roulette_button_text","🎰 JOGAR NA ROLETA"],
   ["maintenance_mode","false"],["maintenance_message","Plataforma temporariamente em manutenção."],
@@ -57,7 +57,6 @@ async function inicializarConfiguracoes() {
     for (const [key,value] of configuracoesPadrao) {
       await pool.query(`INSERT INTO site_settings(setting_key,setting_value) VALUES($1,$2) ON CONFLICT(setting_key) DO NOTHING`,[key,value]);
     }
-    await pool.query(`DELETE FROM site_settings WHERE setting_key='roulette_rtp';`);
   } catch(error) {
     console.error('Erro ao inicializar configurações:',error);
   }
@@ -92,9 +91,8 @@ router.put('/roulette', exigirAdmin, async (req,res) => {
       const probability = Number(item?.probability ?? 0);
       let label = String(item?.label ?? '').trim();
       if (type === 'zero') { label = '❌'; }
-      if (type === 'sorte') { label = '🍀'; }
       if (type === 'prize') { if (!Number.isFinite(multiplier) || multiplier < 2 || multiplier > 100) throw new Error(`Multiplicador inválido na fatia ${index + 1}.`); label = `${Math.round(multiplier)}x`; }
-      if (!['zero','sorte','prize'].includes(type)) throw new Error(`Tipo inválido na fatia ${index + 1}.`);
+      if (!['zero','prize'].includes(type)) throw new Error(`Tipo inválido na fatia ${index + 1}.`);
       if (!Number.isFinite(probability) || probability < 0) throw new Error(`Probabilidade inválida na fatia ${index + 1}.`);
       return {label,type,multiplier:type === 'prize' ? Math.round(multiplier) : 0,probability};
     });
