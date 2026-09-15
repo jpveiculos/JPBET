@@ -58,10 +58,10 @@
           t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);
           t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
           t.setAttribute('font-family','Arial Black,Arial,sans-serif');
-          t.setAttribute('font-size',slices>=200?'14':'17');
+          t.setAttribute('font-size','22');
           t.setAttribute('font-weight','900');
           t.setAttribute('fill',textColors[prizePos%textColors.length]);
-          t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','2.8');
+          t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3.2');
           t.setAttribute('paint-order','stroke fill');
           t.classList.add('large-prize-label');
           t.dataset.cx=pos.x;t.dataset.cy=pos.y;
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const style=document.createElement('style');
   style.textContent=`
     .page{position:relative!important}
-    .wheel{top:50px!important}
+    .wheel{top:42px!important;width:min(340px,calc(100vw - 44px))!important}
     .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
     .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
     .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
