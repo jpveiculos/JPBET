@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const style=document.createElement('style');
   style.textContent=`
     .page{position:relative!important}
-    .wheel{top:42px!important;width:min(340px,calc(100vw - 44px))!important}
+    .wheel{top:62px!important;width:min(340px,calc(100vw - 44px))!important}
     .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
     .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
     .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
