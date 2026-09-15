@@ -1,0 +1,12 @@
+{
+  "name": "MyBets",
+  "short_name": "MyBets",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#070707",
+  "description": "MyBets — plataforma mobile.",
+  "icons": [{"src":"/assets/admin-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
