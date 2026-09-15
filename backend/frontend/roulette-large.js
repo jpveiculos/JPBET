@@ -13,13 +13,6 @@
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
 
-  // MODELO VISUAL IGUAL AO DA ROLETA DE 16:
-  // Cada setor preto de prêmio ocupa UMA fatia visual.
-  // Os setores de perda são comprimidos dentro de uma única fatia colorida.
-  // Assim:
-  //   Standard: 40 setores reais = 4 prêmios individuais + 4 blocos de 9 perdas.
-  //   Premium:  60 setores reais = 4 prêmios individuais + 4 blocos de 14 perdas.
-  // A roleta mostra 8 fatias visuais, mas o sorteio continua usando 40/60 posições reais.
   function visualIndexFromLogical(index){
     const n=Number(index);
     const p=prizeIndexes.indexOf(n);
@@ -32,10 +25,6 @@
     return 1;
   }
 
-  // Retorna o centro FÍSICO do setor lógico sorteado.
-  // Nos blocos coloridos, cada setor de perda ocupa uma pequena posição
-  // diferente dentro da mesma fatia visual. Isso impede que todos os losses
-  // terminem no centro do bloco e reproduz o comportamento da roleta de 16.
   function angleFromLogical(index){
     const n=Number(index);
     const prizePos=prizeIndexes.indexOf(n);
@@ -63,8 +52,6 @@
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
 
-    // Exatamente 8 fatias visuais, como na roleta de 16 da referência:
-    // 4 pretas = prêmios; 4 coloridas = grupos comprimidos de perdas.
     const visualStep=45;
     const lossColor='#f7b915';
     const prizeTextColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df'];
@@ -83,7 +70,9 @@
 
       if(v%2===0){
         const prizePos=v/2;
-        const q=polar(176,v*visualStep);
+        // Posiciona os prêmios em um ponto intermediário: mais próximos do núcleo,
+        // sem deixar o texto apertado ou sobre o botão central.
+        const q=polar(155,v*visualStep);
         const t=document.createElementNS(ns,'text');
         t.textContent=money(prizes[prizePos]);
         t.setAttribute('x',q.x);t.setAttribute('y',q.y);
@@ -92,7 +81,6 @@
         t.setAttribute('font-size',slices>=60?'22':'25');t.setAttribute('font-weight','900');
         t.setAttribute('fill',prizeTextColors[prizePos]);
         t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','4');t.setAttribute('paint-order','stroke fill');
-        // O prêmio pertence à fatia preta e gira exatamente junto com a roda.
         t.setAttribute('transform',`rotate(${v*visualStep+90} ${q.x} ${q.y})`);
         svg.appendChild(t);
       }
