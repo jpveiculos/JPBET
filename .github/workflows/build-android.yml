@@ -6,25 +6,49 @@ on:
     paths:
       - 'android/**'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
       - name: Build APK
         working-directory: android
         run: gradle --no-daemon assembleDebug
-      - name: Upload APK
+
+      - name: Prepare site download
+        run: |
+          mkdir -p backend/frontend/downloads
+          cp android/app/build/outputs/apk/debug/app-debug.apk backend/frontend/downloads/MyBets.apk
+
+      - name: Publish APK to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/downloads/MyBets.apk
+          if git diff --cached --quiet; then
+            echo "APK sem alterações para publicar."
+          else
+            git commit -m "build: publish MyBets Android APK"
+            git push
+          fi
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: MyBets-Android-debug
