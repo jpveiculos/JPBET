@@ -9,7 +9,7 @@
   function carregarInterfaceDeposito(){if(location.pathname!=="/dashboard.html")return;if(document.getElementById("deposit-ui-script"))return;const script=document.createElement("script");script.id="deposit-ui-script";script.src="/deposit-ui.js?v=4";document.body.appendChild(script)}
   function instalarNavegacaoMyBets(){
     const logos=document.querySelectorAll(".logo,.brand,.brand-main,.footer-brand");
-    logos.forEach(el=>{const target=el.closest("a")||el;if(target.tagName==="A"){target.href="/";target.onclick=()=>{window.location.href="/";return false};}else if(el.classList.contains("footer-brand")){el.style.cursor="pointer";el.onclick=()=>{window.location.href="/"};}});
+    logos.forEach(el=>{const target=el.closest("a")||el;if(target.tagName==="A"){target.href="/";target.onclick=()=>{window.location.href="/";return false};}else if(el.classList.contains("footer-brand")){el.style.cursor="pointer";el.onclick=()=>{window.location.href="/"};}if(el.classList.contains("logo")){el.style.color="#f6bd24";el.querySelectorAll("b").forEach(b=>b.style.color="#fff");}});
     if(location.pathname!=="/dashboard.html")return;
     const nav=document.querySelector(".bottom-nav");if(!nav)return;
     const items=nav.querySelectorAll(".nav-item");if(items.length<4)return;
