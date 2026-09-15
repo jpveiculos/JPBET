@@ -14,10 +14,11 @@
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
 
-  // A roleta continua tendo todas as probabilidades lógicas no backend,
-  // mas visualmente comprime as perdas em 5 setores amarelos e os ganhos
-  // em 5 setores pretos, todos exatamente do mesmo tamanho.
+  // Visualmente existem 10 setores iguais: 5 pretos de prêmio e 5 amarelos
+  // de perda. As perdas continuam tendo todas as suas posições lógicas e
+  // agora cada posição é distribuída dentro do respectivo setor amarelo.
   const visualStep=36;
+  const lossesPerBlock=Math.max(1,Math.round(slices/prizeIndexes.length)-1);
   function angleFromLogical(index){
     const i=((Number(index)%slices)+slices)%slices;
     const prizeSet=new Set(prizeIndexes.map(Number));
@@ -25,8 +26,14 @@
       const prizePos=prizeIndexes.indexOf(i);
       return prizePos*72;
     }
-    const block=Math.min(4,Math.floor(i/(slices/5)));
-    return block*72+36;
+    const blockSize=slices/prizeIndexes.length;
+    const block=Math.min(prizeIndexes.length-1,Math.floor(i/blockSize));
+    const start=block*blockSize;
+    const pos=i-start;
+    const lossPos=Math.max(1,Math.min(blockSize-1,pos));
+    const yellowStart=block*72+18;
+    const yellowSpan=36;
+    return yellowStart+((lossPos-0.5)/lossesPerBlock)*yellowSpan;
   }
   function updatePrizeOrientation(rr){document.querySelectorAll('.large-prize-label').forEach(t=>{const x=Number(t.dataset.cx),y=Number(t.dataset.cy);t.setAttribute('transform',`translate(${x} ${y}) rotate(${-rr}) translate(${-x} ${-y})`)})}
   function renderWheel(){
@@ -35,10 +42,7 @@
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
 
-    const prizeSet=new Set(prizeIndexes.map(Number));
     const textColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df','#ff5d68'];
-
-    // 10 setores visuais: 5 pretos de ganho + 5 amarelos de perda.
     for(let i=0;i<10;i++){
       const a=i*visualStep-visualStep/2,b=(i+1)*visualStep-visualStep/2;
       const sector=document.createElementNS(ns,'path');
@@ -93,6 +97,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     .wheel{top:62px!important;width:min(340px,calc(100vw - 44px))!important}
     .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
     .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
+    .pointer{top:-15px!important;width:52px!important;height:66px!important;background:linear-gradient(180deg,#f7f7f7 0%,#d9d9d9 9%,#1a1a1a 10%,#1a1a1a 68%,#9b6708 69%,#d6a521 82%,#5b3605 100%)!important;border:3px solid #d8d8d8!important;clip-path:polygon(0 0,100% 0,88% 64%,50% 100%,12% 64%)!important;filter:drop-shadow(0 3px 3px rgba(0,0,0,.8));}
+    .pointer:after{content:"";position:absolute;left:50%;top:11px;transform:translateX(-50%);width:24px;height:36px;background:linear-gradient(180deg,#ff5260 0%,#ff3345 55%,#b51222 100%);clip-path:polygon(50% 100%,0 0,100% 0);border:2px solid #080808;box-sizing:border-box;}
     .center{border:0!important;box-shadow:none!important;background:radial-gradient(circle at 42% 28%,#302510 0%,#090806 62%,#020202 100%)!important;overflow:visible!important}
     .center:before{content:"";position:absolute;z-index:-2;inset:-9px;border-radius:50%;background:#050505;border:5px solid #5b3907;box-shadow:0 0 0 3px #c38b12,0 0 0 5px #1a1205,0 0 10px rgba(255,195,35,.5)}
     .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
