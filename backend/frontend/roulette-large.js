@@ -1,9 +1,9 @@
 (function(){
   const cfg=window.MYBETS_LARGE_ROULETTE||{};
-  const slices=Number(cfg.slices)||40;
-  const bet=Number(cfg.bet)||5;
-  const prizes=Array.isArray(cfg.prizes)?cfg.prizes:[100,200,300,400];
-  const prizeIndexes=Array.isArray(cfg.prizeIndexes)?cfg.prizeIndexes:[0,10,20,30];
+  const slices=Number(cfg.slices)||100;
+  const bet=Number(cfg.bet)||1;
+  const prizes=Array.isArray(cfg.prizes)?cfg.prizes:[5,10,15,20,50];
+  const prizeIndexes=Array.isArray(cfg.prizeIndexes)?cfg.prizeIndexes:[0,20,40,60,80];
   const api='/api/settings/roulette-large/spin';
   const $=id=>document.getElementById(id);
   let rotation=0,spinning=false,user=null;
@@ -14,20 +14,20 @@
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
   function visualIndexFromLogical(index){const n=Number(index),p=prizeIndexes.indexOf(n);if(p>=0)return p*2;for(let i=0;i<prizeIndexes.length;i++){const start=prizeIndexes[i]+1,end=(i+1<prizeIndexes.length?prizeIndexes[i+1]:slices)-1;if(n>=start&&n<=end)return i*2+1}return 1}
-  function angleFromLogical(index){const n=Number(index),p=prizeIndexes.indexOf(n);if(p>=0)return p*90;const blockSize=(slices-prizeIndexes.length)/prizeIndexes.length;for(let i=0;i<prizeIndexes.length;i++){const start=prizeIndexes[i]+1,end=(i+1<prizeIndexes.length?prizeIndexes[i+1]:slices)-1;if(n>=start&&n<=end){const ordinal=n-start,visualIndex=i*2+1,blockStart=visualIndex*45-22.5;return blockStart+(ordinal+.5)*(45/blockSize)}}return 0}
+  function angleFromLogical(index){const n=Number(index),p=prizeIndexes.indexOf(n);const count=prizeIndexes.length;const step=360/count;if(p>=0)return p*step;const blockSize=(slices-count)/count;for(let i=0;i<count;i++){const start=prizeIndexes[i]+1,end=(i+1<count?prizeIndexes[i+1]:slices)-1;if(n>=start&&n<=end){const ordinal=n-start;const blockStart=(i*2+1)*step-step/2;return blockStart+(ordinal+.5)*(step/blockSize)}}return 0}
   function updatePrizeOrientation(rr){document.querySelectorAll('.large-prize-label').forEach(t=>{const x=Number(t.dataset.cx),y=Number(t.dataset.cy);t.setAttribute('transform',`translate(${x} ${y}) rotate(${-rr}) translate(${-x} ${-y})`)})}
   function renderWheel(){
     const svg=$('rouletteSvg');if(!svg)return;svg.innerHTML='';
     const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');
     const glow=document.createElementNS(ns,'filter');glow.id='goldGlow';glow.innerHTML='<feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>';defs.appendChild(glow);svg.appendChild(defs);
     const base=document.createElementNS(ns,'circle');base.setAttribute('cx',250);base.setAttribute('cy',250);base.setAttribute('r',239);base.setAttribute('fill','#050505');svg.appendChild(base);
-    const step=45,loss='#f7b915',textColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df'];
-    for(let v=0;v<8;v++){
+    const count=prizes.length,step=360/count,loss='#f7b915',textColors=['#ff8a22','#39a9ff','#31e56d','#d9d9df','#ff5d68'];
+    for(let v=0;v<count*2;v++){
       const a=v*step-step/2,b=(v+1)*step-step/2,sector=document.createElementNS(ns,'path');
       sector.setAttribute('d',path(239,a,b));sector.setAttribute('fill',v%2===0?'#050505':loss);sector.setAttribute('stroke','#080808');sector.setAttribute('stroke-width','2');svg.appendChild(sector);
       if(v%2===0){const pos=v/2,q=polar(172,v*step),t=document.createElementNS(ns,'text');
         t.textContent=money(prizes[pos]);t.setAttribute('x',q.x);t.setAttribute('y',q.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-        t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size',slices>=60?'22':'25');t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[pos]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','4');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=q.x;t.dataset.cy=q.y;svg.appendChild(t);
+        t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size',slices>=60?'20':'23');t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[pos%textColors.length]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','4');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=q.x;t.dataset.cy=q.y;svg.appendChild(t);
       }
     }
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
