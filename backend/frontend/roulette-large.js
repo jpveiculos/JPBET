@@ -9,6 +9,8 @@
   let rotation=0,spinning=false,user=null;
   function money(v){return `R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`}
   function session(){try{return JSON.parse(localStorage.getItem('jpbet_user')||'null')}catch{return null}}
+  function setUser(u){if(!u)return;user={...user,...u};localStorage.setItem('jpbet_user',JSON.stringify(user));const h=$('headerBalance');if(h&&user.balance!=null)h.textContent=money(user.balance)}
+  async function refreshBalance(){try{const u=session();if(!u||u.id==null)return;const r=await fetch(`/api/user/${encodeURIComponent(u.id)}`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();const fresh=d.user||d;if(fresh&&fresh.balance!=null)setUser(fresh)}catch(e){}}
   function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
   function path(r,a,b){const p=polar(r,a),q=polar(r,b);return `M250 250 L${p.x} ${p.y} A${r} ${r} 0 0 1 ${q.x} ${q.y} Z`}
   function visualIndexFromLogical(index){const n=Number(index),p=prizeIndexes.indexOf(n);if(p>=0)return p*2;for(let i=0;i<prizeIndexes.length;i++){const start=prizeIndexes[i]+1,end=(i+1<prizeIndexes.length?prizeIndexes[i+1]:slices)-1;if(n>=start&&n<=end)return i*2+1}return 1}
@@ -38,10 +40,10 @@
     try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:user.id,betAmount:bet,rouletteId:cfg.id})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');const s=d.spin||{};
       const center=angleFromLogical(Number(s.index)),target=((360-center-(rotation%360))+360)%360,dest=rotation+7*360+target,dur=1900,start=performance.now(),from=rotation;
       await new Promise(resolve=>{function frame(now){const p=Math.min(1,(now-start)/dur),e=1-Math.pow(1-p,3),rr=from+(dest-from)*e;$('wheel').style.transform=`rotate(${rr}deg)`;updatePrizeOrientation(rr);if(p<1)return requestAnimationFrame(frame);rotation=dest;$('wheel').style.transform=`rotate(${dest}deg)`;updatePrizeOrientation(dest);resolve()}requestAnimationFrame(frame)});
-      $('result').textContent=Number(s.prize)>0?`🎉 Você ganhou ${money(s.prize)}!`:`Você perdeu ${money(bet)}.`;$('result').className=Number(s.prize)>0?'win':'loss';if(d.user)localStorage.setItem('jpbet_user',JSON.stringify({...user,...d.user}));
+      $('result').textContent=Number(s.prize)>0?`🎉 Você ganhou ${money(s.prize)}!`:`Você perdeu ${money(bet)}.`;$('result').className=Number(s.prize)>0?'win':'loss';if(d.user)setUser(d.user);await refreshBalance();
     }catch(e){$('result').textContent=e.message;$('result').className='error'}finally{spinning=false;$('spinButton').disabled=false}
   }
-  document.addEventListener('DOMContentLoaded',()=>{user=session();$('authHint').textContent=user?`Aposta fixa: ${money(bet)}`:'Faça login para jogar.';renderWheel();$('spinButton').onclick=spin})
+  document.addEventListener('DOMContentLoaded',()=>{user=session();if(user)setUser(user);$('authHint').textContent=user?`Aposta fixa: ${money(bet)}`:'Faça login para jogar.';renderWheel();$('spinButton').onclick=spin;refreshBalance();setInterval(refreshBalance,3000)})
 })();
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -56,7 +58,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     .center:after{content:"";position:absolute;z-index:-1;inset:-2px;border-radius:50%;border:2px solid #ffd33e;box-shadow:inset 0 0 0 2px #2a1a04;pointer-events:none}
     .center .brand,.center .go{position:relative;z-index:2}
     .result{position:absolute!important;top:365px!important;left:0!important;width:100%!important;min-height:24px;margin:0!important;padding:0 14px!important;z-index:16!important;text-align:center}
-    .bet-area{position:absolute!important;left:0!important;right:0!important;bottom:78px!important;margin:0 auto!important;z-index:31!important}
+    .bet-area{position:fixed!important;left:16px!important;right:16px!important;bottom:82px!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;z-index:60!important}
+    .bet-title{font-size:13px!important;margin:0 0 4px 3px!important}
+    .bet-value{height:46px!important;font-size:24px!important}
+    .hint{margin-top:5px!important}
   `;
   document.head.appendChild(style);
 });
