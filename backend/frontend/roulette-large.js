@@ -8,6 +8,7 @@
   const $=id=>document.getElementById(id);
   let rotation=0,spinning=false,user=null;
   function money(v){return `R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`}
+  function prizeMoney(v){return `R$ ${Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0})}`}
   function session(){try{return JSON.parse(localStorage.getItem('jpbet_user')||'null')}catch{return null}}
   function setUser(u){if(!u)return;user={...user,...u};localStorage.setItem('jpbet_user',JSON.stringify(user));const h=$('headerBalance');if(h&&user.balance!=null)h.textContent=money(user.balance)}
   async function refreshBalance(){try{const u=session();if(!u||u.id==null)return;const r=await fetch(`/api/user/${encodeURIComponent(u.id)}`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();const fresh=d.user||d;if(fresh&&fresh.balance!=null)setUser(fresh)}catch(e){}}
@@ -40,7 +41,7 @@
       const a=i*visualStep-visualStep/2,b=(i+1)*visualStep-visualStep/2;
       const sector=document.createElementNS(ns,'path');sector.setAttribute('d',path(239,a,b));
       const isPrize=i%2===0;sector.setAttribute('fill',isPrize?'#050505':'#f7b915');sector.setAttribute('stroke','#080808');sector.setAttribute('stroke-width','1.5');svg.appendChild(sector);
-      if(isPrize){const prizePos=i/2,prize=prizes[prizePos];if(prize!=null){const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');t.textContent=money(prize);t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size','22');t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[prizePos%textColors.length]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3.2');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=pos.x;t.dataset.cy=pos.y;svg.appendChild(t)}}
+      if(isPrize){const prizePos=i/2,prize=prizes[prizePos];if(prize!=null){const pos=polar(177,prizePos*72),t=document.createElementNS(ns,'text');t.textContent=prizeMoney(prize);t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Arial Black,Arial,sans-serif');t.setAttribute('font-size','22');t.setAttribute('font-weight','900');t.setAttribute('fill',textColors[prizePos%textColors.length]);t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','3.2');t.setAttribute('paint-order','stroke fill');t.classList.add('large-prize-label');t.dataset.cx=pos.x;t.dataset.cy=pos.y;svg.appendChild(t)}}
     }
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
     const hi=document.createElementNS(ns,'circle');hi.setAttribute('cx',250);hi.setAttribute('cy',250);hi.setAttribute('r',233);hi.setAttribute('fill','none');hi.setAttribute('stroke','#ffe66b');hi.setAttribute('stroke-width','2');hi.setAttribute('opacity','.8');svg.appendChild(hi);
