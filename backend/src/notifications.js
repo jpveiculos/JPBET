@@ -88,10 +88,11 @@ export async function enviarPushAdmin({ title, body, url = "/admin.html", badge 
 }
 export async function enviarNotificacao(evento, dados = {}) {
   try {
+    if (!["deposit_requested", "withdrawal_requested"].includes(evento)) return { ok: false, skipped: true, reason: "request_only" };
     const settings = await obterConfiguracoesNotificacao();
     const eventEnabled = asBool(settings[`notification_${evento}`], true);
     if (!eventEnabled) return { ok: false, skipped: true, reason: "event_disabled" };
-    let dadosCompletos = { ...dados };
+    const dadosCompletos = { ...dados };
     if (!dadosCompletos.username && dadosCompletos.userId) {
       const userResult = await pool.query(`SELECT username FROM users WHERE id=$1 LIMIT 1`, [Number(dadosCompletos.userId)]);
       if (userResult.rows.length) dadosCompletos.username = userResult.rows[0].username;
