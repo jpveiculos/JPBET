@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     .center .brand:after{content:"";display:block;width:100%;height:3px;margin:3px auto 0;background:#f6bd24;border-radius:70% 55% 70% 55%;transform:skewX(-18deg) rotate(-2deg);box-shadow:0 1px 2px rgba(0,0,0,.8)}
     .center .brand .my{color:#f6bd24!important}.center .brand .bets{color:#fff!important}
     .center .go{position:relative;z-index:2}
-    .result{position:absolute!important;top:410px!important;left:0!important;width:100%!important;min-height:24px;margin:0!important;padding:0 14px!important;z-index:16!important;text-align:center}
+    .result{position:absolute!important;top:430px!important;left:0!important;width:100%!important;min-height:24px;margin:0!important;padding:0 14px!important;z-index:16!important;text-align:center}
     .bet-area{position:fixed!important;left:16px!important;right:16px!important;bottom:82px!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;z-index:60!important}
     .bet-title{font-size:13px!important;margin:0 0 4px 3px!important}
     .bet-value{height:46px!important;font-size:24px!important}
