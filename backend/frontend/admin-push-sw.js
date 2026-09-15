@@ -7,6 +7,7 @@ self.addEventListener("push", event => {
   }
 
   const title = data.title || "MyBets Admin";
+  const badgeCount = Math.max(0, Number(data.badge || 0));
   const options = {
     body: data.body || "Você tem uma nova atualização no painel administrativo.",
     icon: data.icon || "/assets/admin-icon.svg",
@@ -16,7 +17,15 @@ self.addEventListener("push", event => {
     data: { url: data.url || "/admin.html" }
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  const tasks = [self.registration.showNotification(title, options)];
+  if (self.navigator && "setAppBadge" in self.navigator) {
+    tasks.push(
+      badgeCount > 0
+        ? self.navigator.setAppBadge(badgeCount)
+        : self.navigator.clearAppBadge()
+    );
+  }
+  event.waitUntil(Promise.all(tasks));
 });
 
 self.addEventListener("notificationclick", event => {
