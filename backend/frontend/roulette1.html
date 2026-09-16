@@ -11,103 +11,29 @@
 </head>
 <body>
 <header class="header"><a class="logo" href="/">My<b>Bets</b></a><div class="balance">Saldo<strong id="balance">R$ 0,00</strong></div></header>
-<main class="page"><div class="wheel-wrap"><svg id="wheel" viewBox="0 0 500 500" aria-label="Roleta MyBets com 207 posições lógicas"><g id="rotor"><g id="sectors"></g><g id="labels"></g><circle cx="250" cy="250" r="240" fill="none" stroke="#b8860b" stroke-width="11"/></g></svg><div class="pointer"></div><button id="spin" class="center"><span class="brand"><span class="my">My</span>Bets</span><span class="go">GIRAR</span></button></div><div id="result" class="result"></div><div id="status" class="status">Conectando ao servidor…</div><section class="bet"><div class="bet-label">Valor da aposta</div><div class="bet-value">R$ 1,00</div><div class="bet-note">Créditos virtuais • 207 posições lógicas • 9 prêmios + 198 perdas</div></section></main>
+<main class="page"><div class="wheel-wrap"><svg id="wheel" viewBox="0 0 500 500" aria-label="Roleta MyBets com 207 posições lógicas"><g id="rotor"><g id="sectors"></g><g id="labels"></g><circle cx="250" cy="250" r="240" fill="none" stroke="#b8860b" stroke-width="11"/></g></svg><div class="pointer"></div><button id="spin" class="center"><span class="brand"><span class="my">My</span>Bets</span><span class="go">GIRAR</span></button></div><div id="result" class="result"></div><div id="status" class="status">Carregando configuração da roleta…</div><section class="bet"><div class="bet-label">Valor da aposta</div><div class="bet-value">R$ 1,00</div><div class="bet-note" id="structureNote">Créditos virtuais • carregando estrutura…</div></section></main>
 <nav class="bottom"><a href="/"><span>⌂</span>Início</a><a href="/dashboard.html"><span>👤</span>Área do jogador</a><a class="active" href="/roulette1.html"><span>◉</span>Roleta</a></nav>
 <script>
 (()=>{
-/*
-  MAPA VISUAL FIXO DA ROLETA
-  360° = 18 fatias visuais de 20°.
-  Cada bloco ocupa 40° e contém:
-    - 20° PRETO  = 1 posição lógica de prêmio;
-    - 20° AMARELO = 22 posições lógicas de perda comprimidas.
-  São 9 blocos: 9 posições de prêmio + 198 posições de perda = 207.
-*/
-const LOGICAL_POSITIONS=207;
-const VISUAL_SLICES=18;
-const VISUAL_ANGLE=20;
-const BLOCK_ANGLE=40;
-const BLACK_PRIZE_ANGLE=20;
-const YELLOW_LOSS_ANGLE=20;
-const LOSS_PER_YELLOW=22;
-const MULTIPLIERS=[2,3,4,5,6,7,8,9,10];
-const DURATION=4800;
-const LABEL_EXTRA=720;
-const BASE=-10;
-
-let rotation=0,busy=false,raf=0;
-const $=id=>document.getElementById(id),ns='http://www.w3.org/2000/svg';
+const DEFAULTS={logical:207,visual:18,angle:20,lossPerYellow:22};
+let LOGICAL_POSITIONS=DEFAULTS.logical,VISUAL_SLICES=DEFAULTS.visual,VISUAL_ANGLE=DEFAULTS.angle,LOSS_PER_YELLOW=DEFAULTS.lossPerYellow;
+let rotation=0,busy=false,raf=0,configReady=false;
+const MULTIPLIERS=[2,3,4,5,6,7,8,9,10],DURATION=4800,LABEL_EXTRA=720,ns='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
 function money(v){return`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`}
 function getUser(){try{return JSON.parse(localStorage.getItem('jpbet_user')||'null')}catch{return null}}
 function polar(r,d){const a=(d-90)*Math.PI/180;return{x:250+r*Math.cos(a),y:250+r*Math.sin(a)}}
 function path(r,a,b){const p=polar(r,a),q=polar(r,b);return`M250 250L${p.x} ${p.y}A${r} ${r} 0 0 1 ${q.x} ${q.y}Z`}
 function labels(){return[...document.querySelectorAll('#labels text')]}
 function setLabelsLocal(angle){for(const t of labels()){const x=t.getAttribute('data-x'),y=t.getAttribute('data-y');t.setAttribute('transform',`rotate(${angle} ${x} ${y})`)}}
-
-function draw(){
-  const sg=$('sectors'),lg=$('labels');
-  sg.innerHTML='';lg.innerHTML='';
-
-  for(let group=0;group<9;group++){
-    // Cada grupo = 40°: 20° preto + 20° amarelo.
-    const blackStart=BASE+group*BLOCK_ANGLE;
-    const yellowStart=blackStart+BLACK_PRIZE_ANGLE;
-
-    const black=document.createElementNS(ns,'path');
-    black.setAttribute('d',path(238,blackStart,blackStart+BLACK_PRIZE_ANGLE));
-    black.setAttribute('fill','#050505');
-    black.setAttribute('stroke','#171717');
-    black.setAttribute('stroke-width','.9');
-
-    const yellow=document.createElementNS(ns,'path');
-    yellow.setAttribute('d',path(238,yellowStart,yellowStart+YELLOW_LOSS_ANGLE));
-    yellow.setAttribute('fill','#c18b18');
-    yellow.setAttribute('stroke','#c18b18');
-    yellow.setAttribute('stroke-width','.8');
-
-    sg.append(black,yellow);
-
-    // O multiplicador fica exatamente no centro dos 20° pretos.
-    const center=blackStart+BLACK_PRIZE_ANGLE/2;
-    const pos=polar(177,center);
-    const t=document.createElementNS(ns,'text');
-    t.textContent=MULTIPLIERS[group]+'x';
-    t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);
-    t.setAttribute('data-x',pos.x);t.setAttribute('data-y',pos.y);
-    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
-    t.setAttribute('font-family','Arial Black,Arial');t.setAttribute('font-size','24');t.setAttribute('font-weight','900');
-    t.setAttribute('fill','#fff');t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','5');t.setAttribute('paint-order','stroke fill');
-    lg.appendChild(t);
-  }
-
-  $('rotor').setAttribute('transform','rotate(0 250 250)');
-  setLabelsLocal(0);
-}
-
-function targetFor(index,prizeIndex){
-  // Cada grupo lógico possui 23 posições: 1 prêmio + 22 perdas.
-  // O prêmio é sempre o primeiro índice do grupo e cai no centro da fatia preta.
-  if(Number.isInteger(prizeIndex)&&prizeIndex>=0&&prizeIndex<9)return prizeIndex*BLOCK_ANGLE;
-
-  const idx=Math.max(0,Math.min(LOGICAL_POSITIONS-1,Number(index)||0));
-  const group=Math.floor(idx/23);
-  const offset=idx%23;
-  if(group>8)return 0;
-
-  const blackCenter=group*BLOCK_ANGLE;
-  if(offset===0)return blackCenter;
-
-  // As 22 perdas ocupam somente a fatia amarela de 20°.
-  // O centro de cada posição lógica fica uniformemente distribuído dentro dos 20°.
-  const lossStep=YELLOW_LOSS_ANGLE/LOSS_PER_YELLOW;
-  return group*BLOCK_ANGLE+BLACK_PRIZE_ANGLE+lossStep*(offset-.5);
-}
-
+function draw(){const sg=$('sectors'),lg=$('labels');sg.innerHTML='';lg.innerHTML='';const base=-VISUAL_ANGLE/2;for(let g=0;g<9;g++){const blackStart=base+g*2*VISUAL_ANGLE,yellowStart=blackStart+VISUAL_ANGLE;const black=document.createElementNS(ns,'path'),yellow=document.createElementNS(ns,'path');black.setAttribute('d',path(238,blackStart,blackStart+VISUAL_ANGLE));black.setAttribute('fill','#050505');black.setAttribute('stroke','#171717');black.setAttribute('stroke-width','.9');yellow.setAttribute('d',path(238,yellowStart,yellowStart+VISUAL_ANGLE));yellow.setAttribute('fill','#c18b18');yellow.setAttribute('stroke','#c18b18');yellow.setAttribute('stroke-width','.8');sg.append(black,yellow);const center=blackStart+VISUAL_ANGLE/2,pos=polar(177,center),t=document.createElementNS(ns,'text');t.textContent=MULTIPLIERS[g]+'x';t.setAttribute('x',pos.x);t.setAttribute('y',pos.y);t.setAttribute('data-x',pos.x);t.setAttribute('data-y',pos.y);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Arial Black,Arial');t.setAttribute('font-size','24');t.setAttribute('font-weight','900');t.setAttribute('fill','#fff');t.setAttribute('stroke','#050505');t.setAttribute('stroke-width','5');t.setAttribute('paint-order','stroke fill');lg.appendChild(t)}$('rotor').setAttribute('transform','rotate(0 250 250)');setLabelsLocal(0)}
+function targetFor(index,prizeIndex){const block=2*VISUAL_ANGLE;if(Number.isInteger(prizeIndex)&&prizeIndex>=0&&prizeIndex<9)return prizeIndex*block;const idx=Math.max(0,Math.min(LOGICAL_POSITIONS-1,Number(index)||0)),group=Math.floor(idx/23),offset=idx%23;if(group>8)return 0;if(offset===0)return group*block;const lossStep=VISUAL_ANGLE/LOSS_PER_YELLOW;return group*block+VISUAL_ANGLE+lossStep*(offset-.5)}
 function ease(p){return 1-Math.pow(1-p,3)}
 function animate(from,to,done){const start=performance.now(),delta=to-from;cancelAnimationFrame(raf);const frame=now=>{const p=Math.min(1,(now-start)/DURATION),e=ease(p),angle=from+delta*e,own=-angle+LABEL_EXTRA*e;$('rotor').setAttribute('transform',`rotate(${angle} 250 250)`);setLabelsLocal(own);if(p<1){raf=requestAnimationFrame(frame)}else{rotation=to;$('rotor').setAttribute('transform',`rotate(${to} 250 250)`);setLabelsLocal(-to+LABEL_EXTRA);done()}};raf=requestAnimationFrame(frame)}
-async function loadUser(){const u=getUser();if(!u?.id){$('status').textContent='Faça login para jogar.';return null}try{const r=await fetch('/api/user/'+encodeURIComponent(u.id),{cache:'no-store'});if(!r.ok)throw new Error();const d=await r.json(),fresh=d.user||d;localStorage.setItem('jpbet_user',JSON.stringify({...u,...fresh}));$('balance').textContent=money(fresh.balance);$('status').textContent='Servidor conectado • 207 posições lógicas.';return fresh}catch{$('status').textContent='Não foi possível conectar ao servidor.';return u}}
-async function spin(){if(busy)return;const u=await loadUser();if(!u?.id){location.href='/?login=1';return}if(Number(u.balance||0)<1){$('result').textContent='Saldo virtual insuficiente.';$('result').className='result loss';return}busy=true;$('spin').disabled=true;$('result').textContent='';$('status').textContent='Sorteando entre 207 posições…';try{const r=await fetch('/api/settings/roulette-large/spin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rouletteId:'roleta1',userId:Number(u.id),betAmount:1})});const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.message||'Erro ao girar');const s=data.spin||{},idx=Math.max(0,Math.min(LOGICAL_POSITIONS-1,Number(s.index)||0)),targetAngle=targetFor(idx,Number.isInteger(s.prizeIndex)?s.prizeIndex:-1),current=((rotation%360)+360)%360,target=((360-targetAngle-current)+360)%360,to=rotation+360*3+target;animate(rotation,to,()=>{const prize=Number(s.prize||0),mult=Number(s.multiplier||0),nu={...u,...(data.user||{})};localStorage.setItem('jpbet_user',JSON.stringify(nu));$('balance').textContent=money(nu.balance);$('result').textContent=prize>0?`🎉 ${mult}x — resultado confirmado pelo servidor`:'Você perdeu R$ 1,00.';$('result').className=prize>0?'result win':'result loss';$('status').textContent=prize>0?`Posição ${idx+1}/207 • prêmio ${mult}x`:`Posição ${idx+1}/207 • perda`;busy=false;$('spin').disabled=false})}catch(e){cancelAnimationFrame(raf);$('result').textContent=e.message||'Não foi possível girar.';$('result').className='result loss';$('status').textContent='Erro de comunicação com o servidor.';busy=false;$('spin').disabled=false}}
-function init(){draw();loadUser();$('spin').addEventListener('click',spin)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+async function loadVisualConfig(){try{const r=await fetch('/api/settings/public?rouletteVisual=1',{cache:'no-store'});const d=await r.json();if(!r.ok)throw new Error('Configuração indisponível');const s=d.settings||{};const logical=Number(s.roulette_logical_positions),visual=Number(s.roulette_visual_slices),angle=Number(s.roulette_visual_angle),loss=Number(s.roulette_loss_positions_per_yellow);if(logical===207&&visual===18&&angle===20&&loss===22){LOGICAL_POSITIONS=logical;VISUAL_SLICES=visual;VISUAL_ANGLE=angle;LOSS_PER_YELLOW=loss}else{LOGICAL_POSITIONS=207;VISUAL_SLICES=18;VISUAL_ANGLE=20;LOSS_PER_YELLOW=22}$('structureNote').textContent=`Créditos virtuais • ${LOGICAL_POSITIONS} posições lógicas • 9 prêmios + 198 perdas`;$('status').textContent=`Configuração carregada • ${VISUAL_SLICES} fatias de ${VISUAL_ANGLE}° • ${LOSS_PER_YELLOW} perdas por amarela`;configReady=true;draw()}catch(e){LOGICAL_POSITIONS=207;VISUAL_SLICES=18;VISUAL_ANGLE=20;LOSS_PER_YELLOW=22;$('structureNote').textContent='Créditos virtuais • 207 posições lógicas • 9 prêmios + 198 perdas';$('status').textContent='Configuração padrão da roleta carregada.';configReady=true;draw()}}
+async function loadUser(){const u=getUser();if(!u?.id){$('status').textContent='Faça login para jogar.';return null}try{const r=await fetch('/api/user/'+encodeURIComponent(u.id),{cache:'no-store'});if(!r.ok)throw new Error();const d=await r.json(),fresh=d.user||d;localStorage.setItem('jpbet_user',JSON.stringify({...u,...fresh}));$('balance').textContent=money(fresh.balance);if(configReady)$('status').textContent=`Servidor conectado • ${LOGICAL_POSITIONS} posições lógicas.`;return fresh}catch{$('status').textContent='Não foi possível conectar ao servidor.';return u}}
+async function spin(){if(busy)return;if(!configReady){$('result').textContent='Aguarde a configuração da roleta carregar.';return}const u=await loadUser();if(!u?.id){location.href='/?login=1';return}if(Number(u.balance||0)<1){$('result').textContent='Saldo virtual insuficiente.';$('result').className='result loss';return}busy=true;$('spin').disabled=true;$('result').textContent='';$('status').textContent='Sorteando entre 207 posições…';try{const r=await fetch('/api/settings/roulette-large/spin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rouletteId:'roleta1',userId:Number(u.id),betAmount:1})});const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.message||'Erro ao girar');const s=data.spin||{},idx=Math.max(0,Math.min(LOGICAL_POSITIONS-1,Number(s.index)||0)),targetAngle=targetFor(idx,Number.isInteger(s.prizeIndex)?s.prizeIndex:-1),current=((rotation%360)+360)%360,target=((360-targetAngle-current)+360)%360,to=rotation+360*3+target;animate(rotation,to,()=>{const prize=Number(s.prize||0),mult=Number(s.multiplier||0),nu={...u,...(data.user||{})};localStorage.setItem('jpbet_user',JSON.stringify(nu));$('balance').textContent=money(nu.balance);$('result').textContent=prize>0?`🎉 ${mult}x — resultado confirmado pelo servidor`:'Você perdeu R$ 1,00.';$('result').className=prize>0?'result win':'result loss';$('status').textContent=prize>0?`Posição ${idx+1}/207 • prêmio ${mult}x`:`Posição ${idx+1}/207 • perda`;busy=false;$('spin').disabled=false})}catch(e){cancelAnimationFrame(raf);$('result').textContent=e.message||'Não foi possível girar.';$('result').className='result loss';$('status').textContent='Erro de comunicação com o servidor.';busy=false;$('spin').disabled=false}}
+async function init(){await loadVisualConfig();loadUser();$('spin').addEventListener('click',spin)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 </body>
