@@ -1,4 +1,5 @@
 import express from "express";
+import { randomInt } from "crypto";
 import { pool } from "./db.js";
 
 const router = express.Router();
@@ -29,7 +30,7 @@ async function getConfig() {
   return { prizes, minBet };
 }
 
-function sortearSetor() { return Math.floor(Math.random() * TOTAL_SECTORS); }
+function sortearSetor() { return randomInt(TOTAL_SECTORS); }
 
 router.get("/config", async (req, res) => {
   const { prizes, minBet } = await getConfig();
@@ -94,16 +95,17 @@ router.post("/spin", async (req, res) => {
     const newBalance = Number((newBonus + newCash).toFixed(2));
     const requirement = Number(await getSetting("bonus_wager_requirement", "100")) || 100;
     const newProgress = Number(Math.min(requirement, Number(user.bonus_wager_progress || 0) + bonusUsed).toFixed(2));
+    const netResult = Number((prize - bet).toFixed(2));
 
     await client.query(`UPDATE users SET balance=$1,bonus_balance=$2,cash_balance=$3,bonus_wager_progress=$4 WHERE id=$5`, [newBalance,newBonus,newCash,newProgress,userId]);
     const resultText = `${sector}:${multiplier > 0 ? `${multiplier}x` : "PERCA"}:${multiplier > 0 ? "prize" : "loss"}`;
-    const spinResult = await client.query(`INSERT INTO spins(user_id,result,amount) VALUES($1,$2,$3) RETURNING id,created_at`, [userId,resultText,prize]);
-    await client.query(`INSERT INTO transactions(user_id,type,amount) VALUES($1,$2,$3)`, [userId, multiplier > 0 ? "roulette207_prize_win" : "roulette207_bet", multiplier > 0 ? prize : -bet]);
+    const spinResult = await client.query(`INSERT INTO spins(user_id,result,amount) VALUES($1,$2,$3) RETURNING id,created_at`, [userId,resultText,netResult]);
+    await client.query(`INSERT INTO transactions(user_id,type,amount) VALUES($1,$2,$3)`, [userId, multiplier > 0 ? "roulette207_prize_win" : "roulette207_bet", netResult]);
     await client.query("COMMIT");
 
     return res.json({
       ok:true,
-      spin:{id:spinResult.rows[0].id,rouletteId:"roulette207",sector,resultType:multiplier>0?"prize":"loss",multiplier,prize,betAmount:bet,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes},
+      spin:{id:spinResult.rows[0].id,rouletteId:"roulette207",sector,resultType:multiplier>0?"prize":"loss",multiplier,prize,netResult,betAmount:bet,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes},
       user:{id:user.id,username:user.username,balance:newBalance,bonusBalance:newBonus,cashBalance:newCash,bonusWagerProgress:newProgress,bonusWagerRequirement:requirement,reservedBalance:Number(user.reserved_balance||0)}
     });
   } catch (error) {
