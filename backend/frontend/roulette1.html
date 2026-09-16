@@ -18,7 +18,7 @@ html,body{margin:0;width:100%;height:100%;background:var(--bg);color:#fff;font-f
 .page{height:calc(100vh - 66px);max-width:720px;margin:auto;position:relative;overflow:hidden;text-align:center;background:radial-gradient(circle at 50% 18%,rgba(246,189,36,.07),transparent 34%),linear-gradient(#03070c,#050a10)}
 .wheel-wrap{position:absolute;top:34px;left:50%;transform:translateX(-50%);width:min(360px,calc(100vw - 34px));aspect-ratio:1;filter:drop-shadow(0 18px 30px #000)}
 #wheel{width:100%;height:100%}
-#rotor{transform-origin:250px 250px;transform-box:view-box;will-change:transform;transition:transform 5.8s cubic-bezier(.12,.78,.15,1)}
+#rotor{transform-origin:250px 250px;transform-box:view-box;will-change:transform;transition:transform 4.8s cubic-bezier(.12,.78,.15,1)}
 .pointer{position:absolute;z-index:4;top:-7px;left:50%;transform:translateX(-50%);width:42px;height:48px;background:linear-gradient(#fff1a1,#d8a51d 32%,#5b3900);clip-path:polygon(5% 0,95% 0,77% 58%,50% 100%,23% 58%);filter:drop-shadow(0 5px 7px #000)}
 .pointer:after{content:"";position:absolute;left:13px;top:8px;width:16px;height:25px;background:#ff3348;clip-path:polygon(0 0,100% 0,50% 100%)}
 .center{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:31%;aspect-ratio:1;border-radius:50%;border:5px solid #9a6b0d;background:radial-gradient(circle at 40% 30%,#332816,#0a0805 62%,#020202);color:#ffd33e;box-shadow:0 0 0 3px #e0a91c,0 0 0 8px #070707}
@@ -113,7 +113,7 @@ async function spin(){
     const s=data.spin||{},idx=Math.max(0,Math.min(LOGICAL-1,Number(s.index)||0)),targetAngle=visualTargetFromServer(idx),current=((rotation%360)+360)%360,target=((360-targetAngle-current)+360)%360,to=rotation+360*3+target,rotor=$('rotor');
     setLabelRotation(0);
     rotor.style.transition='none';rotor.style.transform=`rotate(${rotation}deg)`;void rotor.getBoundingClientRect();
-    requestAnimationFrame(()=>{rotor.style.transition='transform 5.8s cubic-bezier(.12,.78,.15,1)';requestAnimationFrame(()=>{rotor.style.transform=`rotate(${to}deg)`})});
+    requestAnimationFrame(()=>{rotor.style.transition='transform 4.8s cubic-bezier(.12,.78,.15,1)';requestAnimationFrame(()=>{rotor.style.transform=`rotate(${to}deg)`})});
     rotation=to;
     const finish=()=>{
       rotor.removeEventListener('transitionend',finish);
@@ -123,7 +123,7 @@ async function spin(){
       const nu={...u,...(data.user||{})};localStorage.setItem('jpbet_user',JSON.stringify(nu));$('balance').textContent=money(nu.balance);
       $('status').textContent=(prize>0?`Posição ${idx+1}/207 • prêmio ${mult}x`:`Posição ${idx+1}/207 • perda`)+' • faixa visual correspondente.';busy=false;$('spin').disabled=false;
     };
-    rotor.addEventListener('transitionend',finish,{once:true});setTimeout(()=>{if(busy)finish()},6300);
+    rotor.addEventListener('transitionend',finish,{once:true});setTimeout(()=>{if(busy)finish()},5300);
   }catch(e){$('result').textContent=e.message||'Não foi possível girar.';$('result').className='result loss';$('status').textContent='Erro de comunicação com o servidor.';busy=false;$('spin').disabled=false}
 }
 document.addEventListener('DOMContentLoaded',()=>{draw();loadUser();$('spin').addEventListener('click',spin)});
