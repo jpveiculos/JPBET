@@ -14,9 +14,10 @@ html,body{margin:0;width:100%;height:100%;background:var(--bg);color:#fff;font-f
 .logo:after{content:"";position:absolute;left:1px;right:1px;bottom:0;height:3px;background:var(--gold);border-radius:70%;transform:skewX(-18deg) rotate(-2deg)}
 .balance{border:1px solid #614b14;border-radius:15px;padding:4px 10px;min-width:112px;text-align:left;font-size:10px;color:#9ea7b4}.balance strong{display:block;color:#ffda52;font-size:16px}
 .page{height:calc(100vh - 66px);max-width:720px;margin:auto;position:relative;overflow:hidden;text-align:center;background:radial-gradient(circle at 50% 18%,rgba(246,189,36,.07),transparent 34%),linear-gradient(#03070c,#050a10)}
-.wheel-wrap{position:absolute;top:34px;left:50%;transform:translateX(-50%);width:min(360px,calc(100vw - 34px));aspect-ratio:1;filter:drop-shadow(0 18px 30px #000)}#wheel{width:100%;height:100%}
-#rotor{transform-origin:250px 250px;transform-box:fill-box;will-change:transform;transition:none}
-#labels text{transform-box:fill-box;transform-origin:center;will-change:transform}
+.wheel-wrap{position:absolute;top:34px;left:50%;transform:translateX(-50%);width:min(360px,calc(100vw - 34px));aspect-ratio:1;filter:drop-shadow(0 18px 30px #000)}#wheel{width:100%;height:100%;display:block}
+/* O rotor usa o próprio viewBox do SVG como referência. Isso mantém o eixo matematicamente em 250,250 e evita o efeito de "roda quadrada" no Safari/iPhone. */
+#rotor{transform-origin:50% 50%;transform-box:view-box;will-change:transform;transition:none}
+#labels text{will-change:transform}
 .pointer{position:absolute;z-index:4;top:-7px;left:50%;transform:translateX(-50%);width:42px;height:48px;background:linear-gradient(#fff1a1,#d8a51d 32%,#5b3900);clip-path:polygon(5% 0,95% 0,77% 58%,50% 100%,23% 58%);filter:drop-shadow(0 5px 7px #000)}
 .pointer:after{content:"";position:absolute;left:13px;top:8px;width:16px;height:25px;background:#ff3348;clip-path:polygon(0 0,100% 0,50% 100%)}
 .center{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:31%;aspect-ratio:1;border-radius:50%;border:5px solid #9a6b0d;background:radial-gradient(circle at 40% 30%,#332816,#0a0805 62%,#020202);color:#ffd33e;box-shadow:0 0 0 3px #e0a91c,0 0 0 8px #070707}.center:disabled{opacity:.7}
