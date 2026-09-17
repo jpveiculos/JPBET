@@ -89,8 +89,6 @@ async function loadConfig(){
 }
 function refresh(){fetch('/api/account/'+encodeURIComponent(user.id),{cache:'no-store'}).then(async x=>{if(x.ok){const d=await x.json();renderUser(d.user||d)}}).catch(()=>{})}
 
-/* Cada bloco visual de 40° contém 6 setores lógicos:
-   1 prêmio no centro da fatia dourada + 5 perdas na fatia preta. */
 function visualTargetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
   const group=Math.floor(s/6),groupStart=group*6;
@@ -109,7 +107,7 @@ async function spin(){
     const sector=Number(d.spin.sector);if(!Number.isInteger(sector)||sector<0||sector>=TOTAL)throw new Error('Setor recebido inválido.');
     if(d.spin.resultType==='prize'){resultType='win';resultAmount=Number(d.spin.prize||0)}else{resultType='loss'}
     const target=visualTargetForSector(sector),current=((rotation%360)+360)%360,delta=(360-target-current+360)%360,from=rotation,destination=rotation+1080+delta,duration=5000,start=performance.now();wheel.style.transition='none';wheel.style.transform=`rotate(${from}deg)`;
-    await new Promise(resolve=>{function frame(now){const progress=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-progress,5),currentRotation=from+(destination-from)*eased;wheel.style.transform=`rotate(${currentRotation}deg)`;updatePrizeLabels(currentRotation);if(progress<1){requestAnimationFrame(frame);return}rotation=destination;wheel.style.transition='none';wheel.style.transform=`rotate(${rotation}deg)`;updatePrizeLabels(rotation);wheel.getBoundingClientRect();resolve()}requestAnimationFrame(frame)});
+    await new Promise(resolve=>{function frame(now){const progress=Math.min(1,(now-start)/duration);let eased;if(progress<0.18){const p=progress/0.18;eased=0.18*p*p*0.5;}else{const p=(progress-0.18)/0.82;const easeOut=1-Math.pow(1-p,5);eased=0.09+0.91*easeOut}const currentRotation=from+(destination-from)*eased;wheel.style.transform=`rotate(${currentRotation}deg)`;updatePrizeLabels(currentRotation);if(progress<1){requestAnimationFrame(frame);return}rotation=destination;wheel.style.transition='none';wheel.style.transform=`rotate(${rotation}deg)`;updatePrizeLabels(rotation);wheel.getBoundingClientRect();resolve()}requestAnimationFrame(frame)});
     wheel.style.willChange='auto';renderUser(d.user);
   }catch(e){console.error('Erro ao girar Roleta:',e)}finally{if(resultType==='win')showSpinResult('win',resultAmount);spinning=false;$('spinButton').disabled=false}
 }
