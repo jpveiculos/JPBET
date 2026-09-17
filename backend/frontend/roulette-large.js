@@ -51,7 +51,7 @@
     }
     const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',250);ring.setAttribute('cy',250);ring.setAttribute('r',239);ring.setAttribute('fill','none');ring.setAttribute('stroke','#f4b91d');ring.setAttribute('stroke-width','12');ring.setAttribute('filter','url(#goldGlow)');svg.appendChild(ring);
     const hi=document.createElementNS(ns,'circle');hi.setAttribute('cx',250);hi.setAttribute('cy',250);hi.setAttribute('r',233);hi.setAttribute('fill','none');hi.setAttribute('stroke','#ffe66b');hi.setAttribute('stroke-width','2');hi.setAttribute('opacity','.8');svg.appendChild(hi);
-    if($('wheel')){$('wheel').style.transformOrigin='50% 50%';$('wheel').style.transformBox='fill-box';$('wheel').style.transform=`rotate(${rotation}deg)`;updatePrizeOrientation(rotation)}
+    if($('wheel')){$('wheel').style.transformOrigin='50% 50%';$('wheel').style.transformBox='fill-box';$('wheel').style.transition='none';$('wheel').style.transform=`rotate(${rotation}deg)`;updatePrizeOrientation(rotation)}
   }
   async function spin(){
     if(spinning)return;
@@ -62,11 +62,31 @@
       return;
     }
     spinning=true;$('spinButton').disabled=true;$('result').textContent='';$('result').className='result';
+    const wheel=$('wheel');
+    if(!wheel)throw Error('Roleta não encontrada.');
+    wheel.style.transition='none';
+    wheel.style.willChange='transform';
     try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:user.id,betAmount:bet,rouletteId:cfg.id})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw Error(d.message||'Não foi possível realizar a rodada.');const s=d.spin||{};
       const center=angleFromLogical(Number(s.index)),target=((360-center-(rotation%360))+360)%360,dest=rotation+2*360+target,dur=2200,start=performance.now(),from=rotation;
-      await new Promise(resolve=>{function frame(now){const p=Math.min(1,(now-start)/dur);const e=p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;const rr=from+(dest-from)*e;$('wheel').style.transform=`rotate(${rr}deg)`;updatePrizeOrientation(rr);if(p<1)return requestAnimationFrame(frame);rotation=dest;$('wheel').style.transform=`rotate(${dest}deg)`;updatePrizeOrientation(dest);resolve()}requestAnimationFrame(frame)});
+      await new Promise(resolve=>{
+        function frame(now){
+          const p=Math.min(1,(now-start)/dur);
+          const e=p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+          const rr=from+(dest-from)*e;
+          wheel.style.transform=`rotate(${rr}deg)`;
+          updatePrizeOrientation(rr);
+          if(p<1){requestAnimationFrame(frame);return;}
+          rotation=dest;
+          wheel.style.transition='none';
+          wheel.style.transform=`rotate(${rotation}deg)`;
+          updatePrizeOrientation(rotation);
+          resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+      wheel.style.willChange='auto';
       $('result').textContent=Number(s.prize)>0?`🎉 Você ganhou ${money(s.prize)}!`:`Você perdeu ${money(bet)}.`;$('result').className=Number(s.prize)>0?'win':'loss';if(d.user)setUser(d.user);await refreshBalance();
-    }catch(e){$('result').textContent=e.message;$('result').className='error'}finally{spinning=false;$('spinButton').disabled=false}
+    }catch(e){wheel.style.willChange='auto';$('result').textContent=e.message;$('result').className='error'}finally{spinning=false;$('spinButton').disabled=false}
   }
   document.addEventListener('DOMContentLoaded',()=>{user=session();if(user)setUser(user);normalizeCenterBrand();$('authHint').textContent=user?`Aposta fixa: ${money(bet)}`:'Faça login para jogar.';renderWheel();$('spinButton').onclick=spin;refreshBalance();setInterval(refreshBalance,3000)})
 })();
@@ -77,7 +97,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     .page{position:relative!important}
     .logo{color:#f6bd24!important}
     .logo b{color:#fff!important}
-    .wheel{top:62px!important;width:min(340px,calc(100vw - 44px))!important}
+    .wheel{top:62px!important;width:min(340px,calc(100vw - 44px))!important;transition:none!important}
     .wheel:before{inset:-12px;background:transparent!important;border:2px solid #080808;box-shadow:0 0 0 2px #5b3605,0 0 0 5px #9a5c05,0 0 0 8px #e2a515,0 0 0 11px #f8c52c,0 0 0 13px #4a2b03,0 0 0 15px #090909}
     .wheel:after{inset:-1px;border:2px solid #f8d34b;box-shadow:inset 0 0 0 2px #5b3605,inset 0 0 0 4px #0a0a0a;z-index:4}
     .pointer{position:absolute!important;z-index:10!important;left:50%!important;top:-8px!important;transform:translateX(-50%)!important;width:44px!important;height:50px!important;background:linear-gradient(180deg,#ffe98a,#dca51c 24%,#9d6908 68%,#5d3a00)!important;clip-path:polygon(4% 0,96% 0,78% 58%,50% 100%,22% 58%)!important;filter:drop-shadow(0 5px 7px rgba(0,0,0,.95))!important;pointer-events:none!important;border:0!important}
