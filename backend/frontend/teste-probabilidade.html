@@ -3,27 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MyBets — Laboratório Roleta 90</title>
+<title>MyBets — Laboratório Roleta 77</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07080b;color:#fff;font-family:Arial,sans-serif;padding:16px}.wrap{max-width:900px;margin:auto}.card{background:#12151d;border:1px solid #292e39;border-radius:18px;padding:18px;margin-bottom:14px}h1{margin:0 0 7px;font-size:25px}.muted{color:#aeb4c0;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.item{background:#191d27;border-radius:12px;padding:12px}.item b{display:block;font-size:20px;margin-top:5px}.bet-sim{border:1px solid rgba(246,189,36,.35);background:#0d1118}.money-green{color:#45e38a}.money-red{color:#ff6464}.yellow{color:#f6bd24}.green{color:#45e38a}.red{color:#ff6464}.wheel-area{display:flex;flex-direction:column;align-items:center}.wheel-wrap{position:relative;width:min(82vw,430px);height:min(82vw,430px);margin:8px auto 18px}.wheel{position:absolute;inset:0;border-radius:50%;border:8px solid #252a34;background:conic-gradient(#f6bd24 0deg 20deg,#11151d 20deg 40deg,#f6bd24 40deg 60deg,#11151d 60deg 80deg,#f6bd24 80deg 100deg,#11151d 100deg 120deg,#f6bd24 120deg 140deg,#11151d 140deg 160deg,#f6bd24 160deg 180deg,#11151d 180deg 200deg,#f6bd24 200deg 220deg,#11151d 220deg 240deg,#f6bd24 240deg 260deg,#11151d 260deg 280deg,#f6bd24 280deg 300deg,#11151d 300deg 320deg,#f6bd24 320deg 340deg,#11151d 340deg 360deg);box-shadow:0 0 35px #000 inset,0 8px 30px #000;transform:rotate(0deg)}.wheel.spinning{transition:transform 4.8s cubic-bezier(.12,.72,.16,1)}.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:82px;height:82px;border-radius:50%;background:#0b0d12;border:5px solid #353b47;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:12px;z-index:3}.pointer{position:absolute;z-index:5;left:50%;top:-7px;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:32px solid #fff;filter:drop-shadow(0 2px 3px #000)}.sector-labels{position:absolute;inset:0;z-index:2;pointer-events:none}.sector-label{position:absolute;left:50%;top:50%;width:50%;height:22px;transform-origin:0 50%;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 3px #000;display:flex;align-items:center;padding-left:25px}.sector-label.prize{color:#111;text-shadow:none}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{width:100%;padding:15px;border:0;border-radius:12px;background:#f6bd24;color:#111;font-weight:800;font-size:16px;cursor:pointer}button.secondary{background:#2b303b;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}table{width:100%;border-collapse:collapse;margin-top:8px}td,th{padding:10px 5px;border-bottom:1px solid #292e39;text-align:left;font-size:14px}.note{font-size:13px}.result{font-size:23px;font-weight:900;text-align:center;min-height:30px;margin:5px 0 12px}.bar{height:10px;background:#292e39;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#f6bd24;border-radius:10px}.scroll{overflow-x:auto}@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.wheel-wrap{width:88vw;height:88vw}.sector-label{font-size:9px;padding-left:18px}.center{width:70px;height:70px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="card"><h1>🧪 Laboratório — Roleta 90</h1><div class="muted">Teste isolado usando o mesmo sorteio do servidor. Não usa saldo, não registra apostas e não altera jogadores.</div></div>
-<div class="card"><div class="grid"><div class="item">Setores<b id="totalSectors">90</b></div><div class="item">Prêmios<b class="yellow" id="prizeSectors">9</b></div><div class="item">Perdas<b class="red" id="lossSectors">81</b></div><div class="item">Chance prêmio<b class="yellow" id="prizeChance">10%</b></div></div></div>
+<div class="card"><h1>🧪 Laboratório — Roleta 77</h1><div class="muted">Teste isolado usando o mesmo sorteio do servidor. Não usa saldo, não registra apostas e não altera jogadores.</div></div>
+<div class="card"><div class="grid"><div class="item">Setores<b id="totalSectors">77</b></div><div class="item">Prêmios<b class="yellow" id="prizeSectors">9</b></div><div class="item">Perdas<b class="red" id="lossSectors">68</b></div><div class="item">Chance prêmio<b class="yellow" id="prizeChance">11,6883%</b></div></div></div>
 <div class="card wheel-area">
-<div class="wheel-wrap"><div class="pointer"></div><div id="wheel" class="wheel"></div><div id="labels" class="sector-labels"></div><div class="center">ROULETA<br>90</div></div>
+<div class="wheel-wrap"><div class="pointer"></div><div id="wheel" class="wheel"></div><div id="labels" class="sector-labels"></div><div class="center">ROULETA<br>77</div></div>
 <div id="result" class="result">Conectando ao servidor...</div>
 <div class="controls" style="width:100%"><button id="spinBtn" onclick="girar()">GIRAR ROLETA</button><button id="batchBtn" class="secondary" onclick="girarN(100)">TESTAR +100</button></div>
 </div>
-<div class="card"><h2>Resultado acumulado</h2><div class="grid"><div class="item">Giros<b id="total">0</b></div><div class="item">Prêmios<b class="green" id="premios">0</b></div><div class="item">Perdas<b class="red" id="perdas">0</b></div><div class="item">Prêmio observado<b class="yellow" id="pct">0,0000%</b></div></div><p class="muted" id="status">Aguardando teste.</p><div class="bar"><i id="bar"></i></div></div><div class="card bet-sim"><h2>💰 Simulação de aposta</h2><p class="muted">Cada giro é simulado como uma aposta de <strong>R$ 10,00</strong>. Esta simulação é somente visual e continua sem alterar o saldo real do jogador.</p><div class="grid"><div class="item">Saldo inicial<b id="saldoInicial">R$ 1.000,00</b></div><div class="item">Aposta por giro<b class="yellow" id="apostaPorGiro">R$ 10,00</b></div><div class="item">Total apostado<b id="totalApostado">R$ 0,00</b></div><div class="item">Total retornado<b class="green" id="totalRetornado">R$ 0,00</b></div><div class="item">Saldo final<b id="saldoFinal">R$ 1.000,00</b></div><div class="item">Resultado líquido<b id="resultadoLiquido">R$ 0,00</b></div></div></div>
+<div class="card"><h2>Resultado acumulado</h2><div class="grid"><div class="item">Giros<b id="total">0</b></div><div class="item">Prêmios<b class="green" id="premios">0</b></div><div class="item">Perdas<b class="red" id="perdas">0</b></div><div class="item">Prêmio observado<b class="yellow" id="pct">0,0000%</b></div></div><p class="muted" id="status">Aguardando teste.</p><div class="bar"><i id="bar"></i></div></div>
+<div class="card bet-sim"><h2>💰 Simulação de aposta</h2><p class="muted">Cada giro é simulado como uma aposta de <strong>R$ 10,00</strong>. Esta simulação é somente visual e continua sem alterar o saldo real do jogador.</p><div class="grid"><div class="item">Saldo inicial<b id="saldoInicial">R$ 1.000,00</b></div><div class="item">Aposta por giro<b class="yellow" id="apostaPorGiro">R$ 10,00</b></div><div class="item">Total apostado<b id="totalApostado">R$ 0,00</b></div><div class="item">Total retornado<b class="green" id="totalRetornado">R$ 0,00</b></div><div class="item">Saldo final<b id="saldoFinal">R$ 1.000,00</b></div><div class="item">Resultado líquido<b id="resultadoLiquido">R$ 0,00</b></div></div></div>
 <div class="card"><h2>Distribuição dos prêmios</h2><div class="scroll"><table><thead><tr><th>Prêmio</th><th>Setor</th><th>Qtd.</th><th>Observado</th><th>Esperado</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
-<div class="card note"><strong>Teste real:</strong> cada clique chama o endpoint isolado do servidor, que usa <strong>crypto.randomInt(90)</strong>, a mesma função de sorteio usada pela roleta real. O laboratório não executa o endpoint de aposta e não altera banco, saldo, spins ou transações.</div>
+<div class="card note"><strong>Teste real:</strong> cada clique chama o endpoint isolado do servidor, que usa <strong>crypto.randomInt(77)</strong>, a mesma função de sorteio usada pela roleta real. O laboratório não executa o endpoint de aposta e não altera banco, saldo, spins ou transações.</div>
 </div>
 <script>
-const TOTAL=90;
-const PRIZE_SECTORS=[0,10,20,30,40,50,60,70,80];
+const TOTAL=77;
+const PRIZE_SECTORS=[0,9,19,28,38,47,57,66,76];
 let MULTIPLIERS=[2,3,4,5,6,7,8,9,10];
 let rotation=0,spinning=false,total=0,premios=0,perdas=0,counts=new Array(9).fill(0);
 const APOSTA=10;
@@ -44,6 +45,22 @@ function montarLabels(){
     el.textContent=i%2===0?MULTIPLIERS[i/2]+'x':'•';
     labels.appendChild(el);
   }
+}
+
+function visualAngleForSector(sector){
+  const prizePosition=PRIZE_SECTORS.indexOf(sector);
+  if(prizePosition>=0)return prizePosition*40+10;
+  for(let i=0;i<PRIZE_SECTORS.length;i++){
+    const start=PRIZE_SECTORS[i];
+    const next=i===PRIZE_SECTORS.length-1?PRIZE_SECTORS[0]+TOTAL:PRIZE_SECTORS[i+1];
+    const logical=sector<start?sector+TOTAL:sector;
+    if(logical>start&&logical<next){
+      const lossCount=next-start-1;
+      const lossPosition=logical-start-1;
+      return i*40+20+(lossPosition+0.5)*(20/lossCount);
+    }
+  }
+  return 10;
 }
 
 function money(v){
@@ -70,8 +87,8 @@ function render(){
   document.getElementById('bar').style.width=Math.min(100,pct*10)+'%';
   document.getElementById('tbody').innerHTML=MULTIPLIERS.map((m,i)=>{
     const obs=total?counts[i]/total*100:0;
-    const exp=total/TOTAL;
-    return `<tr><td class="yellow"><strong>${m}x</strong></td><td>${PRIZE_SECTORS[i]}</td><td>${counts[i].toLocaleString('pt-BR')}</td><td>${obs.toFixed(4).replace('.',',')}%</td><td>${exp.toFixed(2).replace('.',',')}</td></tr>`;
+    const exp=100/TOTAL;
+    return `<tr><td class="yellow"><strong>${m}x</strong></td><td>${PRIZE_SECTORS[i]}</td><td>${counts[i].toLocaleString('pt-BR')}</td><td>${obs.toFixed(4).replace('.',',')}%</td><td>${exp.toFixed(2).replace('.',',')}%</td></tr>`;
   }).join('');
 }
 
@@ -82,10 +99,10 @@ async function consultarConfig(){
     const d=await r.json();
     const cfg=d.roulette||{};
     if(Array.isArray(cfg.prizes)&&cfg.prizes.length===9)MULTIPLIERS=cfg.prizes.map(x=>Number(x.multiplier ?? x));
-    document.getElementById('totalSectors').textContent=cfg.totalSectors||90;
+    document.getElementById('totalSectors').textContent=cfg.totalSectors||77;
     document.getElementById('prizeSectors').textContent=cfg.prizeSectors||9;
-    document.getElementById('lossSectors').textContent=cfg.lossSectors||81;
-    document.getElementById('prizeChance').textContent=(cfg.totalPrizeProbabilityPercent ?? 10)+'%';
+    document.getElementById('lossSectors').textContent=cfg.lossSectors||68;
+    document.getElementById('prizeChance').textContent=(cfg.totalPrizeProbabilityPercent ?? (9/77*100).toFixed(4))+'%';
     montarLabels();
     render();
     result.textContent='Pronto para girar';
@@ -138,7 +155,8 @@ async function girar(){
     const t=await sorteioServidor(1);
     const sector=t.countsBySector.findIndex(x=>x===1);
     const p=PRIZE_SECTORS.indexOf(sector);
-    const delta=(360-(sector*4))%360;
+    const visualAngle=visualAngleForSector(sector);
+    const delta=(360-visualAngle)%360;
     rotation+=1080+delta;
     wheel.classList.add('spinning');
     wheel.style.transform=`rotate(${rotation}deg)`;
@@ -184,7 +202,6 @@ renderSimulacao();
 consultarConfig();
 </script>
 
-<script src="/brand-standard.js?v=1"></script>
 <script src="/brand-standard.js?v=2"></script>
 </body>
 </html>
