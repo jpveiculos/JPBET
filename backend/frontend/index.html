@@ -61,514 +61,82 @@ html,body{
   pointer-events:none
 }
 
-.brand-main span{
-  color:var(--gold)
-}
+.brand-main span{color:var(--gold)}
+.main-nav{gap:26px}
+.main-nav a{font-size:12px}
+.login-button{min-height:44px;padding:0 19px;border-radius:11px}
 
-.main-nav{
-  gap:26px
-}
+.hero{position:relative;height:430px;min-height:430px;overflow:hidden;border-bottom:1px solid var(--gold);background:#080808}
+.hero-visual{position:absolute;inset:0;background-image:url("assets/jpbet-hero-luxo-clean.PNG");background-repeat:no-repeat;background-size:cover;background-position:center;filter:saturate(1.08) contrast(1.04) brightness(1.05)}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.16))}
+.hero-content{display:none!important}
 
-.main-nav a{
-  font-size:12px
-}
+.home-main{width:min(1180px,92vw);margin:0 auto;padding:50px 0 58px}
+.home-heading{text-align:center;margin-bottom:28px}
+.home-heading .eyebrow{display:block;color:var(--gold);font-size:11px;font-weight:900;letter-spacing:4px}
+.home-heading h2{margin:10px 0 0;font-size:clamp(31px,5vw,48px);letter-spacing:-2px;font-weight:950;line-height:1.05;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.45)}
+.home-heading h2 .logo-my{color:var(--gold)}
+.home-heading h2 .logo-bets{color:#fff}
+.home-heading p{max-width:720px;margin:14px auto 0;color:#a8a8a8;font-size:15px;line-height:1.55}
 
-.login-button{
-  min-height:44px;
-  padding:0 19px;
-  border-radius:11px
-}
+/* CARD DA ROLETA — MESMO PADRÃO VISUAL DA ÁREA DO JOGADOR */
+.roulette-list{display:grid;grid-template-columns:minmax(0,520px);justify-content:center;gap:16px;margin:0 auto 26px}
+.roulette-card{position:relative;min-height:300px;padding:18px;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;border:1px solid rgba(245,197,66,.25);border-radius:20px;background:linear-gradient(145deg,#111923,#070c12);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.roulette-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 20%,rgba(245,197,66,.18),transparent 45%);pointer-events:none}
+.roulette-art{position:relative;z-index:2;width:92px;height:92px;margin:0 auto 12px;border-radius:50%;border:6px solid #d89d1b;background:repeating-conic-gradient(#151515 0 18deg,#8f1414 18deg 36deg);box-shadow:0 0 0 2px #4c3309,0 0 22px rgba(245,197,66,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.roulette-art:before{content:"";width:38px;height:38px;border-radius:50%;border:3px solid #d89d1b;background:#090909;box-shadow:inset 0 0 0 6px #181818}
+.roulette-art:after{content:"MyBets";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:8px;font-weight:900;font-style:italic;color:#fff;white-space:nowrap}
+.roulette-content{position:relative;z-index:3;width:100%;padding:0;text-align:center}
+.roulette-icon{display:none}
+.roulette-card h3{margin:2px 0 8px;font-size:25px;letter-spacing:-.7px}
+.roulette-card p{margin:0 auto;color:#aeb5c2;font-size:13px;line-height:1.45;max-width:430px;min-height:auto}
+.roulette-card .max-prize{display:inline-block;margin:8px 0 0;color:#ffd34a;font-size:17px;font-weight:950;line-height:1.25;text-shadow:0 0 10px rgba(245,197,66,.2)}
+.roulette-card .max-prize small{display:block;color:#aaa;font-size:8px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px}
+.roulette-card button{position:relative;z-index:3;width:100%;min-height:46px;margin-top:14px;border:0;border-radius:11px;background:linear-gradient(180deg,#ffe47b,#e0a51a);color:#07090d;font-size:12px;font-weight:900;letter-spacing:.4px;cursor:pointer}
+.status{display:block;margin-top:9px;color:#777;font-size:8px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase}
 
-.hero{
-  position:relative;
-  height:430px;
-  min-height:430px;
-  overflow:hidden;
-  border-bottom:1px solid var(--gold);
-  background:#080808
-}
-
-.hero-visual{
-  position:absolute;
-  inset:0;
-  background-image:url("assets/jpbet-hero-luxo-clean.PNG");
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:center;
-  filter:saturate(1.08) contrast(1.04) brightness(1.05)
-}
-
-.hero:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(
-    180deg,
-    rgba(0,0,0,.03),
-    rgba(0,0,0,.16)
-  )
-}
-
-.hero-content{
-  display:none!important
-}
-
-.home-main{
-  width:min(1180px,92vw);
-  margin:0 auto;
-  padding:50px 0 58px
-}
-
-.home-heading{
-  text-align:center;
-  margin-bottom:28px
-}
-
-.home-heading .eyebrow{
-  display:block;
-  color:var(--gold);
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:4px
-}
-
-.home-heading h2{
-  margin:10px 0 0;
-  font-size:clamp(31px,5vw,48px);
-  letter-spacing:-2px;
-  font-weight:950;
-  line-height:1.05;
-  color:#fff;
-  text-shadow:0 2px 10px rgba(0,0,0,.45)
-}
-
-.home-heading h2 .logo-my{
-  color:var(--gold)
-}
-
-.home-heading h2 .logo-bets{
-  color:#fff
-}
-
-.home-heading p{
-  max-width:720px;
-  margin:14px auto 0;
-  color:#a8a8a8;
-  font-size:15px;
-  line-height:1.55
-}
-
-/* UMA ÚNICA ROLETA */
-.roulette-list{
-  display:grid;
-  grid-template-columns:minmax(0,520px);
-  justify-content:center;
-  gap:16px;
-  margin:0 auto 26px
-}
-
-.roulette-card{
-  position:relative;
-  min-height:300px;
-  padding:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  overflow:hidden;
-  border:1px solid rgba(245,197,66,.65);
-  border-radius:20px;
-  background:#0a0a0a;
-  box-shadow:
-    0 18px 45px rgba(0,0,0,.38),
-    0 0 35px rgba(245,197,66,.06)
-}
-
-.roulette-card:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(
-      circle at 72% 30%,
-      rgba(245,197,66,.18),
-      transparent 34%
-    ),
-    linear-gradient(
-      145deg,
-      #15120b,
-      #070707 65%
-    );
-  z-index:0
-}
-
-.roulette-art{
-  position:absolute;
-  right:25px;
-  top:22px;
-  width:125px;
-  height:125px;
-  border-radius:50%;
-  border:7px solid #d89d1b;
-  box-shadow:
-    0 0 0 3px #4c3309,
-    0 0 30px rgba(245,197,66,.22);
-  background:
-    repeating-conic-gradient(
-      #151515 0 20deg,
-      #d5a528 20deg 40deg
-    );
-  z-index:1
-}
-
-.roulette-art:before{
-  content:"";
-  position:absolute;
-  inset:26px;
-  border-radius:50%;
-  border:3px solid #d89d1b;
-  background:#090909;
-  box-shadow:0 0 0 2px #302108
-}
-
-.roulette-art:after{
-  content:"MyBets";
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  font-size:11px;
-  font-weight:900;
-  font-style:italic;
-  color:#fff;
-  text-decoration:underline;
-  text-decoration-color:var(--gold);
-  text-decoration-thickness:2px;
-  text-underline-offset:3px
-}
-
-.roulette-content{
-  position:relative;
-  z-index:3;
-  padding:22px
-}
-
-.roulette-icon{
-  width:auto;
-  height:auto;
-  border:0;
-  background:none;
-  color:var(--gold);
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:2px
-}
-
-.roulette-card h3{
-  margin:7px 0 6px;
-  font-size:27px;
-  letter-spacing:-.7px
-}
-
-.roulette-card p{
-  margin:0;
-  max-width:70%;
-  color:#aaa;
-  font-size:13px;
-  line-height:1.45;
-  min-height:38px
-}
-
-.roulette-card .max-prize{
-  display:inline-block;
-  margin:5px 0 0;
-  color:#ffd34a;
-  font-size:19px;
-  font-weight:950;
-  line-height:1.25;
-  text-shadow:0 0 10px rgba(245,197,66,.2)
-}
-
-.roulette-card .max-prize small{
-  display:block;
-  color:#aaa;
-  font-size:8px;
-  font-weight:800;
-  letter-spacing:1.2px;
-  text-transform:uppercase;
-  margin-bottom:2px
-}
-
-.roulette-card button{
-  width:100%;
-  min-height:48px;
-  margin-top:16px;
-  border:1px solid rgba(245,197,66,.75);
-  border-radius:12px;
-  background:linear-gradient(
-    135deg,
-    #ffd34a,
-    #efb92c
-  );
-  color:#070707;
-  font-size:11px;
-  font-weight:950;
-  letter-spacing:1px;
-  cursor:pointer
-}
-
-.status{
-  display:block;
-  margin-top:9px;
-  color:#777;
-  font-size:8px;
-  font-weight:800;
-  letter-spacing:1.3px;
-  text-transform:uppercase
-}
-
-.home-strip{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:1px;
-  margin-top:10px;
-  border:1px solid rgba(245,197,66,.2);
-  border-radius:15px;
-  overflow:hidden;
-  background:rgba(245,197,66,.18)
-}
-
-.home-strip-item{
-  padding:18px 12px;
-  text-align:center;
-  background:#090909
-}
-
-.home-strip-item strong{
-  display:block;
-  color:var(--gold);
-  font-size:11px;
-  margin-bottom:5px
-}
-
-.home-strip-item span{
-  color:#aaa;
-  font-size:10px
-}
-
-.download-app-cta{
-  margin:34px auto 0;
-  padding:24px 22px;
-  max-width:760px;
-  text-align:center;
-  border:1px solid rgba(245,197,66,.45);
-  border-radius:20px;
-  background:linear-gradient(
-    145deg,
-    #15120b,
-    #080808
-  );
-  box-shadow:0 14px 35px rgba(0,0,0,.32)
-}
-
-.download-app-cta strong{
-  display:block;
-  color:#fff;
-  font-size:19px;
-  letter-spacing:-.3px
-}
-
-.download-app-cta p{
-  margin:7px 0 16px;
-  color:#aaa;
-  font-size:12px;
-  line-height:1.5
-}
-
-.download-app-button{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-height:52px;
-  width:min(520px,100%);
-  margin:0 auto;
-  border:1px solid rgba(245,197,66,.9);
-  border-radius:12px;
-  background:linear-gradient(
-    135deg,
-    #ffd34a,
-    #efb92c
-  );
-  color:#070707;
-  font-size:13px;
-  font-weight:950;
-  letter-spacing:1px;
-  text-decoration:none;
-  box-shadow:0 8px 25px rgba(245,197,66,.16)
-}
-
-footer{
-  margin-top:45px;
-  padding:34px 18px 40px;
-  background:#030303;
-  border-top:1px solid rgba(255,255,255,.08);
-  text-align:center
-}
-
-.footer-brand{
-  position:relative;
-  display:inline-block;
-  padding-bottom:7px;
-  font-weight:950;
-  color:var(--gold)
-}
-
-.footer-brand:after,
-.modal-brand:after{
-  content:"";
-  position:absolute;
-  left:2px;
-  right:-3px;
-  bottom:0;
-  height:7px;
-  border-bottom:4px solid var(--gold);
-  border-radius:0 0 70% 55%;
-  transform:skewX(-18deg) rotate(-2deg);
-  filter:drop-shadow(0 0 3px rgba(245,197,66,.35));
-  pointer-events:none
-}
-
-.footer-brand span,
-.modal-brand span{
-  color:#fff
-}
-
-.footer-links{
-  gap:13px;
-  justify-content:center
-}
-
-.footer-links a{
-  font-size:11px
-}
-
-footer p{
-  font-size:10px;
-  color:#777
-}
+.home-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:10px;border:1px solid rgba(245,197,66,.2);border-radius:15px;overflow:hidden;background:rgba(245,197,66,.18)}
+.home-strip-item{padding:18px 12px;text-align:center;background:#090909}
+.home-strip-item strong{display:block;color:var(--gold);font-size:11px;margin-bottom:5px}
+.home-strip-item span{color:#aaa;font-size:10px}
+.download-app-cta{margin:34px auto 0;padding:24px 22px;max-width:760px;text-align:center;border:1px solid rgba(245,197,66,.45);border-radius:20px;background:linear-gradient(145deg,#15120b,#080808);box-shadow:0 14px 35px rgba(0,0,0,.32)}
+.download-app-cta strong{display:block;color:#fff;font-size:19px;letter-spacing:-.3px}
+.download-app-cta p{margin:7px 0 16px;color:#aaa;font-size:12px;line-height:1.5}
+.download-app-button{display:flex;align-items:center;justify-content:center;min-height:52px;width:min(520px,100%);margin:0 auto;border:1px solid rgba(245,197,66,.9);border-radius:12px;background:linear-gradient(135deg,#ffd34a,#efb92c);color:#070707;font-size:13px;font-weight:950;letter-spacing:1px;text-decoration:none;box-shadow:0 8px 25px rgba(245,197,66,.16)}
+footer{margin-top:45px;padding:34px 18px 40px;background:#030303;border-top:1px solid rgba(255,255,255,.08);text-align:center}
+.footer-brand{position:relative;display:inline-block;padding-bottom:7px;font-weight:950;color:var(--gold)}
+.footer-brand:after,.modal-brand:after{content:"";position:absolute;left:2px;right:-3px;bottom:0;height:7px;border-bottom:4px solid var(--gold);border-radius:0 0 70% 55%;transform:skewX(-18deg) rotate(-2deg);filter:drop-shadow(0 0 3px rgba(245,197,66,.35));pointer-events:none}
+.footer-brand span,.modal-brand span{color:#fff}
+.footer-links{gap:13px;justify-content:center}
+.footer-links a{font-size:11px}
+footer p{font-size:10px;color:#777}
 
 @media(max-width:720px){
-
-  .topbar{
-    min-height:62px;
-    padding:8px 15px
-  }
-
-  .brand-main{
-    font-size:26px
-  }
-
-  .main-nav{
-    display:none
-  }
-
-  .login-button{
-    min-height:40px;
-    padding:0 14px;
-    font-size:10px
-  }
-
-  .hero{
-    height:300px;
-    min-height:300px
-  }
-
-  .hero-visual{
-    background-position:center
-  }
-
-  .home-main{
-    width:92vw;
-    padding:36px 0 45px
-  }
-
-  .home-heading{
-    margin-bottom:24px
-  }
-
-  .home-heading .eyebrow{
-    font-size:9px;
-    letter-spacing:3px
-  }
-
-  .home-heading h2{
-    font-size:31px
-  }
-
-  .home-heading p{
-    font-size:12px;
-    margin-top:11px
-  }
-
-  .roulette-list{
-    grid-template-columns:1fr;
-    gap:13px
-  }
-
-  .roulette-card{
-    min-height:280px;
-    border-radius:18px
-  }
-
-  .roulette-art{
-    width:105px;
-    height:105px;
-    right:16px;
-    top:16px
-  }
-
-  .roulette-content{
-    padding:18px
-  }
-
-  .roulette-card h3{
-    font-size:24px
-  }
-
-  .roulette-card p{
-    font-size:12px;
-    max-width:65%
-  }
-
-  .roulette-card .max-prize{
-    font-size:17px
-  }
-
-  .roulette-card button{
-    min-height:46px
-  }
-
-  .home-strip{
-    grid-template-columns:1fr;
-    margin-top:18px
-  }
-
-  .home-strip-item{
-    padding:16px 12px
-  }
-
-  .download-app-cta{
-    margin-top:24px;
-    padding:20px 16px
-  }
-
-  .download-app-cta strong{
-    font-size:17px
-  }
-
-  .download-app-button{
-    min-height:50px;
-    font-size:12px
-  }
+  .topbar{min-height:62px;padding:8px 15px}
+  .brand-main{font-size:26px}
+  .main-nav{display:none}
+  .login-button{min-height:40px;padding:0 14px;font-size:10px}
+  .hero{height:300px;min-height:300px}
+  .hero-visual{background-position:center}
+  .home-main{width:92vw;padding:36px 0 45px}
+  .home-heading{margin-bottom:24px}
+  .home-heading .eyebrow{font-size:9px;letter-spacing:3px}
+  .home-heading h2{font-size:31px}
+  .home-heading p{font-size:12px;margin-top:11px}
+  .roulette-list{grid-template-columns:1fr;gap:13px}
+  .roulette-card{min-height:280px;border-radius:18px;padding:18px}
+  .roulette-art{width:78px;height:78px;margin-bottom:10px;border-width:5px}
+  .roulette-art:before{width:30px;height:30px;border-width:3px;box-shadow:inset 0 0 0 5px #181818}
+  .roulette-art:after{font-size:7px}
+  .roulette-card h3{font-size:24px}
+  .roulette-card p{font-size:12px;max-width:95%}
+  .roulette-card .max-prize{font-size:16px}
+  .roulette-card button{min-height:46px}
+  .home-strip{grid-template-columns:1fr;margin-top:18px}
+  .home-strip-item{padding:16px 12px}
+  .download-app-cta{margin-top:24px;padding:20px 16px}
+  .download-app-cta strong{font-size:17px}
+  .download-app-button{min-height:50px;font-size:12px}
 }
 </style>
 </head>
@@ -576,7 +144,6 @@ footer p{
 <body>
 
 <header class="topbar">
-
   <a class="brand" href="#inicio" aria-label="MyBets início">
     <span class="brand-main">My<span>Bets</span></span>
   </a>
@@ -587,305 +154,88 @@ footer p{
     <a href="termos-uso.html">Termos</a>
   </nav>
 
-  <button
-    class="login-button"
-    id="homeAccountButton"
-    onclick="abrirLogin()"
-  >
-    Minha Conta
-  </button>
-
+  <button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Minha Conta</button>
 </header>
 
 <main>
-
 <section class="hero" id="inicio">
   <div class="hero-visual" aria-hidden="true"></div>
 </section>
 
-<section
-  class="home-main"
-  id="roletas"
-  aria-label="Roleta MyBets"
->
-
+<section class="home-main" id="roletas" aria-label="Roleta MyBets">
   <div class="home-heading">
-
     <span class="eyebrow">NOSSO JOGO</span>
-
-    <h2>
-      <span>Roleta </span>
-      <span class="logo-my">My</span><span class="logo-bets">Bets</span>
-    </h2>
-
-    <p>
-      Faça sua aposta livre a partir de R$ 1,00 e concorra aos
-      multiplicadores da Roleta MyBets.
-    </p>
-
+    <h2><span>Roleta </span><span class="logo-my">My</span><span class="logo-bets">Bets</span></h2>
+    <p>Faça sua aposta livre a partir de R$ 1,00 e concorra aos multiplicadores da Roleta MyBets.</p>
   </div>
 
   <div class="roulette-list">
-
-    <!-- ÚNICA ROLETA ATUAL -->
     <article class="roulette-card active">
-
-      <div
-        class="roulette-art"
-        aria-hidden="true"
-      ></div>
-
+      <div class="roulette-art" aria-hidden="true"></div>
       <div class="roulette-content">
-
-        <div class="roulette-icon">
-          MYBETS
-        </div>
-
-        <h3>
-          Roleta MyBets
-        </h3>
-
-        <p>
-          Aposta livre a partir de R$ 1,00.
-          Escolha o valor e gire a roleta.
-        </p>
-
-        <div class="max-prize">
-          <small>Prêmio máximo</small>
-          Até 10x a aposta
-        </div>
-
-        <button
-          type="button"
-          onclick="location.href='/roulette207.html'"
-        >
-          JOGAR AGORA
-        </button>
-
-        <span class="status">
-          Disponível
-        </span>
-
+        <div class="roulette-icon">MYBETS</div>
+        <h3>Roleta MyBets</h3>
+        <p>Aposta livre a partir de R$ 1,00. Escolha o valor e gire a roleta.</p>
+        <div class="max-prize"><small>Prêmio máximo</small>Até 10x a aposta</div>
+        <button type="button" onclick="location.href='/roulette207.html'">JOGAR AGORA</button>
+        <span class="status">Disponível</span>
       </div>
-
     </article>
-
   </div>
 
   <div class="home-strip">
-
-    <div class="home-strip-item">
-      <strong>CADASTRO RÁPIDO</strong>
-      <span>Comece em poucos minutos</span>
-    </div>
-
-    <div class="home-strip-item">
-      <strong>EXPERIÊNCIA PREMIUM</strong>
-      <span>Interface limpa e objetiva</span>
-    </div>
-
-    <div class="home-strip-item">
-      <strong>DADOS PROTEGIDOS</strong>
-      <span>Segurança em primeiro lugar</span>
-    </div>
-
-    <div class="home-strip-item">
-      <strong>100% MOBILE</strong>
-      <span>Feito para o celular</span>
-    </div>
-
+    <div class="home-strip-item"><strong>CADASTRO RÁPIDO</strong><span>Comece em poucos minutos</span></div>
+    <div class="home-strip-item"><strong>EXPERIÊNCIA PREMIUM</strong><span>Interface limpa e objetiva</span></div>
+    <div class="home-strip-item"><strong>DADOS PROTEGIDOS</strong><span>Segurança em primeiro lugar</span></div>
+    <div class="home-strip-item"><strong>100% MOBILE</strong><span>Feito para o celular</span></div>
   </div>
 
   <div class="download-app-cta">
-
-    <strong>
-      📱 BAIXE O APLICATIVO MYBETS
-    </strong>
-
-    <p>
-      Tenha o MyBets de forma rápida no seu celular.
-    </p>
-
-    <a
-      class="download-app-button"
-      href="/baixar-app.html"
-    >
-      BAIXAR APLICATIVO
-    </a>
-
+    <strong>📱 BAIXE O APLICATIVO MYBETS</strong>
+    <p>Tenha o MyBets de forma rápida no seu celular.</p>
+    <a class="download-app-button" href="/baixar-app.html">BAIXAR APLICATIVO</a>
   </div>
-
 </section>
-
 </main>
 
-<div
-  id="loginModal"
-  class="modal"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="loginTitle"
->
-
+<div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
   <div class="modal-box">
-
-    <button
-      class="close-button"
-      onclick="fecharLogin()"
-      aria-label="Fechar"
-    >
-      ×
-    </button>
+    <button class="close-button" onclick="fecharLogin()" aria-label="Fechar">×</button>
 
     <div id="loginForm">
-
-      <div class="modal-brand">
-        My<span>Bets</span>
-      </div>
-
-      <h2 id="loginTitle">
-        Entrar
-      </h2>
-
-      <p>
-        Acesse sua conta MyBets.
-      </p>
-
-      <input
-        type="text"
-        id="username"
-        placeholder="Usuário"
-        autocomplete="username"
-      >
-
-      <input
-        type="password"
-        id="password"
-        placeholder="Senha"
-        autocomplete="current-password"
-      >
-
-      <button
-        class="primary-button"
-        onclick="entrar()"
-      >
-        ENTRAR
-      </button>
-
-      <p
-        id="loginMessage"
-        class="login-message"
-      ></p>
-
-      <button
-        type="button"
-        class="secondary-button modal-secondary"
-        onclick="mostrarCadastro()"
-      >
-        CRIAR CONTA
-      </button>
-
+      <div class="modal-brand">My<span>Bets</span></div>
+      <h2 id="loginTitle">Entrar</h2>
+      <p>Acesse sua conta MyBets.</p>
+      <input type="text" id="username" placeholder="Usuário" autocomplete="username">
+      <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
+      <button class="primary-button" onclick="entrar()">ENTRAR</button>
+      <p id="loginMessage" class="login-message"></p>
+      <button type="button" class="secondary-button modal-secondary" onclick="mostrarCadastro()">CRIAR CONTA</button>
     </div>
 
-    <div
-      id="registerForm"
-      style="display:none"
-    >
-
-      <div class="modal-brand">
-        My<span>Bets</span>
-      </div>
-
-      <h2>
-        Criar conta
-      </h2>
-
-      <p>
-        Crie sua conta MyBets.
-      </p>
-
-      <input
-        type="text"
-        id="registerUsername"
-        placeholder="Escolha um usuário"
-        autocomplete="username"
-      >
-
-      <input
-        type="password"
-        id="registerPassword"
-        placeholder="Crie uma senha"
-        autocomplete="new-password"
-      >
-
-      <input
-        type="password"
-        id="registerPasswordConfirm"
-        placeholder="Confirme sua senha"
-        autocomplete="new-password"
-      >
-
-      <button
-        class="primary-button"
-        onclick="cadastrar()"
-      >
-        CRIAR CONTA
-      </button>
-
-      <p
-        id="registerMessage"
-        class="login-message"
-      ></p>
-
-      <button
-        type="button"
-        class="secondary-button modal-secondary"
-        onclick="mostrarLogin()"
-      >
-        JÁ TENHO UMA CONTA
-      </button>
-
+    <div id="registerForm" style="display:none">
+      <div class="modal-brand">My<span>Bets</span></div>
+      <h2>Criar conta</h2>
+      <p>Crie sua conta MyBets.</p>
+      <input type="text" id="registerUsername" placeholder="Escolha um usuário" autocomplete="username">
+      <input type="password" id="registerPassword" placeholder="Crie uma senha" autocomplete="new-password">
+      <input type="password" id="registerPasswordConfirm" placeholder="Confirme sua senha" autocomplete="new-password">
+      <button class="primary-button" onclick="cadastrar()">CRIAR CONTA</button>
+      <p id="registerMessage" class="login-message"></p>
+      <button type="button" class="secondary-button modal-secondary" onclick="mostrarLogin()">JÁ TENHO UMA CONTA</button>
     </div>
-
   </div>
-
 </div>
 
 <footer>
-
-  <div class="footer-brand">
-    My<span>Bets</span>
-  </div>
-
+  <div class="footer-brand">My<span>Bets</span></div>
   <div class="footer-links">
-
-    <a href="#inicio">
-      Início
-    </a>
-
-    <span>•</span>
-
-    <a href="#roletas">
-      Roletas
-    </a>
-
-    <span>•</span>
-
-    <a href="termos-uso.html">
-      Termos de Uso
-    </a>
-
+    <a href="#inicio">Início</a><span>•</span><a href="#roletas">Roletas</a><span>•</span><a href="termos-uso.html">Termos de Uso</a>
   </div>
-
-  <p>
-    © 2026 MyBets — Todos os direitos reservados.
-  </p>
-
+  <p>© 2026 MyBets — Todos os direitos reservados.</p>
 </footer>
 
 <script src="app.js"></script>
-
-
 <script src="/brand-standard.js?v=1"></script>
 <script src="/brand-standard.js?v=2"></script>
 </body>
