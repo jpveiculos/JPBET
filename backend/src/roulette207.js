@@ -10,21 +10,16 @@ const router = express.Router();
  * =========================================================
  *
  * 90 setores no total
- *
  * 9 setores de prêmio
  * 81 setores de perda
  *
- * Todos os setores possuem a mesma probabilidade:
+ * Cada setor possui a mesma probabilidade:
  *
  * 1 / 90 = 1,111111%
  *
  * 9 prêmios:
  *
  * 9 / 90 = 10%
- *
- * 81 perdas:
- *
- * 81 / 90 = 90%
  */
 
 const TOTAL_SECTORS = 90;
@@ -43,40 +38,42 @@ const DEFAULT_PRIZES = [
   10
 ];
 
+
 /*
- * Os 9 primeiros setores são os setores
- * de prêmio.
+ * =========================================================
+ * POSIÇÕES DOS PRÊMIOS
+ * =========================================================
  *
- * Setores:
+ * Um prêmio a cada 10 setores.
  *
- * 0 = 2x
- * 1 = 3x
- * 2 = 4x
- * 3 = 5x
- * 4 = 6x
- * 5 = 7x
- * 6 = 8x
- * 7 = 9x
- * 8 = 10x
+ * 0  = 2x
+ * 10 = 3x
+ * 20 = 4x
+ * 30 = 5x
+ * 40 = 6x
+ * 50 = 7x
+ * 60 = 8x
+ * 70 = 9x
+ * 80 = 10x
  *
- * Os setores 9 até 89 são perdas.
+ * Os demais 81 setores são perdas.
  */
 
 const PRIZE_INDEXES = [
   0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8
+  10,
+  20,
+  30,
+  40,
+  50,
+  60,
+  70,
+  80
 ];
 
 
 /* =========================================================
-   CONFIGURAÇÃO
+   CONFIGURAÇÃO DO BANCO
    ========================================================= */
 
 async function getSetting(
@@ -110,20 +107,23 @@ async function getSetting(
 
 
 /* =========================================================
-   CONFIG DA ROLETA
+   CONFIGURAÇÃO DA ROLETA
    ========================================================= */
 
 async function getConfig() {
 
   let prizes =
-    DEFAULT_PRIZES;
+    [
+      ...DEFAULT_PRIZES
+    ];
 
   let minBet =
     0.50;
 
 
   /*
-   * Prêmios configurados pelo admin.
+   * Busca os multiplicadores
+   * configurados no painel admin.
    */
 
   try {
@@ -161,7 +161,7 @@ async function getConfig() {
 
 
   /*
-   * Aposta mínima.
+   * Busca o valor mínimo da aposta.
    */
 
   const configuredMin =
@@ -201,13 +201,12 @@ async function getConfig() {
    ========================================================= */
 
 /*
- * Aqui NÃO existe peso artificial.
+ * NÃO existe peso artificial aqui.
  *
- * O servidor escolhe diretamente um número
- * entre 0 e 89.
+ * O servidor simplesmente escolhe
+ * um dos 90 setores.
  *
- * Portanto todos os 90 setores possuem
- * exatamente a mesma probabilidade.
+ * Todos têm exatamente a mesma chance.
  */
 
 function sortearSetor() {
@@ -255,9 +254,11 @@ router.get(
           LOSS_SECTORS,
 
         /*
-         * 1 setor entre 90.
+         * Cada setor:
          *
-         * 1,111111% para cada prêmio.
+         * 100 / 90
+         *
+         * = 1,111111%
          */
 
         probabilityPercent:
@@ -269,9 +270,9 @@ router.get(
           ),
 
         /*
-         * 9 setores entre 90.
+         * 9 / 90
          *
-         * 10% total de prêmios.
+         * = 10%
          */
 
         totalPrizeProbabilityPercent:
@@ -416,7 +417,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         BLOQUEIA USUÁRIO
+         BUSCA E BLOQUEIA O USUÁRIO
          --------------------------------------------------- */
 
       const userResult =
@@ -464,7 +465,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         SALDO
+         SALDO DISPONÍVEL
          --------------------------------------------------- */
 
       const bonus =
@@ -529,7 +530,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         SORTEIO
+         SORTEIO DOS 90 SETORES
          --------------------------------------------------- */
 
       const sector =
@@ -538,7 +539,7 @@ router.post(
 
       /*
        * Verifica se o setor sorteado
-       * é um dos 9 prêmios.
+       * é um dos 9 setores de prêmio.
        */
 
       const prizePosition =
@@ -556,7 +557,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         PRÊMIO
+         CALCULA O PRÊMIO
          --------------------------------------------------- */
 
       const prize =
@@ -633,11 +634,13 @@ router.post(
         Number(
           Math.min(
             requirement,
+
             Number(
               user.bonus_wager_progress ||
               0
             ) +
             bonusUsed
+
           ).toFixed(2)
         );
 
@@ -681,7 +684,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         TEXTO DO RESULTADO
+         RESULTADO PARA O HISTÓRICO
          --------------------------------------------------- */
 
       const resultText =
@@ -697,7 +700,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         HISTÓRICO DE SPINS
+         SALVA SPIN
          --------------------------------------------------- */
 
       const spinResult =
@@ -721,7 +724,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         TRANSAÇÃO
+         SALVA TRANSAÇÃO
          --------------------------------------------------- */
 
       await client.query(
@@ -748,7 +751,7 @@ router.post(
 
 
       /* ---------------------------------------------------
-         COMMIT
+         CONFIRMA
          --------------------------------------------------- */
 
       await client.query(
