@@ -4,10 +4,10 @@ import { pool } from "./db.js";
 
 const router = express.Router();
 
-const TOTAL_SECTORS = 90;
-const LOSS_SECTORS = 81;
+const TOTAL_SECTORS = 77;
+const LOSS_SECTORS = 68;
 const DEFAULT_PRIZES = [2,3,4,5,6,7,8,9,10];
-const PRIZE_INDEXES = [0,10,20,30,40,50,60,70,80];
+const PRIZE_INDEXES = [0,9,19,28,38,47,57,66,76];
 
 async function getSetting(key,fallback){
   try{
