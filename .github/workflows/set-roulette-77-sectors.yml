@@ -1,0 +1,50 @@
+name: Set roulette to 77 sectors
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update roulette sector count
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('backend/src/roulette207.js')
+          text = path.read_text(encoding='utf-8')
+          old = "const TOTAL_SETORES = 90;"
+          if old not in text:
+              raise SystemExit('TOTAL_SETORES = 90 not found')
+          text = text.replace(old, "const TOTAL_SETORES = 77;", 1)
+          path.write_text(text, encoding='utf-8')
+
+          path = Path('backend/frontend/roulette207.html')
+          text = path.read_text(encoding='utf-8')
+          old = "const TOTAL =\n  90;"
+          if old not in text:
+              raise SystemExit('frontend TOTAL = 90 not found')
+          text = text.replace(old, "const TOTAL =\n  77;", 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/roulette207.js backend/frontend/roulette207.html .github/workflows/set-roulette-77-sectors.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Set roulette to 77 sectors"
+          git rm .github/workflows/set-roulette-77-sectors.yml
+          git commit -m "Remove one-time 77 sector workflow"
+          git push
