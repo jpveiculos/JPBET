@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyBets — My Tiger</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#090909;
+ color:#fff;
+ font-family:Arial,sans-serif;
+ min-height:100vh;
+}
+header{
+ padding:16px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ border-bottom:1px solid #292929;
+}
+.logo{font-size:25px;font-weight:900;color:#fff}
+.logo span{color:#d8a72b}
+.balance{
+ background:#151515;
+ border:1px solid #76591c;
+ border-radius:12px;
+ padding:9px 13px;
+ color:#e5bd55;
+ font-weight:bold;
+}
+main{max-width:520px;margin:auto;padding:18px}
+.title{text-align:center}
+.title h1{
+ margin:5px 0;
+ font-size:32px;
+ color:#e5b83f;
+}
+.title p{color:#999}
+
+.machine{
+ margin-top:20px;
+ background:linear-gradient(145deg,#191919,#080808);
+ border:2px solid #8d6a22;
+ border-radius:22px;
+ padding:15px;
+ box-shadow:0 0 30px #000;
+}
+.reels{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:6px;
+ background:#000;
+ padding:8px;
+ border-radius:14px;
+}
+.reel{
+ height:105px;
+ background:#f4f4f4;
+ color:#111;
+ border-radius:8px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:42px;
+ overflow:hidden;
+}
+.symbols{
+ margin-top:18px;
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:7px;
+}
+.symbol{
+ background:#111;
+ border:1px solid #3b3b3b;
+ border-radius:10px;
+ padding:9px 4px;
+ text-align:center;
+}
+.symbol b{display:block;font-size:23px}
+.symbol small{color:#d9b04b}
+
+.controls{
+ margin-top:18px;
+ display:flex;
+ gap:8px;
+}
+.controls button{
+ width:50px;
+ height:48px;
+ border:1px solid #8c6a22;
+ background:#171717;
+ color:#fff;
+ border-radius:10px;
+ font-size:22px;
+}
+.bet{
+ flex:1;
+ text-align:center;
+ background:#111;
+ border:1px solid #444;
+ border-radius:10px;
+ padding:14px;
+ font-weight:bold;
+}
+.spin{
+ width:100%;
+ margin-top:15px;
+ padding:17px;
+ border:0;
+ border-radius:14px;
+ background:linear-gradient(135deg,#d8a52f,#f0d06a,#bd851b);
+ color:#080808;
+ font-size:21px;
+ font-weight:900;
+}
+.spin:disabled{opacity:.5}
+.result{
+ text-align:center;
+ min-height:28px;
+ margin-top:14px;
+ color:#e8bd50;
+ font-weight:bold;
+}
+.back{
+ display:block;
+ text-align:center;
+ margin-top:20px;
+ color:#aaa;
+ text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">My<span>Bets</span></div>
+ <div class="balance">R$ <span id="balance">1.000,00</span></div>
+</header>
+
+<main>
+
+<div class="title">
+ <h1>🐯 MY TIGER</h1>
+ <p>Máquina 5 × 3</p>
+</div>
+
+<div class="machine">
+
+ <div class="reels" id="reels"></div>
+
+ <div class="symbols">
+  <div class="symbol"><b>🐯</b><small>50x</small></div>
+  <div class="symbol"><b>👑</b><small>25x</small></div>
+  <div class="symbol"><b>💎</b><small>15x</small></div>
+  <div class="symbol"><b>🪙</b><small>8x</small></div>
+  <div class="symbol"><b>🍊</b><small>4x</small></div>
+  <div class="symbol"><b>🍋</b><small>4x</small></div>
+  <div class="symbol"><b>🔔</b><small>10x</small></div>
+  <div class="symbol"><b>7️⃣</b><small>20x</small></div>
+ </div>
+
+ <div class="controls">
+  <button id="minus">−</button>
+  <div class="bet">APOSTA<br>R$ <span id="bet">1,00</span></div>
+  <button id="plus">+</button>
+ </div>
+
+ <button class="spin" id="spin">GIRAR</button>
+
+ <div class="result" id="result"></div>
+
+</div>
+
+<a class="back" href="/">← Voltar para MyBets</a>
+
+</main>
+
+<script>
+const symbols=[
+ {icon:"🐯",mult:50},
+ {icon:"👑",mult:25},
+ {icon:"💎",mult:15},
+ {icon:"🪙",mult:8},
+ {icon:"🍊",mult:4},
+ {icon:"🍋",mult:4},
+ {icon:"🔔",mult:10},
+ {icon:"7️⃣",mult:20}
+];
+
+let balance=1000;
+let bet=1;
+let spinning=false;
+
+const reels=document.getElementById("reels");
+const balanceEl=document.getElementById("balance");
+const betEl=document.getElementById("bet");
+const result=document.getElementById("result");
+const spinBtn=document.getElementById("spin");
+
+function money(v){
+ return v.toLocaleString("pt-BR",{minimumFractionDigits:2});
+}
+
+function draw(arr){
+ reels.innerHTML="";
+ arr.forEach(s=>{
+  const d=document.createElement("div");
+  d.className="reel";
+  d.textContent=s.icon;
+  reels.appendChild(d);
+ });
+}
+
+draw([symbols[0],symbols[1],symbols[2],symbols[6],symbols[7]]);
+
+document.getElementById("minus").onclick=()=>{
+ if(spinning)return;
+ bet=Math.max(1,bet-1);
+ betEl.textContent=money(bet);
+};
+
+document.getElementById("plus").onclick=()=>{
+ if(spinning)return;
+ if(bet+1<=balance)bet++;
+ betEl.textContent=money(bet);
+};
+
+spinBtn.onclick=()=>{
+ if(spinning)return;
+
+ if(balance<bet){
+  result.textContent="Saldo insuficiente.";
+  return;
+ }
+
+ spinning=true;
+ spinBtn.disabled=true;
+ result.textContent="Girando...";
+
+ balance-=bet;
+ balanceEl.textContent=money(balance);
+
+ let ticks=0;
+
+ const timer=setInterval(()=>{
+  const arr=Array.from({length:5},()=>{
+   return symbols[Math.floor(Math.random()*symbols.length)];
+  });
+
+  draw(arr);
+  ticks++;
+
+  if(ticks>=15){
+   clearInterval(timer);
+
+   const final=Array.from({length:5},()=>{
+    return symbols[Math.floor(Math.random()*symbols.length)];
+   });
+
+   draw(final);
+
+   const counts={};
+
+   final.forEach(s=>{
+    counts[s.icon]=(counts[s.icon]||0)+1;
+   });
+
+   let win=0;
+
+   Object.keys(counts).forEach(icon=>{
+    if(counts[icon]>=3){
+     const s=symbols.find(x=>x.icon===icon);
+     win=Math.max(win,bet*s.mult);
+    }
+   });
+
+   if(win>0){
+    balance+=win;
+    result.textContent="🎉 PRÊMIO: R$ "+money(win);
+   }else{
+    result.textContent="Não foi dessa vez.";
+   }
+
+   balanceEl.textContent=money(balance);
+   spinning=false;
+   spinBtn.disabled=false;
+  }
+
+ },80);
+};
+</script>
+
+</body>
+</html>
