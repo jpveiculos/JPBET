@@ -234,15 +234,6 @@ body{
 
   overflow:hidden;
 
-  /*
-   * A animação agora é controlada
-   * somente pelo JavaScript.
-   *
-   * Isso evita o conflito entre
-   * CSS transition e requestAnimationFrame
-   * e elimina o tranco no final.
-   */
-
   transition:
     none !important;
 
@@ -321,7 +312,7 @@ body{
 
     0 10px 22px #000;
 
-  cursor:pointer;
+  cursor:default;
 }
 
 .hub strong{
@@ -455,7 +446,9 @@ body{
 
   font-weight:1000;
 
-  font-size:17px;
+  font-size:21px;
+
+  letter-spacing:.3px;
 
   box-shadow:
     0 8px 18px
@@ -466,16 +459,10 @@ body{
   opacity:.55;
 }
 
-/* Botão principal com texto maior */
-.spin{
-  font-size:21px;
-  letter-spacing:.3px;
-}
 
-/* Marca central da roleta — apenas visual, sem ação de giro */
-.hub{
-  cursor:default;
-}
+/* =========================================================
+   LOGO CENTRAL
+   ========================================================= */
 
 .hub-logo{
   display:flex;
@@ -504,8 +491,17 @@ body{
   height:3px;
   margin-top:5px;
   border-radius:999px;
-  background:linear-gradient(90deg,transparent,#ffd83d 18%,#ffd83d 82%,transparent);
-  box-shadow:0 1px 5px rgba(255,216,61,.45);
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #ffd83d 18%,
+      #ffd83d 82%,
+      transparent
+    );
+  box-shadow:
+    0 1px 5px
+    rgba(255,216,61,.45);
 }
 
 .hub-logo-sub{
@@ -605,11 +601,9 @@ body{
 
 <main class="game">
 
-
 <div class="wheel-box">
 
   <div class="pointer"></div>
-
 
   <div
     class="wheel"
@@ -624,7 +618,6 @@ body{
     ></svg>
 
   </div>
-
 
   <div
     class="hub"
@@ -652,7 +645,6 @@ body{
 
 <div class="controls">
 
-
 <div class="bet-row">
 
   <span>
@@ -668,7 +660,6 @@ body{
       −
     </button>
 
-
     <input
       id="betAmount"
       type="number"
@@ -678,7 +669,6 @@ body{
       inputmode="decimal"
       onchange="normalizeBet()"
     >
-
 
     <button
       type="button"
@@ -699,7 +689,6 @@ body{
 >
   ↻ GIRAR
 </button>
-
 
 </div>
 
@@ -780,7 +769,34 @@ const DEFAULT_PRIZES = [
 ];
 
 
-const PRIZE_INDEXES = [0,9,19,28,38,47,57,66,76];
+/*
+ * Os 9 setores de prêmio.
+ *
+ * 77 setores lógicos:
+ *
+ * 0  = 2x
+ * 9  = 3x
+ * 19 = 4x
+ * 28 = 5x
+ * 38 = 6x
+ * 47 = 7x
+ * 57 = 8x
+ * 66 = 9x
+ * 76 = 10x
+ */
+
+const PRIZE_INDEXES =
+  [
+    0,
+    9,
+    19,
+    28,
+    38,
+    47,
+    57,
+    66,
+    76
+  ];
 
 
 let MIN_BET =
@@ -1124,6 +1140,13 @@ function drawWheel(){
     'http://www.w3.org/2000/svg';
 
 
+  /*
+   * Visualmente temos 18 fatias:
+   *
+   * 9 douradas = prêmio
+   * 9 pretas   = perda
+   */
+
   const VISUAL_SLICES =
     18;
 
@@ -1236,7 +1259,6 @@ function drawWheel(){
 
     }
 
-
     else{
 
       path.setAttribute(
@@ -1306,12 +1328,6 @@ function drawWheel(){
         y
       );
 
-      /*
-       * A orientação é atualizada a cada frame.
-       * A roda leva o prêmio junto pela circunferência,
-       * mas o texto compensa a rotação da roda no próprio
-       * eixo para permanecer sempre de pé na tela.
-       */
 
       text.setAttribute(
         'fill',
@@ -1633,6 +1649,30 @@ function refresh(){
 
 /* =========================================================
    SETOR LÓGICO → POSIÇÃO VISUAL
+   =========================================================
+   
+   CORREÇÃO PRINCIPAL
+   
+   Antes a função dividia os setores em grupos de 10,
+   o que não funciona com 77 setores.
+
+   Agora:
+   
+   77 setores lógicos
+   9 setores de prêmio
+   68 setores de perda
+
+   Visual:
+   
+   18 fatias
+   9 douradas
+   9 pretas
+
+   Cada prêmio fica exatamente no centro de uma
+   fatia dourada.
+
+   Os setores de perda são distribuídos dentro
+   das respectivas fatias pretas.
    ========================================================= */
 
 function visualTargetForSector(sector){
@@ -1648,51 +1688,148 @@ function visualTargetForSector(sector){
   }
 
 
-  const group =
-    Math.floor(
-      sector / 10
+  const prizeCount =
+    PRIZE_INDEXES.length;
+
+
+  /*
+   * Primeiro verifica se o setor sorteado
+   * é um dos 9 setores de prêmio.
+   */
+
+  const prizePosition =
+    PRIZE_INDEXES.indexOf(
+      sector
     );
 
 
-  const positionInGroup =
-    sector % 10;
-
-
-  const groupStart =
-    group * 40;
-
-
   if(
-    positionInGroup === 0
+    prizePosition >= 0
   ){
 
+    /*
+     * Centros das fatias douradas:
+     *
+     * 10°
+     * 50°
+     * 90°
+     * 130°
+     * 170°
+     * 210°
+     * 250°
+     * 290°
+     * 330°
+     */
+
     return (
-      groupStart +
+      prizePosition * 40 +
       10
     );
 
   }
 
 
-  const lossAngle =
-    20 / 9;
+  /*
+   * Se não é prêmio, é um setor de perda.
+   *
+   * Procuramos entre quais dois setores
+   * de prêmio ele está.
+   */
+
+  for(
+    let i = 0;
+    i < prizeCount;
+    i++
+  ){
+
+    const startPrize =
+      PRIZE_INDEXES[i];
 
 
-  const lossPosition =
-    positionInGroup - 1;
+    /*
+     * Para o último prêmio, fazemos a ligação
+     * do setor 76 de volta ao setor 0.
+     */
+
+    const nextPrize =
+      i === prizeCount - 1
+        ? PRIZE_INDEXES[0] + TOTAL
+        : PRIZE_INDEXES[i + 1];
 
 
-  const target =
-    groupStart +
-    20 +
-    (
-      lossPosition +
-      0.5
-    ) *
-    lossAngle;
+    /*
+     * Ajusta os setores que pertencem ao
+     * intervalo que passa pelo final da roleta.
+     */
+
+    const logicalSector =
+      sector < startPrize
+        ? sector + TOTAL
+        : sector;
 
 
-  return target;
+    /*
+     * Quantidade de setores de perda
+     * existentes entre os dois prêmios.
+     */
+
+    const lossCount =
+      nextPrize -
+      startPrize -
+      1;
+
+
+    /*
+     * Verifica se o setor pertence a este intervalo.
+     */
+
+    if(
+      logicalSector > startPrize &&
+      logicalSector < nextPrize
+    ){
+
+      const lossPosition =
+        logicalSector -
+        startPrize -
+        1;
+
+
+      /*
+       * A fatia preta possui 20 graus.
+       *
+       * Distribuímos todos os setores de perda
+       * igualmente dentro dela.
+       *
+       * O +0.5 coloca o alvo no centro de cada
+       * pequena posição, evitando parar exatamente
+       * sobre a linha divisória.
+       */
+
+      const lossAngle =
+        20 /
+        lossCount;
+
+
+      return (
+        i * 40 +
+        20 +
+        (
+          lossPosition +
+          0.5
+        ) *
+        lossAngle
+      );
+
+    }
+
+  }
+
+
+  /*
+   * Segurança.
+   */
+
+  return 10;
 
 }
 
@@ -1701,32 +1838,40 @@ function visualTargetForSector(sector){
    ORIENTAÇÃO DOS PRÊMIOS — SEMPRE DE PÉ
    ========================================================= */
 
-function updatePrizeLabels(angle = rotation){
+function updatePrizeLabels(
+  angle = rotation
+){
 
   const labels =
     document.querySelectorAll(
       '#wheelSvg .prize-label'
     );
 
+
   labels.forEach(
     text => {
 
       const x =
-        Number(text.getAttribute('x'));
+        Number(
+          text.getAttribute(
+            'x'
+          )
+        );
+
 
       const y =
-        Number(text.getAttribute('y'));
+        Number(
+          text.getAttribute(
+            'y'
+          )
+        );
+
 
       if(
         Number.isFinite(x) &&
         Number.isFinite(y)
       ){
 
-        /*
-         * O SVG inteiro gira com a roleta.
-         * Aqui anulamos somente a rotação no eixo
-         * do próprio prêmio, mantendo-o sempre legível.
-         */
         text.setAttribute(
           'transform',
           `rotate(${-angle} ${x} ${y})`
@@ -1741,18 +1886,37 @@ function updatePrizeLabels(angle = rotation){
 
 
 /* =========================================================
-   NOTIFICAÇÃO DE RESULTADO — GANHOU / PERDEU
+   NOTIFICAÇÃO DE RESULTADO
+   =========================================================
+   
+   Somente vitória.
+   
+   A mensagem de perda permanece desativada,
+   conforme solicitado.
    ========================================================= */
 
-function showSpinResult(type, amount){
+function showSpinResult(
+  type,
+  amount
+){
 
   let box =
-    document.getElementById('spinResultNotice');
+    document.getElementById(
+      'spinResultNotice'
+    );
+
 
   if(!box){
 
-    box = document.createElement('div');
-    box.id = 'spinResultNotice';
+    box =
+      document.createElement(
+        'div'
+      );
+
+
+    box.id =
+      'spinResultNotice';
+
 
     box.style.cssText = `
       position:fixed;
@@ -1778,56 +1942,82 @@ function showSpinResult(type, amount){
       -webkit-backdrop-filter:blur(10px);
     `;
 
-    document.body.appendChild(box);
+
+    document.body.appendChild(
+      box
+    );
 
   }
 
-  const valor =
-    'R$ ' +
-    money(amount);
 
-  if(type !== 'win'){
+  /*
+   * A mensagem de perda fica desativada.
+   */
+
+  if(
+    type !== 'win'
+  ){
 
     return;
 
   }
 
 
+  const valor =
+    'R$ ' +
+    money(
+      amount
+    );
+
+
   box.textContent =
-    'Você ganhou ' + valor;
+    'Você ganhou ' +
+    valor;
 
-  if(type === 'win'){
 
-    box.style.color = '#53f28b';
-    box.style.background = 'rgba(8,42,24,.94)';
-    box.style.border = '2px solid rgba(83,242,139,.72)';
-    box.style.textShadow = '0 2px 12px rgba(83,242,139,.45)';
+  box.style.color =
+    '#53f28b';
 
-  }else{
 
-    box.style.color = '#ff6262';
-    box.style.background = 'rgba(52,10,10,.94)';
-    box.style.border = '2px solid rgba(255,98,98,.72)';
-    box.style.textShadow = '0 2px 12px rgba(255,98,98,.35)';
+  box.style.background =
+    'rgba(8,42,24,.94)';
 
-  }
 
-  box.style.opacity = '1';
+  box.style.border =
+    '2px solid rgba(83,242,139,.72)';
+
+
+  box.style.textShadow =
+    '0 2px 12px rgba(83,242,139,.45)';
+
+
+  box.style.opacity =
+    '1';
+
+
   box.style.transform =
     'translate(-50%,-50%) scale(1)';
+
 
   clearTimeout(
     window.__spinResultTimer
   );
 
+
   window.__spinResultTimer =
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      box.style.opacity = '0';
-      box.style.transform =
-        'translate(-50%,-50%) scale(.88)';
+        box.style.opacity =
+          '0';
 
-    }, 1900);
+
+        box.style.transform =
+          'translate(-50%,-50%) scale(.88)';
+
+      },
+      1900
+    );
 
 }
 
@@ -1889,6 +2079,7 @@ async function spin(){
   let resultType =
     null;
 
+
   let resultAmount =
     0;
 
@@ -1898,8 +2089,8 @@ async function spin(){
     /*
      * Solicita o resultado ao servidor.
      *
-     * O servidor continua sendo
-     * responsável pelo resultado oficial.
+     * O servidor continua responsável
+     * pelo resultado oficial.
      */
 
     const r =
@@ -1958,19 +2149,35 @@ async function spin(){
 
 
     const prizeIndex =
-      PRIZE_INDEXES.indexOf(sector);
+      PRIZE_INDEXES.indexOf(
+        sector
+      );
 
 
-    if(prizeIndex >= 0){
+    if(
+      prizeIndex >= 0
+    ){
 
-      resultType = 'win';
+      resultType =
+        'win';
+
+
       resultAmount =
-        bet * Number(PRIZES[prizeIndex] || 0);
+        bet *
+        Number(
+          PRIZES[
+            prizeIndex
+          ] || 0
+        );
 
     }else{
 
-      resultType = 'loss';
-      resultAmount = bet;
+      resultType =
+        'loss';
+
+
+      resultAmount =
+        bet;
 
     }
 
@@ -1991,7 +2198,9 @@ async function spin(){
 
 
     /*
-     * Encontra a posição visual.
+     * Encontra a posição visual correta.
+     *
+     * ESTA É A PARTE CORRIGIDA.
      */
 
     const target =
@@ -2001,8 +2210,8 @@ async function spin(){
 
 
     /*
-     * Normaliza somente para
-     * calcular o próximo alvo.
+     * Normaliza somente para calcular
+     * o próximo alvo.
      */
 
     const current =
@@ -2013,8 +2222,7 @@ async function spin(){
 
 
     /*
-     * Calcula a distância até
-     * o setor sorteado.
+     * Calcula a distância até o setor sorteado.
      */
 
     const delta =
@@ -2028,22 +2236,8 @@ async function spin(){
 
     /*
      * =====================================================
-     * AQUI ESTÃO AS 3 VOLTAS.
+     * 3 VOLTAS COMPLETAS
      * =====================================================
-     *
-     * Antes:
-     *
-     * 360 * 5
-     *
-     * Agora:
-     *
-     * 360 * 3
-     *
-     * Resultado:
-     *
-     * 3 voltas completas
-     * +
-     * deslocamento até o resultado.
      */
 
     const from =
@@ -2058,9 +2252,6 @@ async function spin(){
 
     /*
      * Duração do giro.
-     *
-     * 3 voltas ficam um pouco mais rápidas
-     * que as antigas 5 voltas.
      */
 
     const duration =
@@ -2072,8 +2263,8 @@ async function spin(){
 
 
     /*
-     * Garante que nenhuma transition
-     * CSS participe da animação.
+     * Garante que nenhuma transition CSS
+     * participe da animação.
      */
 
     wheel.style.transition =
@@ -2092,15 +2283,14 @@ async function spin(){
      * =====================================================
      * ANIMAÇÃO
      * =====================================================
-     *
-     * requestAnimationFrame permite controlar
-     * exatamente cada frame.
      */
 
     await new Promise(
       resolve => {
 
-        function frame(now){
+        function frame(
+          now
+        ){
 
           const progress =
             Math.min(
@@ -2116,9 +2306,8 @@ async function spin(){
           /*
            * Ease-out de quinta ordem.
            *
-           * A roleta reduz a velocidade
-           * progressivamente até chegar
-           * praticamente parada.
+           * A velocidade diminui progressivamente
+           * até a parada.
            */
 
           const eased =
@@ -2140,6 +2329,7 @@ async function spin(){
 
           wheel.style.transform =
             `rotate(${currentRotation}deg)`;
+
 
           updatePrizeLabels(
             currentRotation
@@ -2167,8 +2357,6 @@ async function spin(){
            * Fixa exatamente no destino.
            *
            * Não existe uma segunda animação.
-           *
-           * Isso é o que elimina o tranco.
            */
 
           rotation =
@@ -2182,14 +2370,15 @@ async function spin(){
           wheel.style.transform =
             `rotate(${rotation}deg)`;
 
+
           updatePrizeLabels(
             rotation
           );
 
 
           /*
-           * Força o navegador a aplicar
-           * imediatamente a posição final.
+           * Força o navegador a aplicar imediatamente
+           * a posição final.
            */
 
           wheel.getBoundingClientRect();
@@ -2213,8 +2402,7 @@ async function spin(){
 
 
     /*
-     * Atualiza o saldo imediatamente
-     * depois do término do giro.
+     * Atualiza o saldo depois do giro.
      */
 
     renderUser(
@@ -2234,11 +2422,13 @@ async function spin(){
     /*
      * A notificação aparece somente depois
      * que a roleta terminou completamente.
-     * Ela é position:fixed e pointer-events:none,
-     * então não altera o layout nem movimenta a página.
+     *
+     * Somente vitória é mostrada.
      */
 
-    if(resultType === 'win'){
+    if(
+      resultType === 'win'
+    ){
 
       showSpinResult(
         'win',
