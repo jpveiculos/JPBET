@@ -1,1 +1,1 @@
-restore roulette menu
+restore roulette menu and player icon
