@@ -15,7 +15,7 @@ body{width:100%;padding-bottom:78px;position:relative;overscroll-behavior-x:none
 .wheel-box,.controls{flex:none;contain:layout}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 7px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(2,5,9,.92);backdrop-filter:blur(10px);z-index:10}
-.brand{font-size:25px;font-weight:900;font-style:italic}.brand b{color:var(--gold)}
+.brand{font-size:25px;font-weight:900;font-style:italic}.brand b{color:var(--gold)}.roulette-top-brand{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1;white-space:nowrap;padding-bottom:5px}.roulette-top-brand .roulette-brand-my{color:var(--gold)}.roulette-top-brand .roulette-brand-bets{color:#fff}.roulette-top-brand .roulette-brand-my,.roulette-top-brand .roulette-brand-bets{font-weight:900;font-style:italic}.roulette-brand-line{display:block;width:100%;height:3px;margin-top:4px;border-radius:999px;background:linear-gradient(90deg,transparent,#ffd83d 12%,#ffd83d 88%,transparent);box-shadow:0 1px 6px rgba(255,216,61,.4)}
 .balance{background:linear-gradient(180deg,#121b25,#080d13);border:1px solid rgba(255,216,61,.3);border-radius:14px;padding:7px 12px;min-width:125px}.balance small{display:block;color:var(--muted);font-size:10px}.balance strong{display:block;color:var(--gold);font-size:17px;margin-top:2px}
 .game{margin-top:4px}.wheel-box{position:relative;width:min(calc(100vw - 24px),540px);aspect-ratio:1;margin:0 auto}
 .pointer{position:absolute;z-index:10;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:30px solid #f5c32b;filter:drop-shadow(0 3px 4px #000)}
@@ -31,7 +31,7 @@ body{width:100%;padding-bottom:78px;position:relative;overscroll-behavior-x:none
 </head>
 <body>
 <div class="wrap">
-<header class="top"><div class="brand">My<b>Bets</b></div><div class="balance"><small>Saldo</small><strong id="balance">R$ 0,00</strong></div></header>
+<header class="top"><div class="brand roulette-top-brand"><span class="roulette-brand-my">My</span><span class="roulette-brand-bets">Bets</span><span class="roulette-brand-line" aria-hidden="true"></span></div><div class="balance"><small>Saldo</small><strong id="balance">R$ 0,00</strong></div></header>
 <main class="game">
 <div class="wheel-box">
 <div class="pointer"></div>
