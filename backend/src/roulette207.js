@@ -30,7 +30,34 @@ async function getConfig() {
   return { prizes, minBet };
 }
 
-function sortearSetor() { return randomInt(TOTAL_SECTORS); }
+function sortearSetor() {
+  const draw = crypto.randomInt(10_000_000);
+
+  // 10% de chance total para os prêmios
+  if (draw < 1_000_000) {
+    const prizeIndex = crypto.randomInt(PRIZE_INDEXES.length);
+    return PRIZE_INDEXES[prizeIndex];
+  }
+
+  // 90% de chance total para as perdas
+  const lossIndex = crypto.randomInt(LOSS_SECTORS);
+
+  let currentLoss = 0;
+
+  for (let sector = 0; sector < TOTAL_SECTORS; sector++) {
+    if (PRIZE_INDEXES.includes(sector)) {
+      continue;
+    }
+
+    if (currentLoss === lossIndex) {
+      return sector;
+    }
+
+    currentLoss++;
+  }
+
+  throw new Error("Não foi possível sortear setor de perda.");
+}
 
 router.get("/config", async (req, res) => {
   const { prizes, minBet } = await getConfig();
