@@ -15,6 +15,7 @@
 @media(max-width:720px){.hero{height:360px!important;min-height:360px!important;max-height:360px!important}.hero-visual img{max-width:100%!important;max-height:360px!important;width:auto!important;height:auto!important}}
 </style><style id="tiger-logo-copy">.topbar .tiger-header-logo{display:inline-flex!important;align-items:baseline!important;gap:0!important;min-width:150px!important;color:#fff!important;text-decoration:none!important;font-family:Arial,Helvetica,sans-serif!important;font-size:22px!important;font-weight:900!important;letter-spacing:-1.5px!important;font-style:normal!important;line-height:1!important}.topbar .tiger-header-logo span{color:#fff!important}.topbar .tiger-header-logo b{color:#ffd45a!important;font-weight:900!important}.topbar .tiger-header-logo:before,.topbar .tiger-header-logo:after{display:none!important}</style><style id="tiger-logo-match">.topbar .brand-main{font-family:Arial,Helvetica,sans-serif!important;font-size:22px!important;font-weight:900!important;letter-spacing:-1.5px!important;font-style:normal!important;color:#fff!important}.topbar .brand-main>span{color:#ffd45a!important}.topbar .brand{display:inline-flex!important;align-items:center!important;gap:0!important;text-decoration:none!important}</style>
 <style id="mybets-home-header-logo-final">
+/* Logomarca do cabeçalho — réplica do MyBets exibido no My Tiger */
 .topbar .tiger-header-logo{
   display:inline-flex !important;
   align-items:baseline !important;
@@ -23,24 +24,33 @@
   color:#ffd45a !important;
   text-decoration:none !important;
   font-family:Arial,Helvetica,sans-serif !important;
-  font-size:26px !important;
+  font-size:32px !important;
   font-weight:900 !important;
-  letter-spacing:-1.7px !important;
+  letter-spacing:-2.4px !important;
   font-style:italic !important;
   line-height:1 !important;
   text-shadow:none !important;
+  -webkit-font-smoothing:antialiased !important;
 }
 .topbar .tiger-header-logo span{
   color:#ffd45a !important;
+  -webkit-text-fill-color:#ffd45a !important;
   font:inherit !important;
 }
 .topbar .tiger-header-logo b{
   color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
   font:inherit !important;
 }
 .topbar .tiger-header-logo:before,
 .topbar .tiger-header-logo:after{
   display:none !important;
   content:none !important;
+}
+@media(max-width:720px){
+  .topbar .tiger-header-logo{
+    font-size:32px !important;
+    letter-spacing:-2.4px !important;
+  }
 }
 </style></head><body><header class="topbar"><a class="brand tiger-header-logo" href="/" aria-label="MyBets — página inicial"><span>My</span><b>Bets</b></a><nav class="main-nav"><a href="#inicio">Início</a><a href="#roletas">Jogos</a><a href="termos-uso.html">Termos</a></nav><button class="login-button" id="homeAccountButton" onclick="abrirLogin()">Minha Conta</button></header><main><section class="hero" id="inicio"><div class="hero-visual"><img src="assets/jpbet-hero-luxo-clean.PNG?v=20260917-hero4" alt="MyBets"></div></section><section class="home-main" id="roletas"><div class="roulette-list"><article class="roulette-card"><div class="roulette-art"></div><h3>Roleta MyBets</h3><button onclick="location.href='/roulette207.html'">JOGAR AGORA</button></article><article class="roulette-card"><div class="machine-art">🐯</div><h3>My Tiger</h3><button onclick="location.href='/my-tiger.html'">JOGAR AGORA</button></article><article class="roulette-card"><div class="machine-art">🐉</div><h3>My Dragon</h3><button onclick="location.href='/my-dragon.html'">JOGAR AGORA</button></article><article class="roulette-card"><div class="machine-art">7️⃣</div><h3>Lucky 7</h3><button onclick="location.href='/lucky7.html'">JOGAR AGORA</button></article></div></section></main><div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle"><div class="modal-box"><button class="close-button" onclick="fecharLogin()" aria-label="Fechar">×</button><div id="loginForm"><div class="modal-brand">My<span>Bets</span></div><h2 id="loginTitle">Entrar</h2><p>Acesse sua conta MyBets.</p><input type="text" id="username" placeholder="Usuário" autocomplete="username"><input type="password" id="password" placeholder="Senha" autocomplete="current-password"><button class="primary-button" onclick="entrar()">ENTRAR</button><p id="loginMessage" class="login-message"></p><button type="button" class="secondary-button modal-secondary" onclick="mostrarCadastro()">CRIAR CONTA</button></div><div id="registerForm" style="display:none"><div class="modal-brand">My<span>Bets</span></div><h2>Criar conta</h2><p>Crie sua conta MyBets.</p><input type="text" id="registerUsername" placeholder="Escolha um usuário"><input type="password" id="registerPassword" placeholder="Crie uma senha"><input type="password" id="registerPasswordConfirm" placeholder="Confirme sua senha"><button class="primary-button" onclick="cadastrar()">CRIAR CONTA</button><p id="registerMessage" class="login-message"></p><button type="button" class="secondary-button modal-secondary" onclick="mostrarLogin()">JÁ TENHO UMA CONTA</button></div></div></div><footer><div class="footer-brand">My<span>Bets</span></div><div class="footer-links"><a href="#inicio">Início</a><span>•</span><a href="#roletas">Jogos</a><span>•</span><a href="termos-uso.html">Termos de Uso</a></div><p>© 2026 MyBets — Todos os direitos reservados.</p></footer><script src="app.js"></script><script src="/brand-standard.js?v=1"></script><script src="/brand-standard.js?v=2"></script></body></html>
