@@ -1,0 +1,61 @@
+name: Add R$10 betting simulation
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update test lab
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('backend/frontend/teste-probabilidade.html')
+          s=p.read_text(encoding='utf-8')
+
+          s=s.replace('.item b{display:block;font-size:20px;margin-top:5px}', '.item b{display:block;font-size:20px;margin-top:5px}.bet-sim{border:1px solid rgba(246,189,36,.35);background:#0d1118}.money-green{color:#45e38a}.money-red{color:#ff6464}',1)
+
+          old='<div class="card"><h2>Resultado acumulado</h2><div class="grid"><div class="item">Giros<b id="total">0</b></div><div class="item">Prêmios<b class="green" id="premios">0</b></div><div class="item">Perdas<b class="red" id="perdas">0</b></div><div class="item">Prêmio observado<b class="yellow" id="pct">0,0000%</b></div></div><p class="muted" id="status">Aguardando teste.</p><div class="bar"><i id="bar"></i></div></div>'
+          new='<div class="card"><h2>Resultado acumulado</h2><div class="grid"><div class="item">Giros<b id="total">0</b></div><div class="item">Prêmios<b class="green" id="premios">0</b></div><div class="item">Perdas<b class="red" id="perdas">0</b></div><div class="item">Prêmio observado<b class="yellow" id="pct">0,0000%</b></div></div><p class="muted" id="status">Aguardando teste.</p><div class="bar"><i id="bar"></i></div></div><div class="card bet-sim"><h2>💰 Simulação de aposta</h2><p class="muted">Cada giro é simulado como uma aposta de <strong>R$ 10,00</strong>. Esta simulação é somente visual e continua sem alterar o saldo real do jogador.</p><div class="grid"><div class="item">Saldo inicial<b id="saldoInicial">R$ 1.000,00</b></div><div class="item">Aposta por giro<b class="yellow" id="apostaPorGiro">R$ 10,00</b></div><div class="item">Total apostado<b id="totalApostado">R$ 0,00</b></div><div class="item">Total retornado<b class="green" id="totalRetornado">R$ 0,00</b></div><div class="item">Saldo final<b id="saldoFinal">R$ 1.000,00</b></div><div class="item">Resultado líquido<b id="resultadoLiquido">R$ 0,00</b></div></div></div>'
+          if old not in s: raise SystemExit('resultado marker not found')
+          s=s.replace(old,new,1)
+
+          s=s.replace("let rotation=0,spinning=false,total=0,premios=0,perdas=0,counts=new Array(9).fill(0);", "let rotation=0,spinning=false,total=0,premios=0,perdas=0,counts=new Array(9).fill(0);\nconst APOSTA=10;\nconst SALDO_INICIAL=1000;\nlet totalApostado=0,totalRetornado=0;",1)
+
+          marker="function render(){"
+          helper="""function money(v){\n  return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});\n}\n\nfunction renderSimulacao(){\n  const saldoFinal=SALDO_INICIAL-totalApostado+totalRetornado;\n  const liquido=saldoFinal-SALDO_INICIAL;\n  document.getElementById('totalApostado').textContent=money(totalApostado);\n  document.getElementById('totalRetornado').textContent=money(totalRetornado);\n  document.getElementById('saldoFinal').textContent=money(saldoFinal);\n  const el=document.getElementById('resultadoLiquido');\n  el.textContent=money(liquido);\n  el.className=liquido>=0?'money-green':'money-red';\n}\n\nfunction render(){"""
+          if marker not in s: raise SystemExit('render marker not found')
+          s=s.replace(marker,helper,1)
+
+          old_apply="""function aplicarLote(t){\n  total+=t.count;\n  premios+=t.prizeCount;\n  perdas+=t.losses;\n  t.countsByPrize.forEach((q,i)=>{counts[i]+=q||0});\n  render();\n}"""
+          new_apply="""function aplicarLote(t){\n  total+=t.count;\n  premios+=t.prizeCount;\n  perdas+=t.losses;\n  totalApostado+=t.count*APOSTA;\n  t.countsByPrize.forEach((q,i)=>{\n    counts[i]+=q||0;\n    totalRetornado+=(q||0)*APOSTA*MULTIPLIERS[i];\n  });\n  render();\n  renderSimulacao();\n}"""
+          if old_apply not in s: raise SystemExit('apply marker not found')
+          s=s.replace(old_apply,new_apply,1)
+
+          old_status="""  document.getElementById('status').textContent='Servidor conectado. Teste usando o sorteio real.';"""
+          new_status="""  document.getElementById('status').textContent='Servidor conectado. Teste usando o sorteio real. A simulação considera R$ 10,00 por giro.';\n    document.getElementById('saldoInicial').textContent=money(SALDO_INICIAL);\n    document.getElementById('apostaPorGiro').textContent=money(APOSTA);\n    renderSimulacao();"""
+          if old_status not in s: raise SystemExit('status marker not found')
+          s=s.replace(old_status,new_status,1)
+
+          s=s.replace("montarLabels();\nrender();\nconsultarConfig();", "montarLabels();\nrender();\nrenderSimulacao();\nconsultarConfig();",1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit and remove workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/teste-probabilidade.html .github/workflows/add-test-bet-simulation.yml
+          git commit -m "Show R$10 bet simulation in roulette test"
+          git rm .github/workflows/add-test-bet-simulation.yml
+          git commit -m "Remove one-time bet simulation workflow"
+          git push
