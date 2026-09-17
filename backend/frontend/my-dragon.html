@@ -27,7 +27,6 @@
 <button class="spin" id="spin">🐉 GIRAR</button><div class="result" id="result" aria-live="polite"></div>
 <div class="footer-row"><span class="mini-note">3 símbolos = prêmio</span></div>
 </section>
-<a class="home" href="/">MyBets · Início</a>
 </main>
 <script>
 const API="/api/my-dragon";const symbols=[{id:"dragon",label:"🐉",multiplier:50},{id:"diamond",label:"💎",multiplier:20},{id:"crown",label:"👑",multiplier:15},{id:"coin",label:"🪙",multiplier:10},{id:"fire",label:"🔥",multiplier:8},{id:"trophy",label:"🏆",multiplier:6},{id:"clover",label:"🍀",multiplier:5},{id:"seven",label:"7️⃣",multiplier:25}];let user=null,bet=1,spinning=false;const $=id=>document.getElementById(id);const money=v=>Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});function stored(){try{return JSON.parse(localStorage.getItem("jpbet_user")||"null")}catch{return null}}function uid(){return user?.id??user?.userId??user?.user_id??null}function save(u){if(!u)return;user={...user,...u};try{localStorage.setItem("jpbet_user",JSON.stringify(user))}catch{}}function update(){
