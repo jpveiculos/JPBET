@@ -1,0 +1,171 @@
+name: Fix roulette pointer mapping for 77 sectors
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix pointer mapping
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('backend/frontend/roulette207.html')
+          text = path.read_text(encoding='utf-8')
+
+          new_func = r'''function visualTargetForSector(sector){
+
+  if(
+    !Number.isInteger(sector) ||
+    sector < 0 ||
+    sector >= TOTAL
+  ){
+
+    return 10;
+
+  }
+
+
+  /*
+   * A roleta tem 77 setores lógicos,
+   * mas 18 faixas visuais: 9 douradas
+   * (prêmios) e 9 pretas (perdas).
+   *
+   * Cada setor premiado aponta exatamente
+   * para o centro da sua faixa dourada.
+   * Os setores de perda entre dois prêmios
+   * são distribuídos dentro da faixa preta
+   * correspondente.
+   */
+
+  const prizeIndex =
+    PRIZE_INDEXES.indexOf(sector);
+
+
+  if(prizeIndex >= 0){
+
+    return (
+      prizeIndex * 40 +
+      10
+    );
+
+  }
+
+
+  let group = -1;
+
+  for(
+    let i = 0;
+    i < PRIZE_INDEXES.length;
+    i++
+  ){
+
+    const start =
+      PRIZE_INDEXES[i];
+
+    const next =
+      i === PRIZE_INDEXES.length - 1
+        ? PRIZE_INDEXES[0] + TOTAL
+        : PRIZE_INDEXES[i + 1];
+
+    const logicalSector =
+      sector < start
+        ? sector + TOTAL
+        : sector;
+
+    if(
+      logicalSector > start &&
+      logicalSector < next
+    ){
+
+      group = i;
+      break;
+
+    }
+
+  }
+
+
+  if(group < 0){
+
+    return 10;
+
+  }
+
+
+  const start =
+    PRIZE_INDEXES[group];
+
+  const next =
+    group === PRIZE_INDEXES.length - 1
+      ? PRIZE_INDEXES[0] + TOTAL
+      : PRIZE_INDEXES[group + 1];
+
+  const logicalSector =
+    sector < start
+      ? sector + TOTAL
+      : sector;
+
+  const count =
+    next - start - 1;
+
+  const position =
+    logicalSector - start - 1;
+
+
+  /*
+   * A faixa preta ocupa 20 graus.
+   * O alvo fica no centro do pequeno
+   * intervalo visual correspondente ao
+   * setor lógico sorteado.
+   */
+  return (
+    group * 40 +
+    20 +
+    (
+      position +
+      0.5
+    ) *
+    (20 / count)
+  );
+
+}'''
+
+          pattern = r'function visualTargetForSector\(sector\)\{.*?\n\}\n\n\n/\* ========================================================='
+          text2, n = re.subn(
+              pattern,
+              new_func + '\n\n\n/* =========================================================',
+              text,
+              count=1,
+              flags=re.S,
+          )
+
+          if n != 1:
+              raise SystemExit('visualTargetForSector function not found')
+
+          path.write_text(text2, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/roulette207.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Correct roulette pointer mapping for 77 sectors"
+          git push
+
+      - name: Remove one-time workflow
+        run: |
+          git rm .github/workflows/fix-roulette-pointer-mapping.yml
+          git commit -m "Remove one-time roulette pointer workflow"
+          git push
