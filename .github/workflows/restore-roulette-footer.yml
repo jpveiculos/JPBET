@@ -16,8 +16,7 @@ jobs:
 
       - name: Restore complete roulette page
         run: |
-          git fetch --all --quiet
-          git checkout b4584586d5a3b0562557efc843dc28492d290a8a -- backend/frontend/roulette207.html
+          curl -fsSL "https://raw.githubusercontent.com/jpveiculos/JPBET/b4584586d5a3b0562557efc843dc28492d290a8a/backend/frontend/roulette207.html" -o backend/frontend/roulette207.html
           python - <<'PY'
           from pathlib import Path
           p = Path('backend/frontend/roulette207.html')
@@ -31,28 +30,22 @@ jobs:
           if old not in s:
               raise SystemExit('Footer Início não encontrado')
           s = s.replace(old, new, 1)
+          old_icon = """<span>\n    ◉\n  </span>\n\n  Área do jogador"""
+          new_icon = """<span>\n    👤\n  </span>\n\n  Área do jogador"""
+          if old_icon not in s:
+              raise SystemExit('Ícone da Área do jogador não encontrado')
+          s = s.replace(old_icon, new_icon, 1)
           p.write_text(s)
           PY
 
-      - name: Add player icon and remove trigger
+      - name: Remove trigger and workflow
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('backend/frontend/roulette207.html')
-          s = p.read_text()
-          old = """<span>\n    ◉\n  </span>\n\n  Área do jogador"""
-          new = """<span>\n    👤\n  </span>\n\n  Área do jogador"""
-          if old not in s:
-              raise SystemExit('Ícone da Área do jogador não encontrado')
-          p.write_text(s.replace(old, new, 1))
-          Path('backend/frontend/roulette-restore-trigger.txt').unlink(missing_ok=True)
-          Path('.github/workflows/restore-roulette-footer.yml').unlink()
-          PY
+          rm -f backend/frontend/roulette-restore-trigger.txt .github/workflows/restore-roulette-footer.yml
 
       - name: Commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add backend/frontend/roulette207.html backend/frontend/roulette-restore-trigger.txt .github/workflows/restore-roulette-footer.yml
-          git commit -m 'Restaurar roleta e adicionar bonequinho na área do jogador [skip ci]'
+          git commit -m 'Restaurar roleta e corrigir menu do rodapé [skip ci]'
           git push
