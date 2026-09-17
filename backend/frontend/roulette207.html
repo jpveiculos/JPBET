@@ -91,6 +91,7 @@ body{
 }
 
 .balance{
+
   background:
     linear-gradient(
       180deg,
@@ -127,6 +128,7 @@ body{
 }
 
 .wheel-box{
+
   position:relative;
 
   width:
@@ -141,6 +143,7 @@ body{
 }
 
 .pointer{
+
   position:absolute;
 
   z-index:8;
@@ -170,6 +173,7 @@ body{
 }
 
 .pointer:after{
+
   content:"";
 
   position:absolute;
@@ -210,14 +214,21 @@ body{
   background:#080b0e;
 
   /*
-   * O centro do primeiro prêmio
-   * está em 2 graus.
+   * 90 setores.
    *
-   * O ponteiro está em 0 graus.
+   * Cada setor tem 4 graus.
    *
-   * Por isso a roda começa em -2 graus,
-   * colocando o centro do 2x exatamente
-   * sob o ponteiro.
+   * O primeiro prêmio ocupa:
+   *
+   * 0° até 4°
+   *
+   * Centro:
+   *
+   * 2°
+   *
+   * O ponteiro está em 0°.
+   *
+   * Portanto começamos em -2°.
    */
 
   transform:
@@ -230,13 +241,17 @@ body{
     4s
     cubic-bezier(.12,.72,.12,1);
 
-  will-change:transform;
+  will-change:
+    transform;
 }
 
 .wheel svg{
+
   width:100%;
   height:100%;
+
   display:block;
+
   overflow:visible;
 }
 
@@ -250,7 +265,9 @@ body{
 }
 
 #wheelSvg text{
+
   pointer-events:none;
+
   user-select:none;
 }
 
@@ -264,7 +281,10 @@ body{
   top:50%;
 
   transform:
-    translate(-50%,-50%);
+    translate(
+      -50%,
+      -50%
+    );
 
   width:31%;
 
@@ -304,12 +324,16 @@ body{
 }
 
 .hub b{
+
   font-size:22px;
+
   color:var(--gold);
+
   margin-top:3px;
 }
 
 .controls{
+
   width:
     min(
       calc(100vw - 24px),
@@ -344,13 +368,18 @@ body{
 }
 
 .bet-row span{
+
   color:var(--muted);
+
   font-size:12px;
 }
 
 .bet-controls{
+
   display:flex;
+
   align-items:center;
+
   gap:7px;
 }
 
@@ -401,6 +430,7 @@ body{
 .spin{
 
   width:100%;
+
   height:56px;
 
   margin-top:10px;
@@ -516,6 +546,7 @@ body{
 <div class="wheel-box">
 
   <div class="pointer"></div>
+
 
   <div
     class="wheel"
@@ -652,7 +683,7 @@ body{
 <script>
 
 /* =========================================================
-   CONFIGURAÇÃO
+   ROLETA 90
    ========================================================= */
 
 const TOTAL =
@@ -673,46 +704,58 @@ const DEFAULT_PRIZES = [
   10
 ];
 
+
 /*
- * Os 9 primeiros setores são prêmios.
+ * Exatamente os mesmos setores
+ * definidos no backend.
  */
 
 const PRIZE_INDEXES = [
   0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8
+  10,
+  20,
+  30,
+  40,
+  50,
+  60,
+  70,
+  80
 ];
 
 
 let MIN_BET =
   DEFAULT_MIN_BET;
 
+
 let PRIZES =
   [
     ...DEFAULT_PRIZES
   ];
 
+
 let user =
   null;
+
 
 let spinning =
   false;
 
+
 /*
- * Começa com -2 graus.
+ * Cada setor possui 4 graus.
  *
- * O centro do primeiro setor
- * é +2 graus.
+ * Setor 0:
+ * 0° → 4°
+ *
+ * Centro:
+ * 2°
+ *
+ * A roda começa em -2°.
  */
 
 let rotation =
   -2;
+
 
 let configLoaded =
   false;
@@ -818,6 +861,7 @@ function getBet(){
   const input =
     $('betAmount');
 
+
   if(!input){
 
     return MIN_BET;
@@ -857,6 +901,7 @@ function normalizeBet(){
 
   const input =
     $('betAmount');
+
 
   if(!input){
 
@@ -1032,9 +1077,7 @@ function drawWheel(){
    *
    * Cada setor:
    *
-   * 360 / 90
-   *
-   * = 4 graus.
+   * 360 / 90 = 4 graus.
    */
 
   const sectorAngle =
@@ -1042,9 +1085,9 @@ function drawWheel(){
     TOTAL;
 
 
-  /*
-   * Fundo.
-   */
+  /* =======================================================
+     FUNDO
+     ======================================================= */
 
   const background =
     document.createElementNS(
@@ -1089,12 +1132,9 @@ function drawWheel(){
   );
 
 
-  /*
-   * Desenha os 90 setores.
-   *
-   * 0-8 = prêmios
-   * 9-89 = perdas
-   */
+  /* =======================================================
+     DESENHA OS 90 SETORES
+     ======================================================= */
 
   for(
     let sector = 0;
@@ -1105,6 +1145,7 @@ function drawWheel(){
     const start =
       sector *
       sectorAngle;
+
 
     const end =
       start +
@@ -1136,6 +1177,10 @@ function drawWheel(){
       );
 
 
+    /*
+     * PRÊMIO
+     */
+
     if(isPrize){
 
       path.setAttribute(
@@ -1148,7 +1193,19 @@ function drawWheel(){
         '#ffe36a'
       );
 
-    }else{
+      path.setAttribute(
+        'stroke-width',
+        '2'
+      );
+
+    }
+
+
+    /*
+     * PERDA
+     */
+
+    else{
 
       path.setAttribute(
         'fill',
@@ -1160,15 +1217,12 @@ function drawWheel(){
         '#5e4510'
       );
 
+      path.setAttribute(
+        'stroke-width',
+        '1'
+      );
+
     }
-
-
-    path.setAttribute(
-      'stroke-width',
-      isPrize
-        ? '2'
-        : '1'
-    );
 
 
     svg.appendChild(
@@ -1176,14 +1230,9 @@ function drawWheel(){
     );
 
 
-    /*
-     * Número do setor.
-     *
-     * Não colocamos texto nos 90 setores,
-     * pois ficaria ilegível no celular.
-     *
-     * Apenas os prêmios recebem multiplicador.
-     */
+    /* =====================================================
+       TEXTO DOS PRÊMIOS
+       ===================================================== */
 
     if(isPrize){
 
@@ -1193,10 +1242,18 @@ function drawWheel(){
         );
 
 
+      /*
+       * Centro do setor.
+       */
+
       const center =
         start +
         sectorAngle / 2;
 
+
+      /*
+       * Posição do texto.
+       */
 
       const [
         x,
@@ -1205,7 +1262,7 @@ function drawWheel(){
         polar(
           200,
           200,
-          142,
+          145,
           center
         );
 
@@ -1234,7 +1291,7 @@ function drawWheel(){
 
       text.setAttribute(
         'font-size',
-        '13'
+        '11'
       );
 
       text.setAttribute(
@@ -1269,7 +1326,7 @@ function drawWheel(){
 
       text.setAttribute(
         'stroke-width',
-        '3'
+        '2.5'
       );
 
 
@@ -1289,9 +1346,9 @@ function drawWheel(){
   }
 
 
-  /*
-   * Anel externo.
-   */
+  /* =======================================================
+     ANEL INTERNO
+     ======================================================= */
 
   const ring =
     document.createElementNS(
@@ -1339,7 +1396,7 @@ function drawWheel(){
 
 
 /* =========================================================
-   CONFIGURAÇÃO
+   CONFIGURAÇÃO DO SERVIDOR
    ========================================================= */
 
 async function loadConfig(){
@@ -1381,9 +1438,9 @@ async function loadConfig(){
     }
 
 
-    /*
-     * Mínimo.
-     */
+    /* -----------------------------------------------------
+       MÍNIMO
+       ----------------------------------------------------- */
 
     const serverMin =
       Number(
@@ -1412,9 +1469,9 @@ async function loadConfig(){
     }
 
 
-    /*
-     * Prêmios.
-     */
+    /* -----------------------------------------------------
+       PRÊMIOS
+       ----------------------------------------------------- */
 
     if(
       Array.isArray(
@@ -1456,6 +1513,11 @@ async function loadConfig(){
     normalizeBet();
 
 
+    /*
+     * Redesenha com a configuração
+     * atual do painel.
+     */
+
     drawWheel();
 
 
@@ -1472,11 +1534,12 @@ async function loadConfig(){
 
 
     /*
-     * Fallback.
+     * FALLBACK
      */
 
     MIN_BET =
       DEFAULT_MIN_BET;
+
 
     PRIZES =
       [
@@ -1503,7 +1566,7 @@ async function loadConfig(){
 
 
 /* =========================================================
-   SALDO
+   ATUALIZA SALDO
    ========================================================= */
 
 function refresh(){
@@ -1545,7 +1608,7 @@ function refresh(){
 
 
 /* =========================================================
-   SETOR → POSIÇÃO VISUAL
+   SETOR LÓGICO → ÂNGULO
    ========================================================= */
 
 function visualTargetForSector(
@@ -1553,7 +1616,7 @@ function visualTargetForSector(
 ){
 
   /*
-   * Cada setor ocupa 4 graus.
+   * Cada um dos 90 setores possui 4 graus.
    */
 
   const sectorAngle =
@@ -1665,8 +1728,7 @@ async function spin(){
 
 
     /*
-     * Resultado oficial
-     * vindo do servidor.
+     * Resultado oficial do servidor.
      */
 
     const sector =
@@ -1676,7 +1738,30 @@ async function spin(){
 
 
     /*
-     * Calcula o ponto visual.
+     * Segurança:
+     *
+     * garante que o setor recebido
+     * está dentro dos 90 setores.
+     */
+
+    if(
+      !Number.isInteger(
+        sector
+      ) ||
+      sector < 0 ||
+      sector >= TOTAL
+    ){
+
+      throw new Error(
+        'Setor recebido inválido.'
+      );
+
+    }
+
+
+    /*
+     * Converte o setor sorteado
+     * para seu centro visual.
      */
 
     const target =
@@ -1686,10 +1771,7 @@ async function spin(){
 
 
     /*
-     * A roda começa em -2 graus.
-     *
-     * rotation mantém a posição real
-     * da roda.
+     * Posição atual da roda.
      */
 
     const current =
@@ -1697,19 +1779,23 @@ async function spin(){
       360;
 
 
+    /*
+     * Distância necessária para levar
+     * o centro do setor sorteado ao ponteiro.
+     */
+
     const delta =
       (
         360 -
         target -
         current +
         360
-      ) %
-      360;
+      ) % 360;
 
 
     /*
      * Cinco voltas completas
-     * antes de parar.
+     * antes de parar no resultado.
      */
 
     rotation +=
@@ -1722,7 +1808,7 @@ async function spin(){
 
 
     /*
-     * Aguarda a animação.
+     * Espera o término da animação.
      */
 
     setTimeout(
@@ -1774,16 +1860,18 @@ if(
 ){
 
   /*
-   * Desenha imediatamente.
+   * PRIMEIRO:
    *
-   * Não depende do servidor.
+   * desenha a roleta imediatamente.
    */
 
   drawWheel();
 
 
   /*
-   * Depois busca a configuração.
+   * DEPOIS:
+   *
+   * carrega as configurações do servidor.
    */
 
   loadConfig();
