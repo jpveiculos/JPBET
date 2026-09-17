@@ -8,6 +8,8 @@ const TOTAL_SECTORS = 54;
 const LOSS_SECTORS = 45;
 const DEFAULT_PRIZES = [2,3,4,5,2,3,4,5,10];
 const PRIZE_INDEXES = [0,6,12,18,24,30,36,42,48];
+const DEFAULT_MIN_BET = 0.50;
+const DEFAULT_MAX_BET = 100.00;
 
 async function getSetting(key,fallback){
   try{
@@ -20,7 +22,8 @@ async function getSetting(key,fallback){
 
 async function getConfig(){
   let prizes=[...DEFAULT_PRIZES];
-  let minBet=0.50;
+  let minBet=DEFAULT_MIN_BET;
+  let maxBet=DEFAULT_MAX_BET;
   try{
     const raw=await getSetting("roulette207_prizes",JSON.stringify(DEFAULT_PRIZES));
     const parsed=JSON.parse(raw);
@@ -28,9 +31,12 @@ async function getConfig(){
       prizes=parsed.map(Number);
     }
   }catch(_){ }
-  const configuredMin=Number(await getSetting("roulette207_min_bet","0.50"));
-  if(Number.isFinite(configuredMin)&&configuredMin>=0.50) minBet=Number(configuredMin.toFixed(2));
-  return {prizes,minBet};
+  const configuredMin=Number(await getSetting("roulette207_min_bet",String(DEFAULT_MIN_BET)));
+  if(Number.isFinite(configuredMin)&&configuredMin>=DEFAULT_MIN_BET) minBet=Number(configuredMin.toFixed(2));
+  const configuredMax=Number(await getSetting("roulette207_max_bet",String(DEFAULT_MAX_BET)));
+  if(Number.isFinite(configuredMax)&&configuredMax>=DEFAULT_MIN_BET) maxBet=Number(configuredMax.toFixed(2));
+  if(maxBet<minBet) maxBet=minBet;
+  return {prizes,minBet,maxBet};
 }
 
 function sortearSetor(){
@@ -38,8 +44,8 @@ function sortearSetor(){
 }
 
 router.get("/config",async(req,res)=>{
-  const {prizes,minBet}=await getConfig();
-  res.json({ok:true,roulette:{id:"roulette90",minBet,totalSectors:TOTAL_SECTORS,prizeSectors:prizes.length,lossSectors:LOSS_SECTORS,probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6)),totalPrizeProbabilityPercent:Number(((prizes.length/TOTAL_SECTORS)*100).toFixed(6)),prizes:prizes.map((multiplier,position)=>({position,multiplier,sector:PRIZE_INDEXES[position],probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6))}))}});
+  const {prizes,minBet,maxBet}=await getConfig();
+  res.json({ok:true,roulette:{id:"roulette90",minBet,maxBet,totalSectors:TOTAL_SECTORS,prizeSectors:prizes.length,lossSectors:LOSS_SECTORS,probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6)),totalPrizeProbabilityPercent:Number(((prizes.length/TOTAL_SECTORS)*100).toFixed(6)),prizes:prizes.map((multiplier,position)=>({position,multiplier,sector:PRIZE_INDEXES[position],probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6))}))}});
 });
 
 /*
@@ -101,10 +107,12 @@ router.post("/spin",async(req,res)=>{
   try{
     const userId=Number(req.body?.userId);
     const betAmount=Number(req.body?.betAmount);
-    const {prizes,minBet}=await getConfig();
+    const {prizes,minBet,maxBet}=await getConfig();
 
     if(!Number.isInteger(userId)||userId<=0)return res.status(400).json({ok:false,message:"Usuário inválido."});
-    if(!Number.isFinite(betAmount)||betAmount<minBet)return res.status(400).json({ok:false,message:`A aposta mínima é R$ ${minBet.toFixed(2).replace(".",",")}.`});
+    if(!Number.isFinite(betAmount))return res.status(400).json({ok:false,message:"Informe um valor de aposta válido."});
+    if(betAmount<minBet)return res.status(400).json({ok:false,message:`A aposta mínima é R$ ${minBet.toFixed(2).replace(".",",")}.`});
+    if(betAmount>maxBet)return res.status(400).json({ok:false,message:`A aposta máxima é R$ ${maxBet.toFixed(2).replace(".",",")}.`});
 
     const bet=Number(betAmount.toFixed(2));
     await client.query("BEGIN");
