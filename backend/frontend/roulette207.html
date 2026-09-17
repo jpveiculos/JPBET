@@ -1259,6 +1259,17 @@ function drawWheel(){
         y
       );
 
+      /*
+       * Mantém cada prêmio preso ao seu próprio eixo visual.
+       * Como o SVG inteiro acompanha a rotação da roleta,
+       * o texto gira junto em todos os frames, sem giro
+       * separado ou correção brusca quando a roleta para.
+       */
+      text.setAttribute(
+        'transform',
+        `rotate(${center} ${x} ${y})`
+      );
+
       text.setAttribute(
         'fill',
         '#ffffff'
@@ -1266,7 +1277,7 @@ function drawWheel(){
 
       text.setAttribute(
         'font-size',
-        '14'
+        '22'
       );
 
       text.setAttribute(
@@ -1276,7 +1287,7 @@ function drawWheel(){
 
       text.setAttribute(
         'font-weight',
-        '900'
+        '1000'
       );
 
       text.setAttribute(
