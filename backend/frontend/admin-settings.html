@@ -20,4 +20,6 @@ async function testarPush(){try{msg('Enviando teste...',true);const r=await fetc
 async function saveAll(){try{const out={};ids.forEach(id=>{const e=document.getElementById(id);if(e)out[id]=e.type==='checkbox'?String(e.checked):e.value});const prizes=[];for(let i=0;i<9;i++){const value=Number(document.getElementById('roulette207_prize_'+i).value);if(!Number.isFinite(value)||value<=0)throw Error('Todos os 9 prêmios precisam ter um multiplicador válido.');prizes.push(Number(value.toFixed(2)))}const minBet=Number(document.getElementById('roulette207_min_bet').value);if(!Number.isFinite(minBet)||minBet<0.50)throw Error('A aposta mínima não pode ser menor que R$ 0,50.');out.roulette207_prizes=JSON.stringify(prizes);out.roulette207_min_bet=minBet.toFixed(2);msg('Salvando...',true);const r=await fetch('/api/settings',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(out)});const d=await r.json();if(!r.ok)throw Error(d.message||'Erro ao salvar configurações');msg('Configurações da Roleta 207 e demais configurações salvas com sucesso!',true)}catch(e){console.error(e);msg(e.message||'Erro ao salvar')}}
 async function logout(){try{await fetch('/api/auth/admin-logout',{method:'POST',credentials:'same-origin'})}finally{location.href='admin.html'}}
 load();
-</script><script src="/navigation.js"></script></body></html>
+</script><script src="/navigation.js"></script>
+<script src="/brand-standard.js?v=1"></script>
+</body></html>
