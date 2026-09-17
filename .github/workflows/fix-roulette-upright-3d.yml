@@ -1,0 +1,80 @@
+name: Improve roulette prize labels
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update roulette labels
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('backend/frontend/roulette207.html')
+          text = path.read_text(encoding='utf-8')
+
+          # Increase prize size slightly beyond the previous 22px.
+          text = text.replace("""      text.setAttribute(\n        'font-size',\n        '22'\n      );""", """      text.setAttribute(\n        'font-size',\n        '24'\n      );""", 1)
+
+          # Make the prize labels 3D-looking with layered shadow/highlight.
+          text = text.replace("""      text.setAttribute(\n        'stroke-width',\n        '3'\n      );""", """      text.setAttribute(\n        'stroke-width',\n        '4'\n      );\n\n      text.setAttribute(\n        'filter',\n        'drop-shadow(0 4px 0 #000000) drop-shadow(0 0 3px #ffd83d)'\n      );\n\n      text.setAttribute(\n        'class',\n        'prize-label'\n      );""", 1)
+
+          # Replace the static radial rotation with a dynamic counter-rotation.
+          old_transform = """      /*\n       * Mantém cada prêmio preso ao seu próprio eixo visual.\n       * Como o SVG inteiro acompanha a rotação da roleta,\n       * o texto gira junto em todos os frames, sem giro\n       * separado ou correção brusca quando a roleta para.\n       */\n      text.setAttribute(\n        'transform',\n        `rotate(${center} ${x} ${y})`\n      );\n"""
+          if old_transform not in text:
+              raise SystemExit('old prize transform block not found')
+          text = text.replace(old_transform, """      /*\n       * A orientação é atualizada a cada frame.\n       * A roda leva o prêmio junto pela circunferência,\n       * mas o texto compensa a rotação da roda no próprio\n       * eixo para permanecer sempre de pé na tela.\n       */\n""", 1)
+
+          # Add the dynamic orientation helper before spin().
+          marker = """/* =========================================================\n   GIRAR — 3 VOLTAS + PARADA SUAVE\n   ========================================================= */\n\nasync function spin(){"""
+          helper = """/* =========================================================\n   ORIENTAÇÃO DOS PRÊMIOS — SEMPRE DE PÉ\n   ========================================================= */\n\nfunction updatePrizeLabels(angle = rotation){\n\n  const labels =\n    document.querySelectorAll(\n      '#wheelSvg .prize-label'\n    );\n\n  labels.forEach(\n    text => {\n\n      const x =\n        Number(text.getAttribute('x'));\n\n      const y =\n        Number(text.getAttribute('y'));\n\n      if(\n        Number.isFinite(x) &&\n        Number.isFinite(y)\n      ){\n\n        /*\n         * O SVG inteiro gira com a roleta.\n         * Aqui anulamos somente a rotação no eixo\n         * do próprio prêmio, mantendo-o sempre legível.\n         */\n        text.setAttribute(\n          'transform',\n          `rotate(${-angle} ${x} ${y})`\n        );\n\n      }\n\n    }\n  );\n\n}\n\n\n/* =========================================================\n   GIRAR — 3 VOLTAS + PARADA SUAVE\n   ========================================================= */\n\nasync function spin(){"""
+          if marker not in text:
+              raise SystemExit('spin marker not found')
+          text = text.replace(marker, helper, 1)
+
+          # After drawing the labels, orient them according to the initial wheel angle.
+          marker_draw_end = """}\n\n\n/* =========================================================\n   SETOR LÓGICO → POSIÇÃO VISUAL\n   ========================================================= */"""
+          replacement_draw_end = """  updatePrizeLabels();\n\n}\n\n\n/* =========================================================\n   SETOR LÓGICO → POSIÇÃO VISUAL\n   ========================================================= */"""
+          if marker_draw_end not in text:
+              raise SystemExit('drawWheel end marker not found')
+          text = text.replace(marker_draw_end, replacement_draw_end, 1)
+
+          # Keep labels synchronized with every animation frame.
+          old_frame = """          wheel.style.transform =\n            `rotate(${currentRotation}deg)`;\n\n\n          if("""
+          new_frame = """          wheel.style.transform =\n            `rotate(${currentRotation}deg)`;\n\n          updatePrizeLabels(\n            currentRotation\n          );\n\n\n          if("""
+          if old_frame not in text:
+              raise SystemExit('animation frame marker not found')
+          text = text.replace(old_frame, new_frame, 1)
+
+          # Also synchronize the exact final frame.
+          old_final = """          wheel.style.transform =\n            `rotate(${rotation}deg)`;\n\n\n          /*"""
+          new_final = """          wheel.style.transform =\n            `rotate(${rotation}deg)`;\n\n          updatePrizeLabels(\n            rotation\n          );\n\n\n          /*"""
+          if old_final not in text:
+              raise SystemExit('final frame marker not found')
+          text = text.replace(old_final, new_final, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/roulette207.html .github/workflows/fix-roulette-upright-3d.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Make roulette prize labels larger and upright"
+          git rm .github/workflows/fix-roulette-upright-3d.yml
+          git commit -m "Remove one-time roulette label workflow"
+          git push
