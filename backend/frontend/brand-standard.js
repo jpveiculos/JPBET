@@ -4,75 +4,19 @@ function instalarLimitesAposta(){
     const minInput=document.getElementById('roulette207_min_bet');
     if(minInput&&!document.getElementById('roulette207_max_bet')){
       const minField=minInput.closest('.field');
-      if(minField){
-        const field=document.createElement('div');
-        field.className='field';
-        field.innerHTML='<label>Aposta máxima (R$)</label><input id="roulette207_max_bet" type="number" min="0.50" step="0.01" value="100.00"><div style="font-size:13px;color:#666;line-height:1.35">Limite máximo permitido por aposta na roleta.</div>';
-        minField.parentNode.insertBefore(field,minField.nextSibling);
-      }
+      if(minField){const field=document.createElement('div');field.className='field';field.innerHTML='<label>Aposta máxima (R$)</label><input id="roulette207_max_bet" type="number" min="0.50" step="0.01" value="100.00"><div style="font-size:13px;color:#666;line-height:1.35">Limite máximo permitido por aposta na roleta.</div>';minField.parentNode.insertBefore(field,minField.nextSibling);}
     }
     const maxInput=document.getElementById('roulette207_max_bet');
-    if(maxInput){
-      fetch('/api/settings',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(d=>{
-        const settings={};(d.settings||[]).forEach(x=>settings[x.setting_key]=x.setting_value);
-        const value=Number(settings.roulette207_max_bet);
-        maxInput.value=Number.isFinite(value)&&value>=0.50?value.toFixed(2):'100.00';
-      }).catch(()=>{if(!maxInput.value)maxInput.value='100.00'});
-      if(window.saveAll&&!window.saveAll.__betLimitsWrapped){
-        const originalSave=window.saveAll;
-        const wrapped=async function(){
-          const min=Number(document.getElementById('roulette207_min_bet')?.value);
-          const max=Number(document.getElementById('roulette207_max_bet')?.value);
-          if(!Number.isFinite(min)||min<0.50){msg('Informe uma aposta mínima válida (mínimo de R$ 0,50).');return}
-          if(!Number.isFinite(max)||max<0.50){msg('Informe uma aposta máxima válida.');return}
-          if(max<min){msg('A aposta máxima não pode ser menor que a aposta mínima.');return}
-          const originalFetch=window.fetch;
-          window.fetch=async function(input,init){
-            if(typeof input==='string'&&input==='/api/settings'&&init?.method==='PUT'&&init.body){
-              try{const payload=JSON.parse(init.body);payload.roulette207_max_bet=max.toFixed(2);init={...init,body:JSON.stringify(payload)}}catch(_){ }
-            }
-            return originalFetch.call(this,input,init);
-          };
-          try{return await originalSave()}finally{window.fetch=originalFetch}
-        };
-        wrapped.__betLimitsWrapped=true;
-        window.saveAll=wrapped;
-      }
-    }
+    if(maxInput){fetch('/api/settings',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(d=>{const settings={};(d.settings||[]).forEach(x=>settings[x.setting_key]=x.setting_value);const value=Number(settings.roulette207_max_bet);maxInput.value=Number.isFinite(value)&&value>=0.50?value.toFixed(2):'100.00';}).catch(()=>{if(!maxInput.value)maxInput.value='100.00'});if(window.saveAll&&!window.saveAll.__betLimitsWrapped){const originalSave=window.saveAll;const wrapped=async function(){const min=Number(document.getElementById('roulette207_min_bet')?.value);const max=Number(document.getElementById('roulette207_max_bet')?.value);if(!Number.isFinite(min)||min<0.50){msg('Informe uma aposta mínima válida (mínimo de R$ 0,50).');return}if(!Number.isFinite(max)||max<0.50){msg('Informe uma aposta máxima válida.');return}if(max<min){msg('A aposta máxima não pode ser menor que a aposta mínima.');return}const originalFetch=window.fetch;window.fetch=async function(input,init){if(typeof input==='string'&&input==='/api/settings'&&init?.method==='PUT'&&init.body){try{const payload=JSON.parse(init.body);payload.roulette207_max_bet=max.toFixed(2);init={...init,body:JSON.stringify(payload)}}catch(_){}}return originalFetch.call(this,input,init)};try{return await originalSave()}finally{window.fetch=originalFetch}};wrapped.__betLimitsWrapped=true;window.saveAll=wrapped;}}
   }
   if(location.pathname.endsWith('/roulette207.html')){
-    const input=document.getElementById('betAmount');
-    if(!input)return;
-    let maxBet=100;
-    const aplicarMax=()=>{
-      input.max=maxBet.toFixed(2);
-      const value=Number(String(input.value||'').replace(',','.'));
-      if(Number.isFinite(value)&&value>maxBet)input.value=maxBet.toFixed(2);
-    };
-    fetch('/api/roulette207/config',{cache:'no-store'}).then(r=>r.json()).then(d=>{
-      const configured=Number(d?.roulette?.maxBet);
-      if(Number.isFinite(configured)&&configured>=0.50)maxBet=Number(configured.toFixed(2));
-      aplicarMax();
-    }).catch(()=>aplicarMax());
-    input.addEventListener('input',aplicarMax);
-    input.addEventListener('change',aplicarMax);
-    if(window.normalizeBet&&!window.normalizeBet.__betLimitsWrapped){
-      const originalNormalize=window.normalizeBet;
-      const wrappedNormalize=function(){originalNormalize();aplicarMax();};
-      wrappedNormalize.__betLimitsWrapped=true;
-      window.normalizeBet=wrappedNormalize;
-    }
-    if(window.changeBet&&!window.changeBet.__betLimitsWrapped){
-      const originalChange=window.changeBet;
-      const wrappedChange=function(delta){originalChange(delta);aplicarMax();};
-      wrappedChange.__betLimitsWrapped=true;
-      window.changeBet=wrappedChange;
-    }
-  }
+    const input=document.getElementById('betAmount');if(!input)return;let maxBet=100;const aplicarMax=()=>{input.max=maxBet.toFixed(2);const value=Number(String(input.value||'').replace(',','.'));if(Number.isFinite(value)&&value>maxBet)input.value=maxBet.toFixed(2)};fetch('/api/roulette207/config',{cache:'no-store'}).then(r=>r.json()).then(d=>{const configured=Number(d?.roulette?.maxBet);if(Number.isFinite(configured)&&configured>=0.50)maxBet=Number(configured.toFixed(2));aplicarMax()}).catch(()=>aplicarMax());input.addEventListener('input',aplicarMax);input.addEventListener('change',aplicarMax);if(window.normalizeBet&&!window.normalizeBet.__betLimitsWrapped){const originalNormalize=window.normalizeBet;const wrappedNormalize=function(){originalNormalize();aplicarMax()};wrappedNormalize.__betLimitsWrapped=true;window.normalizeBet=wrappedNormalize}if(window.changeBet&&!window.changeBet.__betLimitsWrapped){const originalChange=window.changeBet;const wrappedChange=function(delta){originalChange(delta);aplicarMax()};wrappedChange.__betLimitsWrapped=true;window.changeBet=wrappedChange}}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',instalarLimitesAposta);else instalarLimitesAposta();
 if(location.pathname.endsWith('/roulette207.html')){
-  const nativeRAF=window.requestAnimationFrame.bind(window);let rafBase=null;
-  window.requestAnimationFrame=function(callback){return nativeRAF(function(realNow){if(window.spinning){if(rafBase===null)rafBase=realNow;const elapsed=realNow-rafBase;const p=Math.min(1,elapsed/8500);const originalProgress=p;callback(rafBase+originalProgress*5000);if(p>=1)rafBase=null}else{rafBase=null;callback(realNow)}})};
+  const nativeRAF=window.requestAnimationFrame.bind(window);let rafBase=null;window.requestAnimationFrame=function(callback){return nativeRAF(function(realNow){if(window.spinning){if(rafBase===null)rafBase=realNow;const elapsed=realNow-rafBase;const p=Math.min(1,elapsed/8500);callback(rafBase+p*5000);if(p>=1)rafBase=null}else{rafBase=null;callback(realNow)}})};
+  const pointerStyle=document.createElement('style');
+  pointerStyle.textContent=`.pointer{position:absolute!important;z-index:999!important;top:-5px!important;left:50%!important;transform:translateX(-50%)!important;width:48px!important;height:64px!important;background:linear-gradient(180deg,#d8b13a 0%,#b98b1f 18%,#9a6f13 45%,#76500b 75%,#4b3105 100%)!important;clip-path:polygon(50% 100%,7% 29%,12% 15%,28% 3%,50% 0%,72% 3%,88% 15%,93% 29%)!important;filter:drop-shadow(0 4px 5px rgba(0,0,0,.9)) drop-shadow(0 0 5px rgba(180,130,20,.28))!important;pointer-events:none!important}.pointer:before{content:""!important;position:absolute!important;left:8px!important;right:8px!important;top:8px!important;bottom:11px!important;background:linear-gradient(180deg,#ff5a48 0%,#ff2418 25%,#e60012 55%,#b4000c 78%,#690006 100%)!important;clip-path:polygon(50% 100%,0% 0%,100% 0%)!important;border-radius:5px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -7px 10px rgba(70,0,0,.35),0 2px 4px rgba(0,0,0,.55)!important}.pointer:after{content:""!important;position:absolute!important;left:50%!important;top:4px!important;width:10px!important;height:10px!important;transform:translateX(-50%)!important;border-radius:50%!important;background:radial-gradient(circle at 32% 28%,#fff 0%,#fff2a0 28%,#e7b72c 62%,#85580a 100%)!important;box-shadow:0 0 0 2px #4b3105,0 0 7px rgba(210,160,35,.55),inset -1px -1px 2px rgba(50,20,0,.5)!important}`;
+  document.head.appendChild(pointerStyle);
 }
 })();
