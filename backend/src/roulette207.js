@@ -4,10 +4,10 @@ import { pool } from "./db.js";
 
 const router = express.Router();
 
-const TOTAL_SECTORS = 77;
-const LOSS_SECTORS = 68;
-const DEFAULT_PRIZES = [2,3,4,5,6,7,8,9,10];
-const PRIZE_INDEXES = [0,9,19,28,38,47,57,66,76];
+const TOTAL_SECTORS = 54;
+const LOSS_SECTORS = 45;
+const DEFAULT_PRIZES = [2,3,4,5,2,3,4,5,10];
+const PRIZE_INDEXES = [0,6,12,18,24,30,36,42,48];
 
 async function getSetting(key,fallback){
   try{
@@ -91,7 +91,7 @@ router.post("/test-spin-batch",async(req,res)=>{
       }
     });
   }catch(error){
-    console.error("Erro no teste isolado da Roleta 90:",error);
+    console.error("Erro no teste isolado da Roleta:",error);
     return res.status(500).json({ok:false,message:"Erro interno no teste da roleta."});
   }
 });
@@ -147,7 +147,7 @@ router.post("/spin",async(req,res)=>{
     return res.json({ok:true,spin:{id:spinResult.rows[0].id,rouletteId:"roulette90",sector,resultType:multiplier>0?"prize":"loss",multiplier,prize,netResult,betAmount:bet,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes},user:{id:user.id,username:user.username,balance:newBalance,bonusBalance:newBonus,cashBalance:newCash,bonusWagerProgress:newProgress,bonusWagerRequirement:requirement,reservedBalance:Number(user.reserved_balance||0)}});
   }catch(error){
     try{await client.query("ROLLBACK")}catch(_){ }
-    console.error("Erro na Roleta 90:",error);
+    console.error("Erro na Roleta:",error);
     return res.status(500).json({ok:false,message:"Erro interno ao executar a Roleta."});
   }finally{
     client.release();
