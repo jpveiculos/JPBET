@@ -1,0 +1,76 @@
+name: Standardize MyBets logos
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/frontend/*.html'
+      - 'backend/frontend/brand-standard.js'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  standardize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add shared logo script
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('backend/frontend')
+          script = '<script src="/brand-standard.js?v=1"></script>'
+
+          changed = []
+          for path in sorted(root.glob('*.html')):
+              if path.name == 'roulette207.html':
+                  continue
+
+              text = path.read_text(encoding='utf-8')
+
+              if '/brand-standard.js' in text:
+                  continue
+
+              marker = '</body>'
+              if marker not in text.lower():
+                  continue
+
+              idx = text.lower().rfind(marker)
+              text = text[:idx] + '\n' + script + '\n' + text[idx:]
+              path.write_text(text, encoding='utf-8')
+              changed.append(str(path))
+
+          print('Arquivos atualizados:')
+          for item in changed:
+              print(' -', item)
+          print('Total:', len(changed))
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add backend/frontend/*.html
+          if git diff --cached --quiet; then
+            echo 'Nenhuma alteração necessária.'
+            exit 0
+          fi
+          git commit -m 'Standardize MyBets logos across site [skip ci]'
+          git push
+
+      - name: Remove one-time workflow
+        shell: bash
+        run: |
+          git rm .github/workflows/standardize-site-logos.yml
+          git commit -m 'Remove one-time logo standardization workflow [skip ci]'
+          git push
