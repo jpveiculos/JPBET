@@ -762,7 +762,7 @@ body{
 
 <div class="wrap">
 
-<header class="header"><div class="logo">My<span>Bets</span></div><div class="balance">SALDO <b id="balance">R$ 0,00</b></div></header>
+<header class="header"><div class="logo" data-mybets-standardized="1"><span style="color:#ffd45a!important;-webkit-text-fill-color:#ffd45a!important;">My</span><span style="color:#fff!important;-webkit-text-fill-color:#fff!important;">Bets</span></div><div class="balance">SALDO <b id="balance">R$ 0,00</b></div></header>
 
 
 <main class="game">
@@ -2546,6 +2546,18 @@ if(
   -webkit-text-fill-color:#ffd45a !important;
 }
 .top .roulette-page-logo .roulette-page-bets{
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+</style>
+
+<style id="mybets-roulette-logo-color-hard-final">
+.header .logo,
+.header .logo span:first-child{
+  color:#ffd45a !important;
+  -webkit-text-fill-color:#ffd45a !important;
+}
+.header .logo span:last-child{
   color:#fff !important;
   -webkit-text-fill-color:#fff !important;
 }
