@@ -1,21 +1,42 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MyBets — Teste de Probabilidade</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyBets — Laboratório Roleta 90</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#08090d;color:#fff;font-family:Arial,sans-serif;padding:18px}.wrap{max-width:720px;margin:auto}.card{background:#12151d;border:1px solid #2a2f3a;border-radius:18px;padding:18px;margin-bottom:14px}h1{margin:0 0 7px;font-size:24px}.muted{color:#aeb4c0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.item{background:#191d27;border-radius:12px;padding:12px}.item b{display:block;font-size:19px;margin-top:4px}button{width:100%;padding:15px;border:0;border-radius:12px;background:#f6bd24;color:#111;font-weight:800;font-size:16px;cursor:pointer}button.secondary{background:#2b303b;color:#fff}table{width:100%;border-collapse:collapse;margin-top:8px}td,th{padding:9px 4px;border-bottom:1px solid #292e39;text-align:left}.note{font-size:13px}
-</style></head><body><div class="wrap">
-<div class="card"><h1>🧪 Teste de probabilidade</h1><div class="muted">Simulador independente. Não altera saldo, apostas nem a roleta de produção.</div></div>
-<div class="card"><h2>Configuração do teste</h2><table><tr><th>Resultado</th><th>Probabilidade</th></tr><tr><td>Prêmio menor</td><td>1,50%</td></tr><tr><td>2º prêmio</td><td>0,50%</td></tr><tr><td>3º prêmio</td><td>0,10%</td></tr><tr><td>4º prêmio</td><td>0,03%</td></tr><tr><td>Prêmio máximo/raro</td><td>0,01%</td></tr><tr><td>Sem prêmio</td><td>97,86%</td></tr><tr><th>Total</th><th>100,00%</th></tr></table></div>
-<div class="card"><h2>Teste acumulado</h2><p class="muted">Cada clique em “100 giros” acrescenta mais 100 ao mesmo teste. Use “Zerar teste” para começar novamente.</p><button onclick="run(100)">FAZER +100 GIROS</button><div style="height:9px"></div><button onclick="run(1)">FAZER +1 GIRO</button><div style="height:9px"></div><button onclick="resetTeste()" class="secondary">ZERAR TESTE</button><p id="status" class="muted"></p></div>
-<div class="card"><h2>Resultado acumulado</h2><div class="grid" id="cards"></div><table><thead><tr><th>Resultado</th><th>Qtd.</th><th>Observado</th><th>Esperado</th></tr></thead><tbody id="tbody"></tbody></table></div>
-</div><script>
-const outcomes=[["Prêmio menor",1.5],["2º prêmio",.5],["3º prêmio",.1],["4º prêmio",.03],["Prêmio máximo/raro",.01],["Sem prêmio",97.86]];
-let total=0;let counts=Object.fromEntries(outcomes.map(([x])=>[x,0]));
-function sorteio(){let r=Math.random()*100,s=0;for(const [n,p] of outcomes){s+=p;if(r<s)return n}return "Sem prêmio"}
-function run(n){for(let i=0;i<n;i++){counts[sorteio()]++;total++}render();document.getElementById("status").textContent=`Acrescentados ${n} giro(s). Total acumulado: ${total.toLocaleString("pt-BR")}.`}
-function resetTeste(){total=0;counts=Object.fromEntries(outcomes.map(([x])=>[x,0]));render();document.getElementById("status").textContent="Teste zerado. Pronto para começar."}
-function render(){const p=total-counts["Sem prêmio"];document.getElementById("cards").innerHTML=`<div class="item">Giros acumulados<b>${total}</b></div><div class="item">Com prêmio<b>${p} (${total?(p/total*100).toFixed(2):"0.00"}%)</b></div><div class="item">Sem prêmio<b>${counts["Sem prêmio"]} (${total?(counts["Sem prêmio"]/total*100).toFixed(2):"0.00"}%)</b></div><div class="item">Esperado<b>2,14% com prêmio</b></div>`;document.getElementById("tbody").innerHTML=outcomes.map(([name,prob])=>`<tr><td>${name}</td><td>${counts[name]}</td><td>${total?(counts[name]/total*100).toFixed(2):"0.00"}%</td><td>${(total*prob/100).toFixed(2)}</td></tr>`).join("")}
+*{box-sizing:border-box}body{margin:0;background:#07080b;color:#fff;font-family:Arial,sans-serif;padding:16px}.wrap{max-width:900px;margin:auto}.card{background:#12151d;border:1px solid #292e39;border-radius:18px;padding:18px;margin-bottom:14px}h1{margin:0 0 7px;font-size:25px}.muted{color:#aeb4c0;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.item{background:#191d27;border-radius:12px;padding:12px}.item b{display:block;font-size:20px;margin-top:5px}.yellow{color:#f6bd24}.green{color:#45e38a}.red{color:#ff6464}.wheel-area{display:flex;flex-direction:column;align-items:center}.wheel-wrap{position:relative;width:min(82vw,430px);height:min(82vw,430px);margin:8px auto 18px}.wheel{position:absolute;inset:0;border-radius:50%;border:8px solid #252a34;background:conic-gradient(#f6bd24 0deg 20deg,#11151d 20deg 40deg,#f6bd24 40deg 60deg,#11151d 60deg 80deg,#f6bd24 80deg 100deg,#11151d 100deg 120deg,#f6bd24 120deg 140deg,#11151d 140deg 160deg,#f6bd24 160deg 180deg,#11151d 180deg 200deg,#f6bd24 200deg 220deg,#11151d 220deg 240deg,#f6bd24 240deg 260deg,#11151d 260deg 280deg,#f6bd24 280deg 300deg,#11151d 300deg 320deg,#f6bd24 320deg 340deg,#11151d 340deg 360deg);box-shadow:0 0 35px #000 inset,0 8px 30px #000;transform:rotate(0deg)}.wheel.spinning{transition:transform 4.8s cubic-bezier(.12,.72,.16,1)}.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:82px;height:82px;border-radius:50%;background:#0b0d12;border:5px solid #353b47;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:12px;z-index:3}.pointer{position:absolute;z-index:5;left:50%;top:-7px;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:32px solid #fff;filter:drop-shadow(0 2px 3px #000)}.sector-labels{position:absolute;inset:0;z-index:2;pointer-events:none}.sector-label{position:absolute;left:50%;top:50%;width:50%;height:22px;transform-origin:0 50%;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 3px #000;display:flex;align-items:center;padding-left:25px}.sector-label.prize{color:#111;text-shadow:none}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{width:100%;padding:15px;border:0;border-radius:12px;background:#f6bd24;color:#111;font-weight:800;font-size:16px;cursor:pointer}button.secondary{background:#2b303b;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}table{width:100%;border-collapse:collapse;margin-top:8px}td,th{padding:10px 5px;border-bottom:1px solid #292e39;text-align:left;font-size:14px}.note{font-size:13px}.result{font-size:23px;font-weight:900;text-align:center;min-height:30px;margin:5px 0 12px}.bar{height:10px;background:#292e39;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#f6bd24;border-radius:10px}.scroll{overflow-x:auto}@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.wheel-wrap{width:88vw;height:88vw}.sector-label{font-size:9px;padding-left:18px}.center{width:70px;height:70px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card"><h1>🧪 Laboratório — Roleta 90</h1><div class="muted">Teste isolado da lógica de 90 setores. Não usa saldo, não registra apostas e não altera jogadores.</div></div>
+<div class="card"><div class="grid"><div class="item">Setores<b>90</b></div><div class="item">Prêmios<b class="yellow">9</b></div><div class="item">Perdas<b class="red">81</b></div><div class="item">Chance prêmio<b class="yellow">10%</b></div></div></div>
+<div class="card wheel-area">
+<div class="wheel-wrap"><div class="pointer"></div><div id="wheel" class="wheel"></div><div id="labels" class="sector-labels"></div><div class="center">ROULETA<br>90</div></div>
+<div id="result" class="result">Pronto para girar</div>
+<div class="controls" style="width:100%"><button id="spinBtn" onclick="girar()">GIRAR ROLETA</button><button class="secondary" onclick="girarN(100)">TESTAR +100</button></div>
+</div>
+<div class="card"><h2>Resultado acumulado</h2><div class="grid"><div class="item">Giros<b id="total">0</b></div><div class="item">Prêmios<b class="green" id="premios">0</b></div><div class="item">Perdas<b class="red" id="perdas">0</b></div><div class="item">Prêmio observado<b class="yellow" id="pct">0,0000%</b></div></div><p class="muted" id="status">Aguardando teste.</p><div class="bar"><i id="bar"></i></div></div>
+<div class="card"><h2>Distribuição dos prêmios</h2><div class="scroll"><table><thead><tr><th>Prêmio</th><th>Setor</th><th>Qtd.</th><th>Observado</th><th>Esperado</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
+<div class="card note"><strong>Regra:</strong> um setor é sorteado entre 0 e 89, todos com a mesma chance. Os setores premiados são 0, 10, 20, 30, 40, 50, 60, 70 e 80. Cada um tem 1/90 = 1,111111% de chance; os 9 juntos representam 10%.</div>
+</div>
+<script>
+const TOTAL=90;
+const PRIZE_SECTORS=[0,10,20,30,40,50,60,70,80];
+const MULTIPLIERS=[2,3,4,5,6,7,8,9,10];
+let rotation=0,spinning=false,total=0,premios=0,perdas=0,counts=new Array(9).fill(0);
+const wheel=document.getElementById('wheel');
+const labels=document.getElementById('labels');
+const result=document.getElementById('result');
+const spinBtn=document.getElementById('spinBtn');
+for(let i=0;i<18;i++){const el=document.createElement('div');el.className='sector-label '+(i%2===0?'prize':'');el.style.transform=`rotate(${i*20+10}deg)`;el.textContent=i%2===0?MULTIPLIERS[i/2]+'x':'•';labels.appendChild(el)}
+function setor(){return Math.floor(Math.random()*TOTAL)}
+function registrar(s){total++;const p=PRIZE_SECTORS.indexOf(s);if(p>=0){premios++;counts[p]++;return {p,m:MULTIPLIERS[p]}}perdas++;return {p:-1,m:0}}
+function render(){document.getElementById('total').textContent=total.toLocaleString('pt-BR');document.getElementById('premios').textContent=premios.toLocaleString('pt-BR');document.getElementById('perdas').textContent=perdas.toLocaleString('pt-BR');const pct=total?premios/total*100:0;document.getElementById('pct').textContent=pct.toFixed(4).replace('.',',')+'%';document.getElementById('bar').style.width=Math.min(100,pct*10)+'%';document.getElementById('tbody').innerHTML=MULTIPLIERS.map((m,i)=>{const obs=total?counts[i]/total*100:0;const exp=total/TOTAL;return `<tr><td class="yellow"><strong>${m}x</strong></td><td>${PRIZE_SECTORS[i]}</td><td>${counts[i].toLocaleString('pt-BR')}</td><td>${obs.toFixed(4).replace('.',',')}%</td><td>${exp.toFixed(2).replace('.',',')}</td></tr>`}).join('')}
+function girar(){if(spinning)return;spinning=true;spinBtn.disabled=true;const s=setor();const p=PRIZE_SECTORS.indexOf(s);const delta=(360-(s*4))%360;rotation+=1080+delta;wheel.classList.add('spinning');wheel.style.transform=`rotate(${rotation}deg)`;setTimeout(()=>{const r=registrar(s);result.innerHTML=r.p>=0?`🎉 ${r.m}x — setor ${s}`:`Sem prêmio — setor ${s}`;result.className='result '+(r.p>=0?'green':'red');render();spinning=false;spinBtn.disabled=false;},4900)}
+function girarN(n){if(spinning)return;const t0=performance.now();for(let i=0;i<n;i++)registrar(setor());render();document.getElementById('status').textContent=`Acrescentados ${n.toLocaleString('pt-BR')} giros em ${(performance.now()-t0).toFixed(1)} ms.`}
 render();
-</script></body></html>
+</script>
+</body>
+</html>
