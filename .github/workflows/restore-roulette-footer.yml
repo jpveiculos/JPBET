@@ -1,0 +1,58 @@
+name: Restore roulette and fix player icon
+
+on:
+  push:
+    paths:
+      - 'backend/frontend/roulette-restore-trigger.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore complete roulette page
+        run: |
+          git fetch --all --quiet
+          git checkout b4584586d5a3b0562557efc843dc28492d290a8a -- backend/frontend/roulette207.html
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('backend/frontend/roulette207.html')
+          s = p.read_text()
+          old = """<button
+            onclick=\"\n    location.href='/dashboard.html'\n  \"
+          >"""
+          new = """<button
+            onclick=\"\n    location.href='/'\n  \"
+          >"""
+          if old not in s:
+              raise SystemExit('Footer Início não encontrado')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+
+      - name: Add player icon and remove trigger
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('backend/frontend/roulette207.html')
+          s = p.read_text()
+          old = """<span>\n    ◉\n  </span>\n\n  Área do jogador"""
+          new = """<span>\n    👤\n  </span>\n\n  Área do jogador"""
+          if old not in s:
+              raise SystemExit('Ícone da Área do jogador não encontrado')
+          p.write_text(s.replace(old, new, 1))
+          Path('backend/frontend/roulette-restore-trigger.txt').unlink(missing_ok=True)
+          Path('.github/workflows/restore-roulette-footer.yml').unlink()
+          PY
+
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add backend/frontend/roulette207.html backend/frontend/roulette-restore-trigger.txt .github/workflows/restore-roulette-footer.yml
+          git commit -m 'Restaurar roleta e adicionar bonequinho na área do jogador [skip ci]'
+          git push
