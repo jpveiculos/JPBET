@@ -1,0 +1,54 @@
+name: Prepare roulette probability lab
+on:
+  push:
+    paths:
+      - 'backend/frontend/lab-trigger.txt'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update laboratory to current roulette
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('backend/frontend/teste-probabilidade.html')
+          s=p.read_text()
+          replacements={
+            'MyBets — Laboratório Roleta 90':'MyBets — Laboratório Roleta 77',
+            '🧪 Laboratório — Roleta 90':'🧪 Laboratório — Roleta 77',
+            'id="totalSectors">90':'id="totalSectors">77',
+            'id="lossSectors">81':'id="lossSectors">68',
+            'id="prizeChance">10%':'id="prizeChance">11,6883%',
+            '<div class="center">ROULETA<br>90</div>':'<div class="center">ROULETA<br>77</div>',
+            'const TOTAL=90;':'const TOTAL=77;',
+            'const PRIZE_SECTORS=[0,10,20,30,40,50,60,70,80];':'const PRIZE_SECTORS=[0,9,19,28,38,47,57,66,76];',
+            'crypto.randomInt(90)':'crypto.randomInt(77)',
+          }
+          for a,b in replacements.items():
+            s=s.replace(a,b)
+          old="""    const p=PRIZE_SECTORS.indexOf(sector);\n    const delta=(360-(sector*4))%360;\n    rotation+=1080+delta;"""
+          new="""    const p=PRIZE_SECTORS.indexOf(sector);\n    const visualAngle=visualAngleForSector(sector);\n    const delta=(360-visualAngle)%360;\n    rotation+=1080+delta;"""
+          if old not in s:
+            raise SystemExit('single-spin block not found')
+          s=s.replace(old,new)
+          marker='function money(v){'
+          fn="""function visualAngleForSector(sector){\n  const group=PRIZE_SECTORS.findIndex(x=>x===sector);\n  if(group>=0)return group*40+10;\n  for(let i=0;i<PRIZE_SECTORS.length;i++){\n    const start=PRIZE_SECTORS[i];\n    const next=i===PRIZE_SECTORS.length-1?PRIZE_SECTORS[0]+TOTAL:PRIZE_SECTORS[i+1];\n    const logical=sector<start?sector+TOTAL:sector;\n    if(logical>start && logical<next){\n      const lossCount=next-start-1;\n      const lossPosition=logical-start-1;\n      return i*40+20+(lossPosition+0.5)*(20/lossCount);\n    }\n  }\n  return 10;\n}\n\n"""
+          if marker not in s:
+            raise SystemExit('money marker not found')
+          s=s.replace(marker,fn+marker,1)
+          s=s.replace('Teste real:</strong> cada clique chama o endpoint isolado do servidor, que usa <strong>crypto.randomInt(77)</strong>', 'Teste real:</strong> cada clique chama o endpoint isolado do servidor, que usa <strong>crypto.randomInt(77)</strong>')
+          p.write_text(s)
+          PY
+      - name: Commit laboratory update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add backend/frontend/teste-probabilidade.html
+          git commit -m 'Sync roulette lab with 77-sector roulette [skip ci]'
+          git push
+      - name: Cleanup workflow and trigger
+        run: |
+          git rm -f .github/workflows/update-lab-roulette-77.yml backend/frontend/lab-trigger.txt
+          git commit -m 'Remove temporary roulette lab updater [skip ci]'
+          git push
