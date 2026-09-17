@@ -2,301 +2,37 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MyBets — My Tiger</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>JPBET — My Tiger</title>
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;
- background:#090909;
- color:#fff;
- font-family:Arial,sans-serif;
- min-height:100vh;
-}
-header{
- padding:16px;
- display:flex;
- justify-content:space-between;
- align-items:center;
- border-bottom:1px solid #292929;
-}
-.logo{font-size:25px;font-weight:900;color:#fff}
-.logo span{color:#d8a72b}
-.balance{
- background:#151515;
- border:1px solid #76591c;
- border-radius:12px;
- padding:9px 13px;
- color:#e5bd55;
- font-weight:bold;
-}
-main{max-width:520px;margin:auto;padding:18px}
-.title{text-align:center}
-.title h1{
- margin:5px 0;
- font-size:32px;
- color:#e5b83f;
-}
-.title p{color:#999}
-
-.machine{
- margin-top:20px;
- background:linear-gradient(145deg,#191919,#080808);
- border:2px solid #8d6a22;
- border-radius:22px;
- padding:15px;
- box-shadow:0 0 30px #000;
-}
-.reels{
- display:grid;
- grid-template-columns:repeat(5,1fr);
- gap:6px;
- background:#000;
- padding:8px;
- border-radius:14px;
-}
-.reel{
- height:105px;
- background:#f4f4f4;
- color:#111;
- border-radius:8px;
- display:flex;
- align-items:center;
- justify-content:center;
- font-size:42px;
- overflow:hidden;
-}
-.symbols{
- margin-top:18px;
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:7px;
-}
-.symbol{
- background:#111;
- border:1px solid #3b3b3b;
- border-radius:10px;
- padding:9px 4px;
- text-align:center;
-}
-.symbol b{display:block;font-size:23px}
-.symbol small{color:#d9b04b}
-
-.controls{
- margin-top:18px;
- display:flex;
- gap:8px;
-}
-.controls button{
- width:50px;
- height:48px;
- border:1px solid #8c6a22;
- background:#171717;
- color:#fff;
- border-radius:10px;
- font-size:22px;
-}
-.bet{
- flex:1;
- text-align:center;
- background:#111;
- border:1px solid #444;
- border-radius:10px;
- padding:14px;
- font-weight:bold;
-}
-.spin{
- width:100%;
- margin-top:15px;
- padding:17px;
- border:0;
- border-radius:14px;
- background:linear-gradient(135deg,#d8a52f,#f0d06a,#bd851b);
- color:#080808;
- font-size:21px;
- font-weight:900;
-}
-.spin:disabled{opacity:.5}
-.result{
- text-align:center;
- min-height:28px;
- margin-top:14px;
- color:#e8bd50;
- font-weight:bold;
-}
-.back{
- display:block;
- text-align:center;
- margin-top:20px;
- color:#aaa;
- text-decoration:none;
-}
+:root{--gold:#ffd45a;--gold2:#b97816;--blue:#38a9ff;--deep:#02060a;--panel:#071018}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -10%,#123a61 0,#081725 30%,#03070c 70%,#010203 100%);color:#fff;font-family:Arial,Helvetica,sans-serif}body{overflow-x:hidden}button{font:inherit;cursor:pointer}
+.header{height:64px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:rgba(2,6,10,.9);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,210,82,.22);box-shadow:0 8px 28px rgba(0,0,0,.5)}.logo{font-size:25px;font-weight:900;letter-spacing:-1.5px}.logo span{color:var(--gold)}.balance{padding:8px 12px;border:1px solid rgba(255,211,85,.45);border-radius:12px;background:linear-gradient(180deg,#111a22,#05090d);font-size:13px;font-weight:800}.balance b{color:var(--gold);font-size:16px}
+.page{max-width:720px;margin:auto;padding:14px 12px 35px}.hero{position:relative;min-height:215px;overflow:hidden;border:1px solid rgba(255,205,78,.42);border-radius:24px;background:linear-gradient(135deg,#071c31,#07111c 58%,#020406);box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 0 45px rgba(44,145,255,.1)}.hero:after{content:"";position:absolute;inset:auto 0 0;height:55%;background:linear-gradient(transparent,rgba(0,0,0,.78));pointer-events:none}.hero-art{position:absolute;right:-4%;bottom:-8%;width:65%;height:112%;opacity:.98;filter:drop-shadow(0 12px 16px rgba(0,0,0,.85))}.hero-copy{position:relative;z-index:3;width:56%;padding:27px 20px}.eyebrow{font-size:10px;letter-spacing:3px;color:#62c0ff;font-weight:900}.hero h1{margin:6px 0 4px;font-size:38px;line-height:.95;font-style:italic;text-transform:uppercase;text-shadow:0 3px 14px #000}.hero h1 span{color:#eab73c}.hero p{margin:8px 0 0;color:#a9c0d2;font-size:12px;line-height:1.45}.badges{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}.badge{padding:6px 9px;border-radius:999px;background:rgba(50,160,255,.1);border:1px solid rgba(72,177,255,.3);font-size:10px;color:#8bd1ff;font-weight:800}
+.machine{margin-top:14px;padding:10px;border:2px solid #8d6a22;border-radius:24px;background:linear-gradient(145deg,#10202d,#080e14 52%,#020508);box-shadow:0 18px 45px rgba(0,0,0,.7),inset 0 0 35px rgba(46,157,255,.07)}.machine-top{display:flex;justify-content:space-between;align-items:center;padding:6px 7px 10px}.machine-title{font-weight:900;font-size:12px;letter-spacing:1px;color:#ffd56a}.rtp{font-size:10px;color:#748b9b}.paytable{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px}.pay{min-height:48px;border:1px solid rgba(255,210,83,.2);border-radius:9px;background:linear-gradient(145deg,#101e28,#050a0f);display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:inset 0 1px rgba(255,255,255,.06)}.pay .sym{font-size:21px}.pay small{font-size:9px;color:#ffd46b;font-weight:900}
+.reel-window{position:relative;padding:8px;border-radius:17px;background:linear-gradient(180deg,#020507,#000);border:1px solid #29455d;box-shadow:inset 0 0 18px #000,0 5px 15px rgba(0,0,0,.6)}.reel-window:before{content:"";position:absolute;inset:8px;pointer-events:none;border:1px solid rgba(255,213,82,.13);border-radius:12px;z-index:5}.reels{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(3,78px);gap:5px}.reel{position:relative;display:flex;align-items:center;justify-content:center;border-radius:9px;background:radial-gradient(circle at 50% 30%,#f8fbff,#b7d7ec 42%,#28455c 100%);border:1px solid rgba(225,240,255,.75);color:#07111a;font-size:31px;box-shadow:inset 0 2px 7px rgba(255,255,255,.9),inset 0 -7px 12px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.55);user-select:none;transition:.18s}.reel.win{animation:winPulse .8s ease-in-out infinite alternate;box-shadow:0 0 22px rgba(255,196,55,.95),inset 0 0 15px #fff3a0}.reel.spinfx{filter:blur(1.8px);transform:translateY(2px)}@keyframes winPulse{to{transform:scale(1.04);filter:brightness(1.25)}}
+.controls{display:grid;grid-template-columns:52px 1fr 52px;gap:7px;margin-top:10px}.ctrl,.betbox{border:1px solid rgba(255,205,83,.3);border-radius:12px;background:linear-gradient(180deg,#13202a,#060b10);color:#fff}.ctrl{font-size:25px;font-weight:900;color:#ffd45a}.betbox{text-align:center;padding:8px}.betbox label{display:block;font-size:9px;color:#7f96a6;letter-spacing:1px}.betbox strong{display:block;color:#ffd45a;font-size:18px;margin-top:2px}.spin{width:100%;margin-top:10px;padding:15px;border:1px solid #ffe49a;border-radius:15px;background:linear-gradient(180deg,#fff08b 0,#ffc52e 40%,#bd6b0c 100%);color:#260b00;font-size:20px;font-weight:1000;letter-spacing:1px;box-shadow:0 5px 0 #713708,0 10px 25px rgba(255,136,10,.22);text-shadow:0 1px rgba(255,255,255,.5)}.spin:active{transform:translateY(3px);box-shadow:0 2px 0 #713708}.spin:disabled{opacity:.55}.result{min-height:34px;margin:11px 5px 0;text-align:center;font-size:14px;font-weight:900;color:#ffd45a}.result.win{color:#fff1a1;text-shadow:0 0 15px #ffb11a;font-size:17px}.footer-row{display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding:8px 4px 0;color:#7890a0;font-size:10px}.back{color:#b7a684;text-decoration:none}.mini-note{color:#667b8b}.home{display:block;text-align:center;margin:15px 0 5px;color:#8fa4b2;text-decoration:none;font-size:12px}
+@media(max-width:430px){.hero{min-height:195px}.hero-copy{width:62%;padding:23px 16px}.hero h1{font-size:31px}.hero-art{width:67%}.reels{grid-template-rows:repeat(3,67px)}.reel{font-size:27px}.pay .sym{font-size:18px}.pay small{font-size:8px}}
 </style>
 </head>
-
 <body>
-
-<header>
- <div class="logo">My<span>Bets</span></div>
- <div class="balance">R$ <span id="balance">1.000,00</span></div>
-</header>
-
-<main>
-
-<div class="title">
- <h1>🐯 MY TIGER</h1>
- <p>Máquina 5 × 3</p>
-</div>
-
-<div class="machine">
-
- <div class="reels" id="reels"></div>
-
- <div class="symbols">
-  <div class="symbol"><b>🐯</b><small>50x</small></div>
-  <div class="symbol"><b>👑</b><small>25x</small></div>
-  <div class="symbol"><b>💎</b><small>15x</small></div>
-  <div class="symbol"><b>🪙</b><small>8x</small></div>
-  <div class="symbol"><b>🍊</b><small>4x</small></div>
-  <div class="symbol"><b>🍋</b><small>4x</small></div>
-  <div class="symbol"><b>🔔</b><small>10x</small></div>
-  <div class="symbol"><b>7️⃣</b><small>20x</small></div>
- </div>
-
- <div class="controls">
-  <button id="minus">−</button>
-  <div class="bet">APOSTA<br>R$ <span id="bet">1,00</span></div>
-  <button id="plus">+</button>
- </div>
-
- <button class="spin" id="spin">GIRAR</button>
-
- <div class="result" id="result"></div>
-
-</div>
-
-<a class="back" href="/">← Voltar para MyBets</a>
-
+<header class="header"><div class="logo">JP<span>BET</span></div><div class="balance">SALDO <b id="balance">R$ 0,00</b></div></header>
+<main class="page">
+<section class="hero">
+<svg class="hero-art" viewBox="0 0 500 430" aria-hidden="true"><defs><linearGradient id="tg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f5d46a"/><stop offset=".28" stop-color="#c98216"/><stop offset=".62" stop-color="#7d4510"/><stop offset="1" stop-color="#0b1116"/></linearGradient><filter id="gl"><feGaussianBlur stdDeviation="6"/></filter></defs><circle cx="310" cy="150" r="125" fill="#3aaeff" opacity=".18" filter="url(#gl)"/><path d="M415 340c-17-45-30-74-18-119 13-48-7-91-53-106-45-14-93 5-112 43 40-7 75 3 93 34-43-3-78 16-101 54 50-7 88 8 117 44 23 29 42 47 74 50z" fill="url(#tg)" stroke="#f5d36a" stroke-width="4"/><path d="M285 157c-27-39-74-55-113-36 21 14 36 32 43 55-33-1-62 15-83 40 39-3 70 11 93 39 27 34 55 51 92 57 18-52 7-112-32-155z" fill="url(#tg)" stroke="#dca934" stroke-width="4"/><path d="M213 147l-17-48 39 26 27-49 10 55 48-15-29 39" fill="#b96b12" stroke="#f3ce64" stroke-width="4"/><path d="M231 200c-25 5-48 17-67 36M282 182c22 16 36 39 42 67" fill="none" stroke="#ffe19a" stroke-width="7" stroke-linecap="round"/><circle cx="286" cy="151" r="7" fill="#fff5a8"/><path d="M355 254l-24 24m40-4-29 29m38-1-28 28" stroke="#7fcaff" stroke-width="7" stroke-linecap="round" opacity=".8"/></svg>
+<div class="hero-copy"><div class="eyebrow">JPBET ORIGINAL</div><h1>MY <span>TIGER</span></h1><p>Coragem, estratégia e grandes prêmios. Uma máquina premium em 5 × 3 com visual moderno.</p><div class="badges"><span class="badge">🐯 TIGRE 50x</span><span class="badge">⚡ 8 PRÊMIOS</span></div></div></section>
+<section class="machine">
+<div class="machine-top"><div class="machine-title">TABELA DE PAGAMENTOS</div><div class="rtp">RTP teórico 70% · independente do servidor</div></div>
+<div class="paytable"><div class="pay"><span class="sym">🐯</span><small>50x</small></div><div class="pay"><span class="sym">👑</span><small>25x</small></div><div class="pay"><span class="sym">💎</span><small>15x</small></div><div class="pay"><span class="sym">7️⃣</span><small>20x</small></div><div class="pay"><span class="sym">🔔</span><small>10x</small></div><div class="pay"><span class="sym">🪙</span><small>8x</small></div><div class="pay"><span class="sym">🍊</span><small>4x</small></div><div class="pay"><span class="sym">🍋</span><small>4x</small></div></div>
+<div class="reel-window"><div class="reels" id="reels"></div></div>
+<div class="controls"><button class="ctrl" id="minus">−</button><div class="betbox"><label>APOSTA</label><strong>R$ <span id="bet">1,00</span></strong></div><button class="ctrl" id="plus">+</button></div>
+<button class="spin" id="spin">🐯 GIRAR</button><div class="result" id="result" aria-live="polite"></div>
+<div class="footer-row"><a class="back" href="/dashboard.html">← Voltar ao painel</a><span class="mini-note">3 símbolos = prêmio</span></div>
+</section>
+<a class="home" href="/">JPBET · Início</a>
 </main>
-
 <script>
-const symbols=[
- {icon:"🐯",mult:50},
- {icon:"👑",mult:25},
- {icon:"💎",mult:15},
- {icon:"🪙",mult:8},
- {icon:"🍊",mult:4},
- {icon:"🍋",mult:4},
- {icon:"🔔",mult:10},
- {icon:"7️⃣",mult:20}
-];
-
-let balance=1000;
-let bet=1;
-let spinning=false;
-
-const reels=document.getElementById("reels");
-const balanceEl=document.getElementById("balance");
-const betEl=document.getElementById("bet");
-const result=document.getElementById("result");
-const spinBtn=document.getElementById("spin");
-
-function money(v){
- return v.toLocaleString("pt-BR",{minimumFractionDigits:2});
-}
-
-function draw(arr){
- reels.innerHTML="";
- arr.forEach(s=>{
-  const d=document.createElement("div");
-  d.className="reel";
-  d.textContent=s.icon;
-  reels.appendChild(d);
- });
-}
-
-draw([symbols[0],symbols[1],symbols[2],symbols[6],symbols[7]]);
-
-document.getElementById("minus").onclick=()=>{
- if(spinning)return;
- bet=Math.max(1,bet-1);
- betEl.textContent=money(bet);
-};
-
-document.getElementById("plus").onclick=()=>{
- if(spinning)return;
- if(bet+1<=balance)bet++;
- betEl.textContent=money(bet);
-};
-
-spinBtn.onclick=()=>{
- if(spinning)return;
-
- if(balance<bet){
-  result.textContent="Saldo insuficiente.";
-  return;
- }
-
- spinning=true;
- spinBtn.disabled=true;
- result.textContent="Girando...";
-
- balance-=bet;
- balanceEl.textContent=money(balance);
-
- let ticks=0;
-
- const timer=setInterval(()=>{
-  const arr=Array.from({length:5},()=>{
-   return symbols[Math.floor(Math.random()*symbols.length)];
-  });
-
-  draw(arr);
-  ticks++;
-
-  if(ticks>=15){
-   clearInterval(timer);
-
-   const final=Array.from({length:5},()=>{
-    return symbols[Math.floor(Math.random()*symbols.length)];
-   });
-
-   draw(final);
-
-   const counts={};
-
-   final.forEach(s=>{
-    counts[s.icon]=(counts[s.icon]||0)+1;
-   });
-
-   let win=0;
-
-   Object.keys(counts).forEach(icon=>{
-    if(counts[icon]>=3){
-     const s=symbols.find(x=>x.icon===icon);
-     win=Math.max(win,bet*s.mult);
-    }
-   });
-
-   if(win>0){
-    balance+=win;
-    result.textContent="🎉 PRÊMIO: R$ "+money(win);
-   }else{
-    result.textContent="Não foi dessa vez.";
-   }
-
-   balanceEl.textContent=money(balance);
-   spinning=false;
-   spinBtn.disabled=false;
-  }
-
- },80);
-};
+const API="/api/my-tiger";const symbols=[{id:"tiger",label:"🐯",multiplier:50},{id:"crown",label:"👑",multiplier:25},{id:"diamond",label:"💎",multiplier:15},{id:"coin",label:"🪙",multiplier:8},{id:"orange",label:"🍊",multiplier:4},{id:"lemon",label:"🍋",multiplier:4},{id:"bell",label:"🔔",multiplier:10},{id:"seven",label:"7️⃣",multiplier:20}];let user=null,bet=1,spinning=false;const $=id=>document.getElementById(id);const money=v=>Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});function stored(){try{return JSON.parse(localStorage.getItem("jpbet_user")||"null")}catch{return null}}function uid(){return user?.id??user?.userId??user?.user_id??null}function save(u){if(!u)return;user={...user,...u};try{localStorage.setItem("jpbet_user",JSON.stringify(user))}catch{}}function update(){$("balance").textContent="R$ "+money(user?.balance);$("bet").textContent=money(bet)}function draw(items){$("reels").innerHTML="";items.forEach(s=>{const d=document.createElement("div");d.className="reel";d.dataset.id=s.id;d.textContent=s.label;$("reels").appendChild(d)})}function initial(){draw([symbols[0],symbols[1],symbols[2],symbols[3],symbols[4],symbols[5],symbols[6],symbols[7],symbols[1],symbols[2],symbols[0],symbols[6],symbols[3],symbols[4],symbols[7]])}async function load(){user=stored();if(!uid()){$("result").textContent="Faça login para jogar.";$("spin").disabled=true;return}try{const r=await fetch(`/api/user/${uid()}`,{cache:"no-store"});const j=await r.json();if(j?.user)save(j.user)}catch{}update()}function animate(){return new Promise(resolve=>{let t=0;const timer=setInterval(()=>{draw(Array.from({length:15},()=>symbols[Math.floor(Math.random()*symbols.length)]));document.querySelectorAll(".reel").forEach(x=>x.classList.add("spinfx"));if(++t>=18){clearInterval(timer);resolve()}},65)})}async function spin(){if(spinning)return;const id=uid();if(!id){$("result").textContent="Faça login para jogar.";return}if(bet<1||Number(user?.balance||0)<bet){$("result").textContent="Saldo disponível insuficiente.";return}spinning=true;$("spin").disabled=true;$("minus").disabled=true;$("plus").disabled=true;$("result").className="result";$("result").textContent="Girando...";await animate();try{const token=localStorage.getItem("jpbet_token");const headers={"Content-Type":"application/json"};if(token)headers.Authorization=`Bearer ${token}`;const r=await fetch(API+"/spin",{method:"POST",headers,body:JSON.stringify({userId:id,betAmount:bet})});const j=await r.json();if(!r.ok)throw Error(j.message||"Não foi possível girar.");save(j.user);const grid=j.spin?.grid||[];draw(grid.map(x=>({id:x.id,label:x.label})));const winning=j.spin?.winningSymbol;if(winning){document.querySelectorAll(`.reel[data-id="${CSS.escape(winning)}"]`).forEach(x=>x.classList.add("win"));$("result").className="result win";$("result").textContent=`🐯 PRÊMIO: R$ ${money(j.spin.prize)} · ${j.spin.multiplier}x`;}else{$("result").textContent="Não foi dessa vez. A força continua."}update()}catch(e){$("result").textContent=e.message||"Erro ao girar."}finally{spinning=false;$("spin").disabled=false;$("minus").disabled=false;$("plus").disabled=false}}$("minus").onclick=()=>{if(!spinning){bet=Math.max(1,bet-1);update()}};$("plus").onclick=()=>{if(!spinning&&bet+1<=Number(user?.balance||0)){bet++;update()}};$("spin").onclick=spin;initial();load();
 </script>
-
-
-<script src="/brand-standard.js?v=1"></script>
 <script src="/brand-standard.js?v=2"></script>
-</body>
-</html>
+</body></html>
