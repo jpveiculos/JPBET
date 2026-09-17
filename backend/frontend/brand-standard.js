@@ -1,3 +1,4 @@
+/* MyBets unified logo v2 */
 (function(){
   'use strict';
 
@@ -110,13 +111,8 @@
       text-shadow:0 2px 8px rgba(0,0,0,.5) !important;
     }
 
-    .mybets-logo-my{
-      color:#ffd83d !important;
-    }
-
-    .mybets-logo-bets{
-      color:#fff !important;
-    }
+    .mybets-logo-my{ color:#ffd83d !important; }
+    .mybets-logo-bets{ color:#fff !important; }
 
     .mybets-logo-line{
       display:block !important;
@@ -128,14 +124,8 @@
       box-shadow:0 1px 7px rgba(255,216,61,.45) !important;
     }
 
-    .mybets-admin-logo .mybets-logo-main{
-      font-size:30px !important;
-    }
-
-    .mybets-admin-logo .mybets-logo-line{
-      height:4px !important;
-      margin-top:5px !important;
-    }
+    .mybets-admin-logo .mybets-logo-main{ font-size:30px !important; }
+    .mybets-admin-logo .mybets-logo-line{ height:4px !important; margin-top:5px !important; }
 
     .mybets-admin-label{
       margin-left:10px !important;
