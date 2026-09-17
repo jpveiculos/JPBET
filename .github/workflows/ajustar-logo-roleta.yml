@@ -16,20 +16,18 @@ jobs:
           import re
           p = Path('backend/frontend/roulette207.html')
           s = p.read_text(encoding='utf-8')
-          if 'roulette-page-logo' in s:
-              print('Ja corrigido')
-              raise SystemExit
-          old = re.search(r'<div class="brand roulette-top-brand">.*?</div>', s, re.S)
-          if not old:
+          pattern = re.compile(r'<div class="brand roulette-top-brand"[^>]*>.*?</div>', re.S)
+          m = pattern.search(s)
+          if not m:
               raise SystemExit('Cabecalho da roleta nao encontrado')
-          new = '<div class="brand roulette-top-brand" data-mybets-standardized="1"><span class="roulette-page-logo">MYBETS</span><span class="roulette-page-logo-line" aria-hidden="true"></span></div>'
-          s = s[:old.start()] + new + s[old.end():]
-          css = '.roulette-page-logo{display:block!important;color:#ffd83d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:18px!important;font-weight:900!important;font-style:normal!important;letter-spacing:2.2px!important;line-height:1!important;white-space:nowrap!important}.roulette-page-logo-line{display:block!important;width:100%!important;height:3px!important;margin-top:5px!important;border-radius:999px!important;background:#ffd83d!important;box-shadow:0 1px 6px rgba(255,216,61,.42)!important}.roulette-top-brand{display:inline-flex!important;flex-direction:column!important;align-items:flex-start!important;white-space:nowrap!important;padding-bottom:5px!important;font-style:normal!important}'
+          new = '<div class="brand roulette-top-brand" data-mybets-standardized="1"><span class="roulette-page-logo"><span class="roulette-page-my">My</span><span class="roulette-page-bets">Bets</span></span><span class="roulette-page-logo-line" aria-hidden="true"></span></div>'
+          s = s[:m.start()] + new + s[m.end():]
+          css = '.roulette-top-brand{display:inline-flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;white-space:nowrap!important;padding:0 0 5px!important;font-style:italic!important;line-height:1!important}.roulette-page-logo{display:inline-flex!important;align-items:baseline!important;white-space:nowrap!important;font-family:Arial,Helvetica,sans-serif!important;font-size:22px!important;font-weight:900!important;font-style:italic!important;letter-spacing:-1.1px!important;line-height:1!important}.roulette-page-my{color:#fff!important}.roulette-page-bets{color:#ffd83d!important}.roulette-page-logo-line{display:block!important;width:100%!important;height:3px!important;margin-top:5px!important;border-radius:999px!important;background:linear-gradient(90deg,transparent,#ffd83d 10%,#ffd83d 90%,transparent)!important;box-shadow:0 1px 6px rgba(255,216,61,.42)!important}'
           s = s.replace('</style>', css + '</style>', 1)
           p.write_text(s, encoding='utf-8')
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add backend/frontend/roulette207.html
-          git diff --cached --quiet || git commit -m 'Corrige logo MYBETS em linha'
+          git diff --cached --quiet || git commit -m 'Corrige logomarca MyBets da roleta'
           git push
