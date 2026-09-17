@@ -1,7 +1,9 @@
 name: Fix roulette pointer mapping for 77 sectors
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   fix:
@@ -36,23 +38,17 @@ jobs:
 
 
   /*
-   * A roleta tem 77 setores lógicos,
-   * mas 18 faixas visuais: 9 douradas
+   * 77 setores lógicos são representados
+   * por 18 faixas visuais: 9 douradas
    * (prêmios) e 9 pretas (perdas).
-   *
-   * Cada setor premiado aponta exatamente
-   * para o centro da sua faixa dourada.
-   * Os setores de perda entre dois prêmios
-   * são distribuídos dentro da faixa preta
-   * correspondente.
    */
-
   const prizeIndex =
     PRIZE_INDEXES.indexOf(sector);
 
 
   if(prizeIndex >= 0){
 
+    /* Centro exato da faixa dourada. */
     return (
       prizeIndex * 40 +
       10
@@ -123,10 +119,11 @@ jobs:
 
 
   /*
-   * A faixa preta ocupa 20 graus.
-   * O alvo fica no centro do pequeno
-   * intervalo visual correspondente ao
-   * setor lógico sorteado.
+   * Cada grupo de perdas ocupa exatamente
+   * a faixa preta de 20 graus. Cada setor
+   * lógico recebe o centro de sua pequena
+   * divisão, evitando qualquer sobreposição
+   * e mantendo o ponteiro dentro da faixa.
    */
   return (
     group * 40 +
