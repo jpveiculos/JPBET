@@ -1,0 +1,24 @@
+name: Fix roulette site menu
+
+"on":
+  push:
+    paths:
+      - 'backend/frontend/roulette-menu-trigger.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply menu fix
+        run: python .github/fix_roulette_menu.py
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add backend/frontend/roulette207.html backend/frontend/roulette-menu-trigger.txt .github/workflows/fix-menu-roulette.yml .github/fix_roulette_menu.py
+          git commit -m 'Fazer Menu do site abrir menu na roleta [skip ci]'
+          git push
