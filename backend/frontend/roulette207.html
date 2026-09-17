@@ -1,12 +1,19 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+>
 
 <title>MyBets — Roleta</title>
 
 <style>
+
 :root{
   --gold:#ffd83d;
   --gold2:#dca51d;
@@ -23,6 +30,7 @@ html,
 body{
   margin:0;
   min-height:100%;
+
   background:
     radial-gradient(
       circle at 50% 18%,
@@ -30,8 +38,13 @@ body{
       #070c12 34%,
       #020509 76%
     );
+
   color:#fff;
-  font-family:Arial,Helvetica,sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 }
 
 body{
@@ -49,12 +62,21 @@ body{
   align-items:center;
   justify-content:space-between;
   gap:10px;
+
   padding:10px 0 7px;
-  border-bottom:1px solid var(--line);
+
+  border-bottom:
+    1px solid var(--line);
+
   position:sticky;
   top:0;
-  background:rgba(2,5,9,.92);
-  backdrop-filter:blur(10px);
+
+  background:
+    rgba(2,5,9,.92);
+
+  backdrop-filter:
+    blur(10px);
+
   z-index:10;
 }
 
@@ -75,9 +97,15 @@ body{
       #121b25,
       #080d13
     );
-  border:1px solid rgba(255,216,61,.3);
+
+  border:
+    1px solid
+    rgba(255,216,61,.3);
+
   border-radius:14px;
+
   padding:7px 12px;
+
   min-width:125px;
 }
 
@@ -100,67 +128,107 @@ body{
 
 .wheel-box{
   position:relative;
-  width:min(calc(100vw - 24px),540px);
+
+  width:
+    min(
+      calc(100vw - 24px),
+      540px
+    );
+
   aspect-ratio:1;
+
   margin:0 auto;
 }
 
 .pointer{
   position:absolute;
+
   z-index:8;
+
   top:0;
   left:50%;
-  transform:translateX(-50%);
+
+  transform:
+    translateX(-50%);
+
   width:0;
   height:0;
 
-  border-left:15px solid transparent;
-  border-right:15px solid transparent;
-  border-top:30px solid #f5c32b;
+  border-left:
+    15px solid transparent;
 
-  filter:drop-shadow(0 3px 4px #000);
+  border-right:
+    15px solid transparent;
+
+  border-top:
+    30px solid #f5c32b;
+
+  filter:
+    drop-shadow(
+      0 3px 4px #000
+    );
 }
 
 .pointer:after{
   content:"";
+
   position:absolute;
+
   left:-6px;
   top:-25px;
 
-  border-left:6px solid transparent;
-  border-right:6px solid transparent;
-  border-top:14px solid #e94b36;
+  border-left:
+    6px solid transparent;
+
+  border-right:
+    6px solid transparent;
+
+  border-top:
+    14px solid #e94b36;
 }
 
 .wheel{
+
   position:absolute;
+
   inset:4%;
 
   border-radius:50%;
 
-  border:10px solid #b97b11;
+  border:
+    10px solid #b97b11;
 
   box-shadow:
+
     0 0 0 4px #4d3309,
-    0 0 28px rgba(255,216,61,.2),
+
+    0 0 28px
+    rgba(255,216,61,.2),
+
     inset 0 0 25px #000;
 
   background:#080b0e;
 
   /*
-   * CORREÇÃO DO ALINHAMENTO INICIAL
+   * O centro do primeiro prêmio
+   * está em 2 graus.
    *
-   * O centro da casa 2x está em 12 graus.
    * O ponteiro está em 0 graus.
-   * Portanto a roda começa deslocada 12 graus
-   * para a esquerda.
+   *
+   * Por isso a roda começa em -2 graus,
+   * colocando o centro do 2x exatamente
+   * sob o ponteiro.
    */
-  transform:rotate(-12deg);
+
+  transform:
+    rotate(-2deg);
 
   overflow:hidden;
 
   transition:
-    transform 4s cubic-bezier(.12,.72,.12,1);
+    transform
+    4s
+    cubic-bezier(.12,.72,.12,1);
 
   will-change:transform;
 }
@@ -177,7 +245,8 @@ body{
 }
 
 #wheelSvg path{
-  vector-effect:non-scaling-stroke;
+  vector-effect:
+    non-scaling-stroke;
 }
 
 #wheelSvg text{
@@ -186,22 +255,29 @@ body{
 }
 
 .hub{
+
   position:absolute;
+
   z-index:9;
 
   left:50%;
   top:50%;
 
-  transform:translate(-50%,-50%);
+  transform:
+    translate(-50%,-50%);
 
   width:31%;
+
   aspect-ratio:1;
 
   border-radius:50%;
 
   display:flex;
+
   align-items:center;
+
   justify-content:center;
+
   flex-direction:column;
 
   background:
@@ -211,10 +287,13 @@ body{
       #070a0e 70%
     );
 
-  border:5px solid #dca51d;
+  border:
+    5px solid #dca51d;
 
   box-shadow:
+
     0 0 0 3px #4b330b,
+
     0 10px 22px #000;
 
   cursor:pointer;
@@ -231,24 +310,37 @@ body{
 }
 
 .controls{
-  width:min(calc(100vw - 24px),540px);
+  width:
+    min(
+      calc(100vw - 24px),
+      540px
+    );
+
   margin:0 auto;
 }
 
 .bet-row{
+
   display:flex;
+
   align-items:center;
+
   justify-content:space-between;
+
   gap:8px;
 
   margin-top:4px;
-  padding:10px 12px;
+
+  padding:
+    10px 12px;
 
   border-radius:14px;
 
   background:#090f16;
 
-  border:1px solid var(--line);
+  border:
+    1px solid
+    var(--line);
 }
 
 .bet-row span{
@@ -263,44 +355,58 @@ body{
 }
 
 .bet-controls button{
+
   width:38px;
   height:38px;
 
-  border:1px solid rgba(255,216,61,.35);
+  border:
+    1px solid
+    rgba(255,216,61,.35);
+
   border-radius:10px;
 
   background:#121a23;
+
   color:var(--gold);
 
   font-size:22px;
+
   font-weight:900;
 }
 
 .bet-controls input{
+
   width:105px;
   height:38px;
 
-  border:1px solid rgba(255,216,61,.35);
+  border:
+    1px solid
+    rgba(255,216,61,.35);
+
   border-radius:10px;
 
   background:#05090d;
+
   color:#fff;
 
   text-align:center;
 
   font-size:17px;
+
   font-weight:900;
 
   outline:none;
 }
 
 .spin{
+
   width:100%;
   height:56px;
 
   margin-top:10px;
 
   border:0;
+
   border-radius:15px;
 
   background:
@@ -313,10 +419,12 @@ body{
   color:#07090d;
 
   font-weight:1000;
+
   font-size:17px;
 
   box-shadow:
-    0 8px 18px rgba(0,0,0,.35);
+    0 8px 18px
+    rgba(0,0,0,.35);
 }
 
 .spin:disabled{
@@ -324,43 +432,58 @@ body{
 }
 
 .nav{
+
   position:fixed;
+
   left:0;
   right:0;
   bottom:0;
 
   height:64px;
 
-  background:rgba(4,8,13,.96);
+  background:
+    rgba(4,8,13,.96);
 
-  border-top:1px solid var(--line);
+  border-top:
+    1px solid
+    var(--line);
 
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+
+  grid-template-columns:
+    repeat(3,1fr);
 
   z-index:20;
 }
 
 .nav button{
+
   border:0;
+
   background:transparent;
 
   color:#8c96a4;
 
   font-weight:800;
+
   font-size:10px;
 }
 
 .nav button span{
+
   display:block;
+
   font-size:20px;
+
   margin-bottom:2px;
 }
 
 .nav .active{
   color:var(--gold);
 }
+
 </style>
+
 </head>
 
 <body>
@@ -374,119 +497,169 @@ body{
   </div>
 
   <div class="balance">
-    <small>Saldo</small>
-    <strong id="balance">R$ 0,00</strong>
+
+    <small>
+      Saldo
+    </small>
+
+    <strong id="balance">
+      R$ 0,00
+    </strong>
+
   </div>
 
 </header>
 
+
 <main class="game">
 
-  <div class="wheel-box">
+<div class="wheel-box">
 
-    <div class="pointer"></div>
+  <div class="pointer"></div>
 
-    <div class="wheel" id="wheel">
+  <div
+    class="wheel"
+    id="wheel"
+  >
 
-      <svg
-        id="wheelSvg"
-        viewBox="0 0 400 400"
-        preserveAspectRatio="xMidYMid meet"
-        aria-label="Roleta"
-      ></svg>
-
-    </div>
-
-    <div
-      class="hub"
-      onclick="spin()"
-    >
-      <strong>MyBets</strong>
-      <b>GIRAR</b>
-    </div>
+    <svg
+      id="wheelSvg"
+      viewBox="0 0 400 400"
+      preserveAspectRatio="xMidYMid meet"
+      aria-label="Roleta"
+    ></svg>
 
   </div>
 
-  <div class="controls">
 
-    <div class="bet-row">
+  <div
+    class="hub"
+    onclick="spin()"
+  >
 
-      <span>
-        Valor da aposta
-      </span>
+    <strong>
+      MyBets
+    </strong>
 
-      <div class="bet-controls">
+    <b>
+      GIRAR
+    </b>
 
-        <button
-          type="button"
-          onclick="changeBet(-0.50)"
-        >
-          −
-        </button>
+  </div>
 
-        <input
-          id="betAmount"
-          type="number"
-          min="0.50"
-          step="0.50"
-          value="0.50"
-          inputmode="decimal"
-          onchange="normalizeBet()"
-        >
+</div>
 
-        <button
-          type="button"
-          onclick="changeBet(0.50)"
-        >
-          +
-        </button>
 
-      </div>
+<div class="controls">
 
-    </div>
+<div class="bet-row">
+
+  <span>
+    Valor da aposta
+  </span>
+
+  <div class="bet-controls">
 
     <button
-      class="spin"
-      id="spinButton"
-      onclick="spin()"
+      type="button"
+      onclick="changeBet(-0.50)"
     >
-      ↻ GIRAR
+      −
+    </button>
+
+    <input
+      id="betAmount"
+      type="number"
+      min="0.50"
+      step="0.50"
+      value="0.50"
+      inputmode="decimal"
+      onchange="normalizeBet()"
+    >
+
+    <button
+      type="button"
+      onclick="changeBet(0.50)"
+    >
+      +
     </button>
 
   </div>
+
+</div>
+
+
+<button
+  class="spin"
+  id="spinButton"
+  onclick="spin()"
+>
+  ↻ GIRAR
+</button>
+
+</div>
 
 </main>
 
 </div>
 
+
 <nav class="nav">
 
-  <button
-    onclick="location.href='/dashboard.html'"
-  >
-    <span>⌂</span>
-    Início
-  </button>
+<button
+  onclick="
+    location.href='/dashboard.html'
+  "
+>
 
-  <button
-    onclick="location.href='/dashboard.html'"
-  >
-    <span>◉</span>
-    Área do jogador
-  </button>
+  <span>
+    ⌂
+  </span>
 
-  <button class="active">
-    <span>◎</span>
-    Roleta
-  </button>
+  Início
+
+</button>
+
+
+<button
+  onclick="
+    location.href='/dashboard.html'
+  "
+>
+
+  <span>
+    ◉
+  </span>
+
+  Área do jogador
+
+</button>
+
+
+<button class="active">
+
+  <span>
+    ◎
+  </span>
+
+  Roleta
+
+</button>
 
 </nav>
 
+
 <script>
 
-const TOTAL = 207;
+/* =========================================================
+   CONFIGURAÇÃO
+   ========================================================= */
 
-const DEFAULT_MIN_BET = 0.50;
+const TOTAL =
+  90;
+
+const DEFAULT_MIN_BET =
+  0.50;
 
 const DEFAULT_PRIZES = [
   2,
@@ -500,61 +673,71 @@ const DEFAULT_PRIZES = [
   10
 ];
 
+/*
+ * Os 9 primeiros setores são prêmios.
+ */
+
 const PRIZE_INDEXES = [
   0,
-  23,
-  46,
-  69,
-  92,
-  115,
-  138,
-  161,
-  184
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8
 ];
 
-let MIN_BET = DEFAULT_MIN_BET;
 
-let PRIZES = [
-  ...DEFAULT_PRIZES
-];
+let MIN_BET =
+  DEFAULT_MIN_BET;
 
-let user = null;
+let PRIZES =
+  [
+    ...DEFAULT_PRIZES
+  ];
 
-let spinning = false;
+let user =
+  null;
+
+let spinning =
+  false;
 
 /*
- * IMPORTANTE:
+ * Começa com -2 graus.
  *
- * A roda começa em -12 graus porque
- * o centro do 2x está em +12 graus.
- *
- * Isso deixa o 2x exatamente debaixo
- * do ponteiro quando a página abre.
+ * O centro do primeiro setor
+ * é +2 graus.
  */
-let rotation = -12;
 
-let configLoaded = false;
+let rotation =
+  -2;
+
+let configLoaded =
+  false;
 
 
 /* =========================================================
    HELPERS
    ========================================================= */
 
-const $ = id =>
-  document.getElementById(id);
+const $ =
+  id =>
+    document.getElementById(id);
 
 
-function money(v){
-
-  return Number(v || 0).toLocaleString(
-    'pt-BR',
-    {
-      minimumFractionDigits:2,
-      maximumFractionDigits:2
-    }
-  );
-
-}
+const money =
+  v =>
+    Number(
+      v || 0
+    ).toLocaleString(
+      'pt-BR',
+      {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+      }
+    );
 
 
 /* =========================================================
@@ -565,25 +748,36 @@ function getUser(){
 
   try{
 
-    user = JSON.parse(
-      localStorage.getItem('jpbet_user') || 'null'
-    );
+    user =
+      JSON.parse(
+        localStorage.getItem(
+          'jpbet_user'
+        ) || 'null'
+      );
 
   }catch(e){
 
-    user = null;
+    user =
+      null;
 
   }
 
-  if(!user?.id){
 
-    location.href = '/';
+  if(
+    !user?.id
+  ){
+
+    location.href =
+      '/';
 
     return false;
 
   }
 
-  renderUser(user);
+
+  renderUser(
+    user
+  );
 
   return true;
 
@@ -592,13 +786,20 @@ function getUser(){
 
 function renderUser(u){
 
-  user = {
-    ...user,
-    ...u
-  };
+  user =
+    {
+      ...user,
+      ...u
+    };
 
-  $('balance').textContent =
-    'R$ ' + money(user.balance);
+
+  $('balance')
+    .textContent =
+      'R$ ' +
+      money(
+        user.balance
+      );
+
 
   localStorage.setItem(
     'jpbet_user',
@@ -623,17 +824,27 @@ function getBet(){
 
   }
 
+
   let v =
     Number(
-      String(input.value)
-        .replace(',', '.')
+      String(
+        input.value
+      )
+      .replace(
+        ',',
+        '.'
+      )
     );
 
-  if(!Number.isFinite(v)){
+
+  if(
+    !Number.isFinite(v)
+  ){
 
     return MIN_BET;
 
   }
+
 
   return Number(
     v.toFixed(2)
@@ -653,15 +864,20 @@ function normalizeBet(){
 
   }
 
+
   let v =
     getBet();
 
-  if(!Number.isFinite(v)){
+
+  if(
+    !Number.isFinite(v)
+  ){
 
     v =
       MIN_BET;
 
   }
+
 
   v =
     Math.max(
@@ -669,8 +885,10 @@ function normalizeBet(){
       v
     );
 
+
   input.min =
     MIN_BET.toFixed(2);
+
 
   input.value =
     v.toFixed(2);
@@ -683,9 +901,11 @@ function changeBet(delta){
   const current =
     getBet();
 
+
   const next =
     Math.max(
       MIN_BET,
+
       Number(
         (
           current +
@@ -693,6 +913,7 @@ function changeBet(delta){
         ).toFixed(2)
       )
     );
+
 
   $('betAmount').value =
     next.toFixed(2);
@@ -712,16 +933,23 @@ function polar(
 ){
 
   const rad =
-    (a - 90) *
+    (
+      a - 90
+    ) *
     Math.PI /
     180;
 
+
   return [
+
     cx +
-      r * Math.cos(rad),
+      r *
+      Math.cos(rad),
 
     cy +
-      r * Math.sin(rad)
+      r *
+      Math.sin(rad)
+
   ];
 
 }
@@ -743,6 +971,7 @@ function wedge(
       a0
     );
 
+
   const p1 =
     polar(
       cx,
@@ -751,15 +980,22 @@ function wedge(
       a1
     );
 
+
   const large =
-    (a1 - a0) > 180
+    (
+      a1 -
+      a0
+    ) > 180
       ? 1
       : 0;
+
 
   return `
     M ${cx} ${cy}
     L ${p0[0]} ${p0[1]}
-    A ${r} ${r} 0 ${large} 1 ${p1[0]} ${p1[1]}
+    A ${r} ${r}
+      0 ${large} 1
+      ${p1[0]} ${p1[1]}
     Z
   `;
 
@@ -767,7 +1003,7 @@ function wedge(
 
 
 /* =========================================================
-   DESENHO DA ROLETA
+   DESENHO DA ROLETA 90
    ========================================================= */
 
 function drawWheel(){
@@ -775,52 +1011,47 @@ function drawWheel(){
   const svg =
     $('wheelSvg');
 
+
   if(!svg){
 
     return;
 
   }
 
+
   svg.innerHTML =
     '';
+
 
   const ns =
     'http://www.w3.org/2000/svg';
 
+
   /*
-   * 207 setores lógicos:
+   * 90 setores.
    *
-   * 9 prêmios
-   * 198 perdas
+   * Cada setor:
    *
-   * Cada bloco:
+   * 360 / 90
    *
-   * 1 prêmio
-   * +
-   * 22 perdas
-   *
-   * 9 x 23 = 207
+   * = 4 graus.
    */
 
-  const prizeAngle =
-    24;
-
-  const gapAngle =
-    (
-      360 -
-      PRIZES.length *
-      prizeAngle
-    ) /
-    PRIZES.length;
+  const sectorAngle =
+    360 /
+    TOTAL;
 
 
-  /* Fundo */
+  /*
+   * Fundo.
+   */
 
   const background =
     document.createElementNS(
       ns,
       'circle'
     );
+
 
   background.setAttribute(
     'cx',
@@ -839,7 +1070,7 @@ function drawWheel(){
 
   background.setAttribute(
     'fill',
-    '#07090c'
+    '#080a0d'
   );
 
   background.setAttribute(
@@ -852,225 +1083,222 @@ function drawWheel(){
     '3'
   );
 
+
   svg.appendChild(
     background
   );
 
 
-  /* =======================================================
-     9 BLOCOS
-     ======================================================= */
+  /*
+   * Desenha os 90 setores.
+   *
+   * 0-8 = prêmios
+   * 9-89 = perdas
+   */
 
   for(
-    let i = 0;
-    i < 9;
-    i++
+    let sector = 0;
+    sector < TOTAL;
+    sector++
   ){
 
     const start =
-      i *
-      (
-        prizeAngle +
-        gapAngle
-      );
+      sector *
+      sectorAngle;
 
-    const prizeStart =
-      start;
-
-    const prizeEnd =
+    const end =
       start +
-      prizeAngle;
-
-    const lossStart =
-      prizeEnd;
-
-    const lossEnd =
-      start +
-      prizeAngle +
-      gapAngle;
+      sectorAngle;
 
 
-    /* =====================================================
-       ÁREA PRETA DE PERDAS
-       ===================================================== */
-
-    const lossPath =
+    const path =
       document.createElementNS(
         ns,
         'path'
       );
 
-    lossPath.setAttribute(
+
+    path.setAttribute(
       'd',
       wedge(
         200,
         200,
         186,
-        lossStart,
-        lossEnd
+        start,
+        end
       )
     );
 
-    lossPath.setAttribute(
-      'fill',
-      '#080a0d'
-    );
 
-    lossPath.setAttribute(
-      'stroke',
-      '#a97916'
-    );
-
-    lossPath.setAttribute(
-      'stroke-width',
-      '2'
-    );
-
-    svg.appendChild(
-      lossPath
-    );
-
-
-    /* =====================================================
-       ÁREA DOURADA DO PRÊMIO
-       ===================================================== */
-
-    const prizePath =
-      document.createElementNS(
-        ns,
-        'path'
+    const isPrize =
+      PRIZE_INDEXES.includes(
+        sector
       );
 
-    prizePath.setAttribute(
-      'd',
-      wedge(
-        200,
-        200,
-        186,
-        prizeStart,
-        prizeEnd
-      )
-    );
 
-    prizePath.setAttribute(
-      'fill',
-      '#d6a51e'
-    );
+    if(isPrize){
 
-    prizePath.setAttribute(
-      'stroke',
-      '#ffe36a'
-    );
-
-    prizePath.setAttribute(
-      'stroke-width',
-      '2'
-    );
-
-    svg.appendChild(
-      prizePath
-    );
-
-
-    /* =====================================================
-       TEXTO DO PRÊMIO
-       ===================================================== */
-
-    const center =
-      start +
-      prizeAngle / 2;
-
-    const [
-      x,
-      y
-    ] =
-      polar(
-        200,
-        200,
-        139,
-        center
+      path.setAttribute(
+        'fill',
+        '#d6a51e'
       );
 
-    const text =
-      document.createElementNS(
-        ns,
-        'text'
+      path.setAttribute(
+        'stroke',
+        '#ffe36a'
       );
 
-    text.setAttribute(
-      'x',
-      x
-    );
+    }else{
 
-    text.setAttribute(
-      'y',
-      y
-    );
+      path.setAttribute(
+        'fill',
+        '#080a0d'
+      );
 
-    text.setAttribute(
-      'fill',
-      '#ffffff'
-    );
+      path.setAttribute(
+        'stroke',
+        '#5e4510'
+      );
 
-    text.setAttribute(
-      'font-size',
-      '20'
-    );
+    }
 
-    text.setAttribute(
-      'font-family',
-      'Arial, Helvetica, sans-serif'
-    );
 
-    text.setAttribute(
-      'font-weight',
-      '900'
-    );
-
-    text.setAttribute(
-      'text-anchor',
-      'middle'
-    );
-
-    text.setAttribute(
-      'dominant-baseline',
-      'middle'
-    );
-
-    text.setAttribute(
-      'paint-order',
-      'stroke'
-    );
-
-    text.setAttribute(
-      'stroke',
-      '#000000'
-    );
-
-    text.setAttribute(
+    path.setAttribute(
       'stroke-width',
-      '3'
+      isPrize
+        ? '2'
+        : '1'
     );
 
-    text.textContent =
-      PRIZES[i] + 'x';
 
     svg.appendChild(
-      text
+      path
     );
+
+
+    /*
+     * Número do setor.
+     *
+     * Não colocamos texto nos 90 setores,
+     * pois ficaria ilegível no celular.
+     *
+     * Apenas os prêmios recebem multiplicador.
+     */
+
+    if(isPrize){
+
+      const prizePosition =
+        PRIZE_INDEXES.indexOf(
+          sector
+        );
+
+
+      const center =
+        start +
+        sectorAngle / 2;
+
+
+      const [
+        x,
+        y
+      ] =
+        polar(
+          200,
+          200,
+          142,
+          center
+        );
+
+
+      const text =
+        document.createElementNS(
+          ns,
+          'text'
+        );
+
+
+      text.setAttribute(
+        'x',
+        x
+      );
+
+      text.setAttribute(
+        'y',
+        y
+      );
+
+      text.setAttribute(
+        'fill',
+        '#ffffff'
+      );
+
+      text.setAttribute(
+        'font-size',
+        '13'
+      );
+
+      text.setAttribute(
+        'font-family',
+        'Arial, Helvetica, sans-serif'
+      );
+
+      text.setAttribute(
+        'font-weight',
+        '900'
+      );
+
+      text.setAttribute(
+        'text-anchor',
+        'middle'
+      );
+
+      text.setAttribute(
+        'dominant-baseline',
+        'middle'
+      );
+
+      text.setAttribute(
+        'paint-order',
+        'stroke'
+      );
+
+      text.setAttribute(
+        'stroke',
+        '#000000'
+      );
+
+      text.setAttribute(
+        'stroke-width',
+        '3'
+      );
+
+
+      text.textContent =
+        PRIZES[
+          prizePosition
+        ] +
+        'x';
+
+
+      svg.appendChild(
+        text
+      );
+
+    }
 
   }
 
 
-  /* =======================================================
-     ANEL INTERNO/EXTERNO
-     ======================================================= */
+  /*
+   * Anel externo.
+   */
 
   const ring =
     document.createElementNS(
       ns,
       'circle'
     );
+
 
   ring.setAttribute(
     'cx',
@@ -1102,6 +1330,7 @@ function drawWheel(){
     '3'
   );
 
+
   svg.appendChild(
     ring
   );
@@ -1110,16 +1339,10 @@ function drawWheel(){
 
 
 /* =========================================================
-   CONFIGURAÇÃO DO SERVIDOR
+   CONFIGURAÇÃO
    ========================================================= */
 
 async function loadConfig(){
-
-  /*
-   * A roda já foi desenhada.
-   *
-   * Agora buscamos os dados do servidor.
-   */
 
   try{
 
@@ -1127,9 +1350,11 @@ async function loadConfig(){
       await fetch(
         '/api/roulette207/config',
         {
-          cache:'no-store'
+          cache:
+            'no-store'
         }
       );
+
 
     if(!r.ok){
 
@@ -1139,8 +1364,10 @@ async function loadConfig(){
 
     }
 
+
     const d =
       await r.json();
+
 
     if(
       !d.ok ||
@@ -1154,16 +1381,22 @@ async function loadConfig(){
     }
 
 
-    /* Mínimo */
+    /*
+     * Mínimo.
+     */
 
     const serverMin =
       Number(
         d.roulette.minBet
       );
 
+
     if(
-      Number.isFinite(serverMin) &&
-      serverMin >= DEFAULT_MIN_BET
+      Number.isFinite(
+        serverMin
+      ) &&
+      serverMin >=
+        DEFAULT_MIN_BET
     ){
 
       MIN_BET =
@@ -1179,7 +1412,9 @@ async function loadConfig(){
     }
 
 
-    /* Prêmios */
+    /*
+     * Prêmios.
+     */
 
     if(
       Array.isArray(
@@ -1196,6 +1431,7 @@ async function loadConfig(){
                 x.multiplier
               )
           );
+
 
       if(
         loaded.every(
@@ -1216,40 +1452,47 @@ async function loadConfig(){
     $('betAmount').min =
       MIN_BET.toFixed(2);
 
+
     normalizeBet();
 
 
-    /*
-     * Redesenha com a configuração
-     * atual do painel administrativo.
-     */
-
     drawWheel();
+
 
     configLoaded =
       true;
 
+
   }catch(e){
 
+    console.error(
+      'Configuração da Roleta:',
+      e
+    );
+
+
     /*
-     * FALLBACK
-     *
-     * Mesmo se o endpoint falhar,
-     * a roleta continua desenhada.
+     * Fallback.
      */
 
     MIN_BET =
       DEFAULT_MIN_BET;
 
     PRIZES =
-      [...DEFAULT_PRIZES];
+      [
+        ...DEFAULT_PRIZES
+      ];
+
 
     $('betAmount').min =
       MIN_BET.toFixed(2);
 
+
     normalizeBet();
 
+
     drawWheel();
+
 
     configLoaded =
       true;
@@ -1260,7 +1503,7 @@ async function loadConfig(){
 
 
 /* =========================================================
-   ATUALIZAÇÃO DO SALDO
+   SALDO
    ========================================================= */
 
 function refresh(){
@@ -1273,7 +1516,8 @@ function refresh(){
         user.id
       ),
       {
-        cache:'no-store'
+        cache:
+          'no-store'
       }
     )
     .then(
@@ -1284,8 +1528,10 @@ function refresh(){
           const d =
             await x.json();
 
+
           renderUser(
-            d.user || d
+            d.user ||
+            d
           );
 
         }
@@ -1299,102 +1545,30 @@ function refresh(){
 
 
 /* =========================================================
-   SETOR LÓGICO → POSIÇÃO VISUAL
+   SETOR → POSIÇÃO VISUAL
    ========================================================= */
 
 function visualTargetForSector(
   sector
 ){
 
-  const prizeIndex =
-    PRIZE_INDEXES.indexOf(
-      sector
-    );
+  /*
+   * Cada setor ocupa 4 graus.
+   */
 
-  const block =
-    Math.floor(
-      sector / 23
-    );
-
-  const prizeAngle =
-    24;
-
-  const gapAngle =
-    (
-      360 -
-      PRIZES.length *
-      prizeAngle
-    ) /
-    PRIZES.length;
-
-  const start =
-    block *
-    (
-      prizeAngle +
-      gapAngle
-    );
+  const sectorAngle =
+    360 /
+    TOTAL;
 
 
   /*
-   * Prêmio:
-   *
-   * aponta para o centro
-   * da área dourada.
+   * Centro do setor.
    */
-
-  if(prizeIndex >= 0){
-
-    return (
-      start +
-      prizeAngle / 2
-    );
-
-  }
-
-
-  /*
-   * Perda:
-   *
-   * escolhe uma posição dentro
-   * da área preta correspondente.
-   */
-
-  const lossStart =
-    start +
-    prizeAngle;
-
-  const lossEnd =
-    start +
-    prizeAngle +
-    gapAngle;
-
-  const offset =
-    sector -
-    block * 23;
-
-  const lossCount =
-    22;
-
-  const lossPosition =
-    Math.max(
-      0,
-      Math.min(
-        lossCount - 1,
-        offset - 1
-      )
-    );
 
   return (
-    lossStart +
-    (
-      lossEnd -
-      lossStart
-    ) *
-    (
-      lossPosition +
-      0.5
-    ) /
-    lossCount
+    sector *
+    sectorAngle +
+    sectorAngle / 2
   );
 
 }
@@ -1415,10 +1589,13 @@ async function spin(){
 
   }
 
+
   normalizeBet();
+
 
   const bet =
     getBet();
+
 
   if(
     !Number.isFinite(bet) ||
@@ -1435,6 +1612,7 @@ async function spin(){
   spinning =
     true;
 
+
   $('spinButton').disabled =
     true;
 
@@ -1445,7 +1623,9 @@ async function spin(){
       await fetch(
         '/api/roulette207/spin',
         {
-          method:'POST',
+
+          method:
+            'POST',
 
           headers:{
             'Content-Type':
@@ -1454,12 +1634,15 @@ async function spin(){
 
           body:
             JSON.stringify({
+
               userId:
                 user.id,
 
               betAmount:
                 bet
+
             })
+
         }
       );
 
@@ -1482,7 +1665,8 @@ async function spin(){
 
 
     /*
-     * Resultado oficial vindo do servidor.
+     * Resultado oficial
+     * vindo do servidor.
      */
 
     const sector =
@@ -1492,8 +1676,7 @@ async function spin(){
 
 
     /*
-     * Converte o setor lógico
-     * para a posição visual.
+     * Calcula o ponto visual.
      */
 
     const target =
@@ -1503,15 +1686,15 @@ async function spin(){
 
 
     /*
-     * A roda começou em -12 graus.
+     * A roda começa em -2 graus.
      *
-     * Mantemos essa referência na variável
-     * rotation para que todos os giros seguintes
-     * continuem alinhados ao ponteiro.
+     * rotation mantém a posição real
+     * da roda.
      */
 
     const current =
-      rotation % 360;
+      rotation %
+      360;
 
 
     const delta =
@@ -1520,12 +1703,13 @@ async function spin(){
         target -
         current +
         360
-      ) % 360;
+      ) %
+      360;
 
 
     /*
-     * Cinco voltas completas +
-     * ajuste exato até o setor sorteado.
+     * Cinco voltas completas
+     * antes de parar.
      */
 
     rotation +=
@@ -1538,7 +1722,7 @@ async function spin(){
 
 
     /*
-     * Aguarda o término da animação.
+     * Aguarda a animação.
      */
 
     setTimeout(
@@ -1548,8 +1732,10 @@ async function spin(){
           d.user
         );
 
+
         spinning =
           false;
+
 
         $('spinButton').disabled =
           false;
@@ -1562,12 +1748,14 @@ async function spin(){
   }catch(e){
 
     console.error(
-      'Erro ao girar Roleta 207:',
+      'Erro ao girar Roleta:',
       e
     );
 
+
     spinning =
       false;
+
 
     $('spinButton').disabled =
       false;
@@ -1588,15 +1776,14 @@ if(
   /*
    * Desenha imediatamente.
    *
-   * Assim a roda nunca depende do carregamento
-   * do endpoint para aparecer.
+   * Não depende do servidor.
    */
 
   drawWheel();
 
 
   /*
-   * Carrega a configuração do servidor.
+   * Depois busca a configuração.
    */
 
   loadConfig();
@@ -1613,4 +1800,5 @@ if(
 </script>
 
 </body>
+
 </html>
