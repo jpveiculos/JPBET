@@ -57,6 +57,11 @@ body{
   padding:0 12px 30px;
 }
 
+
+/* =========================================================
+   TOPO
+   ========================================================= */
+
 .top{
   display:flex;
   align-items:center;
@@ -91,7 +96,6 @@ body{
 }
 
 .balance{
-
   background:
     linear-gradient(
       180deg,
@@ -123,12 +127,16 @@ body{
   margin-top:2px;
 }
 
+
+/* =========================================================
+   ROLETA
+   ========================================================= */
+
 .game{
   margin-top:4px;
 }
 
 .wheel-box{
-
   position:relative;
 
   width:
@@ -142,11 +150,15 @@ body{
   margin:0 auto;
 }
 
-.pointer{
 
+/* =========================================================
+   PONTEIRO
+   ========================================================= */
+
+.pointer{
   position:absolute;
 
-  z-index:8;
+  z-index:10;
 
   top:0;
   left:50%;
@@ -173,7 +185,6 @@ body{
 }
 
 .pointer:after{
-
   content:"";
 
   position:absolute;
@@ -190,6 +201,11 @@ body{
   border-top:
     14px solid #e94b36;
 }
+
+
+/* =========================================================
+   CORPO DA ROLETA
+   ========================================================= */
 
 .wheel{
 
@@ -214,25 +230,18 @@ body{
   background:#080b0e;
 
   /*
-   * 90 setores.
+   * IMPORTANTE:
    *
-   * Cada setor tem 4 graus.
+   * O primeiro setor amarelo possui
+   * seu centro em 10 graus.
    *
-   * O primeiro prêmio ocupa:
+   * O ponteiro está em 0 graus.
    *
-   * 0° até 4°
-   *
-   * Centro:
-   *
-   * 2°
-   *
-   * O ponteiro está em 0°.
-   *
-   * Portanto começamos em -2°.
+   * Por isso a roda começa em -10 graus.
    */
 
   transform:
-    rotate(-2deg);
+    rotate(-10deg);
 
   overflow:hidden;
 
@@ -246,12 +255,9 @@ body{
 }
 
 .wheel svg{
-
   width:100%;
   height:100%;
-
   display:block;
-
   overflow:visible;
 }
 
@@ -265,17 +271,20 @@ body{
 }
 
 #wheelSvg text{
-
   pointer-events:none;
-
   user-select:none;
 }
+
+
+/* =========================================================
+   CENTRO
+   ========================================================= */
 
 .hub{
 
   position:absolute;
 
-  z-index:9;
+  z-index:12;
 
   left:50%;
   top:50%;
@@ -324,13 +333,15 @@ body{
 }
 
 .hub b{
-
   font-size:22px;
-
   color:var(--gold);
-
   margin-top:3px;
 }
+
+
+/* =========================================================
+   CONTROLES
+   ========================================================= */
 
 .controls{
 
@@ -368,9 +379,7 @@ body{
 }
 
 .bet-row span{
-
   color:var(--muted);
-
   font-size:12px;
 }
 
@@ -461,6 +470,11 @@ body{
   opacity:.55;
 }
 
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
 .nav{
 
   position:fixed;
@@ -516,6 +530,7 @@ body{
 
 </head>
 
+
 <body>
 
 <div class="wrap">
@@ -542,6 +557,7 @@ body{
 
 
 <main class="game">
+
 
 <div class="wheel-box">
 
@@ -583,6 +599,7 @@ body{
 
 <div class="controls">
 
+
 <div class="bet-row">
 
   <span>
@@ -598,6 +615,7 @@ body{
       −
     </button>
 
+
     <input
       id="betAmount"
       type="number"
@@ -607,6 +625,7 @@ body{
       inputmode="decimal"
       onchange="normalizeBet()"
     >
+
 
     <button
       type="button"
@@ -627,6 +646,7 @@ body{
 >
   ↻ GIRAR
 </button>
+
 
 </div>
 
@@ -683,14 +703,28 @@ body{
 <script>
 
 /* =========================================================
-   ROLETA 90
+   CONFIGURAÇÃO DA ROLETA
    ========================================================= */
+
+/*
+ * 90 setores lógicos.
+ */
 
 const TOTAL =
   90;
 
+
+/*
+ * Aposta mínima.
+ */
+
 const DEFAULT_MIN_BET =
   0.50;
+
+
+/*
+ * 9 prêmios.
+ */
 
 const DEFAULT_PRIZES = [
   2,
@@ -706,8 +740,20 @@ const DEFAULT_PRIZES = [
 
 
 /*
- * Exatamente os mesmos setores
- * definidos no backend.
+ * Setores reais dos prêmios.
+ *
+ * 0
+ * 10
+ * 20
+ * 30
+ * 40
+ * 50
+ * 60
+ * 70
+ * 80
+ *
+ * Cada prêmio é separado por
+ * 9 setores de perda.
  */
 
 const PRIZE_INDEXES = [
@@ -742,19 +788,18 @@ let spinning =
 
 
 /*
- * Cada setor possui 4 graus.
+ * A posição visual inicial.
  *
- * Setor 0:
- * 0° → 4°
+ * O centro da primeira fatia amarela
+ * está em 10 graus.
  *
- * Centro:
- * 2°
- *
- * A roda começa em -2°.
+ * A roda começa em -10 graus,
+ * portanto o centro da primeira fatia
+ * fica exatamente no ponteiro.
  */
 
 let rotation =
-  -2;
+  -10;
 
 
 let configLoaded =
@@ -1048,8 +1093,42 @@ function wedge(
 
 
 /* =========================================================
-   DESENHO DA ROLETA 90
+   DESENHO VISUAL
    ========================================================= */
+
+/*
+ * A roleta possui:
+ *
+ * 18 FATIAS VISUAIS
+ *
+ * 9 amarelas
+ * 9 pretas
+ *
+ * Todas exatamente do mesmo tamanho.
+ *
+ * Cada fatia visual:
+ *
+ * 360 / 18 = 20 graus
+ *
+ *
+ * AMARELA:
+ * representa 1 setor lógico de prêmio.
+ *
+ *
+ * PRETA:
+ * representa 9 setores lógicos de perda.
+ *
+ *
+ * Portanto:
+ *
+ * 9 amarelas = 9 setores de prêmio
+ *
+ * 9 pretas × 9 perdas = 81 perdas
+ *
+ * Total:
+ *
+ * 9 + 81 = 90
+ */
 
 function drawWheel(){
 
@@ -1072,17 +1151,17 @@ function drawWheel(){
     'http://www.w3.org/2000/svg';
 
 
-  /*
-   * 90 setores.
-   *
-   * Cada setor:
-   *
-   * 360 / 90 = 4 graus.
-   */
+  const VISUAL_SLICES =
+    18;
 
-  const sectorAngle =
+
+  const visualAngle =
     360 /
-    TOTAL;
+    VISUAL_SLICES;
+
+
+  const radius =
+    186;
 
 
   /* =======================================================
@@ -1108,22 +1187,12 @@ function drawWheel(){
 
   background.setAttribute(
     'r',
-    '186'
+    radius
   );
 
   background.setAttribute(
     'fill',
     '#080a0d'
-  );
-
-  background.setAttribute(
-    'stroke',
-    '#d9a51d'
-  );
-
-  background.setAttribute(
-    'stroke-width',
-    '3'
   );
 
 
@@ -1133,23 +1202,23 @@ function drawWheel(){
 
 
   /* =======================================================
-     DESENHA OS 90 SETORES
+     18 FATIAS
      ======================================================= */
 
   for(
-    let sector = 0;
-    sector < TOTAL;
-    sector++
+    let visual = 0;
+    visual < VISUAL_SLICES;
+    visual++
   ){
 
     const start =
-      sector *
-      sectorAngle;
+      visual *
+      visualAngle;
 
 
     const end =
       start +
-      sectorAngle;
+      visualAngle;
 
 
     const path =
@@ -1164,22 +1233,24 @@ function drawWheel(){
       wedge(
         200,
         200,
-        186,
+        radius,
         start,
         end
       )
     );
 
 
-    const isPrize =
-      PRIZE_INDEXES.includes(
-        sector
-      );
-
-
     /*
-     * PRÊMIO
+     * Fatias pares:
+     *
+     * AMARELAS
+     *
+     * 0,2,4,6,8,10,12,14,16
      */
+
+    const isPrize =
+      visual % 2 === 0;
+
 
     if(isPrize){
 
@@ -1195,14 +1266,18 @@ function drawWheel(){
 
       path.setAttribute(
         'stroke-width',
-        '2'
+        '3'
       );
 
     }
 
 
     /*
-     * PERDA
+     * Fatias ímpares:
+     *
+     * PRETAS
+     *
+     * 1,3,5,7,9,11,13,15,17
      */
 
     else{
@@ -1219,7 +1294,7 @@ function drawWheel(){
 
       path.setAttribute(
         'stroke-width',
-        '1'
+        '2'
       );
 
     }
@@ -1236,23 +1311,28 @@ function drawWheel(){
 
     if(isPrize){
 
-      const prizePosition =
-        PRIZE_INDEXES.indexOf(
-          sector
-        );
-
-
       /*
-       * Centro do setor.
+       * Cada fatia amarela corresponde
+       * a um dos 9 prêmios.
+       *
+       * visual 0 → 2x
+       * visual 2 → 3x
+       * visual 4 → 4x
+       * ...
+       * visual 16 → 10x
        */
+
+      const prizePosition =
+        visual / 2;
+
 
       const center =
         start +
-        sectorAngle / 2;
+        visualAngle / 2;
 
 
       /*
-       * Posição do texto.
+       * Texto mais próximo da borda.
        */
 
       const [
@@ -1291,7 +1371,7 @@ function drawWheel(){
 
       text.setAttribute(
         'font-size',
-        '11'
+        '14'
       );
 
       text.setAttribute(
@@ -1326,7 +1406,7 @@ function drawWheel(){
 
       text.setAttribute(
         'stroke-width',
-        '2.5'
+        '3'
       );
 
 
@@ -1350,46 +1430,46 @@ function drawWheel(){
      ANEL INTERNO
      ======================================================= */
 
-  const ring =
+  const innerRing =
     document.createElementNS(
       ns,
       'circle'
     );
 
 
-  ring.setAttribute(
+  innerRing.setAttribute(
     'cx',
     '200'
   );
 
-  ring.setAttribute(
+  innerRing.setAttribute(
     'cy',
     '200'
   );
 
-  ring.setAttribute(
+  innerRing.setAttribute(
     'r',
     '187'
   );
 
-  ring.setAttribute(
+  innerRing.setAttribute(
     'fill',
     'none'
   );
 
-  ring.setAttribute(
+  innerRing.setAttribute(
     'stroke',
     '#f3c33b'
   );
 
-  ring.setAttribute(
+  innerRing.setAttribute(
     'stroke-width',
     '3'
   );
 
 
   svg.appendChild(
-    ring
+    innerRing
   );
 
 }
@@ -1513,11 +1593,6 @@ async function loadConfig(){
     normalizeBet();
 
 
-    /*
-     * Redesenha com a configuração
-     * atual do painel.
-     */
-
     drawWheel();
 
 
@@ -1534,7 +1609,8 @@ async function loadConfig(){
 
 
     /*
-     * FALLBACK
+     * Mesmo se o servidor demorar,
+     * a roleta visual continua aparecendo.
      */
 
     MIN_BET =
@@ -1608,30 +1684,113 @@ function refresh(){
 
 
 /* =========================================================
-   SETOR LÓGICO → ÂNGULO
+   SETOR LÓGICO → POSIÇÃO VISUAL
    ========================================================= */
+
+/*
+ * IMPORTANTE:
+ *
+ * O backend continua trabalhando
+ * com 90 setores.
+ *
+ * Visualmente temos 18 fatias.
+ *
+ * Para cada grupo:
+ *
+ * setor de prêmio:
+ * 0, 10, 20, 30...
+ *
+ * vai para a fatia amarela.
+ *
+ * Os setores de perda daquele grupo:
+ *
+ * 1-9
+ * 11-19
+ * 21-29
+ * ...
+ *
+ * ficam dentro da fatia preta.
+ */
 
 function visualTargetForSector(
   sector
 ){
 
   /*
-   * Cada um dos 90 setores possui 4 graus.
+   * Segurança.
    */
 
-  const sectorAngle =
-    360 /
-    TOTAL;
+  if(
+    !Number.isInteger(
+      sector
+    ) ||
+    sector < 0 ||
+    sector >= TOTAL
+  ){
+
+    return 10;
+
+  }
 
 
   /*
-   * Centro do setor.
+   * Grupo de 10 setores.
+   *
+   * 0-9
+   * 10-19
+   * 20-29
+   * ...
+   */
+
+  const group =
+    Math.floor(
+      sector / 10
+    );
+
+
+  /*
+   * Cada grupo ocupa:
+   *
+   * 20° amarelo
+   * +
+   * 20° preto
+   *
+   * = 40°
+   */
+
+
+  /*
+   * Se for prêmio:
+   *
+   * posição central da fatia amarela.
+   */
+
+  if(
+    sector % 10 === 0
+  ){
+
+    return (
+      group *
+      40 +
+      10
+    );
+
+  }
+
+
+  /*
+   * Se for perda:
+   *
+   * centro da fatia preta.
+   *
+   * Os 9 setores lógicos de perda
+   * compartilham visualmente essa fatia.
    */
 
   return (
-    sector *
-    sectorAngle +
-    sectorAngle / 2
+    group *
+    40 +
+    30
   );
 
 }
@@ -1682,6 +1841,13 @@ async function spin(){
 
   try{
 
+    /*
+     * Solicita o resultado ao servidor.
+     *
+     * O servidor é quem decide
+     * qual dos 90 setores saiu.
+     */
+
     const r =
       await fetch(
         '/api/roulette207/spin',
@@ -1728,7 +1894,7 @@ async function spin(){
 
 
     /*
-     * Resultado oficial do servidor.
+     * Resultado oficial.
      */
 
     const sector =
@@ -1738,10 +1904,7 @@ async function spin(){
 
 
     /*
-     * Segurança:
-     *
-     * garante que o setor recebido
-     * está dentro dos 90 setores.
+     * Segurança.
      */
 
     if(
@@ -1760,8 +1923,8 @@ async function spin(){
 
 
     /*
-     * Converte o setor sorteado
-     * para seu centro visual.
+     * Encontra a posição visual
+     * correspondente.
      */
 
     const target =
@@ -1780,8 +1943,9 @@ async function spin(){
 
 
     /*
-     * Distância necessária para levar
-     * o centro do setor sorteado ao ponteiro.
+     * Calcula quanto precisa girar
+     * para colocar a fatia correspondente
+     * no ponteiro.
      */
 
     const delta =
@@ -1794,8 +1958,7 @@ async function spin(){
 
 
     /*
-     * Cinco voltas completas
-     * antes de parar no resultado.
+     * Cinco voltas completas.
      */
 
     rotation +=
@@ -1808,7 +1971,7 @@ async function spin(){
 
 
     /*
-     * Espera o término da animação.
+     * Aguarda a animação.
      */
 
     setTimeout(
@@ -1860,18 +2023,17 @@ if(
 ){
 
   /*
-   * PRIMEIRO:
+   * Desenha imediatamente.
    *
-   * desenha a roleta imediatamente.
+   * Assim a roda não fica preta
+   * enquanto espera a API.
    */
 
   drawWheel();
 
 
   /*
-   * DEPOIS:
-   *
-   * carrega as configurações do servidor.
+   * Carrega as configurações.
    */
 
   loadConfig();
