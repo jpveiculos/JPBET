@@ -1,0 +1,62 @@
+name: Corrige logo da pagina da roleta
+on:
+  push:
+    branches: [main]
+
+jobs:
+  fix-logo:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Ajustar logomarca
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('backend/frontend/roulette207.html')
+          s = p.read_text(encoding='utf-8')
+
+          if 'roulette-page-logo' in s:
+              print('Logo ja ajustado.')
+              raise SystemExit(0)
+
+          # Substitui somente a marca do cabecalho da pagina da roleta.
+          pattern = re.compile(r'(<div class="brand roulette-top-brand"[^>]*>).*?(</div>)', re.S)
+          replacement = r'''<div class="brand roulette-top-brand" data-mybets-standardized="1"><span class="roulette-page-logo">MYBETS</span><span class="roulette-page-logo-line" aria-hidden="true"></span></div>'''
+          s2, n = pattern.subn(replacement, s, count=1)
+          if n != 1:
+              raise SystemExit('Nao encontrei o cabecalho .roulette-top-brand')
+
+          css = r'''
+.roulette-top-brand{display:inline-flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;line-height:1!important;white-space:nowrap!important;padding:0 0 5px!important;font-style:normal!important}
+.roulette-page-logo{display:block!important;color:#ffd83d!important;font-family:Arial,Helvetica,sans-serif!important;font-size:18px!important;font-weight:900!important;font-style:normal!important;letter-spacing:2.2px!important;line-height:1!important;white-space:nowrap!important}
+.roulette-page-logo-line{display:block!important;width:100%!important;height:3px!important;margin-top:5px!important;border-radius:999px!important;background:linear-gradient(90deg,transparent,#ffd83d 10%,#ffd83d 90%,transparent)!important;box-shadow:0 1px 6px rgba(255,216,61,.42)!important}
+'''
+          if '</style>' not in s2:
+              raise SystemExit('Nao encontrei </style>')
+          s2 = s2.replace('</style>', css + '</style>', 1)
+          p.write_text(s2, encoding='utf-8')
+          print('Logo da pagina corrigido para MYBETS em uma linha com faixa inferior.')
+          PY
+
+      - name: Commit e limpar workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/roulette207.html
+          git diff --cached --quiet || git commit -m "Ajusta logo MYBETS no cabecalho da roleta"
+          git push origin main
+
+          git rm -f .github/workflows/corrigir-logo-roleta.yml
+          git commit -m "Remove workflow temporario da logo"
+          git push origin main
