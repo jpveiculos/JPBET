@@ -10,33 +10,151 @@
 </head>
 <body>
 <div class="wrap">
-<div class="card"><h1>🧪 Laboratório — Roleta 90</h1><div class="muted">Teste isolado da lógica de 90 setores. Não usa saldo, não registra apostas e não altera jogadores.</div></div>
-<div class="card"><div class="grid"><div class="item">Setores<b>90</b></div><div class="item">Prêmios<b class="yellow">9</b></div><div class="item">Perdas<b class="red">81</b></div><div class="item">Chance prêmio<b class="yellow">10%</b></div></div></div>
+<div class="card"><h1>🧪 Laboratório — Roleta 90</h1><div class="muted">Teste isolado usando o mesmo sorteio do servidor. Não usa saldo, não registra apostas e não altera jogadores.</div></div>
+<div class="card"><div class="grid"><div class="item">Setores<b id="totalSectors">90</b></div><div class="item">Prêmios<b class="yellow" id="prizeSectors">9</b></div><div class="item">Perdas<b class="red" id="lossSectors">81</b></div><div class="item">Chance prêmio<b class="yellow" id="prizeChance">10%</b></div></div></div>
 <div class="card wheel-area">
 <div class="wheel-wrap"><div class="pointer"></div><div id="wheel" class="wheel"></div><div id="labels" class="sector-labels"></div><div class="center">ROULETA<br>90</div></div>
-<div id="result" class="result">Pronto para girar</div>
-<div class="controls" style="width:100%"><button id="spinBtn" onclick="girar()">GIRAR ROLETA</button><button class="secondary" onclick="girarN(100)">TESTAR +100</button></div>
+<div id="result" class="result">Conectando ao servidor...</div>
+<div class="controls" style="width:100%"><button id="spinBtn" onclick="girar()">GIRAR ROLETA</button><button id="batchBtn" class="secondary" onclick="girarN(100)">TESTAR +100</button></div>
 </div>
 <div class="card"><h2>Resultado acumulado</h2><div class="grid"><div class="item">Giros<b id="total">0</b></div><div class="item">Prêmios<b class="green" id="premios">0</b></div><div class="item">Perdas<b class="red" id="perdas">0</b></div><div class="item">Prêmio observado<b class="yellow" id="pct">0,0000%</b></div></div><p class="muted" id="status">Aguardando teste.</p><div class="bar"><i id="bar"></i></div></div>
 <div class="card"><h2>Distribuição dos prêmios</h2><div class="scroll"><table><thead><tr><th>Prêmio</th><th>Setor</th><th>Qtd.</th><th>Observado</th><th>Esperado</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
-<div class="card note"><strong>Regra:</strong> um setor é sorteado entre 0 e 89, todos com a mesma chance. Os setores premiados são 0, 10, 20, 30, 40, 50, 60, 70 e 80. Cada um tem 1/90 = 1,111111% de chance; os 9 juntos representam 10%.</div>
+<div class="card note"><strong>Teste real:</strong> cada clique chama o endpoint isolado do servidor, que usa <strong>crypto.randomInt(90)</strong>, a mesma função de sorteio usada pela roleta real. O laboratório não executa o endpoint de aposta e não altera banco, saldo, spins ou transações.</div>
 </div>
 <script>
 const TOTAL=90;
 const PRIZE_SECTORS=[0,10,20,30,40,50,60,70,80];
-const MULTIPLIERS=[2,3,4,5,6,7,8,9,10];
+let MULTIPLIERS=[2,3,4,5,6,7,8,9,10];
 let rotation=0,spinning=false,total=0,premios=0,perdas=0,counts=new Array(9).fill(0);
 const wheel=document.getElementById('wheel');
 const labels=document.getElementById('labels');
 const result=document.getElementById('result');
 const spinBtn=document.getElementById('spinBtn');
-for(let i=0;i<18;i++){const el=document.createElement('div');el.className='sector-label '+(i%2===0?'prize':'');el.style.transform=`rotate(${i*20+10}deg)`;el.textContent=i%2===0?MULTIPLIERS[i/2]+'x':'•';labels.appendChild(el)}
-function setor(){return Math.floor(Math.random()*TOTAL)}
-function registrar(s){total++;const p=PRIZE_SECTORS.indexOf(s);if(p>=0){premios++;counts[p]++;return {p,m:MULTIPLIERS[p]}}perdas++;return {p:-1,m:0}}
-function render(){document.getElementById('total').textContent=total.toLocaleString('pt-BR');document.getElementById('premios').textContent=premios.toLocaleString('pt-BR');document.getElementById('perdas').textContent=perdas.toLocaleString('pt-BR');const pct=total?premios/total*100:0;document.getElementById('pct').textContent=pct.toFixed(4).replace('.',',')+'%';document.getElementById('bar').style.width=Math.min(100,pct*10)+'%';document.getElementById('tbody').innerHTML=MULTIPLIERS.map((m,i)=>{const obs=total?counts[i]/total*100:0;const exp=total/TOTAL;return `<tr><td class="yellow"><strong>${m}x</strong></td><td>${PRIZE_SECTORS[i]}</td><td>${counts[i].toLocaleString('pt-BR')}</td><td>${obs.toFixed(4).replace('.',',')}%</td><td>${exp.toFixed(2).replace('.',',')}</td></tr>`}).join('')}
-function girar(){if(spinning)return;spinning=true;spinBtn.disabled=true;const s=setor();const p=PRIZE_SECTORS.indexOf(s);const delta=(360-(s*4))%360;rotation+=1080+delta;wheel.classList.add('spinning');wheel.style.transform=`rotate(${rotation}deg)`;setTimeout(()=>{const r=registrar(s);result.innerHTML=r.p>=0?`🎉 ${r.m}x — setor ${s}`:`Sem prêmio — setor ${s}`;result.className='result '+(r.p>=0?'green':'red');render();spinning=false;spinBtn.disabled=false;},4900)}
-function girarN(n){if(spinning)return;const t0=performance.now();for(let i=0;i<n;i++)registrar(setor());render();document.getElementById('status').textContent=`Acrescentados ${n.toLocaleString('pt-BR')} giros em ${(performance.now()-t0).toFixed(1)} ms.`}
+const batchBtn=document.getElementById('batchBtn');
+
+function montarLabels(){
+  labels.innerHTML='';
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    el.className='sector-label '+(i%2===0?'prize':'');
+    el.style.transform=`rotate(${i*20+10}deg)`;
+    el.textContent=i%2===0?MULTIPLIERS[i/2]+'x':'•';
+    labels.appendChild(el);
+  }
+}
+
+function render(){
+  document.getElementById('total').textContent=total.toLocaleString('pt-BR');
+  document.getElementById('premios').textContent=premios.toLocaleString('pt-BR');
+  document.getElementById('perdas').textContent=perdas.toLocaleString('pt-BR');
+  const pct=total?premios/total*100:0;
+  document.getElementById('pct').textContent=pct.toFixed(4).replace('.',',')+'%';
+  document.getElementById('bar').style.width=Math.min(100,pct*10)+'%';
+  document.getElementById('tbody').innerHTML=MULTIPLIERS.map((m,i)=>{
+    const obs=total?counts[i]/total*100:0;
+    const exp=total/TOTAL;
+    return `<tr><td class="yellow"><strong>${m}x</strong></td><td>${PRIZE_SECTORS[i]}</td><td>${counts[i].toLocaleString('pt-BR')}</td><td>${obs.toFixed(4).replace('.',',')}%</td><td>${exp.toFixed(2).replace('.',',')}</td></tr>`;
+  }).join('');
+}
+
+async function consultarConfig(){
+  try{
+    const r=await fetch('/api/roulette207/config',{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const cfg=d.roulette||{};
+    if(Array.isArray(cfg.prizes)&&cfg.prizes.length===9)MULTIPLIERS=cfg.prizes.map(x=>Number(x.multiplier ?? x));
+    document.getElementById('totalSectors').textContent=cfg.totalSectors||90;
+    document.getElementById('prizeSectors').textContent=cfg.prizeSectors||9;
+    document.getElementById('lossSectors').textContent=cfg.lossSectors||81;
+    document.getElementById('prizeChance').textContent=(cfg.totalPrizeProbabilityPercent ?? 10)+'%';
+    montarLabels();
+    render();
+    result.textContent='Pronto para girar';
+    document.getElementById('status').textContent='Servidor conectado. Teste usando o sorteio real.';
+  }catch(error){
+    result.textContent='Erro ao conectar ao servidor';
+    document.getElementById('status').textContent='Não foi possível carregar a configuração da roleta.';
+    spinBtn.disabled=true;
+    batchBtn.disabled=true;
+    console.error(error);
+  }
+}
+
+async function sorteioServidor(quantidade){
+  const r=await fetch('/api/roulette207/test-spin-batch',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({count:quantidade}),
+    cache:'no-store'
+  });
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok||!d.ok)throw new Error(d.message||`HTTP ${r.status}`);
+  return d.test;
+}
+
+function aplicarLote(t){
+  total+=t.count;
+  premios+=t.prizeCount;
+  perdas+=t.losses;
+  t.countsByPrize.forEach((q,i)=>{counts[i]+=q||0});
+  render();
+}
+
+async function girar(){
+  if(spinning)return;
+  spinning=true;
+  spinBtn.disabled=true;
+  batchBtn.disabled=true;
+  result.className='result';
+  result.textContent='Sorteando no servidor...';
+  try{
+    const t=await sorteioServidor(1);
+    const sector=t.countsBySector.findIndex(x=>x===1);
+    const p=PRIZE_SECTORS.indexOf(sector);
+    const delta=(360-(sector*4))%360;
+    rotation+=1080+delta;
+    wheel.classList.add('spinning');
+    wheel.style.transform=`rotate(${rotation}deg)`;
+    setTimeout(()=>{
+      aplicarLote(t);
+      result.innerHTML=p>=0?`🎉 ${MULTIPLIERS[p]}x — setor ${sector}`:`Sem prêmio — setor ${sector}`;
+      result.className='result '+(p>=0?'green':'red');
+      document.getElementById('status').textContent='1 sorteio realizado pelo servidor. Nenhum saldo foi alterado.';
+      spinning=false;
+      spinBtn.disabled=false;
+      batchBtn.disabled=false;
+    },4900);
+  }catch(error){
+    result.textContent='Erro no sorteio';
+    document.getElementById('status').textContent=error.message;
+    spinning=false;
+    spinBtn.disabled=false;
+    batchBtn.disabled=false;
+  }
+}
+
+async function girarN(n){
+  if(spinning)return;
+  spinBtn.disabled=true;
+  batchBtn.disabled=true;
+  document.getElementById('status').textContent=`Solicitando ${n.toLocaleString('pt-BR')} sorteios reais ao servidor...`;
+  const t0=performance.now();
+  try{
+    const t=await sorteioServidor(n);
+    aplicarLote(t);
+    document.getElementById('status').textContent=`${n.toLocaleString('pt-BR')} sorteios realizados pelo servidor em ${(performance.now()-t0).toFixed(1)} ms. Nenhum saldo foi alterado.`;
+  }catch(error){
+    document.getElementById('status').textContent=error.message;
+  }finally{
+    spinBtn.disabled=false;
+    batchBtn.disabled=false;
+  }
+}
+
+montarLabels();
 render();
+consultarConfig();
 </script>
 </body>
 </html>
