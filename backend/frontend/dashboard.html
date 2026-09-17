@@ -20,11 +20,10 @@
 <section id="playerView" class="player-dashboard">
   <div class="player-welcome"><h1>Olá, <span id="playerName">Jogador</span> 👋</h1><p>Bem-vindo à sua área do jogador.</p></div>
   <div class="player-card"><div class="player-card-label">Seu saldo</div><div class="player-card-balance" id="playerBalance">R$ 0,00</div><div class="player-card-sub">Créditos virtuais disponíveis</div><div class="player-actions"><button class="player-action primary" onclick="openDeposit()">+ Depositar</button><button class="player-action" onclick="openWithdraw()">Sacar</button></div></div>
-  <h2 class="player-section-title">🎰 Roleta</h2>
   <div class="games-grid">
-    <article class="game-card"><div class="game-logo"></div><div class="game-brand">MYBETS</div><h3>Roleta 207</h3><p>207 posições lógicas, 9 prêmios e 198 perdas.</p><div class="game-prize">Aposta livre • mínimo R$ 0,50</div><button onclick="goToGame('/roulette207.html')">JOGAR AGORA</button></article>
+    <article class="game-card"><h3>Roleta My Bets</h3><button onclick="goToGame('/roulette207.html')">JOGAR AGORA</button></article>
   </div>
-  <h2 class="player-section-title">📋 Minha conta</h2><div class="player-info">Aqui você acompanha seu saldo, saldo reservado e acessa depósitos, saques e a Roleta 207.</div>
+  <h2 class="player-section-title">📋 Minha conta</h2><div class="player-info">Aqui você acompanha seu saldo, saldo reservado e acessa depósitos, saques e a Roleta.</div>
 </section>
 <div class="drawer-backdrop" id="menu" onclick="if(event.target===this)closeMenu()"><aside class="drawer"><button class="close" onclick="closeMenu()">×</button><h2>Menu</h2><button class="drawer-button" onclick="openDeposit();closeMenu()">Depositar</button><button class="drawer-button" onclick="openWithdraw();closeMenu()">Sacar</button><button class="drawer-button" onclick="goToGame('/roulette207.html');closeMenu()">Roleta 207</button><button class="drawer-button" onclick="logout()">Sair</button></aside></div>
 <div class="modal" id="depositModal"><div class="modal-content"><button class="close" onclick="closeDeposit()">×</button><h2 class="modal-title">Depositar</h2><p>Informe o valor do depósito.</p><input class="field" id="depositAmount" type="number" min="1" step="0.01" placeholder="R$ 0,00"><button class="modal-action" onclick="requestDeposit()">SOLICITAR DEPÓSITO</button></div></div>
@@ -46,7 +45,6 @@ async function init(){if(!session())return;renderUser(user);await loadAccount()}
 init();document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDeposit();closeWithdraw();closeMenu()}});
 </script>
 <script src="/navigation.js?v=4" defer></script>
-
 <script src="/brand-standard.js?v=1"></script>
 <script src="/brand-standard.js?v=2"></script>
 </body>
