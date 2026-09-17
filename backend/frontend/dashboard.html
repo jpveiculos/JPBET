@@ -21,8 +21,9 @@
   <div class="player-card"><div class="player-card-label">Seu saldo</div><div class="player-card-balance" id="playerBalance">R$ 0,00</div><div class="player-card-sub">Créditos virtuais disponíveis</div><div class="player-actions"><button class="player-action primary" onclick="openDeposit()">+ Depositar</button><button class="player-action" onclick="openWithdraw()">Sacar</button></div></div>
   <div class="games-grid">
     <article class="game-card"><div class="roulette-card-icon" aria-hidden="true"></div><h3>Roleta MyBets</h3><button onclick="goToGame('/roulette207.html')">JOGAR AGORA</button></article>
-    <article class="game-card"><div class="machine-card-icon" aria-hidden="true">🐉</div><h3>My Dragon</h3><button onclick="goToGame('/my-dragon.html')">JOGAR AGORA</button></article>
+    <article class="game-card"><div class="roulette-card-icon" aria-hidden="true"></div><h3>Roleta Europeia</h3><button onclick="goToGame('/roulette-europeia.html')">JOGAR AGORA</button></article>
     <article class="game-card"><div class="machine-card-icon" aria-hidden="true">🐯</div><h3>My Tiger</h3><button onclick="goToGame('/my-tiger.html')">JOGAR AGORA</button></article>
+    <article class="game-card"><div class="machine-card-icon" aria-hidden="true">🐉</div><h3>My Dragon</h3><button onclick="goToGame('/my-dragon.html')">JOGAR AGORA</button></article>
   </div>
 </section>
 <div class="modal" id="depositModal"><div class="modal-content"><button class="close" onclick="closeDeposit()">×</button><h2 class="modal-title">Depositar</h2><p>Informe o valor do depósito.</p><input class="field" id="depositAmount" type="number" min="1" step="0.01" placeholder="R$ 0,00"><button class="modal-action" onclick="requestDeposit()">SOLICITAR DEPÓSITO</button></div></div>
