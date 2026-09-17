@@ -466,6 +466,57 @@ body{
   opacity:.55;
 }
 
+/* Botão principal com texto maior */
+.spin{
+  font-size:21px;
+  letter-spacing:.3px;
+}
+
+/* Marca central da roleta — apenas visual, sem ação de giro */
+.hub{
+  cursor:default;
+}
+
+.hub-logo{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  transform:translateY(1px);
+}
+
+.hub-logo-main{
+  font-size:clamp(21px,5.8vw,31px);
+  font-weight:900;
+  font-style:italic;
+  letter-spacing:-1px;
+  color:#fff;
+  text-shadow:0 2px 8px rgba(0,0,0,.7);
+}
+
+.hub-logo-main b{
+  color:var(--gold);
+}
+
+.hub-logo-line{
+  width:72%;
+  height:3px;
+  margin-top:5px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,#ffd83d 18%,#ffd83d 82%,transparent);
+  box-shadow:0 1px 5px rgba(255,216,61,.45);
+}
+
+.hub-logo-sub{
+  margin-top:4px;
+  font-size:clamp(6px,1.8vw,9px);
+  font-weight:900;
+  letter-spacing:2.2px;
+  color:#fff;
+  opacity:.9;
+}
+
 
 /* =========================================================
    NAVEGAÇÃO
@@ -577,16 +628,22 @@ body{
 
   <div
     class="hub"
-    onclick="spin()"
+    aria-label="Logo MyBets"
   >
 
-    <strong>
-      MyBets
-    </strong>
+    <div class="hub-logo">
 
-    <b>
-      GIRAR
-    </b>
+      <div class="hub-logo-main">
+        My<b>Bets</b>
+      </div>
+
+      <div class="hub-logo-line"></div>
+
+      <div class="hub-logo-sub">
+        JOGOS ONLINE
+      </div>
+
+    </div>
 
   </div>
 
