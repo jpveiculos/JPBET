@@ -7,8 +7,13 @@
 <style>
 :root{--gold:#ffd83d;--gold2:#dca51d;--muted:#9da7b5;--line:rgba(255,255,255,.1)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 18%,#18212c 0,#070c12 34%,#020509 76%);color:#fff;font-family:Arial,Helvetica,sans-serif}
-body{padding-bottom:78px}.wrap{width:min(720px,100%);margin:auto;padding:0 12px 30px}
+html,body{margin:0;width:100%;min-width:100%;min-height:100%;background:radial-gradient(circle at 50% 18%,#18212c 0,#070c12 34%,#020509 76%);color:#fff;font-family:Arial,Helvetica,sans-serif;overflow-x:hidden}
+html{overflow-x:hidden;overscroll-behavior-x:none}
+body{width:100%;padding-bottom:78px;position:relative;overscroll-behavior-x:none}
+.wrap{width:100%;max-width:720px;min-width:0;margin:0 auto;padding:0 12px 30px;contain:layout style}
+.game{width:100%;min-width:0}
+.wheel-box,.controls{flex:none;contain:layout}
+
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 7px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(2,5,9,.92);backdrop-filter:blur(10px);z-index:10}
 .brand{font-size:25px;font-weight:900;font-style:italic}.brand b{color:var(--gold)}
 .balance{background:linear-gradient(180deg,#121b25,#080d13);border:1px solid rgba(255,216,61,.3);border-radius:14px;padding:7px 12px;min-width:125px}.balance small{display:block;color:var(--muted);font-size:10px}.balance strong{display:block;color:var(--gold);font-size:17px;margin-top:2px}
