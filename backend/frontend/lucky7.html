@@ -11,7 +11,8 @@ html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -12%
 body{overflow-x:hidden}button{font:inherit;cursor:pointer}
 .header{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(3,6,12,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,211,83,.25);position:sticky;top:0;z-index:20;box-shadow:0 8px 28px rgba(0,0,0,.45)}
 .logo{font-size:23px;font-weight:950;font-style:italic;letter-spacing:-1px}.logo b{color:var(--gold)}
-.balance{padding:7px 10px;border:1px solid rgba(255,211,83,.42);border-radius:11px;background:linear-gradient(180deg,#111925,#070b12);font-size:11px;font-weight:800}.balance b{display:block;color:var(--gold);font-size:15px;margin-top:1px}
+.balance{min-width:154px;width:auto;height:42px;padding:8px 12px;border:1px solid rgba(255,211,83,.42);border-radius:11px;background:linear-gradient(180deg,#111925,#070b12);font-size:11px;font-weight:800;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;line-height:1}
+.balance b{display:inline!important;color:var(--gold);font-size:15px;margin:0!important;line-height:1}
 .page{width:min(520px,94vw);margin:auto;padding:9px 0 24px}
 .machine{position:relative;overflow:hidden;margin-top:0;padding:9px;border:2px solid #8e651b;border-radius:21px;background:linear-gradient(145deg,#071b32,#090c17 55%,#020306);box-shadow:0 18px 45px rgba(0,0,0,.7),inset 0 0 35px rgba(44,140,255,.08)}
 .machine:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 0,rgba(65,143,255,.16),transparent 40%)}
@@ -26,7 +27,7 @@ body{overflow-x:hidden}button{font:inherit;cursor:pointer}
 .controls{display:grid;grid-template-columns:50px 1fr 50px;gap:6px;margin-top:8px;position:relative;z-index:2}.ctrl,.bet{border:1px solid rgba(255,205,83,.35);border-radius:11px;background:linear-gradient(180deg,#111e2b,#060a10);color:#fff}.ctrl{font-size:24px;color:var(--gold);font-weight:900}.bet{text-align:center;padding:7px}.bet small{display:block;color:#8090a0;font-size:8px;letter-spacing:1px}.bet b{font-size:17px;color:var(--gold)}
 .spinbtn{position:relative;z-index:2;width:100%;margin-top:8px;padding:14px;border:1px solid #fff0a0;border-radius:14px;background:linear-gradient(180deg,#fff18b,#ffc52e,#b96b0d);font-size:20px;font-weight:1000;color:#251000;box-shadow:0 5px 0 #6f3507,0 10px 22px rgba(255,154,20,.22)}.spinbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6f3507}.spinbtn:disabled{opacity:.55}
 .result{position:relative;z-index:2;text-align:center;min-height:31px;margin-top:8px;font-weight:950;color:var(--gold);font-size:13px}.back{display:block;text-align:center;margin-top:10px;color:#9caab8;text-decoration:none;font-size:11px}
-@media(max-width:430px){.page{width:96vw}.egypt{height:67px}.egypt-title{font-size:27px}.reel{height:92px;font-size:44px}.pay{min-height:42px}.pay strong{font-size:17px}.pay small{font-size:7px}}
+@media(max-width:430px){.page{width:96vw}.header{padding:0 10px}.balance{min-width:148px;padding:8px 10px}.balance b{font-size:14px}.egypt{height:67px}.egypt-title{font-size:27px}.reel{height:92px;font-size:44px}.pay{min-height:42px}.pay strong{font-size:17px}.pay small{font-size:7px}}
 </style>
 </head>
 <body>
