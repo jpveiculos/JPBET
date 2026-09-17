@@ -1,0 +1,62 @@
+name: Adjust roulette logo
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Adjust roulette logo and button
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('backend/frontend/roulette207.html')
+          text = path.read_text(encoding='utf-8')
+
+          old = '''.spin{\n\n  width:100%;\n\n  height:56px;'''
+          new = '''.spin{\n\n  width:100%;\n\n  height:56px;'''
+          if old not in text:
+              raise SystemExit('spin CSS marker not found')
+
+          text = text.replace(
+              '''.spin{\n\n  width:100%;\n\n  height:56px;''',
+              '''.spin{\n\n  width:100%;\n\n  height:56px;''', 1
+          )
+
+          marker = '''.spin:disabled{\n  opacity:.55;\n}\n'''
+          replacement = '''.spin:disabled{\n  opacity:.55;\n}\n\n/* Botão principal com texto maior */\n.spin{\n  font-size:21px;\n  letter-spacing:.3px;\n}\n\n/* Marca central da roleta — apenas visual, sem ação de giro */\n.hub{\n  cursor:default;\n}\n\n.hub-logo{\n  display:flex;\n  flex-direction:column;\n  align-items:center;\n  justify-content:center;\n  line-height:1;\n  transform:translateY(1px);\n}\n\n.hub-logo-main{\n  font-size:clamp(21px,5.8vw,31px);\n  font-weight:900;\n  font-style:italic;\n  letter-spacing:-1px;\n  color:#fff;\n  text-shadow:0 2px 8px rgba(0,0,0,.7);\n}\n\n.hub-logo-main b{\n  color:var(--gold);\n}\n\n.hub-logo-line{\n  width:72%;\n  height:3px;\n  margin-top:5px;\n  border-radius:999px;\n  background:linear-gradient(90deg,transparent,#ffd83d 18%,#ffd83d 82%,transparent);\n  box-shadow:0 1px 5px rgba(255,216,61,.45);\n}\n\n.hub-logo-sub{\n  margin-top:4px;\n  font-size:clamp(6px,1.8vw,9px);\n  font-weight:900;\n  letter-spacing:2.2px;\n  color:#fff;\n  opacity:.9;\n}\n'''
+          if marker not in text:
+              raise SystemExit('hub CSS marker not found')
+          text = text.replace(marker, replacement, 1)
+
+          old_hub = '''  <div\n    class="hub"\n    onclick="spin()"\n  >\n\n    <strong>\n      MyBets\n    </strong>\n\n    <b>\n      GIRAR\n    </b>\n\n  </div>'''
+          new_hub = '''  <div\n    class="hub"\n    aria-label="Logo MyBets"\n  >\n\n    <div class="hub-logo">\n\n      <div class="hub-logo-main">\n        My<b>Bets</b>\n      </div>\n\n      <div class="hub-logo-line"></div>\n\n      <div class="hub-logo-sub">\n        JOGOS ONLINE\n      </div>\n\n    </div>\n\n  </div>'''
+          if old_hub not in text:
+              raise SystemExit('hub HTML marker not found')
+          text = text.replace(old_hub, new_hub, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/roulette207.html .github/workflows/adjust-roulette-logo.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Update roulette button and center MyBets logo"
+          git rm .github/workflows/adjust-roulette-logo.yml
+          git commit -m "Remove one-time roulette logo workflow"
+          git push
