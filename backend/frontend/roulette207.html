@@ -1694,6 +1694,93 @@ function updatePrizeLabels(angle = rotation){
 
 
 /* =========================================================
+   NOTIFICAÇÃO DE RESULTADO — GANHOU / PERDEU
+   ========================================================= */
+
+function showSpinResult(type, amount){
+
+  let box =
+    document.getElementById('spinResultNotice');
+
+  if(!box){
+
+    box = document.createElement('div');
+    box.id = 'spinResultNotice';
+
+    box.style.cssText = `
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%) scale(.88);
+      z-index:9999;
+      pointer-events:none;
+      min-width:min(82vw,360px);
+      max-width:90vw;
+      padding:18px 24px;
+      border-radius:18px;
+      text-align:center;
+      font-family:Arial,Helvetica,sans-serif;
+      font-weight:900;
+      font-size:24px;
+      line-height:1.15;
+      letter-spacing:.2px;
+      opacity:0;
+      transition:opacity .22s ease, transform .22s ease;
+      box-shadow:0 14px 40px rgba(0,0,0,.55);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    `;
+
+    document.body.appendChild(box);
+
+  }
+
+  const valor =
+    'R$ ' +
+    money(amount);
+
+  box.textContent =
+    type === 'win'
+      ? '🎉 Você ganhou ' + valor
+      : 'Você perdeu ' + valor;
+
+  if(type === 'win'){
+
+    box.style.color = '#53f28b';
+    box.style.background = 'rgba(8,42,24,.94)';
+    box.style.border = '2px solid rgba(83,242,139,.72)';
+    box.style.textShadow = '0 2px 12px rgba(83,242,139,.45)';
+
+  }else{
+
+    box.style.color = '#ff6262';
+    box.style.background = 'rgba(52,10,10,.94)';
+    box.style.border = '2px solid rgba(255,98,98,.72)';
+    box.style.textShadow = '0 2px 12px rgba(255,98,98,.35)';
+
+  }
+
+  box.style.opacity = '1';
+  box.style.transform =
+    'translate(-50%,-50%) scale(1)';
+
+  clearTimeout(
+    window.__spinResultTimer
+  );
+
+  window.__spinResultTimer =
+    setTimeout(() => {
+
+      box.style.opacity = '0';
+      box.style.transform =
+        'translate(-50%,-50%) scale(.88)';
+
+    }, 1900);
+
+}
+
+
+/* =========================================================
    GIRAR — 3 VOLTAS + PARADA SUAVE
    ========================================================= */
 
@@ -1745,6 +1832,13 @@ async function spin(){
 
   $('spinButton').disabled =
     true;
+
+
+  let resultType =
+    null;
+
+  let resultAmount =
+    0;
 
 
   try{
@@ -1809,6 +1903,24 @@ async function spin(){
       Number(
         d.spin.sector
       );
+
+
+    const prizeIndex =
+      PRIZE_INDEXES.indexOf(sector);
+
+
+    if(prizeIndex >= 0){
+
+      resultType = 'win';
+      resultAmount =
+        bet * Number(PRIZES[prizeIndex] || 0);
+
+    }else{
+
+      resultType = 'loss';
+      resultAmount = bet;
+
+    }
 
 
     if(
@@ -2066,6 +2178,23 @@ async function spin(){
     );
 
   }finally{
+
+    /*
+     * A notificação aparece somente depois
+     * que a roleta terminou completamente.
+     * Ela é position:fixed e pointer-events:none,
+     * então não altera o layout nem movimenta a página.
+     */
+
+    if(resultType){
+
+      showSpinResult(
+        resultType,
+        resultAmount
+      );
+
+    }
+
 
     /*
      * Libera o botão somente depois
