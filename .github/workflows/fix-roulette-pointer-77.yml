@@ -1,0 +1,204 @@
+name: Fix roulette pointer for 77 sectors
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-roulette-pointer-77.yml'
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update pointer mapping
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('backend/frontend/roulette207.html')
+          text = path.read_text(encoding='utf-8')
+
+          old = '''function visualTargetForSector(sector){
+
+  if(
+    !Number.isInteger(sector) ||
+    sector < 0 ||
+    sector >= TOTAL
+  ){
+
+    return 10;
+
+  }
+
+
+  const group =
+    Math.floor(
+      sector / 10
+    );
+
+
+  const positionInGroup =
+    sector % 10;
+
+
+  const groupStart =
+    group * 40;
+
+
+  if(
+    positionInGroup === 0
+  ){
+
+    return (
+      groupStart +
+      10
+    );
+
+  }
+
+
+  const lossAngle =
+    20 / 9;
+
+
+  const lossPosition =
+    positionInGroup - 1;
+
+
+  const target =
+    groupStart +
+    20 +
+    (
+      lossPosition +
+      0.5
+    ) *
+    lossAngle;
+
+
+  return target;
+
+}'''
+
+          new = '''function visualTargetForSector(sector){
+
+  if(
+    !Number.isInteger(sector) ||
+    sector < 0 ||
+    sector >= TOTAL
+  ){
+
+    return 10;
+
+  }
+
+
+  /*
+   * A roleta visual continua com 18 faixas:
+   * 9 faixas de prêmio + 9 faixas de perda.
+   *
+   * Com 77 setores lógicos, não podemos mais
+   * dividir cada grupo como 10 setores (1 prêmio
+   * + 9 perdas). O cálculo abaixo usa os índices
+   * reais dos 9 prêmios e distribui os setores de
+   * perda dentro da faixa visual correspondente.
+   */
+
+  const prizeIndex =
+    PRIZE_INDEXES.indexOf(sector);
+
+
+  if(prizeIndex >= 0){
+
+    return (
+      prizeIndex * 40 +
+      10
+    );
+
+  }
+
+
+  for(let i = 0; i < PRIZE_INDEXES.length; i++){
+
+    const currentPrize =
+      PRIZE_INDEXES[i];
+
+    const nextPrize =
+      PRIZE_INDEXES[
+        (i + 1) % PRIZE_INDEXES.length
+      ];
+
+
+    const lossCount =
+      (
+        nextPrize -
+        currentPrize -
+        1 +
+        TOTAL
+      ) % TOTAL;
+
+
+    if(lossCount <= 0){
+      continue;
+    }
+
+
+    const isBetween =
+      currentPrize < nextPrize
+        ? sector > currentPrize && sector < nextPrize
+        : sector > currentPrize || sector < nextPrize;
+
+
+    if(!isBetween){
+      continue;
+    }
+
+
+    const lossPosition =
+      (
+        sector -
+        currentPrize -
+        1 +
+        TOTAL
+      ) % TOTAL;
+
+
+    const lossAngle =
+      20 / lossCount;
+
+
+    return (
+      i * 40 +
+      20 +
+      (
+        lossPosition +
+        0.5
+      ) *
+      lossAngle
+    );
+
+  }
+
+
+  return 10;
+
+}'''
+
+          if old not in text:
+              raise SystemExit('visualTargetForSector old block not found')
+
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/roulette207.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Align roulette pointer with 77 sectors"
+          git rm .github/workflows/fix-roulette-pointer-77.yml
+          git commit -m "Remove one-time pointer fix workflow"
+          git push
