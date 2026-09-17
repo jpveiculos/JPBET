@@ -1,0 +1,1 @@
+remove site menu from roulette footer
