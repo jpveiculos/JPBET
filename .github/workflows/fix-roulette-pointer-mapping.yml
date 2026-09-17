@@ -1,15 +1,15 @@
 name: Fix roulette pointer mapping for 77 sectors
 
 on:
-  push:
-    branches:
-      - main
+  issues:
+    types: [opened]
 
 jobs:
   fix:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
 
     steps:
       - name: Checkout
@@ -19,12 +19,22 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path('backend/frontend/roulette207.html')
           text = path.read_text(encoding='utf-8')
 
-          new_func = r'''function visualTargetForSector(sector){
+          start_marker = 'function visualTargetForSector(sector){'
+          end_marker = '\n\n\n/* ========================================================='
+
+          start = text.find(start_marker)
+          if start < 0:
+              raise SystemExit('visualTargetForSector start not found')
+
+          end = text.find(end_marker, start)
+          if end < 0:
+              raise SystemExit('visualTargetForSector end not found')
+
+          new_func = '''function visualTargetForSector(sector){
 
   if(
     !Number.isInteger(sector) ||
@@ -48,7 +58,6 @@ jobs:
 
   if(prizeIndex >= 0){
 
-    /* Centro exato da faixa dourada. */
     return (
       prizeIndex * 40 +
       10
@@ -65,22 +74,22 @@ jobs:
     i++
   ){
 
-    const start =
+    const startPrize =
       PRIZE_INDEXES[i];
 
-    const next =
+    const nextPrize =
       i === PRIZE_INDEXES.length - 1
         ? PRIZE_INDEXES[0] + TOTAL
         : PRIZE_INDEXES[i + 1];
 
     const logicalSector =
-      sector < start
+      sector < startPrize
         ? sector + TOTAL
         : sector;
 
     if(
-      logicalSector > start &&
-      logicalSector < next
+      logicalSector > startPrize &&
+      logicalSector < nextPrize
     ){
 
       group = i;
@@ -98,71 +107,59 @@ jobs:
   }
 
 
-  const start =
+  const startPrize =
     PRIZE_INDEXES[group];
 
-  const next =
+  const nextPrize =
     group === PRIZE_INDEXES.length - 1
       ? PRIZE_INDEXES[0] + TOTAL
       : PRIZE_INDEXES[group + 1];
 
   const logicalSector =
-    sector < start
+    sector < startPrize
       ? sector + TOTAL
       : sector;
 
-  const count =
-    next - start - 1;
+  const lossCount =
+    nextPrize -
+    startPrize -
+    1;
 
-  const position =
-    logicalSector - start - 1;
+  const lossPosition =
+    logicalSector -
+    startPrize -
+    1;
 
 
   /*
-   * Cada grupo de perdas ocupa exatamente
-   * a faixa preta de 20 graus. Cada setor
-   * lógico recebe o centro de sua pequena
-   * divisão, evitando qualquer sobreposição
-   * e mantendo o ponteiro dentro da faixa.
+   * Cada faixa preta ocupa 20 graus.
+   * Cada setor de perda recebe o centro
+   * de uma subdivisão dessa faixa.
    */
   return (
     group * 40 +
     20 +
     (
-      position +
+      lossPosition +
       0.5
     ) *
-    (20 / count)
+    (20 / lossCount)
   );
 
 }'''
 
-          pattern = r'function visualTargetForSector\(sector\)\{.*?\n\}\n\n\n/\* ========================================================='
-          text2, n = re.subn(
-              pattern,
-              new_func + '\n\n\n/* =========================================================',
-              text,
-              count=1,
-              flags=re.S,
+          path.write_text(
+              text[:start] + new_func + text[end:],
+              encoding='utf-8'
           )
-
-          if n != 1:
-              raise SystemExit('visualTargetForSector function not found')
-
-          path.write_text(text2, encoding='utf-8')
           PY
 
-      - name: Commit changes
+      - name: Commit and clean up
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add backend/frontend/roulette207.html
-          git diff --cached --quiet && exit 0
-          git commit -m "Correct roulette pointer mapping for 77 sectors"
-          git push
-
-      - name: Remove one-time workflow
-        run: |
+          git commit -m "Align roulette pointer with 77 sectors"
           git rm .github/workflows/fix-roulette-pointer-mapping.yml
           git commit -m "Remove one-time roulette pointer workflow"
           git push
