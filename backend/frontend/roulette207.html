@@ -1712,18 +1712,39 @@ function refresh(){
  * ficam dentro da fatia preta.
  */
 
-function visualTargetForSector(
-  sector
-){
+function visualTargetForSector(sector){
+
+  /*
+   * =======================================================
+   * ROLETA 90 — POSIÇÃO VISUAL
+   * =======================================================
+   *
+   * Existem 90 setores lógicos:
+   *
+   * 9 prêmios
+   * 81 perdas
+   *
+   * Visualmente:
+   *
+   * 18 fatias iguais
+   *
+   * 🟨 = 1 setor de prêmio
+   * ⬛ = 9 setores de perda
+   *
+   * Cada fatia visual possui 20 graus.
+   *
+   * Cada perda dentro do preto possui:
+   *
+   * 20 / 9 = 2,222222 graus.
+   */
+
 
   /*
    * Segurança.
    */
 
   if(
-    !Number.isInteger(
-      sector
-    ) ||
+    !Number.isInteger(sector) ||
     sector < 0 ||
     sector >= TOTAL
   ){
@@ -1734,12 +1755,15 @@ function visualTargetForSector(
 
 
   /*
-   * Grupo de 10 setores.
+   * Cada grupo possui 10 setores:
    *
-   * 0-9
-   * 10-19
-   * 20-29
-   * ...
+   * setor 0  = prêmio
+   * setores 1-9 = perdas
+   *
+   * setor 10 = prêmio
+   * setores 11-19 = perdas
+   *
+   * etc.
    */
 
   const group =
@@ -1749,29 +1773,46 @@ function visualTargetForSector(
 
 
   /*
-   * Cada grupo ocupa:
+   * Número do setor dentro do grupo.
    *
-   * 20° amarelo
-   * +
-   * 20° preto
-   *
-   * = 40°
+   * 0 até 9.
    */
+
+  const positionInGroup =
+    sector % 10;
 
 
   /*
-   * Se for prêmio:
+   * Cada grupo visual possui:
    *
-   * posição central da fatia amarela.
+   * 20° amarelo
+   * 20° preto
+   *
+   * Total = 40°.
+   */
+
+  const groupStart =
+    group * 40;
+
+
+  /*
+   * =======================================================
+   * PRÊMIO
+   * =======================================================
+   *
+   * O setor 0 do grupo fica no amarelo.
+   *
+   * Centro do amarelo:
+   *
+   * 10°
    */
 
   if(
-    sector % 10 === 0
+    positionInGroup === 0
   ){
 
     return (
-      group *
-      40 +
+      groupStart +
       10
     );
 
@@ -1779,19 +1820,62 @@ function visualTargetForSector(
 
 
   /*
-   * Se for perda:
+   * =======================================================
+   * PERDA
+   * =======================================================
    *
-   * centro da fatia preta.
+   * O preto começa em:
    *
-   * Os 9 setores lógicos de perda
-   * compartilham visualmente essa fatia.
+   * groupStart + 20
+   *
+   * e termina em:
+   *
+   * groupStart + 40
+   *
+   *
+   * Dentro desses 20 graus existem
+   * 9 setores de perda.
+   *
+   * Cada um ocupa:
+   *
+   * 20 / 9
+   *
+   * = 2,222222°
    */
 
-  return (
-    group *
-    40 +
-    30
-  );
+
+  const lossAngle =
+    20 / 9;
+
+
+  /*
+   * positionInGroup:
+   *
+   * 1 → primeira perda
+   * 2 → segunda perda
+   * 3 → terceira perda
+   * ...
+   * 9 → nona perda
+   *
+   * Usamos +0.5 para mirar no centro
+   * de cada setor lógico.
+   */
+
+  const lossPosition =
+    positionInGroup - 1;
+
+
+  const target =
+    groupStart +
+    20 +
+    (
+      lossPosition +
+      0.5
+    ) *
+    lossAngle;
+
+
+  return target;
 
 }
 
