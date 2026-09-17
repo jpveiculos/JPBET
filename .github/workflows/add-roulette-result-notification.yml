@@ -1,0 +1,70 @@
+name: Add roulette result notification
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add result notification
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('backend/frontend/roulette207.html')
+          text = path.read_text(encoding='utf-8')
+
+          marker = """/* =========================================================\n   GIRAR — 3 VOLTAS + PARADA SUAVE\n   ========================================================= */\n\nasync function spin(){"""
+          replacement = """/* =========================================================\n   NOTIFICAÇÃO DE RESULTADO — GANHOU / PERDEU\n   ========================================================= */\n\nfunction showSpinResult(type, amount){\n\n  let box =\n    document.getElementById('spinResultNotice');\n\n  if(!box){\n\n    box = document.createElement('div');\n    box.id = 'spinResultNotice';\n\n    box.style.cssText = `\n      position:fixed;\n      left:50%;\n      top:50%;\n      transform:translate(-50%,-50%) scale(.88);\n      z-index:9999;\n      pointer-events:none;\n      min-width:min(82vw,360px);\n      max-width:90vw;\n      padding:18px 24px;\n      border-radius:18px;\n      text-align:center;\n      font-family:Arial,Helvetica,sans-serif;\n      font-weight:900;\n      font-size:24px;\n      line-height:1.15;\n      letter-spacing:.2px;\n      opacity:0;\n      transition:opacity .22s ease, transform .22s ease;\n      box-shadow:0 14px 40px rgba(0,0,0,.55);\n      backdrop-filter:blur(10px);\n      -webkit-backdrop-filter:blur(10px);\n    `;\n\n    document.body.appendChild(box);\n\n  }\n\n  const valor =\n    'R$ ' +\n    money(amount);\n\n  box.textContent =\n    type === 'win'\n      ? '🎉 Você ganhou ' + valor\n      : 'Você perdeu ' + valor;\n\n  if(type === 'win'){\n\n    box.style.color = '#53f28b';\n    box.style.background = 'rgba(8,42,24,.94)';\n    box.style.border = '2px solid rgba(83,242,139,.72)';\n    box.style.textShadow = '0 2px 12px rgba(83,242,139,.45)';\n\n  }else{\n\n    box.style.color = '#ff6262';\n    box.style.background = 'rgba(52,10,10,.94)';\n    box.style.border = '2px solid rgba(255,98,98,.72)';\n    box.style.textShadow = '0 2px 12px rgba(255,98,98,.35)';\n\n  }\n\n  box.style.opacity = '1';\n  box.style.transform =\n    'translate(-50%,-50%) scale(1)';\n\n  clearTimeout(\n    window.__spinResultTimer\n  );\n\n  window.__spinResultTimer =\n    setTimeout(() => {\n\n      box.style.opacity = '0';\n      box.style.transform =\n        'translate(-50%,-50%) scale(.88)';\n\n    }, 1900);\n\n}\n\n\n/* =========================================================\n   GIRAR — 3 VOLTAS + PARADA SUAVE\n   ========================================================= */\n\nasync function spin(){"""
+          if marker not in text:
+              raise SystemExit('spin marker not found')
+          text = text.replace(marker, replacement, 1)
+
+          marker = """  $('spinButton').disabled =\n    true;\n\n\n  try{"""
+          replacement = """  $('spinButton').disabled =\n    true;\n\n\n  let resultType =\n    null;\n\n  let resultAmount =\n    0;\n\n\n  try{"""
+          if marker not in text:
+              raise SystemExit('spin try marker not found')
+          text = text.replace(marker, replacement, 1)
+
+          marker = """  const bet =\n    getBet();\n\n\n  if("""
+          replacement = """  const bet =\n    getBet();\n\n\n  if("""
+          if marker not in text:
+              raise SystemExit('bet marker not found')
+          # Keep validation untouched; result is calculated after server result is known.
+
+          marker = """    const sector =\n      Number(\n        d.spin.sector\n      );"""
+          replacement = """    const sector =\n      Number(\n        d.spin.sector\n      );\n\n\n    const prizeIndex =\n      PRIZE_INDEXES.indexOf(sector);\n\n\n    if(prizeIndex >= 0){\n\n      resultType = 'win';\n      resultAmount =\n        bet * Number(PRIZES[prizeIndex] || 0);\n\n    }else{\n\n      resultType = 'loss';\n      resultAmount = bet;\n\n    }"""
+          if marker not in text:
+              raise SystemExit('sector marker not found')
+          text = text.replace(marker, replacement, 1)
+
+          marker = """  }finally{\n\n    /*\n     * Libera o botão somente depois\n     * de toda a animação terminar.\n     */"""
+          replacement = """  }finally{\n\n    /*\n     * A notificação aparece somente depois\n     * que a roleta terminou completamente.\n     * Ela é position:fixed e pointer-events:none,\n     * então não altera o layout nem movimenta a página.\n     */\n\n    if(resultType){\n\n      showSpinResult(\n        resultType,\n        resultAmount\n      );\n\n    }\n\n\n    /*\n     * Libera o botão somente depois\n     * de toda a animação terminar.\n     */"""
+          if marker not in text:
+              raise SystemExit('finally marker not found')
+          text = text.replace(marker, replacement, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/frontend/roulette207.html .github/workflows/add-roulette-result-notification.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Add win and loss result notification"
+          git rm .github/workflows/add-roulette-result-notification.yml
+          git commit -m "Remove one-time roulette notification workflow"
+          git push
