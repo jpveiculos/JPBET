@@ -229,26 +229,22 @@ body{
 
   background:#080b0e;
 
-  /*
-   * IMPORTANTE:
-   *
-   * O primeiro setor amarelo possui
-   * seu centro em 10 graus.
-   *
-   * O ponteiro está em 0 graus.
-   *
-   * Por isso a roda começa em -10 graus.
-   */
-
   transform:
     rotate(-10deg);
 
   overflow:hidden;
 
+  /*
+   * A animação agora é controlada
+   * somente pelo JavaScript.
+   *
+   * Isso evita o conflito entre
+   * CSS transition e requestAnimationFrame
+   * e elimina o tranco no final.
+   */
+
   transition:
-    transform
-    4s
-    cubic-bezier(.12,.72,.12,1);
+    none !important;
 
   will-change:
     transform;
@@ -706,25 +702,13 @@ body{
    CONFIGURAÇÃO DA ROLETA
    ========================================================= */
 
-/*
- * 90 setores lógicos.
- */
-
 const TOTAL =
   90;
 
 
-/*
- * Aposta mínima.
- */
-
 const DEFAULT_MIN_BET =
   0.50;
 
-
-/*
- * 9 prêmios.
- */
 
 const DEFAULT_PRIZES = [
   2,
@@ -738,23 +722,6 @@ const DEFAULT_PRIZES = [
   10
 ];
 
-
-/*
- * Setores reais dos prêmios.
- *
- * 0
- * 10
- * 20
- * 30
- * 40
- * 50
- * 60
- * 70
- * 80
- *
- * Cada prêmio é separado por
- * 9 setores de perda.
- */
 
 const PRIZE_INDEXES = [
   0,
@@ -788,14 +755,7 @@ let spinning =
 
 
 /*
- * A posição visual inicial.
- *
- * O centro da primeira fatia amarela
- * está em 10 graus.
- *
- * A roda começa em -10 graus,
- * portanto o centro da primeira fatia
- * fica exatamente no ponteiro.
+ * Posição visual inicial.
  */
 
 let rotation =
@@ -1096,40 +1056,6 @@ function wedge(
    DESENHO VISUAL
    ========================================================= */
 
-/*
- * A roleta possui:
- *
- * 18 FATIAS VISUAIS
- *
- * 9 amarelas
- * 9 pretas
- *
- * Todas exatamente do mesmo tamanho.
- *
- * Cada fatia visual:
- *
- * 360 / 18 = 20 graus
- *
- *
- * AMARELA:
- * representa 1 setor lógico de prêmio.
- *
- *
- * PRETA:
- * representa 9 setores lógicos de perda.
- *
- *
- * Portanto:
- *
- * 9 amarelas = 9 setores de prêmio
- *
- * 9 pretas × 9 perdas = 81 perdas
- *
- * Total:
- *
- * 9 + 81 = 90
- */
-
 function drawWheel(){
 
   const svg =
@@ -1240,14 +1166,6 @@ function drawWheel(){
     );
 
 
-    /*
-     * Fatias pares:
-     *
-     * AMARELAS
-     *
-     * 0,2,4,6,8,10,12,14,16
-     */
-
     const isPrize =
       visual % 2 === 0;
 
@@ -1271,14 +1189,6 @@ function drawWheel(){
 
     }
 
-
-    /*
-     * Fatias ímpares:
-     *
-     * PRETAS
-     *
-     * 1,3,5,7,9,11,13,15,17
-     */
 
     else{
 
@@ -1311,17 +1221,6 @@ function drawWheel(){
 
     if(isPrize){
 
-      /*
-       * Cada fatia amarela corresponde
-       * a um dos 9 prêmios.
-       *
-       * visual 0 → 2x
-       * visual 2 → 3x
-       * visual 4 → 4x
-       * ...
-       * visual 16 → 10x
-       */
-
       const prizePosition =
         visual / 2;
 
@@ -1330,10 +1229,6 @@ function drawWheel(){
         start +
         visualAngle / 2;
 
-
-      /*
-       * Texto mais próximo da borda.
-       */
 
       const [
         x,
@@ -1518,10 +1413,6 @@ async function loadConfig(){
     }
 
 
-    /* -----------------------------------------------------
-       MÍNIMO
-       ----------------------------------------------------- */
-
     const serverMin =
       Number(
         d.roulette.minBet
@@ -1548,10 +1439,6 @@ async function loadConfig(){
 
     }
 
-
-    /* -----------------------------------------------------
-       PRÊMIOS
-       ----------------------------------------------------- */
 
     if(
       Array.isArray(
@@ -1607,11 +1494,6 @@ async function loadConfig(){
       e
     );
 
-
-    /*
-     * Mesmo se o servidor demorar,
-     * a roleta visual continua aparecendo.
-     */
 
     MIN_BET =
       DEFAULT_MIN_BET;
@@ -1687,61 +1569,7 @@ function refresh(){
    SETOR LÓGICO → POSIÇÃO VISUAL
    ========================================================= */
 
-/*
- * IMPORTANTE:
- *
- * O backend continua trabalhando
- * com 90 setores.
- *
- * Visualmente temos 18 fatias.
- *
- * Para cada grupo:
- *
- * setor de prêmio:
- * 0, 10, 20, 30...
- *
- * vai para a fatia amarela.
- *
- * Os setores de perda daquele grupo:
- *
- * 1-9
- * 11-19
- * 21-29
- * ...
- *
- * ficam dentro da fatia preta.
- */
-
 function visualTargetForSector(sector){
-
-  /*
-   * =======================================================
-   * ROLETA 90 — POSIÇÃO VISUAL
-   * =======================================================
-   *
-   * Existem 90 setores lógicos:
-   *
-   * 9 prêmios
-   * 81 perdas
-   *
-   * Visualmente:
-   *
-   * 18 fatias iguais
-   *
-   * 🟨 = 1 setor de prêmio
-   * ⬛ = 9 setores de perda
-   *
-   * Cada fatia visual possui 20 graus.
-   *
-   * Cada perda dentro do preto possui:
-   *
-   * 20 / 9 = 2,222222 graus.
-   */
-
-
-  /*
-   * Segurança.
-   */
 
   if(
     !Number.isInteger(sector) ||
@@ -1754,58 +1582,19 @@ function visualTargetForSector(sector){
   }
 
 
-  /*
-   * Cada grupo possui 10 setores:
-   *
-   * setor 0  = prêmio
-   * setores 1-9 = perdas
-   *
-   * setor 10 = prêmio
-   * setores 11-19 = perdas
-   *
-   * etc.
-   */
-
   const group =
     Math.floor(
       sector / 10
     );
 
 
-  /*
-   * Número do setor dentro do grupo.
-   *
-   * 0 até 9.
-   */
-
   const positionInGroup =
     sector % 10;
 
 
-  /*
-   * Cada grupo visual possui:
-   *
-   * 20° amarelo
-   * 20° preto
-   *
-   * Total = 40°.
-   */
-
   const groupStart =
     group * 40;
 
-
-  /*
-   * =======================================================
-   * PRÊMIO
-   * =======================================================
-   *
-   * O setor 0 do grupo fica no amarelo.
-   *
-   * Centro do amarelo:
-   *
-   * 10°
-   */
 
   if(
     positionInGroup === 0
@@ -1819,47 +1608,9 @@ function visualTargetForSector(sector){
   }
 
 
-  /*
-   * =======================================================
-   * PERDA
-   * =======================================================
-   *
-   * O preto começa em:
-   *
-   * groupStart + 20
-   *
-   * e termina em:
-   *
-   * groupStart + 40
-   *
-   *
-   * Dentro desses 20 graus existem
-   * 9 setores de perda.
-   *
-   * Cada um ocupa:
-   *
-   * 20 / 9
-   *
-   * = 2,222222°
-   */
-
-
   const lossAngle =
     20 / 9;
 
-
-  /*
-   * positionInGroup:
-   *
-   * 1 → primeira perda
-   * 2 → segunda perda
-   * 3 → terceira perda
-   * ...
-   * 9 → nona perda
-   *
-   * Usamos +0.5 para mirar no centro
-   * de cada setor lógico.
-   */
 
   const lossPosition =
     positionInGroup - 1;
@@ -1881,7 +1632,7 @@ function visualTargetForSector(sector){
 
 
 /* =========================================================
-   GIRAR
+   GIRAR — 3 VOLTAS + PARADA SUAVE
    ========================================================= */
 
 async function spin(){
@@ -1915,6 +1666,17 @@ async function spin(){
   }
 
 
+  const wheel =
+    $('wheel');
+
+
+  if(!wheel){
+
+    return;
+
+  }
+
+
   spinning =
     true;
 
@@ -1928,8 +1690,8 @@ async function spin(){
     /*
      * Solicita o resultado ao servidor.
      *
-     * O servidor é quem decide
-     * qual dos 90 setores saiu.
+     * O servidor continua sendo
+     * responsável pelo resultado oficial.
      */
 
     const r =
@@ -1987,10 +1749,6 @@ async function spin(){
       );
 
 
-    /*
-     * Segurança.
-     */
-
     if(
       !Number.isInteger(
         sector
@@ -2007,8 +1765,7 @@ async function spin(){
 
 
     /*
-     * Encontra a posição visual
-     * correspondente.
+     * Encontra a posição visual.
      */
 
     const target =
@@ -2018,18 +1775,20 @@ async function spin(){
 
 
     /*
-     * Posição atual da roda.
+     * Normaliza somente para
+     * calcular o próximo alvo.
      */
 
     const current =
-      rotation %
-      360;
+      (
+        (rotation % 360) +
+        360
+      ) % 360;
 
 
     /*
-     * Calcula quanto precisa girar
-     * para colocar a fatia correspondente
-     * no ponteiro.
+     * Calcula a distância até
+     * o setor sorteado.
      */
 
     const delta =
@@ -2042,39 +1801,190 @@ async function spin(){
 
 
     /*
-     * Cinco voltas completas.
+     * =====================================================
+     * AQUI ESTÃO AS 3 VOLTAS.
+     * =====================================================
+     *
+     * Antes:
+     *
+     * 360 * 5
+     *
+     * Agora:
+     *
+     * 360 * 3
+     *
+     * Resultado:
+     *
+     * 3 voltas completas
+     * +
+     * deslocamento até o resultado.
      */
 
-    rotation +=
-      360 * 5 +
+    const from =
+      rotation;
+
+
+    const destination =
+      rotation +
+      360 * 3 +
       delta;
 
 
-    $('wheel').style.transform =
-      `rotate(${rotation}deg)`;
+    /*
+     * Duração do giro.
+     *
+     * 3 voltas ficam um pouco mais rápidas
+     * que as antigas 5 voltas.
+     */
+
+    const duration =
+      5000;
+
+
+    const start =
+      performance.now();
 
 
     /*
-     * Aguarda a animação.
+     * Garante que nenhuma transition
+     * CSS participe da animação.
      */
 
-    setTimeout(
-      () => {
+    wheel.style.transition =
+      'none';
 
-        renderUser(
-          d.user
+
+    wheel.style.willChange =
+      'transform';
+
+
+    wheel.style.transform =
+      `rotate(${from}deg)`;
+
+
+    /*
+     * =====================================================
+     * ANIMAÇÃO
+     * =====================================================
+     *
+     * requestAnimationFrame permite controlar
+     * exatamente cada frame.
+     */
+
+    await new Promise(
+      resolve => {
+
+        function frame(now){
+
+          const progress =
+            Math.min(
+              1,
+              (
+                now -
+                start
+              ) /
+              duration
+            );
+
+
+          /*
+           * Ease-out de quinta ordem.
+           *
+           * A roleta reduz a velocidade
+           * progressivamente até chegar
+           * praticamente parada.
+           */
+
+          const eased =
+            1 -
+            Math.pow(
+              1 - progress,
+              5
+            );
+
+
+          const currentRotation =
+            from +
+            (
+              destination -
+              from
+            ) *
+            eased;
+
+
+          wheel.style.transform =
+            `rotate(${currentRotation}deg)`;
+
+
+          if(
+            progress < 1
+          ){
+
+            requestAnimationFrame(
+              frame
+            );
+
+            return;
+
+          }
+
+
+          /*
+           * =================================================
+           * POSIÇÃO FINAL
+           * =================================================
+           *
+           * Fixa exatamente no destino.
+           *
+           * Não existe uma segunda animação.
+           *
+           * Isso é o que elimina o tranco.
+           */
+
+          rotation =
+            destination;
+
+
+          wheel.style.transition =
+            'none';
+
+
+          wheel.style.transform =
+            `rotate(${rotation}deg)`;
+
+
+          /*
+           * Força o navegador a aplicar
+           * imediatamente a posição final.
+           */
+
+          wheel.getBoundingClientRect();
+
+
+          resolve();
+
+        }
+
+
+        requestAnimationFrame(
+          frame
         );
 
+      }
+    );
 
-        spinning =
-          false;
+
+    wheel.style.willChange =
+      'auto';
 
 
-        $('spinButton').disabled =
-          false;
+    /*
+     * Atualiza o saldo imediatamente
+     * depois do término do giro.
+     */
 
-      },
-      4100
+    renderUser(
+      d.user
     );
 
 
@@ -2085,6 +1995,12 @@ async function spin(){
       e
     );
 
+  }finally{
+
+    /*
+     * Libera o botão somente depois
+     * de toda a animação terminar.
+     */
 
     spinning =
       false;
@@ -2108,23 +2024,20 @@ if(
 
   /*
    * Desenha imediatamente.
-   *
-   * Assim a roda não fica preta
-   * enquanto espera a API.
    */
 
   drawWheel();
 
 
   /*
-   * Carrega as configurações.
+   * Carrega configurações.
    */
 
   loadConfig();
 
 
   /*
-   * Atualiza o saldo.
+   * Atualiza saldo.
    */
 
   refresh();
