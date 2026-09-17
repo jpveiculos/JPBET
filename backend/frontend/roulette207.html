@@ -1739,10 +1739,15 @@ function showSpinResult(type, amount){
     'R$ ' +
     money(amount);
 
+  if(type !== 'win'){
+
+    return;
+
+  }
+
+
   box.textContent =
-    type === 'win'
-      ? '🎉 Você ganhou ' + valor
-      : 'Você perdeu ' + valor;
+    'Você ganhou ' + valor;
 
   if(type === 'win'){
 
@@ -2186,10 +2191,10 @@ async function spin(){
      * então não altera o layout nem movimenta a página.
      */
 
-    if(resultType){
+    if(resultType === 'win'){
 
       showSpinResult(
-        resultType,
+        'win',
         resultAmount
       );
 
