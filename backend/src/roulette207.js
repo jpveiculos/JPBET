@@ -11,6 +11,15 @@ const PRIZE_INDEXES = [0,6,12,18,24,30,36,42,48];
 const DEFAULT_MIN_BET = 0.50;
 const DEFAULT_MAX_BET = 100.00;
 
+// Pesos do sorteio: os oito primeiros prêmios mantêm 1/54 cada;
+// o último prêmio (10x) recebe um peso ligeiramente menor.
+// 2700 unidades: 8 x 50 para os demais prêmios + 49 para o 10x.
+const DRAW_DENOMINATOR = 2700;
+const STANDARD_PRIZE_WEIGHT = 50;
+const TEN_PRIZE_WEIGHT = 49;
+const TOTAL_PRIZE_WEIGHT = (PRIZE_INDEXES.length - 1) * STANDARD_PRIZE_WEIGHT + TEN_PRIZE_WEIGHT;
+const LOSS_INDEXES = Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>!PRIZE_INDEXES.includes(i));
+
 async function getSetting(key,fallback){
   try{
     const r=await pool.query(`SELECT setting_value FROM site_settings WHERE setting_key=$1 LIMIT 1`,[key]);
@@ -40,18 +49,26 @@ async function getConfig(){
 }
 
 function sortearSetor(){
-  return randomInt(TOTAL_SECTORS);
+  const draw=randomInt(DRAW_DENOMINATOR);
+  if(draw<TOTAL_PRIZE_WEIGHT){
+    if(draw<(PRIZE_INDEXES.length-1)*STANDARD_PRIZE_WEIGHT){
+      const prizePosition=Math.floor(draw/STANDARD_PRIZE_WEIGHT);
+      return PRIZE_INDEXES[prizePosition];
+    }
+    return PRIZE_INDEXES[PRIZE_INDEXES.length-1];
+  }
+  return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
 }
 
 router.get("/config",async(req,res)=>{
   const {prizes,minBet,maxBet}=await getConfig();
-  res.json({ok:true,roulette:{id:"roulette90",minBet,maxBet,totalSectors:TOTAL_SECTORS,prizeSectors:prizes.length,lossSectors:LOSS_SECTORS,probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6)),totalPrizeProbabilityPercent:Number(((prizes.length/TOTAL_SECTORS)*100).toFixed(6)),prizes:prizes.map((multiplier,position)=>({position,multiplier,sector:PRIZE_INDEXES[position],probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6))}))}});
+  res.json({ok:true,roulette:{id:"roulette90",minBet,maxBet,totalSectors:TOTAL_SECTORS,prizeSectors:prizes.length,lossSectors:LOSS_SECTORS,probabilityPercent:Number((100/TOTAL_SECTORS).toFixed(6)),totalPrizeProbabilityPercent:Number(((TOTAL_PRIZE_WEIGHT/DRAW_DENOMINATOR)*100).toFixed(6)),prizes:prizes.map((multiplier,position)=>({position,multiplier,sector:PRIZE_INDEXES[position],probabilityPercent:Number(((position===prizes.length-1?TEN_PRIZE_WEIGHT:STANDARD_PRIZE_WEIGHT)/DRAW_DENOMINATOR*100).toFixed(6))}))}});
 });
 
 /*
  * LABORATÓRIO ISOLADO
  *
- * Usa exatamente o mesmo sortearSetor() da roleta real,
+ * Usa exatamente o mesmo sortearSetor() ponderado da roleta real,
  * mas NÃO consulta usuário, NÃO movimenta saldo,
  * NÃO cria spin e NÃO cria transação.
  *
@@ -93,7 +110,9 @@ router.post("/test-spin-batch",async(req,res)=>{
         countsBySector,
         countsByPrize,
         probabilityPerSectorPercent:Number((100/TOTAL_SECTORS).toFixed(6)),
-        totalPrizeProbabilityPercent:Number(((prizes.length/TOTAL_SECTORS)*100).toFixed(6))
+        totalPrizeProbabilityPercent:Number(((TOTAL_PRIZE_WEIGHT/DRAW_DENOMINATOR)*100).toFixed(6)),
+        tenMultiplierProbabilityPercent:Number((TEN_PRIZE_WEIGHT/DRAW_DENOMINATOR*100).toFixed(6)),
+        standardPrizeProbabilityPercent:Number((STANDARD_PRIZE_WEIGHT/DRAW_DENOMINATOR*100).toFixed(6))
       }
     });
   }catch(error){
