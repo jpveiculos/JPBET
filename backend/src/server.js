@@ -18,7 +18,7 @@ const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filenam
 app.use(express.static(frontendPath));
 app.get("/",(req,res)=>res.sendFile(path.join(frontendPath,"index.html")));
 function obterCookie(req,nome){const cookie=String(req.headers.cookie||"").split(";").map(x=>x.trim()).find(x=>x.startsWith(`${nome}=`));return cookie?decodeURIComponent(cookie.substring(nome.length+1)):null}
-function exigirAdmin(req,res,next){const sessao=validarSessaoAdmin(obterCookie(req,"jpbet_admin_session"));if(!sessao)return res.status(401).json({ok:false,message:"Sessão administrativa inválida ou expirada."});req.admin=sessao;next()}
+function exigirAdmin(req,res,next){const sessao=validarSessaoAdmin(obterCookie(req,"mybets_admin_session"));if(!sessao)return res.status(401).json({ok:false,message:"Sessão administrativa inválida ou expirada."});req.admin=sessao;next()}
 async function obterAdminId(client,username){const r=await client.query(`SELECT id FROM admins WHERE username=$1 LIMIT 1`,[username]);return r.rows.length?r.rows[0].id:null}
 async function registrarAuditoria(client,adminUsername,action,targetType,targetId,description,metadata=null){const adminId=await obterAdminId(client,adminUsername);await client.query(`INSERT INTO admin_audit_logs(admin_id,action,target_type,target_id,description,metadata) VALUES($1,$2,$3,$4,$5,$6)`,[adminId,action,targetType,targetId,description,metadata?JSON.stringify(metadata):null])}
 app.use("/api/auth",authRouter);
