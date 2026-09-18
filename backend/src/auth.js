@@ -168,7 +168,7 @@ router.post("/login", async (req, res) => {
     }
     const result = await pool.query(
       `
-      SELECT id, username, password_hash, balance, bonus_balance, cash_balance, bonus_wager_progress, reserved_balance
+      SELECT id, username, password_hash, balance, bonus_balance, cash_balance, bonus_wager_progress, reserved_balance, is_banned, banned_reason, is_deleted
       FROM users
       WHERE username = $1
       LIMIT 1
@@ -207,6 +207,8 @@ router.post("/login", async (req, res) => {
         message: "Usuário ou senha inválidos."
       });
     }
+    if (user.is_deleted) return res.status(403).json({ message: "Usuário removido pelo administrador." });
+    if (user.is_banned) return res.status(403).json({ message: user.banned_reason ? `Usuário banido. Motivo: ${user.banned_reason}` : "Usuário banido." });
     /* =========================
        AUDITORIA — LOGIN SUCESSO
     ========================= */
@@ -365,6 +367,16 @@ router.post("/admin-logout", async (req, res) => {
     });
   }
 });
+function exigirAdmin(req,res,next){ const cookie=String(req.headers.cookie||"").split(";").map(x=>x.trim()).find(x=>x.startsWith("mybets_admin_session=")); const token=cookie?decodeURIComponent(cookie.substring("mybets_admin_session=".length)):null; const sessao=validarSessaoAdmin(token); if(!sessao)return res.status(401).json({ok:false,message:"Sessão administrativa inválida ou expirada."}); req.admin=sessao; next(); }
+
+router.get("/admin-users",exigirAdmin,async(req,res)=>{try{const result=await pool.query(`SELECT id,username,balance,bonus_balance,cash_balance,reserved_balance,is_banned,banned_at,banned_reason,is_deleted,created_at FROM users WHERE COALESCE(is_deleted,FALSE)=FALSE ORDER BY created_at DESC,id DESC`);return res.json({ok:true,users:result.rows})}catch(error){console.error(error);return res.status(500).json({ok:false,message:"Erro interno ao listar usuários."})}});
+
+router.post("/admin-users/:id/ban",exigirAdmin,async(req,res)=>{const client=await pool.connect();try{const userId=Number(req.params.id),reason=String(req.body.reason||"").trim();if(!Number.isInteger(userId)||userId<=0)return res.status(400).json({ok:false,message:"Usuário inválido."});if(!reason)return res.status(400).json({ok:false,message:"Informe o motivo do banimento."});await client.query("BEGIN");const r=await client.query(`SELECT id,username FROM users WHERE id=$1 AND COALESCE(is_deleted,FALSE)=FALSE FOR UPDATE`,[userId]);if(!r.rows.length){await client.query("ROLLBACK");return res.status(404).json({ok:false,message:"Usuário não encontrado."})}await client.query(`UPDATE users SET is_banned=TRUE,banned_at=CURRENT_TIMESTAMP,banned_reason=$1 WHERE id=$2`,[reason,userId]);await client.query("COMMIT");return res.json({ok:true,message:"Usuário banido com sucesso."})}catch(error){try{await client.query("ROLLBACK")}catch(_){}console.error(error);return res.status(500).json({ok:false,message:"Erro interno ao banir usuário."})}finally{client.release()}});
+
+router.post("/admin-users/:id/unban",exigirAdmin,async(req,res)=>{const client=await pool.connect();try{const userId=Number(req.params.id);await client.query("BEGIN");const r=await client.query(`SELECT id FROM users WHERE id=$1 AND COALESCE(is_deleted,FALSE)=FALSE FOR UPDATE`,[userId]);if(!r.rows.length){await client.query("ROLLBACK");return res.status(404).json({ok:false,message:"Usuário não encontrado."})}await client.query(`UPDATE users SET is_banned=FALSE,banned_at=NULL,banned_reason=NULL WHERE id=$1`,[userId]);await client.query("COMMIT");return res.json({ok:true,message:"Usuário desbloqueado com sucesso."})}catch(error){try{await client.query("ROLLBACK")}catch(_){}console.error(error);return res.status(500).json({ok:false,message:"Erro interno ao desbloquear usuário."})}finally{client.release()}});
+
+router.post("/admin-users/:id/remove",exigirAdmin,async(req,res)=>{const client=await pool.connect();try{const userId=Number(req.params.id);if(!Number.isInteger(userId)||userId<=0)return res.status(400).json({ok:false,message:"Usuário inválido."});await client.query("BEGIN");const r=await client.query(`SELECT id,username FROM users WHERE id=$1 AND COALESCE(is_deleted,FALSE)=FALSE FOR UPDATE`,[userId]);if(!r.rows.length){await client.query("ROLLBACK");return res.status(404).json({ok:false,message:"Usuário não encontrado."})}const user=r.rows[0];await client.query(`UPDATE users SET is_deleted=TRUE,is_banned=TRUE,banned_at=CURRENT_TIMESTAMP,banned_reason=$1 WHERE id=$2`,["Usuário removido pelo administrador.",userId]);await client.query("COMMIT");return res.json({ok:true,message:`Usuário "${user.username}" removido com sucesso. O histórico foi preservado.`})}catch(error){try{await client.query("ROLLBACK")}catch(_){}console.error(error);return res.status(500).json({ok:false,message:"Erro interno ao remover usuário."})}finally{client.release()}});
+
 /* =========================
    CADASTRAR ADMINISTRADOR
 ========================= */
