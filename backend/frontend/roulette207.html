@@ -972,7 +972,7 @@ function getUser(){
 
     user=JSON.parse(
       localStorage.getItem(
-        'jpbet_user'
+        'mybets_user'
       )||'null'
     );
 
@@ -1011,7 +1011,7 @@ function renderUser(u){
     'R$ '+money(user.balance);
 
   localStorage.setItem(
-    'jpbet_user',
+    'mybets_user',
     JSON.stringify(user)
   );
 
