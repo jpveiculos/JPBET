@@ -2,7 +2,8 @@ import express from "express";
 import { pool } from "./db.js";
 import {
   criarSessaoAdmin,
-  removerSessaoAdmin
+  removerSessaoAdmin,
+  validarSessaoAdmin
 } from "./adminSession.js";
 import { registrarAuditoria } from "./audit.js";
 const router = express.Router();
@@ -24,6 +25,9 @@ async function inicializarAdmins() {
       VALUES ('admin', '123456')
       ON CONFLICT (username) DO NOTHING;
     `);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP NULL;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_reason TEXT NULL;`);
     console.log("Tabela admins inicializada com sucesso.");
   } catch (error) {
     console.error(
