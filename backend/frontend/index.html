@@ -23,8 +23,7 @@
 .mini-sectors{position:absolute;inset:10%;z-index:3}
 .mini-label{position:absolute;left:50%;top:7%;transform-origin:0 43%;font:900 12px Arial,sans-serif;color:#fff;text-shadow:1px 1px 0 #000,-1px -1px 0 #000;letter-spacing:-.3px;transform:rotate(var(--r)) translateX(-50%);width:38px;text-align:center}
 .mini-label-0{--r:0deg}.mini-label-1{--r:40deg}.mini-label-2{--r:80deg}.mini-label-3{--r:120deg}.mini-label-4{--r:160deg}.mini-label-5{--r:200deg}.mini-label-6{--r:240deg}.mini-label-7{--r:280deg}.mini-label-8{--r:320deg}
-.mini-pointer{position:absolute;z-index:8;left:50%;top:-8px;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:0;border-bottom:34px solid #f21d20;filter:drop-shadow(0 2px 2px #000)}
-.mini-pointer:before{content:"";position:absolute;left:-8px;top:-1px;width:16px;height:8px;border-radius:7px;background:#f7c33d;border:2px solid #9a6b12;transform:translateY(-3px)}
+.mini-pointer{display:none}
 .roulette-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;color:#fff;font:900 italic 15px Arial,Helvetica,sans-serif;text-shadow:0 2px 4px #000;white-space:nowrap;letter-spacing:-1.3px}
 .roulette-center i{color:#ffd45a;font-style:italic}.roulette-center b{color:#fff;font-style:italic}.roulette-center small{display:block;text-align:center;font:700 5px Arial,sans-serif;letter-spacing:1.4px;color:#ddd;margin-top:3px}
 @media(max-width:720px){.roulette-center{font-size:14px}.roulette-center small{font-size:4.5px}.mini-label{font-size:11px}}
