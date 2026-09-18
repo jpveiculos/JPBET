@@ -2,7 +2,15 @@ const API_URL = "/api";
 
 function sessaoJogadorAtiva(){return !!localStorage.getItem("jpbet_user");}
 function destinoJogo(){return "/dashboard.html";}
-function abrirJogoComLogin(){const destino=destinoJogo();if(sessaoJogadorAtiva()){window.location.href=destino;return;}localStorage.setItem("jpbet_pending_game",destino);abrirLogin();}
+function abrirJogoComLogin(destino){
+  const destinoSeguro=typeof destino==="string"&&destino.startsWith("/")?destino:destinoJogo();
+  if(sessaoJogadorAtiva()){
+    window.location.href=destinoSeguro;
+    return;
+  }
+  localStorage.setItem("jpbet_pending_game",destinoSeguro);
+  abrirLogin();
+}
 function abrirLogin(){const modal=document.getElementById("loginModal");if(!modal)return;modal.classList.add("show");mostrarLogin();setTimeout(()=>document.getElementById("username")?.focus(),100);}
 function fecharLogin(){const modal=document.getElementById("loginModal");if(modal)modal.classList.remove("show");}
 function mostrarLogin(){const loginForm=document.getElementById("loginForm"),registerForm=document.getElementById("registerForm"),loginMessage=document.getElementById("loginMessage"),registerMessage=document.getElementById("registerMessage");if(loginForm)loginForm.style.display="block";if(registerForm)registerForm.style.display="none";if(loginMessage)loginMessage.textContent="";if(registerMessage)registerMessage.textContent="";setTimeout(()=>document.getElementById("username")?.focus(),100);}
