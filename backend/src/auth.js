@@ -257,7 +257,7 @@ router.post("/admin-login", async (req, res) => {
           criarSessaoAdmin(admin.username);
         res.setHeader(
           "Set-Cookie",
-          `jpbet_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
+          `mybets_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
         );
         await registrarAuditoria({
           action: "ADMIN_LOGIN_SUCESSO",
@@ -290,7 +290,7 @@ router.post("/admin-login", async (req, res) => {
         criarSessaoAdmin(adminUser);
       res.setHeader(
         "Set-Cookie",
-        `jpbet_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
+        `mybets_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
       );
       await registrarAuditoria({
         action: "ADMIN_LOGIN_SUCESSO",
@@ -340,14 +340,14 @@ router.post("/admin-logout", async (req, res) => {
     const cookies = req.headers.cookie || "";
     const match =
       cookies.match(
-        /(?:^|;\s*)jpbet_admin_session=([^;]+)/
+        /(?:^|;\s*)mybets_admin_session=([^;]+)/
       );
     if (match) {
       removerSessaoAdmin(match[1]);
     }
     res.setHeader(
       "Set-Cookie",
-      "jpbet_admin_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; Secure"
+      "mybets_admin_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; Secure"
     );
     res.json({
       ok: true,
