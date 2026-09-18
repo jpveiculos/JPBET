@@ -28,6 +28,7 @@ async function inicializarAdmins() {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP NULL;`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_reason TEXT NULL;`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN NOT NULL DEFAULT FALSE;`);
     console.log("Tabela admins inicializada com sucesso.");
   } catch (error) {
     console.error(
