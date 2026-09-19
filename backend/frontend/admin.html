@@ -15,8 +15,31 @@
     <h2>Entrar na administração</h2>
     <input class="input" id="adminUsername" placeholder="Usuário administrador" autocomplete="username">
     <input class="input" id="adminPassword" type="password" placeholder="Senha" autocomplete="current-password">
-    <button class="btn" style="width:100%" onclick="loginAdmin()">ENTRAR</button>
+    <button type="button" class="btn" id="adminLoginButton" style="width:100%" onclick="return loginAdmin()">ENTRAR</button>
     <div class="message" id="loginMessage"></div>
+    <script>
+      window.loginAdmin = async function(){
+        const username=document.getElementById("adminUsername").value.trim();
+        const password=document.getElementById("adminPassword").value;
+        const message=document.getElementById("loginMessage");
+        if(!username||!password){message.textContent="Digite usuário e senha.";return false;}
+        const button=document.getElementById("adminLoginButton");
+        if(button) button.disabled=true;
+        message.textContent="Entrando...";
+        try{
+          const r=await fetch("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username,password})});
+          const d=await r.json().catch(()=>({}));
+          if(!r.ok) throw new Error(d.message||"Credenciais inválidas.");
+          localStorage.setItem("mybets_admin",JSON.stringify({username:d.username}));
+          mostrarPainel();
+        }catch(e){
+          message.textContent=e.message||"Erro ao entrar.";
+        }finally{
+          if(button) button.disabled=false;
+        }
+        return false;
+      };
+    </script>
   </div>
   <main id="panel" class="hidden">
     <div class="card"><div class="section-title"><h2>💳 Solicitações</h2><button class="btn btn-dark" onclick="carregarTudo()">🔄 ATUALIZAR</button></div><div class="muted">Aqui aparecem somente depósitos e saques que precisam da sua ação.</div></div>
