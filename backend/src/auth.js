@@ -248,6 +248,42 @@ router.post("/login", async (req, res) => {
 router.post("/admin-login", async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    /*
+       Credencial administrativa configurada na Railway.
+       Ela tem prioridade para que o primeiro acesso não dependa
+       de existir um registro prévio na tabela admins.
+    */
+    const adminUser = process.env.ADMIN_USER || "admin";
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (
+      adminPassword &&
+      username === adminUser &&
+      password === adminPassword
+    ) {
+      const token = criarSessaoAdmin(adminUser);
+      res.setHeader(
+        "Set-Cookie",
+        `mybets_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
+      );
+      await registrarAuditoria({
+        action: "ADMIN_LOGIN_SUCESSO",
+        module: "ADMINISTRACAO",
+        targetType: "ADMIN",
+        targetId: adminUser,
+        details: "Login administrativo realizado com credencial configurada no ambiente.",
+        result: "SUCCESS",
+        ipAddress: obterIp(req),
+        userAgent: req.headers["user-agent"] || null
+      });
+      return res.json({
+        ok: true,
+        admin: true,
+        username: adminUser
+      });
+    }
+
     const result = await pool.query(
       `
       SELECT id, username, password_hash
@@ -282,38 +318,6 @@ router.post("/admin-login", async (req, res) => {
           username: admin.username
         });
       }
-    }
-    /* Administrador definido pelas variáveis do Render */
-    const adminUser =
-      process.env.ADMIN_USER || "admin";
-    const adminPassword =
-      process.env.ADMIN_PASSWORD;
-    if (
-      adminPassword &&
-      username === adminUser &&
-      password === adminPassword
-    ) {
-      const token =
-        criarSessaoAdmin(adminUser);
-      res.setHeader(
-        "Set-Cookie",
-        `mybets_admin_session=${token}; HttpOnly; Path=/; SameSite=Strict; Secure`
-      );
-      await registrarAuditoria({
-        action: "ADMIN_LOGIN_SUCESSO",
-        module: "ADMINISTRACAO",
-        targetType: "ADMIN",
-        targetId: adminUser,
-        details: "Login administrativo realizado com credenciais do Render.",
-        result: "SUCCESS",
-        ipAddress: obterIp(req),
-        userAgent: req.headers["user-agent"] || null
-      });
-      return res.json({
-        ok: true,
-        admin: true,
-        username: adminUser
-      });
     }
     /* =========================
        AUDITORIA — LOGIN ADMIN FALHO
